@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -12,11 +12,11 @@ import {
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { MOCK_INSPECTIONS, MOCK_SCAFFOLDS } from "@/lib/mock-data";
+import { getInspections } from "@/lib/actions/inspection-actions";
+import { getScaffolds } from "@/lib/actions/scaffold-actions";
 
-export default function RelatoriosPage() {
-  const inspections = MOCK_INSPECTIONS;
-  const scaffolds   = MOCK_SCAFFOLDS;
+export default async function RelatoriosPage() {
+  const [inspections, scaffolds] = await Promise.all([getInspections(), getScaffolds()]);
 
   const aprovados        = inspections.filter((i) => i.result === "aprovado").length;
   const comRessalvas     = inspections.filter((i) => i.result === "aprovado_com_ressalvas").length;
@@ -125,7 +125,7 @@ export default function RelatoriosPage() {
 
         <div className="divide-y divide-border">
           {inspections.map((insp, idx) => {
-            const docNum = "AND-" + insp.scaffold_code + "-" + insp.date.replace(/-/g, "");
+            const docNum = "AND-" + insp.scaffold_code + "-" + format(insp.date, "yyyyMMdd");
             const resultIcon = insp.result === "aprovado"
               ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
               : insp.result === "reprovado"
@@ -136,7 +136,7 @@ export default function RelatoriosPage() {
                 <p className="md:col-span-2 font-mono text-[10px] font-bold text-foreground truncate">{docNum}</p>
                 <p className="md:col-span-2 text-[11px] font-mono font-bold text-foreground hidden md:block">{insp.scaffold_code}</p>
                 <p className="md:col-span-2 text-[11px] text-muted-foreground font-mono hidden md:block">
-                  {format(parseISO(insp.date), "dd/MM/yyyy")}
+                  {format(insp.date, "dd/MM/yyyy")}
                 </p>
                 <p className="md:col-span-2 text-[11px] text-muted-foreground truncate hidden md:block">{insp.inspector_name}</p>
                 <p className="md:col-span-1 text-[11px] text-muted-foreground hidden md:block">

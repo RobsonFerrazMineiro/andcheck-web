@@ -1,0 +1,116 @@
+"use client";
+
+import { format, parseISO } from "date-fns";
+import { Calendar, ChevronRight, ClipboardCheck, Filter, Plus, Search, User } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+export type InspectionRow = {
+  id: string; scaffold_id: string; scaffold_code: string; date: string;
+  inspector_name: string; result: string; validity_days: number; notes: string | null;
+};
+
+export function InspecoesClient({ initialData }: { initialData: InspectionRow[] }) {
+  const [search, setSearch] = useState("");
+  const [resultFilter, setResultFilter] = useState("all");
+
+  const inspections = initialData;
+  const filtered = inspections.filter((i) => {
+    const matchSearch = !search ||
+      i.scaffold_code.toLowerCase().includes(search.toLowerCase()) ||
+      i.inspector_name.toLowerCase().includes(search.toLowerCase());
+    const matchResult = resultFilter === "all" || i.result === resultFilter;
+    return matchSearch && matchResult;
+  });
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">AndCheck EHS · Registros Técnicos</p>
+          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">Histórico de Inspeções</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{inspections.length} registros no sistema</p>
+        </div>
+        <Link href="/inspecoes/nova" className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0">
+          <Plus className="w-3.5 h-3.5" />Nova Inspeção
+        </Link>
+      </div>
+
+      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+          <Input placeholder="Buscar por andaime (TAG) ou inspetor..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-8 text-[11px] rounded-none border-border" />
+        </div>
+        <Select value={resultFilter} onValueChange={setResultFilter}>
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-none">
+            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+            <SelectValue placeholder="Resultado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Resultados</SelectItem>
+            <SelectItem value="aprovado">Aprovado</SelectItem>
+            <SelectItem value="aprovado_com_ressalvas">Com Ressalvas</SelectItem>
+            <SelectItem value="reprovado">Reprovado</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {filtered.length !== inspections.length && (
+        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">{filtered.length} resultado(s) filtrado(s)</p>
+      )}
+
+      {filtered.length === 0 ? (
+        <div className="bg-card border border-border p-14 text-center">
+          <ClipboardCheck className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
+          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Nenhuma inspeção encontrada</p>
+          <p className="text-[10px] text-muted-foreground/60 mb-4">Registre a primeira vistoria para iniciar o histórico</p>
+          <Link href="/inspecoes/nova" className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[10px] uppercase tracking-widest px-3 h-8">
+            <Plus className="w-3.5 h-3.5" />Nova Inspeção
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-card border border-border shadow-sm overflow-hidden">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+            {["Nº Doc.", "Andaime", "Data", "Inspetor", "Validade", "Resultado", ""].map((h, i) => (
+              <p key={i} className={"text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                (i === 0 ? "col-span-2" : i === 1 ? "col-span-2" : i === 2 ? "col-span-2" : i === 3 ? "col-span-2" : i === 4 ? "col-span-1" : i === 5 ? "col-span-2" : "col-span-1")}>{h}</p>
+            ))}
+          </div>
+          <div className="divide-y divide-border">
+            {filtered.map((insp, idx) => {
+              const docNum = "AND-" + insp.scaffold_code + "-" + insp.date.substring(0, 10).replace(/-/g, "");
+              return (
+                <Link key={insp.id} href={"/inspecoes/" + insp.id}
+                  className={"flex md:grid md:grid-cols-12 md:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " + (idx % 2 === 1 ? "bg-muted/20" : "bg-card")}
+                >
+                  <div className="flex items-center gap-3 flex-1 md:contents">
+                    <div className="w-7 h-7 bg-primary/8 flex items-center justify-center shrink-0 md:hidden"><ClipboardCheck className="w-3.5 h-3.5 text-primary/40" /></div>
+                    <div className="flex-1 md:contents">
+                      <p className="md:col-span-2 font-bold text-[12px] font-mono text-foreground">{docNum}</p>
+                      <p className="md:col-span-2 font-mono text-[11px] text-foreground hidden md:block">{insp.scaffold_code}</p>
+                      <div className="md:col-span-2 hidden md:flex items-center gap-1"><Calendar className="w-3 h-3 text-muted-foreground/30 shrink-0" /><p className="text-[11px] text-muted-foreground">{format(parseISO(insp.date), "dd/MM/yyyy")}</p></div>
+                      <div className="md:col-span-2 hidden md:flex items-center gap-1"><User className="w-3 h-3 text-muted-foreground/30 shrink-0" /><p className="text-[11px] text-muted-foreground truncate">{insp.inspector_name}</p></div>
+                      <p className="hidden md:block md:col-span-1 text-[11px] text-muted-foreground font-mono">{insp.validity_days > 0 ? insp.validity_days + "d" : "—"}</p>
+                      <div className="hidden md:flex md:col-span-2 items-center"><StatusBadge status={insp.result} /></div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="md:hidden"><StatusBadge status={insp.result} /></div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="px-4 py-2 bg-muted/30 border-t border-border">
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">{filtered.length} registro(s) · Documento Controlado · AndCheck EHS</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

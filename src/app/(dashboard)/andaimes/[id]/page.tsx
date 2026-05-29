@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import {
   ArrowLeft,
   Building2,
@@ -15,64 +15,47 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { MOCK_INSPECTIONS, MOCK_SCAFFOLDS } from "@/lib/mock-data";
+import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 
 const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
+  tubular: "Tubular", fachadeiro: "Fachadeiro", multidirecional: "Multidirecional",
+  suspenso: "Suspenso", torre: "Torre",
 };
 
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AndaimeDetailPage({ params }: Props) {
   const { id } = await params;
-  const scaffold = MOCK_SCAFFOLDS.find((s) => s.id === id);
-
+  const scaffold = await getScaffoldById(id);
   if (!scaffold) notFound();
 
-  const inspections = MOCK_INSPECTIONS.filter((i) => i.scaffold_id === id);
+  const inspections = scaffold.inspections;
 
   return (
     <div className="space-y-5 max-w-4xl">
-      {/* ── Breadcrumb ── */}
       <div className="flex items-center gap-2">
-        <Link
-          href="/andaimes"
-          className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
-        >
+        <Link href="/andaimes" className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          <Link href="/andaimes" className="hover:text-foreground">
-            Andaimes
-          </Link>
+          <Link href="/andaimes" className="hover:text-foreground">Andaimes</Link>
           <span className="mx-1.5">/</span>
           <span className="text-foreground">{scaffold.code}</span>
         </p>
       </div>
 
-      {/* ── Header técnico ── */}
       <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/40 mb-1">
-              Ficha Técnica do Ativo
-            </p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/40 mb-1">Ficha Técnica do Ativo</p>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">
-                {scaffold.code}
-              </h1>
+              <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">{scaffold.code}</h1>
               <StatusBadge status={scaffold.status} size="lg" />
             </div>
-            <p className="text-[11px] text-primary-foreground/50 mt-1">
-              {scaffold.location}
-            </p>
+            <p className="text-[11px] text-primary-foreground/50 mt-1">{scaffold.location}</p>
           </div>
           <Link
-            href={`/inspecoes/nova?scaffold_id=${scaffold.id}&scaffold_code=${scaffold.code}`}
+            href={"/inspecoes/nova?scaffold_id=" + scaffold.id + "&scaffold_code=" + scaffold.code}
             className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-9 px-4 shrink-0"
           >
             <ClipboardCheck className="w-4 h-4" />
@@ -81,112 +64,48 @@ export default async function AndaimeDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── Info Grid ── */}
       <div className="grid sm:grid-cols-2 gap-4">
         <TechCard title="Dados do Andaime" icon={Construction}>
-          <TechRow
-            icon={Construction}
-            label="Tipo de Andaime"
-            value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
-          />
-          <TechRow
-            icon={MapPin}
-            label="Localização"
-            value={scaffold.location}
-          />
-          {scaffold.area && (
-            <TechRow
-              icon={Building2}
-              label="Área / Setor"
-              value={scaffold.area}
-            />
-          )}
-          <TechRow icon={Ruler} label="Altura" value={`${scaffold.height} m`} />
-          {scaffold.max_load && (
-            <TechRow
-              icon={Weight}
-              label="Carga Máxima"
-              value={`${scaffold.max_load} kg`}
-            />
-          )}
+          <TechRow icon={Construction} label="Tipo de Andaime" value={TYPE_LABELS[scaffold.type] ?? scaffold.type} />
+          <TechRow icon={MapPin} label="Localização" value={scaffold.location} />
+          {scaffold.area && <TechRow icon={Building2} label="Área / Setor" value={scaffold.area} />}
+          <TechRow icon={Ruler} label="Altura" value={scaffold.height + " m"} />
+          {scaffold.max_load && <TechRow icon={Weight} label="Carga Máxima" value={scaffold.max_load + " kg"} />}
         </TechCard>
 
         <TechCard title="Responsabilidade Técnica" icon={User}>
-          {scaffold.responsible && (
-            <TechRow
-              icon={User}
-              label="Responsável Técnico"
-              value={scaffold.responsible}
-            />
-          )}
-          {scaffold.company && (
-            <TechRow
-              icon={Building2}
-              label="Empresa Executante"
-              value={scaffold.company}
-            />
-          )}
+          {scaffold.responsible && <TechRow icon={User} label="Responsável Técnico" value={scaffold.responsible} />}
           {scaffold.validity_date && (
-            <TechRow
-              icon={Calendar}
-              label="Data de Validade"
-              value={format(parseISO(scaffold.validity_date), "dd/MM/yyyy")}
-            />
+            <TechRow icon={Calendar} label="Data de Validade" value={format(scaffold.validity_date, "dd/MM/yyyy")} />
           )}
           {scaffold.notes && (
             <div className="px-4 py-3 border-t border-border bg-muted/20">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-                Observações
-              </p>
-              <p className="text-[11px] text-foreground leading-relaxed">
-                {scaffold.notes}
-              </p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Observações</p>
+              <p className="text-[11px] text-foreground leading-relaxed">{scaffold.notes}</p>
             </div>
           )}
         </TechCard>
       </div>
 
-      {/* ── Histórico de Inspeções ── */}
-      <TechCard
-        title="Histórico de Inspeções"
-        icon={ClipboardCheck}
-        extra={
-          <span className="text-[9px] text-muted-foreground font-mono">
-            {inspections.length} registro(s)
-          </span>
-        }
+      <TechCard title="Histórico de Inspeções" icon={ClipboardCheck}
+        extra={<span className="text-[9px] text-muted-foreground font-mono">{inspections.length} registro(s)</span>}
       >
         {inspections.length === 0 ? (
           <div className="text-center py-10">
             <ClipboardCheck className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
-            <p className="text-[11px] text-muted-foreground">
-              Nenhuma inspeção registrada para este andaime
-            </p>
+            <p className="text-[11px] text-muted-foreground">Nenhuma inspeção registrada para este andaime</p>
           </div>
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-3 px-4 py-2 bg-muted/40">
               {["Inspetor", "Data", "Resultado"].map((h) => (
-                <p
-                  key={h}
-                  className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
-                >
-                  {h}
-                </p>
+                <p key={h} className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{h}</p>
               ))}
             </div>
             {inspections.map((insp) => (
-              <Link
-                key={insp.id}
-                href={`/inspecoes/${insp.id}`}
-                className="grid grid-cols-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors group"
-              >
-                <p className="text-[11px] font-semibold text-foreground truncate">
-                  {insp.inspector_name}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {format(parseISO(insp.date), "dd/MM/yyyy")}
-                </p>
+              <Link key={insp.id} href={"/inspecoes/" + insp.id} className="grid grid-cols-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors group">
+                <p className="text-[11px] font-semibold text-foreground truncate">{insp.inspector_name}</p>
+                <p className="text-[11px] text-muted-foreground">{format(insp.date, "dd/MM/yyyy")}</p>
                 <div className="flex items-center justify-between">
                   <StatusBadge status={insp.result} />
                   <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 group-hover:text-muted-foreground" />
@@ -200,49 +119,26 @@ export default async function AndaimeDetailPage({ params }: Props) {
   );
 }
 
-// ── Sub-components ─────────────────────────────────────────
-
-interface TechCardProps {
-  title: string;
-  icon: React.ElementType;
-  extra?: React.ReactNode;
-  children: React.ReactNode;
-}
-
+interface TechCardProps { title: string; icon: React.ElementType; extra?: React.ReactNode; children: React.ReactNode; }
 function TechCard({ title, icon: Icon, extra, children }: TechCardProps) {
   return (
     <div className="bg-card border border-border shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
-        <div className="flex items-center gap-2">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-            {title}
-          </p>
-        </div>
+        <div className="flex items-center gap-2"><Icon className="w-3.5 h-3.5 text-muted-foreground/60" /><p className="text-[10px] font-bold uppercase tracking-widest text-foreground">{title}</p></div>
         {extra}
       </div>
       <div className="divide-y divide-border">{children}</div>
     </div>
   );
 }
-
-interface TechRowProps {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}
-
+interface TechRowProps { icon: React.ElementType; label: string; value: string; }
 function TechRow({ icon: Icon, label, value }: TechRowProps) {
   return (
     <div className="flex items-center gap-3 px-4 py-2.5">
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
       <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">
-          {label}
-        </p>
-        <p className="text-[11px] font-semibold text-foreground text-right truncate">
-          {value}
-        </p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">{label}</p>
+        <p className="text-[11px] font-semibold text-foreground text-right truncate">{value}</p>
       </div>
     </div>
   );

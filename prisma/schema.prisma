@@ -1,0 +1,114 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────────────────────────────────────
+
+enum ScaffoldStatus {
+  liberado
+  pendente
+  em_montagem
+  reprovado
+  vencido
+}
+
+enum ScaffoldType {
+  tubular
+  fachadeiro
+  multidirecional
+  suspenso
+  torre
+}
+
+enum InspectionResult {
+  aprovado
+  aprovado_com_ressalvas
+  reprovado
+}
+
+enum ChecklistValue {
+  CL_OK
+  CL_FAIL
+  CL_WARN
+  CL_NA
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Scaffold
+// ──────────────────────────────────────────────────────────────────────────────
+
+model Scaffold {
+  id           String         @id @default(cuid())
+  code         String         @unique          // ex: AND-001
+  tag          String         @unique          // QR tag = id (gerado automaticamente)
+  type         ScaffoldType
+  status       ScaffoldStatus @default(pendente)
+  location     String
+  area         String
+  height       Float                           // metros
+  width        Float?
+  length       Float?
+  max_load     Float?                          // kg
+  responsible  String
+  notes        String?
+  validity_date DateTime?
+
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+
+  inspections  Inspection[]
+
+  @@map("scaffolds")
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Inspection
+// ──────────────────────────────────────────────────────────────────────────────
+
+model Inspection {
+  id              String            @id @default(cuid())
+  scaffold        Scaffold          @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
+  scaffold_id     String
+  scaffold_code   String            // desnormalizado para relatórios
+
+  date            DateTime          @default(now())
+  inspector_name  String
+  result          InspectionResult
+  validity_days   Int               @default(0)
+  notes           String?
+
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+
+  checklist       ChecklistEntry[]
+
+  @@map("inspections")
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ChecklistEntry
+// ──────────────────────────────────────────────────────────────────────────────
+
+model ChecklistEntry {
+  id             String          @id @default(cuid())
+  inspection     Inspection      @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+  inspection_id  String
+
+  item_id        String          // ex: "ITEM_01"
+  item_label     String
+  category       String
+  value          ChecklistValue
+  critical       Boolean         @default(false)
+  observation    String?
+
+  @@map("checklist_entries")
+}

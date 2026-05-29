@@ -1,4 +1,4 @@
-import { format, isPast, parseISO } from "date-fns";
+import { format, isPast } from "date-fns";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
-import { MOCK_SCAFFOLDS } from "@/lib/mock-data";
+import { getScaffolds } from "@/lib/actions/scaffold-actions";
 
 const AREA_COORDS: Record<string, { x: number; y: number }> = {
   "Bloco Industrial 01": { x: 18, y: 22 },
@@ -40,11 +40,12 @@ const STATUS_ICON: Record<string, React.ElementType> = {
   em_montagem: Wrench,
 };
 
-export default function MapaPage() {
-  const scaffolds = MOCK_SCAFFOLDS.map((s) => ({
+export default async function MapaPage() {
+  const raw = await getScaffolds();
+  const scaffolds = raw.map((s) => ({
     ...s,
     effectiveStatus:
-      s.status === "liberado" && s.validity_date && isPast(parseISO(s.validity_date))
+      s.status === "liberado" && s.validity_date && isPast(s.validity_date)
         ? ("vencido" as const)
         : s.status,
   }));
