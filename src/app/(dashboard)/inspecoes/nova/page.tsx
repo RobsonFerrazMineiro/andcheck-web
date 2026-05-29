@@ -1,273 +1,251 @@
-import Link from "next/link";
+"use client";
 
-const checklistGroups = [
-  {
-    title: "Segurança Documental",
-    items: [
-      { text: "ART/RRT de montagem está disponível e válida", critical: true },
-      { text: "Projeto estrutural do andaime disponível", critical: true },
-      { text: "PT emitida e válida", critical: true },
-      { text: "Montador possui capacitação NR-18 e NR-35", critical: true },
-    ],
-  },
-  {
-    title: "Estrutura",
-    items: [
-      {
-        text: "Base/sapatas apoiadas em superfície firme e nivelada",
-        critical: true,
-      },
-      { text: "Contraventamentos instalados corretamente", critical: true },
-      { text: "Plataformas de trabalho completas e travadas", critical: true },
-      {
-        text: "Sem deformações, trincas ou corrosão visível nos tubos",
-        critical: true,
-      },
-    ],
-  },
-  {
-    title: "Acesso e Proteção",
-    items: [
-      { text: "Escada de acesso instalada corretamente", critical: true },
-      { text: "Guarda-corpo superior instalado", critical: true },
-      { text: "Guarda-corpo intermediário instalado", critical: true },
-      { text: "Sinalização e isolamento da área executados", critical: false },
-    ],
-  },
-  {
-    title: "EPIs e Segurança",
-    items: [
-      { text: "Capacete com jugular disponível", critical: true },
-      {
-        text: "Cinto de segurança tipo paraquedista com talabarte duplo",
-        critical: true,
-      },
-      {
-        text: "Trabalhadores com ASO válido para trabalho em altura",
-        critical: true,
-      },
-      { text: "Treinamento NR-35 vigente", critical: true },
-    ],
-  },
-];
+import { addDays, format } from "date-fns";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  ClipboardCheck,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+
+import ChecklistSection from "@/components/inspection/checklist-section";
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import checklistTemplate from "@/lib/checklist-template";
+import type { ChecklistValue } from "@/lib/checklist-template";
+import { MOCK_SCAFFOLDS } from "@/lib/mock-data";
 
 export default function NovaInspecaoPage() {
-  return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <section className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col justify-between gap-4 rounded-xl border bg-white p-6 shadow-sm md:flex-row md:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">
-              AndCheck EHS · Liberação de Andaime
-            </p>
+  const router = useRouter();
 
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">
-              Nova Inspeção
-            </h1>
+  const [selectedScaffoldId, setSelectedScaffoldId] = useState("");
+  const [inspectorName, setInspectorName] = useState("");
+  const [validityDays, setValidityDays] = useState("7");
+  const [observations, setObservations] = useState("");
 
-            <p className="mt-1 text-sm text-slate-600">
-              Preenchimento visual do formulário padrão de liberação de
-              andaimes.
-            </p>
-          </div>
-
-          <Link
-            href="/inspecoes"
-            className="rounded-lg border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Voltar
-          </Link>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                1. Identificação do Andaime
-              </h2>
-
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <Field label="TAG / Código" placeholder="AND-001" />
-                <Field label="Tipo" placeholder="Tubular / Multidirecional" />
-                <Field label="Área / Setor" placeholder="Ex: Clarificação" />
-                <Field
-                  label="Referência de Localização"
-                  placeholder="Ex: T-28D-06B"
-                />
-                <Field label="Altura" placeholder="Ex: 1.8 m" />
-                <Field label="Carga Máxima" placeholder="Ex: 105 kg" />
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                2. Dados da Inspeção
-              </h2>
-
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <Field label="Inspetor" placeholder="Nome do inspetor" />
-                <Field label="Responsável" placeholder="Responsável técnico" />
-                <Field label="Empresa" placeholder="Empresa executante" />
-                <Field label="Validade" placeholder="Ex: 7 dias" />
-                <Field label="Condição do Tempo" placeholder="Ex: Nublado" />
-                <Field label="Temperatura" placeholder="Ex: 29 °C" />
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                3. Checklist Técnico
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Formulário fixo baseado em NR-18, NR-35 e ABNT NBR 6494.
-              </p>
-
-              <div className="mt-5 space-y-6">
-                {checklistGroups.map((group) => (
-                  <div key={group.title} className="rounded-xl border">
-                    <div className="border-b bg-slate-50 px-4 py-3">
-                      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                        {group.title}
-                      </h3>
-                    </div>
-
-                    <div className="divide-y">
-                      {group.items.map((item) => (
-                        <div
-                          key={item.text}
-                          className="grid gap-3 p-4 md:grid-cols-[1fr_auto]"
-                        >
-                          <div>
-                            <p className="font-medium text-slate-900">
-                              {item.text}
-                            </p>
-
-                            {item.critical && (
-                              <span className="mt-2 inline-flex rounded-full bg-red-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-700">
-                                Crítico
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <button className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                              Conforme
-                            </button>
-
-                            <button className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                              Não Conforme
-                            </button>
-
-                            <button className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                              N/A
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                4. Registro Fotográfico
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Área visual preparada para upload ou captura de evidências.
-              </p>
-
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <div className="flex h-36 items-center justify-center rounded-xl border border-dashed bg-slate-50 text-sm text-slate-500">
-                  + Adicionar foto
-                </div>
-
-                <div className="flex h-36 items-center justify-center rounded-xl border bg-slate-100 text-sm text-slate-400">
-                  Foto 1
-                </div>
-
-                <div className="flex h-36 items-center justify-center rounded-xl border bg-slate-100 text-sm text-slate-400">
-                  Foto 2
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                5. Observações
-              </h2>
-
-              <textarea
-                placeholder="Descreva observações gerais, pendências ou ações corretivas..."
-                className="mt-4 min-h-32 w-full rounded-xl border p-4 text-sm outline-none focus:ring-2 focus:ring-slate-300"
-              />
-            </div>
-          </div>
-
-          <aside className="space-y-6">
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Resultado Prévio
-              </h2>
-
-              <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">
-                  Aguardando preenchimento
-                </p>
-
-                <p className="mt-2 text-sm text-emerald-700">
-                  O resultado será calculado após a validação dos itens
-                  críticos.
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Localização
-              </h2>
-
-              <div className="mt-4 flex h-48 items-center justify-center rounded-xl border border-dashed bg-slate-50 text-center text-sm text-slate-500">
-                Mapa para captura automática ou seleção manual
-              </div>
-
-              <button className="mt-4 w-full rounded-lg border px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                Usar localização do dispositivo
-              </button>
-            </div>
-
-            <div className="rounded-xl border bg-white p-5 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-900">Ações</h2>
-
-              <button className="mt-4 w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-                Finalizar Inspeção
-              </button>
-
-              <button className="mt-3 w-full rounded-lg border px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-                Salvar Rascunho
-              </button>
-            </div>
-          </aside>
-        </div>
-      </section>
-    </main>
+  const [checklistValues, setChecklistValues] = useState<ChecklistValue[][]>(
+    checklistTemplate.map((cat) => cat.items.map(() => ({ status: "", observation: "" })))
   );
-}
 
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
+  const selectedScaffold = MOCK_SCAFFOLDS.find((s) => s.id === selectedScaffoldId);
+
+  // Itens críticos não conformes
+  const criticalIssues = useMemo(() => {
+    const issues: string[] = [];
+    checklistTemplate.forEach((cat, ci) => {
+      cat.items.forEach((item, ii) => {
+        if (item.critical && checklistValues[ci][ii].status === "nao_conforme") {
+          issues.push(item.item);
+        }
+      });
+    });
+    return issues;
+  }, [checklistValues]);
+
+  // Resultado automático
+  const autoResult = useMemo(() => {
+    if (criticalIssues.length > 0) return "reprovado";
+    const hasNonConform = checklistValues.flat().some((v) => v.status === "nao_conforme");
+    if (hasNonConform) return "aprovado_com_ressalvas";
+    return "aprovado";
+  }, [criticalIssues, checklistValues]);
+
+  const isComplete = useMemo(
+    () => checklistValues.every((cat) => cat.every((v) => v.status !== "")),
+    [checklistValues]
+  );
+
+  const canSubmit = isComplete && !!selectedScaffoldId && inspectorName.trim().length > 0;
+
+  const handleSubmit = () => {
+    // TODO: substituir por Server Action quando Prisma estiver pronto
+    alert(
+      "Inspeção registrada (mock)!\n\n" +
+        "Andaime: " + (selectedScaffold?.code ?? "-") + "\n" +
+        "Inspetor: " + inspectorName + "\n" +
+        "Resultado: " + autoResult + "\n" +
+        "Validade: " + format(addDays(new Date(), Number(validityDays)), "dd/MM/yyyy")
+    );
+    router.push("/inspecoes");
+  };
+
   return (
-    <label>
-      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        {label}
-      </span>
+    <div className="space-y-6 max-w-3xl mx-auto pb-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2">
+        <Link
+          href="/inspecoes"
+          className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+        </Link>
+        <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+          <Link href="/inspecoes" className="hover:text-foreground">Inspeções</Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-foreground font-semibold">Nova Inspeção</span>
+        </div>
+      </div>
 
-      <input
-        placeholder={placeholder}
-        className="mt-2 h-11 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2 focus:ring-slate-300"
-      />
-    </label>
+      {/* Header */}
+      <div className="pb-4 border-b-2 border-border">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          AndCheck EHS · NR-18 / NR-35 / ABNT NBR 6494
+        </p>
+        <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          Nova Inspeção
+        </h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
+          Checklist de {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens · Resultado calculado automaticamente
+        </p>
+      </div>
+
+      {/* Informações Gerais */}
+      <div className="bg-card border border-border shadow-sm p-5 space-y-4">
+        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+          Informações Gerais
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">Andaime *</Label>
+            <Select value={selectedScaffoldId} onValueChange={setSelectedScaffoldId}>
+              <SelectTrigger className="h-8 text-[11px] rounded-none">
+                <SelectValue placeholder="Selecionar andaime..." />
+              </SelectTrigger>
+              <SelectContent>
+                {MOCK_SCAFFOLDS.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.code} — {s.location}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">Nome do Inspetor *</Label>
+            <Input
+              placeholder="Nome completo"
+              value={inspectorName}
+              onChange={(e) => setInspectorName(e.target.value)}
+              className="h-8 text-[11px] rounded-none"
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-[10px] uppercase tracking-wider font-bold">Validade da liberação</Label>
+          <Select value={validityDays} onValueChange={setValidityDays}>
+            <SelectTrigger className="w-40 h-8 text-[11px] rounded-none">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3">3 dias</SelectItem>
+              <SelectItem value="7">7 dias</SelectItem>
+              <SelectItem value="14">14 dias</SelectItem>
+              <SelectItem value="30">30 dias</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Checklist */}
+      {checklistTemplate.map((cat, catIdx) => (
+        <ChecklistSection
+          key={cat.category}
+          category={cat.category}
+          items={cat.items}
+          values={checklistValues[catIdx]}
+          onChange={(newValues) => {
+            const updated = [...checklistValues];
+            updated[catIdx] = newValues;
+            setChecklistValues(updated);
+          }}
+        />
+      ))}
+
+      {/* Alertas de itens críticos */}
+      {criticalIssues.length > 0 && (
+        <div className="bg-red-50 border border-red-200 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+            <p className="text-[11px] font-bold text-red-700 uppercase tracking-wider">
+              Liberação bloqueada — {criticalIssues.length} item(ns) crítico(s) não conforme(s)
+            </p>
+          </div>
+          <ul className="space-y-1 pl-6">
+            {criticalIssues.map((issue, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-[11px] text-red-600">
+                <XCircle className="w-3 h-3 mt-0.5 shrink-0" />
+                {issue}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Resultado automático */}
+      {isComplete && (
+        <div className={"border p-4 flex items-center gap-4 " + (autoResult === "aprovado" ? "bg-emerald-50 border-emerald-200" : autoResult === "reprovado" ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200")}>
+          {autoResult === "aprovado" && <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />}
+          {autoResult === "reprovado" && <XCircle className="w-6 h-6 text-red-600 shrink-0" />}
+          {autoResult === "aprovado_com_ressalvas" && <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />}
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Resultado calculado</p>
+            <StatusBadge status={autoResult} size="lg" />
+          </div>
+          {autoResult !== "reprovado" && (
+            <div className="ml-auto text-right">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Válido até</p>
+              <p className="text-[13px] font-bold font-mono text-foreground">
+                {format(addDays(new Date(), Number(validityDays)), "dd/MM/yyyy")}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Observações */}
+      <div className="bg-card border border-border shadow-sm p-5 space-y-3">
+        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+          Observações Gerais
+        </h3>
+        <Textarea
+          placeholder="Registre observações gerais sobre a inspeção..."
+          value={observations}
+          onChange={(e) => setObservations(e.target.value)}
+          className="text-[11px] rounded-none min-h-[80px]"
+        />
+      </div>
+
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
+        <Link
+          href="/inspecoes"
+          className="inline-flex items-center justify-center h-8 px-5 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+        >
+          Cancelar
+        </Link>
+        <button
+          type="button"
+          disabled={!canSubmit}
+          onClick={handleSubmit}
+          className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <ClipboardCheck className="w-3.5 h-3.5" />
+          {isComplete ? "Registrar Inspeção" : "Preencha todos os itens"}
+        </button>
+      </div>
+    </div>
   );
 }
