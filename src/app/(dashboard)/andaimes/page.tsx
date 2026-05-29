@@ -1,201 +1,198 @@
+"use client";
+
+import { format, parseISO } from "date-fns";
+import {
+  ChevronRight,
+  Construction,
+  Filter,
+  MapPin,
+  Plus,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
-const scaffolds = [
-  {
-    tag: "AND-001",
-    area: "Calcinação",
-    type: "Tubular",
-    location: "Calcinador C-02",
-    height: "14 m",
-    status: "Liberado",
-    validUntil: "28/05/2026",
-  },
-  {
-    tag: "AND-002",
-    area: "Clarificação",
-    type: "Multidirecional",
-    location: "T-28D-06B",
-    height: "1.8 m",
-    status: "Pendente",
-    validUntil: "—",
-  },
-  {
-    tag: "AND-003",
-    area: "Utilidades",
-    type: "Torre",
-    location: "Torre de Resfriamento T-03",
-    height: "18 m",
-    status: "Interditado",
-    validUntil: "—",
-  },
-];
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MOCK_SCAFFOLDS } from "@/lib/mock-data";
 
-function getStatusClass(status: string) {
-  if (status === "Liberado") return "bg-emerald-100 text-emerald-700";
-  if (status === "Pendente") return "bg-amber-100 text-amber-700";
-  if (status === "Interditado") return "bg-red-100 text-red-700";
-
-  return "bg-slate-100 text-slate-700";
-}
+const TYPE_LABELS: Record<string, string> = {
+  tubular: "Tubular",
+  fachadeiro: "Fachadeiro",
+  multidirecional: "Multidirecional",
+  suspenso: "Suspenso",
+  torre: "Torre",
+};
 
 export default function AndaimesPage() {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const scaffolds = MOCK_SCAFFOLDS;
+
+  const filtered = scaffolds.filter((s) => {
+    const matchSearch =
+      !search ||
+      s.code.toLowerCase().includes(search.toLowerCase()) ||
+      s.location.toLowerCase().includes(search.toLowerCase()) ||
+      s.area.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || s.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <section className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col justify-between gap-4 rounded-xl border bg-white p-6 shadow-sm md:flex-row md:items-center">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">
-              AndCheck EHS · Registro de Ativos
-            </p>
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+            AndCheck EHS · Gestão de Ativos
+          </p>
+          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+            Registro de Andaimes
+          </h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {scaffolds.length} unidades cadastradas
+          </p>
+        </div>
+        <Link
+          href="/andaimes/novo"
+          className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          Cadastrar Andaime
+        </Link>
+      </div>
 
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Andaimes</h1>
+      {/* Filtros */}
+      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+          <Input
+            placeholder="Buscar por TAG, localização ou área..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-8 text-[11px] rounded-none border-border"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-none">
+            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Status</SelectItem>
+            <SelectItem value="liberado">Liberado</SelectItem>
+            <SelectItem value="pendente">Pendente</SelectItem>
+            <SelectItem value="reprovado">Reprovado</SelectItem>
+            <SelectItem value="vencido">Vencido</SelectItem>
+            <SelectItem value="em_montagem">Em Montagem</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-            <p className="mt-1 text-sm text-slate-600">
-              Controle visual dos andaimes cadastrados, status operacional e
-              validade.
-            </p>
+      {filtered.length !== scaffolds.length && (
+        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+          {filtered.length} resultado(s) filtrado(s)
+        </p>
+      )}
+
+      {/* Tabela */}
+      {filtered.length === 0 ? (
+        <div className="bg-card border border-border p-14 text-center">
+          <Construction className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
+          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Nenhum andaime encontrado
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 mb-4">
+            Cadastre o primeiro ativo para iniciar o controle
+          </p>
+          <Link
+            href="/andaimes/novo"
+            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[10px] uppercase tracking-widest px-3 h-8"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Cadastrar
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-card border border-border shadow-sm overflow-hidden">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+            {["TAG / Código", "Tipo", "Localização", "Validade", "Status", ""].map(
+              (h, i) => (
+                <p
+                  key={i}
+                  className={"text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " + (i === 0 ? "col-span-2" : i === 1 ? "col-span-2" : i === 2 ? "col-span-3" : i === 3 ? "col-span-2" : i === 4 ? "col-span-2" : "col-span-1")}
+                >
+                  {h}
+                </p>
+              )
+            )}
           </div>
 
-          <div className="flex gap-2">
-            <Link
-              href="/dashboard"
-              className="rounded-lg border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Dashboard
-            </Link>
+          <div className="divide-y divide-border">
+            {filtered.map((scaffold, idx) => (
+              <Link
+                key={scaffold.id}
+                href={"/andaimes/" + scaffold.id}
+                className={"flex md:grid md:grid-cols-12 md:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " + (idx % 2 === 1 ? "bg-muted/20" : "bg-card")}
+              >
+                <div className="flex items-center gap-3 flex-1 md:contents">
+                  <div className="w-7 h-7 bg-primary/8 flex items-center justify-center shrink-0 md:hidden">
+                    <Construction className="w-3.5 h-3.5 text-primary/40" />
+                  </div>
+                  <div className="flex-1 md:contents">
+                    <p className="md:col-span-2 font-bold text-[12px] font-mono text-foreground">
+                      {scaffold.code}
+                    </p>
+                    <p className="md:col-span-2 text-[11px] text-muted-foreground">
+                      {TYPE_LABELS[scaffold.type] ?? scaffold.type}
+                      {scaffold.height > 0 && (
+                        <span className="text-muted-foreground/40 ml-1">
+                          · {scaffold.height}m
+                        </span>
+                      )}
+                    </p>
+                    <div className="md:col-span-3 flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-muted-foreground/30 shrink-0 hidden md:block" />
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {scaffold.location}
+                      </p>
+                    </div>
+                    <p className="hidden md:block md:col-span-2 text-[11px] text-muted-foreground font-mono">
+                      {scaffold.validity_date
+                        ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
+                        : "—"}
+                    </p>
+                    <div className="hidden md:flex md:col-span-2 items-center">
+                      <StatusBadge status={scaffold.status} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="md:hidden">
+                      <StatusBadge status={scaffold.status} />
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-            <Link
-              href="/andaimes/novo"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Novo Andaime
-            </Link>
+          <div className="px-4 py-2 bg-muted/30 border-t border-border">
+            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+              {filtered.length} registro(s) · Documento Controlado · AndCheck EHS
+            </p>
           </div>
         </div>
-
-        <div className="mb-6 grid gap-4 md:grid-cols-4">
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              Total
-            </p>
-            <p className="mt-3 text-3xl font-bold text-slate-900">25</p>
-          </div>
-
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              Liberados
-            </p>
-            <p className="mt-3 text-3xl font-bold text-emerald-600">18</p>
-          </div>
-
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              Pendentes
-            </p>
-            <p className="mt-3 text-3xl font-bold text-amber-600">5</p>
-          </div>
-
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              Interditados
-            </p>
-            <p className="mt-3 text-3xl font-bold text-red-600">2</p>
-          </div>
-        </div>
-
-        <div className="rounded-xl border bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b p-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">
-                Lista de Andaimes
-              </h2>
-              <p className="text-sm text-slate-500">
-                Consulta rápida dos ativos operacionais.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 md:flex-row">
-              <input
-                placeholder="Buscar por TAG, área ou localização..."
-                className="h-10 rounded-lg border px-3 text-sm outline-none focus:ring-2 focus:ring-slate-300 md:w-80"
-              />
-
-              <select className="h-10 rounded-lg border px-3 text-sm outline-none focus:ring-2 focus:ring-slate-300">
-                <option>Todos os status</option>
-                <option>Liberado</option>
-                <option>Pendente</option>
-                <option>Interditado</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                <tr>
-                  <th className="px-5 py-3">TAG</th>
-                  <th className="px-5 py-3">Área</th>
-                  <th className="px-5 py-3">Tipo</th>
-                  <th className="px-5 py-3">Localização</th>
-                  <th className="px-5 py-3">Altura</th>
-                  <th className="px-5 py-3">Validade</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3 text-right">Ações</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {scaffolds.map((scaffold) => (
-                  <tr key={scaffold.tag} className="hover:bg-slate-50">
-                    <td className="px-5 py-4 font-semibold text-slate-900">
-                      {scaffold.tag}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-600">
-                      {scaffold.area}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-600">
-                      {scaffold.type}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-600">
-                      {scaffold.location}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-600">
-                      {scaffold.height}
-                    </td>
-
-                    <td className="px-5 py-4 text-slate-600">
-                      {scaffold.validUntil}
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${getStatusClass(
-                          scaffold.status,
-                        )}`}
-                      >
-                        {scaffold.status}
-                      </span>
-                    </td>
-
-                    <td className="px-5 py-4 text-right">
-                      <Link
-                        href={`/andaimes/${scaffold.tag}`}
-                        className="text-sm font-semibold text-slate-900 hover:underline"
-                      >
-                        Ver detalhes
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-    </main>
+      )}
+    </div>
   );
 }

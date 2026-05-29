@@ -1,192 +1,249 @@
+import { format, parseISO } from "date-fns";
+import {
+  ArrowLeft,
+  Building2,
+  Calendar,
+  ChevronRight,
+  ClipboardCheck,
+  Construction,
+  MapPin,
+  Ruler,
+  User,
+  Weight,
+} from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-type ScaffoldDetailPageProps = {
-  params: Promise<{
-    id: string;
-  }>;
+import { StatusBadge } from "@/components/shared/status-badge";
+import { MOCK_INSPECTIONS, MOCK_SCAFFOLDS } from "@/lib/mock-data";
+
+const TYPE_LABELS: Record<string, string> = {
+  tubular: "Tubular",
+  fachadeiro: "Fachadeiro",
+  multidirecional: "Multidirecional",
+  suspenso: "Suspenso",
+  torre: "Torre",
 };
 
-const inspections = [
-  {
-    id: "INS-001",
-    date: "21/05/2026",
-    inspector: "Robson Ferraz",
-    status: "Aprovado",
-  },
-  {
-    id: "INS-002",
-    date: "14/05/2026",
-    inspector: "João Martins",
-    status: "Aprovado com ressalvas",
-  },
-];
+type Props = { params: Promise<{ id: string }> };
 
-export default async function ScaffoldDetailPage({
-  params,
-}: ScaffoldDetailPageProps) {
+export default async function AndaimeDetailPage({ params }: Props) {
   const { id } = await params;
+  const scaffold = MOCK_SCAFFOLDS.find((s) => s.id === id);
+
+  if (!scaffold) notFound();
+
+  const inspections = MOCK_INSPECTIONS.filter((i) => i.scaffold_id === id);
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6">
-      <section className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col justify-between gap-4 rounded-xl border bg-white p-6 shadow-sm md:flex-row md:items-center">
+    <div className="space-y-5 max-w-4xl">
+      {/* ── Breadcrumb ── */}
+      <div className="flex items-center gap-2">
+        <Link
+          href="/andaimes"
+          className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <Link href="/andaimes" className="hover:text-foreground">
+            Andaimes
+          </Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-foreground">{scaffold.code}</span>
+        </p>
+      </div>
+
+      {/* ── Header técnico ── */}
+      <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-500">
-              AndCheck EHS · Detalhes do Andaime
+            <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/40 mb-1">
+              Ficha Técnica do Ativo
             </p>
-
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">{id}</h1>
-
-            <p className="mt-1 text-sm text-slate-600">
-              Informações gerais, localização, histórico e rastreabilidade.
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">
+                {scaffold.code}
+              </h1>
+              <StatusBadge status={scaffold.status} size="lg" />
+            </div>
+            <p className="text-[11px] text-primary-foreground/50 mt-1">
+              {scaffold.location}
             </p>
           </div>
-
-          <div className="flex gap-2">
-            <Link
-              href="/andaimes"
-              className="rounded-lg border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Voltar
-            </Link>
-
-            <Link
-              href="/inspecoes/nova"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Nova Inspeção
-            </Link>
-          </div>
+          <Link
+            href={`/inspecoes/nova?scaffold_id=${scaffold.id}&scaffold_code=${scaffold.code}`}
+            className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-9 px-4 shrink-0"
+          >
+            <ClipboardCheck className="w-4 h-4" />
+            Iniciar Inspeção
+          </Link>
         </div>
+      </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          <div className="rounded-xl border bg-white p-5 shadow-sm lg:col-span-2">
-            <h2 className="text-lg font-semibold text-slate-900">
-              1. Identificação do Andaime
-            </h2>
+      {/* ── Info Grid ── */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <TechCard title="Dados do Andaime" icon={Construction}>
+          <TechRow
+            icon={Construction}
+            label="Tipo de Andaime"
+            value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
+          />
+          <TechRow
+            icon={MapPin}
+            label="Localização"
+            value={scaffold.location}
+          />
+          {scaffold.area && (
+            <TechRow
+              icon={Building2}
+              label="Área / Setor"
+              value={scaffold.area}
+            />
+          )}
+          <TechRow icon={Ruler} label="Altura" value={`${scaffold.height} m`} />
+          {scaffold.max_load && (
+            <TechRow
+              icon={Weight}
+              label="Carga Máxima"
+              value={`${scaffold.max_load} kg`}
+            />
+          )}
+        </TechCard>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <InfoItem label="TAG / Código" value={id} />
-              <InfoItem label="Tipo" value="Multidirecional" />
-              <InfoItem label="Área / Setor" value="Clarificação" />
-              <InfoItem label="Localização" value="T-28D-06B" />
-              <InfoItem label="Altura" value="1.8 m" />
-              <InfoItem label="Carga Máxima" value="105 kg" />
-              <InfoItem label="Empresa" value="KW Brasil" />
-              <InfoItem label="Responsável" value="Nilson Mendes" />
-            </div>
-          </div>
-
-          <div className="rounded-xl border bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">
-              Status Operacional
-            </h2>
-
-            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">
-                Liberado
+        <TechCard title="Responsabilidade Técnica" icon={User}>
+          {scaffold.responsible && (
+            <TechRow
+              icon={User}
+              label="Responsável Técnico"
+              value={scaffold.responsible}
+            />
+          )}
+          {scaffold.company && (
+            <TechRow
+              icon={Building2}
+              label="Empresa Executante"
+              value={scaffold.company}
+            />
+          )}
+          {scaffold.validity_date && (
+            <TechRow
+              icon={Calendar}
+              label="Data de Validade"
+              value={format(parseISO(scaffold.validity_date), "dd/MM/yyyy")}
+            />
+          )}
+          {scaffold.notes && (
+            <div className="px-4 py-3 border-t border-border bg-muted/20">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                Observações
               </p>
-
-              <p className="mt-2 text-sm text-emerald-700">
-                Válido até 28/05/2026.
-              </p>
-            </div>
-
-            <div className="mt-4 rounded-xl border border-dashed bg-slate-50 p-6 text-center">
-              <p className="text-sm font-semibold text-slate-700">QR Code</p>
-
-              <div className="mx-auto mt-4 flex h-32 w-32 items-center justify-center rounded-lg border bg-white text-xs text-slate-400">
-                QR
-              </div>
-
-              <p className="mt-3 text-xs text-slate-500">
-                Verificação pública e auditoria.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Localização do Andaime
-          </h2>
-
-          <div className="mt-4 flex h-72 items-center justify-center rounded-xl border border-dashed bg-slate-50">
-            <div className="text-center">
-              <p className="font-semibold text-slate-700">
-                Mapa da localização
-              </p>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Futuramente exibirá pin com latitude e longitude.
+              <p className="text-[11px] text-foreground leading-relaxed">
+                {scaffold.notes}
               </p>
             </div>
+          )}
+        </TechCard>
+      </div>
+
+      {/* ── Histórico de Inspeções ── */}
+      <TechCard
+        title="Histórico de Inspeções"
+        icon={ClipboardCheck}
+        extra={
+          <span className="text-[9px] text-muted-foreground font-mono">
+            {inspections.length} registro(s)
+          </span>
+        }
+      >
+        {inspections.length === 0 ? (
+          <div className="text-center py-10">
+            <ClipboardCheck className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
+            <p className="text-[11px] text-muted-foreground">
+              Nenhuma inspeção registrada para este andaime
+            </p>
           </div>
-        </div>
-
-        <div className="mt-6 rounded-xl border bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">
-            Histórico de Inspeções
-          </h2>
-
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                <tr>
-                  <th className="px-4 py-3">Inspeção</th>
-                  <th className="px-4 py-3">Data</th>
-                  <th className="px-4 py-3">Inspetor</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Ações</th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y">
-                {inspections.map((inspection) => (
-                  <tr key={inspection.id}>
-                    <td className="px-4 py-4 font-semibold text-slate-900">
-                      {inspection.id}
-                    </td>
-
-                    <td className="px-4 py-4 text-slate-600">
-                      {inspection.date}
-                    </td>
-
-                    <td className="px-4 py-4 text-slate-600">
-                      {inspection.inspector}
-                    </td>
-
-                    <td className="px-4 py-4 text-slate-600">
-                      {inspection.status}
-                    </td>
-
-                    <td className="px-4 py-4 text-right">
-                      <Link
-                        href={`/inspecoes/${inspection.id}`}
-                        className="font-semibold text-slate-900 hover:underline"
-                      >
-                        Abrir
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        ) : (
+          <div className="divide-y divide-border">
+            <div className="grid grid-cols-3 px-4 py-2 bg-muted/40">
+              {["Inspetor", "Data", "Resultado"].map((h) => (
+                <p
+                  key={h}
+                  className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
+                >
+                  {h}
+                </p>
+              ))}
+            </div>
+            {inspections.map((insp) => (
+              <Link
+                key={insp.id}
+                href={`/inspecoes/${insp.id}`}
+                className="grid grid-cols-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors group"
+              >
+                <p className="text-[11px] font-semibold text-foreground truncate">
+                  {insp.inspector_name}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {format(parseISO(insp.date), "dd/MM/yyyy")}
+                </p>
+                <div className="flex items-center justify-between">
+                  <StatusBadge status={insp.result} />
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 group-hover:text-muted-foreground" />
+                </div>
+              </Link>
+            ))}
           </div>
-        </div>
-      </section>
-    </main>
+        )}
+      </TechCard>
+    </div>
   );
 }
 
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border bg-slate-50 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
+// ── Sub-components ─────────────────────────────────────────
 
-      <p className="mt-1 font-semibold text-slate-900">{value}</p>
+interface TechCardProps {
+  title: string;
+  icon: React.ElementType;
+  extra?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+function TechCard({ title, icon: Icon, extra, children }: TechCardProps) {
+  return (
+    <div className="bg-card border border-border shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+        <div className="flex items-center gap-2">
+          <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            {title}
+          </p>
+        </div>
+        {extra}
+      </div>
+      <div className="divide-y divide-border">{children}</div>
+    </div>
+  );
+}
+
+interface TechRowProps {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+}
+
+function TechRow({ icon: Icon, label, value }: TechRowProps) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5">
+      <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+      <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">
+          {label}
+        </p>
+        <p className="text-[11px] font-semibold text-foreground text-right truncate">
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
