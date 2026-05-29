@@ -1,144 +1,160 @@
+import { format, isPast, parseISO } from "date-fns";
+import {
+  AlertTriangle,
+  Building2,
+  Calendar,
+  CheckCircle2,
+  ClipboardCheck,
+  Clock,
+  Construction,
+  MapPin,
+  Shield,
+  User,
+  Wrench,
+  XCircle,
+} from "lucide-react";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-type QRPageProps = {
-  params: Promise<{
-    tag: string;
-  }>;
+import { MOCK_INSPECTIONS, MOCK_SCAFFOLDS } from "@/lib/mock-data";
+
+interface Props {
+  params: Promise<{ tag: string }>;
+}
+
+const STATUS_CFG = {
+  liberado:    { label: "LIBERADO",     bg: "bg-emerald-500", icon: CheckCircle2, ring: "ring-emerald-300/60" },
+  pendente:    { label: "PENDENTE",     bg: "bg-amber-500",   icon: Clock,        ring: "ring-amber-300/60" },
+  reprovado:   { label: "REPROVADO",    bg: "bg-red-600",     icon: XCircle,      ring: "ring-red-300/60" },
+  vencido:     { label: "VENCIDO",      bg: "bg-red-700",     icon: AlertTriangle,ring: "ring-red-400/60" },
+  em_montagem: { label: "EM MONTAGEM",  bg: "bg-blue-600",    icon: Wrench,       ring: "ring-blue-300/60" },
 };
 
-export default async function QRPage({ params }: QRPageProps) {
-  const { tag } = await params;
+const TYPE_LABELS: Record<string, string> = {
+  tubular: "Tubular", fachadeiro: "Fachadeiro", multidirecional: "Multidirecional",
+  suspenso: "Suspenso", torre: "Torre",
+};
 
+const RESULT_STYLE: Record<string, { label: string; color: string }> = {
+  aprovado: { label: "Aprovado", color: "text-emerald-600" },
+  aprovado_com_ressalvas: { label: "Aprovado c/ Ressalvas", color: "text-amber-600" },
+  reprovado: { label: "Reprovado", color: "text-red-600" },
+};
+
+function InfoRow({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
-    <main className="min-h-screen bg-slate-100 p-4">
-      <section className="mx-auto max-w-md">
-        <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-          <div className="bg-slate-900 p-5 text-white">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-slate-300">
-              AndCheck EHS
-            </p>
-
-            <h1 className="mt-2 text-2xl font-bold">Verificação de Andaime</h1>
-
-            <p className="mt-1 text-sm text-slate-300">
-              Consulta pública de status, validade e rastreabilidade.
-            </p>
-          </div>
-
-          <div className="p-5">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">
-                Status Atual
-              </p>
-
-              <p className="mt-2 text-3xl font-bold text-emerald-700">
-                Liberado
-              </p>
-
-              <p className="mt-1 text-sm text-emerald-700">
-                Andaime válido para uso operacional.
-              </p>
-            </div>
-
-            <div className="mt-5 grid gap-3">
-              <InfoItem label="TAG / Código" value={tag} />
-              <InfoItem label="Tipo" value="Multidirecional" />
-              <InfoItem label="Área / Setor" value="Clarificação" />
-              <InfoItem label="Localização" value="T-28D-06B" />
-              <InfoItem label="Validade" value="28/05/2026" />
-              <InfoItem label="Última Inspeção" value="21/05/2026" />
-              <InfoItem label="Responsável" value="Nilson Mendes" />
-              <InfoItem label="Empresa" value="KW Brasil" />
-            </div>
-
-            <div className="mt-5 rounded-xl border bg-slate-50 p-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Resumo da Última Inspeção
-              </h2>
-
-              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                <div className="rounded-lg border bg-white p-3">
-                  <p className="text-xl font-bold text-emerald-600">27</p>
-                  <p className="mt-1 text-[10px] uppercase text-slate-500">
-                    Conformes
-                  </p>
-                </div>
-
-                <div className="rounded-lg border bg-white p-3">
-                  <p className="text-xl font-bold text-red-600">0</p>
-                  <p className="mt-1 text-[10px] uppercase text-slate-500">
-                    Não Conf.
-                  </p>
-                </div>
-
-                <div className="rounded-lg border bg-white p-3">
-                  <p className="text-xl font-bold text-slate-700">7</p>
-                  <p className="mt-1 text-[10px] uppercase text-slate-500">
-                    N/A
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-xl border bg-slate-50 p-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Evidências Fotográficas
-              </h2>
-
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="flex h-24 items-center justify-center rounded-lg border bg-white text-xs text-slate-400">
-                  Foto 1
-                </div>
-
-                <div className="flex h-24 items-center justify-center rounded-lg border bg-white text-xs text-slate-400">
-                  Foto 2
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-xl border bg-slate-50 p-4">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700">
-                Localização
-              </h2>
-
-              <div className="mt-3 flex h-40 items-center justify-center rounded-lg border border-dashed bg-white text-center text-xs text-slate-400">
-                Mapa público com pin do andaime
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs leading-relaxed text-slate-500">
-                Esta página é somente para consulta. Alterações, liberações e
-                registros técnicos só podem ser realizados por usuários
-                autorizados no sistema AndCheck.
-              </p>
-            </div>
-
-            <Link
-              href="/"
-              className="mt-5 block rounded-lg bg-slate-900 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Acessar AndCheck
-            </Link>
-          </div>
-        </div>
-
-        <p className="mt-4 text-center text-[10px] uppercase tracking-widest text-slate-400">
-          NR-18 · NR-35 · ABNT NBR 6494 · ISO 45001
-        </p>
-      </section>
-    </main>
+    <div className="flex items-start gap-3 py-3 border-b border-white/10 last:border-0">
+      <Icon className="w-4 h-4 text-white/40 mt-0.5 shrink-0" />
+      <div>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-0.5">{label}</p>
+        <p className="text-[13px] text-white font-medium">{value}</p>
+      </div>
+    </div>
   );
 }
 
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border bg-slate-50 p-4">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
+export default async function QRPage({ params }: Props) {
+  const { tag } = await params;
 
-      <p className="mt-1 font-semibold text-slate-900">{value}</p>
+  // tag pode ser o ID do andaime ou o código (ex: AND-001)
+  const scaffold = MOCK_SCAFFOLDS.find((s) => s.id === tag || s.code === tag);
+  if (!scaffold) notFound();
+
+  // Verificar se validade venceu
+  const effectiveStatus =
+    scaffold.status === "liberado" &&
+    scaffold.validity_date &&
+    isPast(parseISO(scaffold.validity_date))
+      ? "vencido"
+      : scaffold.status;
+
+  const cfg = STATUS_CFG[effectiveStatus as keyof typeof STATUS_CFG] ?? STATUS_CFG.pendente;
+  const StatusIcon = cfg.icon;
+
+  const lastInspection = MOCK_INSPECTIONS
+    .filter((i) => i.scaffold_id === scaffold.id)
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+
+  const validadeFormatted = scaffold.validity_date
+    ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
+    : null;
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: "hsl(215,46%,9%)" }}>
+      <div className="w-full max-w-sm space-y-4">
+        {/* Status Card */}
+        <div className={"rounded-2xl overflow-hidden shadow-2xl ring-4 " + cfg.ring} style={{ background: "hsl(215,46%,13%)" }}>
+          {/* Status banner */}
+          <div className={"p-6 flex flex-col items-center gap-3 " + cfg.bg}>
+            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+              <StatusIcon className="w-8 h-8 text-white" />
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">Status de Segurança</p>
+              <p className="text-[28px] font-black text-white tracking-tight leading-none">{cfg.label}</p>
+            </div>
+          </div>
+
+          {/* Andaime Info */}
+          <div className="p-5 space-y-0">
+            <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/10">
+              <div className="w-10 h-10 rounded bg-white/8 flex items-center justify-center shrink-0">
+                <Construction className="w-5 h-5 text-white/40" />
+              </div>
+              <div>
+                <p className="text-[22px] font-black font-mono text-white leading-none">{scaffold.code}</p>
+                <p className="text-[11px] text-white/40 mt-0.5">{TYPE_LABELS[scaffold.type] ?? scaffold.type} · {scaffold.height}m</p>
+              </div>
+            </div>
+            <InfoRow icon={MapPin} label="Localização" value={scaffold.location} />
+            <InfoRow icon={Building2} label="Área" value={scaffold.area} />
+            <InfoRow icon={User} label="Responsável" value={scaffold.responsible} />
+            {validadeFormatted && (
+              <InfoRow icon={Calendar} label="Válido até" value={validadeFormatted} />
+            )}
+            {scaffold.max_load && (
+              <InfoRow icon={Shield} label="Carga Máxima" value={scaffold.max_load + " kg"} />
+            )}
+          </div>
+        </div>
+
+        {/* Última inspeção */}
+        {lastInspection && (
+          <div className="rounded-xl p-4" style={{ background: "hsl(215,46%,13%)" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <ClipboardCheck className="w-3.5 h-3.5 text-white/40" />
+              <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">Última Inspeção</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[12px] text-white font-medium">{lastInspection.inspector_name}</p>
+                <p className="text-[11px] text-white/40 font-mono">
+                  {format(parseISO(lastInspection.date), "dd/MM/yyyy")}
+                </p>
+              </div>
+              <span className={"text-[11px] font-bold uppercase " + (RESULT_STYLE[lastInspection.result]?.color ?? "text-white/60")}>
+                {RESULT_STYLE[lastInspection.result]?.label ?? lastInspection.result}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* CTA */}
+        <Link
+          href={"/inspecoes/nova"}
+          className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
+        >
+          <ClipboardCheck className="w-4 h-4" />
+          Realizar Nova Inspeção
+        </Link>
+
+        {/* Rodapé */}
+        <div className="text-center">
+          <p className="text-[9px] text-white/20 uppercase tracking-widest">
+            AndCheck EHS · NR-18 / NR-35 / NBR 6494
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
