@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { createScaffold } from "@/lib/actions/scaffold-actions";
 
 interface ScaffoldForm {
   code: string;
@@ -23,9 +24,11 @@ interface ScaffoldForm {
   location: string;
   area: string;
   height: string;
+  width: string;
+  length: string;
   max_load: string;
   responsible: string;
-  company: string;
+  validity_date: string;
   notes: string;
 }
 
@@ -35,9 +38,11 @@ const INITIAL: ScaffoldForm = {
   location: "",
   area: "",
   height: "",
+  width: "",
+  length: "",
   max_load: "",
   responsible: "",
-  company: "",
+  validity_date: "",
   notes: "",
 };
 
@@ -45,6 +50,7 @@ export default function NovoAndaimePage() {
   const router = useRouter();
   const [form, setForm] = useState<ScaffoldForm>(INITIAL);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const set =
     (field: keyof ScaffoldForm) =>
@@ -53,14 +59,41 @@ export default function NovoAndaimePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setSaving(true);
 
-    // TODO: substituir por Server Action + Prisma
-    await new Promise((r) => setTimeout(r, 600));
-    setSaving(false);
-
-    // Por ora, redireciona para a listagem
-    router.push("/andaimes");
+    try {
+      const scaffold = await createScaffold({
+        code: form.code.trim().toUpperCase(),
+        type: form.type as
+          | "tubular"
+          | "fachadeiro"
+          | "multidirecional"
+          | "suspenso"
+          | "torre",
+        location: form.location.trim(),
+        area: form.area.trim(),
+        height: parseFloat(form.height) || 0,
+        width: form.width ? parseFloat(form.width) : undefined,
+        length: form.length ? parseFloat(form.length) : undefined,
+        max_load: form.max_load ? parseFloat(form.max_load) : undefined,
+        responsible: form.responsible.trim(),
+        validity_date: form.validity_date
+          ? new Date(form.validity_date)
+          : undefined,
+        notes: form.notes.trim() || undefined,
+      });
+      router.push("/andaimes/" + scaffold.id);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Erro ao salvar andaime.";
+      setError(
+        msg.includes("Unique constraint")
+          ? "Já existe um andaime com este código."
+          : msg,
+      );
+      setSaving(false);
+    }
   };
 
   return (
@@ -144,23 +177,46 @@ export default function NovoAndaimePage() {
 
           {/* Dados Técnicos */}
           <FormSection title="Dados Técnicos">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Altura (m)">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Field label="Altura (m) *">
                 <Input
                   type="number"
                   step="0.1"
                   min="0"
-                  placeholder="Ex: 12.5"
+                  placeholder="12.5"
                   value={form.height}
                   onChange={set("height")}
+                  required
                   className="rounded-none h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Carga Máxima (kg)">
+              <Field label="Largura (m)">
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  placeholder="1.5"
+                  value={form.width}
+                  onChange={set("width")}
+                  className="rounded-none h-9 text-[12px]"
+                />
+              </Field>
+              <Field label="Comprimento (m)">
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  placeholder="4.0"
+                  value={form.length}
+                  onChange={set("length")}
+                  className="rounded-none h-9 text-[12px]"
+                />
+              </Field>
+              <Field label="Carga Máx. (kg)">
                 <Input
                   type="number"
                   min="0"
-                  placeholder="Ex: 500"
+                  placeholder="500"
                   value={form.max_load}
                   onChange={set("max_load")}
                   className="rounded-none h-9 text-[12px]"
@@ -180,11 +236,11 @@ export default function NovoAndaimePage() {
                   className="rounded-none h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Empresa Montadora">
+              <Field label="Validade (data)">
                 <Input
-                  placeholder="Nome da empresa"
-                  value={form.company}
-                  onChange={set("company")}
+                  type="date"
+                  value={form.validity_date}
+                  onChange={set("validity_date")}
                   className="rounded-none h-9 text-[12px]"
                 />
               </Field>
@@ -212,6 +268,13 @@ export default function NovoAndaimePage() {
               andaime aguardará inspeção antes de ser liberado.
             </p>
           </div>
+
+          {/* Erro */}
+          {error && (
+            <div className="bg-red-50 border border-red-300 px-4 py-3">
+              <p className="text-[11px] text-red-700 font-semibold">{error}</p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
