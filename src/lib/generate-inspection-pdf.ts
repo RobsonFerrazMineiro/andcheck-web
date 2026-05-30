@@ -164,11 +164,10 @@ function sectionHeader(
 ) {
   const H = 7.5;
   rect(doc, M, y, CW, H, C.navyDark, null);
-  rect(doc, M, y, 3, H, C.orangeEng, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   st(doc, C.white);
-  doc.text(title, M + 7, y + 5.2);
+  doc.text(title, M + 4, y + 5.2);
   return y + H + 5;
 }
 
@@ -186,7 +185,6 @@ function dataGrid(
 
   rect(doc, x, y, w, totalH, C.white, C.grayLight, 0.25);
   rect(doc, x, y, w, TITLE_H, C.navyUltraLight, null);
-  rect(doc, x, y, 2.5, TITLE_H, C.navyMid, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.navyDark);
@@ -217,7 +215,6 @@ function addPageHeader(doc: jsPDF, docNum: string, now: string) {
   const PW = 210,
     M = 14;
   rect(doc, 0, 0, PW, 10, C.navyDark, null);
-  rect(doc, 0, 0, 3, 10, C.orangeEng, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.navyUltraLight);
@@ -253,89 +250,92 @@ export async function generateInspectionPDF(
     color: { dark: "#0f172a", light: "#ffffff" },
   });
 
-  // ── CABEÇALHO ─────────────────────────────────────────────────────────────
-  const HDR_H = 54,
-    QW = 38,
-    QH = 38;
-  const QX = PW - M - QW - 2;
-  const QY = 7;
-  const TW = QX - M - 10;
-
-  rect(doc, 0, 0, PW, HDR_H, C.navyDark, null);
-  rect(doc, 0, 0, 3, HDR_H, C.orangeEng, null);
-  rect(doc, 3, HDR_H - 7, PW - 3, 7, C.navyMid, null);
-
-  sd(doc, C.navyLight);
-  doc.setLineWidth(0.25);
-  doc.line(QX - 3, 5, QX - 3, HDR_H - 8);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11.5);
-  st(doc, C.white);
-  doc.text("RELATÓRIO TÉCNICO DE INSPEÇÃO DE ANDAIME", M + 6, 13);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  st(doc, C.navyUltraLight);
-  doc.text(
-    "DOCUMENTO CONTROLADO  ·  NR-18  ·  NR-35  ·  ABNT NBR 6494  ·  ISO 45001:2018  ·  ISO 9001:2015",
-    M + 6,
-    19,
-  );
-
-  const META: [string, string][] = [
-    ["Nº DO DOCUMENTO", docNum],
-    ["REVISÃO", `Rev. ${revNum}`],
-    ["DATA DE EMISSÃO", now],
-    ["ANDAIME / TAG", inspection.scaffold_code],
-  ];
-  const fW = TW / 4;
-  META.forEach(([lbl, val], i) => {
-    const dx = M + 6 + i * fW;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.5);
-    st(doc, C.navyUltraLight);
-    doc.text(lbl, dx, 28.5);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
-    st(doc, C.white);
-    doc.text(doc.splitTextToSize(String(val), fW - 3)[0] as string, dx, 35);
-  });
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  st(doc, C.orangeEng);
-  doc.text("SISTEMA ANDCHECK EHS", M + 6, 49.5);
-  doc.setFont("helvetica", "normal");
-  st(doc, C.navyLight);
-  const infoStr = `Inspetor: ${inspection.inspector_name}  ·  Responsável: ${inspection.scaffold?.responsible ?? "—"}`;
-  doc.text(doc.splitTextToSize(infoStr, TW - 55)[0] as string, M + 58, 49.5);
-
-  rect(doc, QX - 1, QY - 1, QW + 2, QH + 2, C.white, null);
-  doc.addImage(qrDataUrl, "PNG", QX, QY, QW, QW);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(4.8);
-  st(doc, C.navyDark);
-  doc.text("VERIFICAR ONLINE", QX + QW / 2, QY + QW + 4.5, { align: "center" });
-
-  y = HDR_H + 5;
-
-  // ── RESULTADO FINAL ───────────────────────────────────────────────────────
+  // ── Resultado calculado antes para embutir no cabeçalho ─────────────────
   const resCfg = STATUS_CFG[inspection.result] ?? {
     label: inspection.result.toUpperCase(),
     fg: C.grayStatus,
     bg: C.grayStatusBg,
     border: C.grayStatusBorder,
   };
-  rect(doc, M, y, CW, 11, resCfg.bg, resCfg.border, 0.4);
-  rect(doc, M, y, 3, 11, resCfg.fg, null);
+  const RES_H = 10;
+
+  // ── CABEÇALHO ─────────────────────────────────────────────────────────────
+  const HDR_BODY = 48; // parte escura
+  const HDR_H = HDR_BODY + RES_H; // total = escuro + barra de resultado
+  const QW = 26;
+  const QX = PW - 6 - QW;
+  const QY = 5;
+  const TX = 8; // texto rente à borda esquerda
+
+  // Fundo escuro
+  rect(doc, 0, 0, PW, HDR_BODY, C.navyDark, null);
+
+  // Barra de resultado embutida na base do cabeçalho (cor semântica)
+  rect(doc, 0, HDR_BODY, PW, RES_H, resCfg.fg, null);
+
+  // Título principal
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8.5);
-  st(doc, resCfg.fg);
-  doc.text(`RESULTADO FINAL DA INSPEÇÃO:  ${resCfg.label}`, PW / 2, y + 7.5, {
+  doc.setFontSize(13);
+  st(doc, C.white);
+  doc.text("RELATÓRIO TÉCNICO DE INSPEÇÃO DE ANDAIME", TX, 12);
+
+  // Normas
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  st(doc, C.navyUltraLight);
+  doc.text(
+    "NR-18  ·  NR-35  ·  ABNT NBR 6494  ·  ISO 45001:2018  ·  ISO 9001:2015  ·  DOCUMENTO CONTROLADO",
+    TX,
+    18,
+  );
+
+  // Nº do documento
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  st(doc, C.navyUltraLight);
+  doc.text(`DOC N:  ${docNum}`, TX, 24.5);
+
+  // Data de emissão
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  st(doc, C.navyUltraLight);
+  doc.text(`Gerado em:  ${now}`, TX, 30);
+
+  // TAG / Andaime em destaque laranja
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  st(doc, C.orangeEng);
+  doc.text(`ANDAIME:  ${inspection.scaffold_code}`, TX, 37);
+
+  // Inspetor + Responsável
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6);
+  st(doc, C.navyLight);
+  const infoStr = `Inspetor: ${inspection.inspector_name}  ·  Responsável: ${inspection.scaffold?.responsible ?? "—"}`;
+  doc.text(infoStr, TX, HDR_BODY - 3);
+
+  // QR Code
+  rect(doc, QX - 1, QY - 1, QW + 2, QW + 2, C.white, null);
+  doc.addImage(qrDataUrl, "PNG", QX, QY, QW, QW);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(4.5);
+  st(doc, C.navyUltraLight);
+  doc.text("VERIFICAR ONLINE", QX + QW / 2, QY + QW + 3.5, {
     align: "center",
   });
-  y += 16;
+
+  // Texto do resultado na barra inferior do cabeçalho
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  st(doc, C.white);
+  doc.text(
+    `RESULTADO DA INSPEÇÃO:  ${resCfg.label}`,
+    PW / 2,
+    HDR_BODY + RES_H / 2 + 1.8,
+    { align: "center" },
+  );
+
+  y = HDR_H + 4;
 
   // ── SEÇÃO 1 — IDENTIFICAÇÃO ───────────────────────────────────────────────
   y = sectionHeader(doc, "SEÇÃO 1 — IDENTIFICAÇÃO E DADOS GERAIS", y, M, CW);
@@ -417,11 +417,10 @@ export async function generateInspectionPDF(
     }
 
     rect(doc, M, y, CW, 6, C.navyUltraLight, C.grayLight, 0.25);
-    rect(doc, M, y, 2.5, 6, C.navyLight, null);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     st(doc, C.navyDark);
-    doc.text(category.toUpperCase(), M + 6, y + 4.2);
+    doc.text(category.toUpperCase(), M + 4, y + 4.2);
     y += 7;
 
     for (const item of items) {
@@ -436,9 +435,8 @@ export async function generateInspectionPDF(
       const iCfg = ITEM_CFG[status];
 
       rect(doc, M, y, CW, rowH, rowBg, null);
-      rect(doc, M, y, 2, rowH, iCfg.fg, null);
 
-      const textX = M + 5;
+      const textX = M + 4;
       const textY = y + (item.observation ? 4.5 : rowH / 2 + 2);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
@@ -525,7 +523,6 @@ export async function generateInspectionPDF(
   stats.forEach((s, i) => {
     const sx = M + i * (sW + 4);
     rect(doc, sx, y, sW, 22, s.bg, C.grayLight, 0.25);
-    rect(doc, sx, y, sW, 2, s.color, null);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     st(doc, s.color);
@@ -553,11 +550,10 @@ export async function generateInspectionPDF(
     const obsLines = doc.splitTextToSize(inspection.notes, CW - 8) as string[];
     const obsH = obsLines.length * 5.2 + 10;
     rect(doc, M, y, CW, obsH, C.grayBg, C.grayLight, 0.25);
-    rect(doc, M, y, 2.5, obsH, C.amber, null);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     st(doc, C.grayDark);
-    doc.text(obsLines, M + 6, y + 7);
+    doc.text(obsLines, M + 4, y + 7);
     y += obsH + 6;
   }
 
@@ -579,7 +575,6 @@ export async function generateInspectionPDF(
 
   rect(doc, M, y, sigW, sigH, C.white, C.grayLight, 0.3);
   rect(doc, M, y, sigW, 6.5, C.navyUltraLight, null);
-  rect(doc, M, y, 2.5, 6.5, C.navyMid, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.navyDark);
@@ -598,7 +593,6 @@ export async function generateInspectionPDF(
   const qrBX = M + sigW + 6;
   rect(doc, qrBX, y, sigW, sigH, C.white, C.grayLight, 0.3);
   rect(doc, qrBX, y, sigW, 6.5, C.navyUltraLight, null);
-  rect(doc, qrBX, y, 2.5, 6.5, C.orangeEng, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.navyDark);
@@ -646,7 +640,6 @@ export async function generateInspectionPDF(
     doc.setPage(p);
     const FY = 285;
     rect(doc, 0, FY, PW, 12, C.navyDark, null);
-    rect(doc, 0, FY, 3, 12, C.orangeEng, null);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
     st(doc, C.navyUltraLight);
