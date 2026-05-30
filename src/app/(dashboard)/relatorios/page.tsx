@@ -57,33 +57,43 @@ export default async function RelatoriosPage() {
             value: aprovados,
             color: "text-emerald-600",
             bg: "bg-emerald-50 border-emerald-200",
+            bar: "border-l-green-600",
           },
           {
             label: "Com Ressalvas",
             value: comRessalvas,
             color: "text-amber-600",
             bg: "bg-amber-50 border-amber-200",
+            bar: "border-l-amber-500",
           },
           {
             label: "Reprovadas",
             value: reprovados,
             color: "text-red-600",
             bg: "bg-red-50 border-red-200",
+            bar: "border-l-red-600",
           },
           {
             label: "Andaimes Liberados",
             value: liberadosAtivos,
             color: "text-blue-600",
             bg: "bg-blue-50 border-blue-200",
+            bar: "border-l-blue-600",
           },
           {
             label: "Vencidos",
             value: vencidos,
             color: "text-red-700",
             bg: "bg-red-50/60 border-red-300",
+            bar: "border-l-red-700",
           },
         ].map((k) => (
-          <div key={k.label} className={"border p-3 text-center " + k.bg}>
+          <div
+            key={k.label}
+            className={
+              "border border-l-4 p-3 text-center " + k.bg + " " + k.bar
+            }
+          >
             <p className={"text-[24px] font-black font-mono " + k.color}>
               {k.value}
             </p>

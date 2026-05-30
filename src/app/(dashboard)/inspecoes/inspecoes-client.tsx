@@ -68,7 +68,7 @@ export function InspecoesClient({
         </div>
         <Link
           href="/inspecoes/nova"
-          className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Inspeção
@@ -118,7 +118,7 @@ export function InspecoesClient({
           </p>
           <Link
             href="/inspecoes/nova"
-            className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-[10px] uppercase tracking-widest px-3 h-8"
+            className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Inspeção

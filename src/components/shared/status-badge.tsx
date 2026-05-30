@@ -79,7 +79,7 @@ const STATUS_MAP: Record<StatusKey, StatusConfig> = {
 
 interface StatusBadgeProps {
   status: string;
-  size?: "default" | "lg";
+  size?: "default" | "lg" | "xl";
 }
 
 export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
@@ -91,14 +91,21 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
 
   const Icon = cfg.icon;
   const isLg = size === "lg";
+  const isXl = size === "xl";
 
   return (
     <span
-      className={`inline-flex items-center gap-1 border font-bold uppercase tracking-widest ${cfg.cls} ${
-        isLg ? "text-[10px] px-2.5 py-1" : "text-[9px] px-1.5 py-0.5"
+      className={`inline-flex items-center gap-1.5 border font-bold uppercase tracking-widest ${cfg.cls} ${
+        isXl
+          ? "text-[13px] px-4 py-2"
+          : isLg
+            ? "text-[10px] px-2.5 py-1"
+            : "text-[9px] px-1.5 py-0.5"
       }`}
     >
-      <Icon className={isLg ? "w-3.5 h-3.5" : "w-2.5 h-2.5"} />
+      <Icon
+        className={isXl ? "w-4 h-4" : isLg ? "w-3.5 h-3.5" : "w-2.5 h-2.5"}
+      />
       {cfg.label}
     </span>
   );

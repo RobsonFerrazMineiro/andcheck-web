@@ -37,8 +37,8 @@ export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="flex items-center gap-1.5 h-8 px-4 bg-primary text-primary-foreground
-                 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90
+      className="flex items-center gap-1.5 h-8 px-4 bg-accent text-accent-foreground
+                 text-[10px] font-bold uppercase tracking-widest hover:bg-accent/90
                  disabled:opacity-60 transition-colors"
     >
       {loading ? (

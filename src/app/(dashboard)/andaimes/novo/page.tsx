@@ -287,7 +287,7 @@ export default function NovoAndaimePage() {
             <Button
               type="submit"
               disabled={saving}
-              className="rounded-none text-[11px] uppercase tracking-widest h-9 bg-primary hover:bg-primary/90"
+              className="rounded-none text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               {saving ? "Salvando..." : "Cadastrar Andaime"}

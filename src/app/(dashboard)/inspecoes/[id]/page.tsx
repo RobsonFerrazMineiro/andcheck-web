@@ -1,17 +1,26 @@
 import { addDays, format } from "date-fns";
 import {
   ArrowLeft,
+  Building2,
   Calendar,
   CheckCircle2,
+  ClipboardCheck,
+  Clock,
   Construction,
+  Layers,
+  MapPin,
   MinusCircle,
+  QrCode,
+  Ruler,
   User,
+  Weight,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PdfDownloadButton } from "@/components/inspection/pdf-download-button";
+import { PrintButton } from "@/components/inspection/print-button";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
@@ -47,13 +56,32 @@ const ITEM_ROW = {
   nao_aplicavel: "bg-card",
 };
 
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+const TYPE_LABELS: Record<string, string> = {
+  tubular: "Tubular",
+  fachadeiro: "Fachadeiro",
+  multidirecional: "Multidirecional",
+  suspenso: "Suspenso",
+  torre: "Torre",
+};
+
+function TechRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground w-28 shrink-0 pt-0.5">
+    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0">
+      <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
+      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground w-32 shrink-0">
         {label}
       </p>
-      <div className="text-[12px] text-foreground font-medium">{value}</div>
+      <div className="text-[12px] text-foreground font-medium text-right flex-1">
+        {value}
+      </div>
     </div>
   );
 }
@@ -97,25 +125,61 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto pb-10">
-      <div className="flex items-center gap-2">
-        <Link
-          href="/inspecoes"
-          className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-        </Link>
-        <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
-          <Link href="/inspecoes" className="hover:text-foreground">
-            Inspeções
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/inspecoes"
+            className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
           </Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-foreground font-semibold font-mono">
-            {docNum}
-          </span>
+          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+            <Link href="/inspecoes" className="hover:text-foreground">
+              Inspeções
+            </Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-foreground font-semibold font-mono">
+              {docNum}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <PdfDownloadButton
+            inspection={{
+              id: inspection.id,
+              scaffold_code: inspection.scaffold_code,
+              date: inspection.date,
+              inspector_name: inspection.inspector_name,
+              result: inspection.result,
+              validity_days: inspection.validity_days,
+              notes: inspection.notes,
+              checklist: inspection.checklist,
+              scaffold: scaffold
+                ? {
+                    id: scaffold.id,
+                    location: scaffold.location,
+                    area: scaffold.area,
+                    type: scaffold.type,
+                    height: scaffold.height,
+                    max_load: scaffold.max_load,
+                    responsible: scaffold.responsible,
+                  }
+                : null,
+            }}
+          />
+          <PrintButton />
+          {scaffold && (
+            <Link
+              href={"/andaimes/" + inspection.scaffold_id}
+              className="flex items-center gap-1.5 h-8 px-3 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
+            >
+              <Construction className="w-3.5 h-3.5" /> Ver Andaime
+            </Link>
+          )}
         </div>
       </div>
 
-      <div className="bg-primary overflow-hidden shadow">
+      <div className="bg-primary border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="text-[9px] font-semibold tracking-widest uppercase text-primary-foreground/40 mb-1">
@@ -128,8 +192,8 @@ export default async function InspectionDetailPage({ params }: Props) {
               NR-18 · NR-35 · ABNT NBR 6494
             </p>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <StatusBadge status={inspection.result} size="lg" />
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <StatusBadge status={inspection.result} size="xl" />
             {validadeDate && (
               <p className="text-[10px] text-primary-foreground/60">
                 Válido até{" "}
@@ -140,48 +204,55 @@ export default async function InspectionDetailPage({ params }: Props) {
             )}
           </div>
         </div>
-        <div className="px-5 pb-4 flex items-center gap-3">
-          <div className="flex-1 h-1.5 bg-primary-foreground/10 overflow-hidden">
-            <div
-              className={
-                "h-full transition-all " +
-                (pct >= 80
-                  ? "bg-emerald-400"
-                  : pct >= 50
-                    ? "bg-amber-400"
-                    : "bg-red-400")
-              }
-              style={{ width: pct + "%" }}
-            />
-          </div>
-          <p className="text-[11px] font-bold text-primary-foreground/80 shrink-0">
-            {pct}% conformes
-          </p>
-        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
             label: "Conformes",
             value: conformes,
             color: "text-emerald-600",
             bg: "bg-emerald-50 border-emerald-200",
+            bar: "border-l-green-600",
           },
           {
             label: "Não Conformes",
             value: naoConformes,
             color: "text-red-600",
             bg: "bg-red-50 border-red-200",
+            bar: "border-l-red-600",
           },
           {
             label: "N/A",
             value: naAplicavel,
             color: "text-slate-500",
             bg: "bg-muted/40 border-border",
+            bar: "border-l-slate-400",
+          },
+          {
+            label: "Conformidade",
+            value: pct + "%",
+            color:
+              pct >= 80
+                ? "text-emerald-600"
+                : pct >= 50
+                  ? "text-amber-600"
+                  : "text-red-600",
+            bg: "bg-card border-border",
+            bar:
+              pct >= 80
+                ? "border-l-green-600"
+                : pct >= 50
+                  ? "border-l-amber-500"
+                  : "border-l-red-600",
           },
         ].map((s) => (
-          <div key={s.label} className={"border p-3 text-center " + s.bg}>
+          <div
+            key={s.label}
+            className={
+              "border border-l-4 p-3 text-center " + s.bg + " " + s.bar
+            }
+          >
             <p className={"text-[22px] font-bold font-mono " + s.color}>
               {s.value}
             </p>
@@ -192,84 +263,111 @@ export default async function InspectionDetailPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="bg-card border border-border shadow-sm p-5">
-        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2 mb-2">
-          Dados da Inspeção
-        </h3>
-        <InfoRow
-          label="Andaime"
-          value={
-            <span className="font-mono font-bold">
-              {inspection.scaffold_code}
-              {scaffold && (
-                <span className="text-muted-foreground font-normal ml-2">
-                  — {scaffold.location}
-                </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Dados do Andaime */}
+        <div className="bg-card border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+            <Construction className="w-3.5 h-3.5 text-muted-foreground/60" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+              Dados do Andaime
+            </p>
+          </div>
+          {scaffold ? (
+            <>
+              <TechRow
+                icon={Construction}
+                label="Tag / Código"
+                value={
+                  <span className="font-mono font-bold">{scaffold.code}</span>
+                }
+              />
+              <TechRow
+                icon={MapPin}
+                label="Localização"
+                value={scaffold.location}
+              />
+              <TechRow icon={Building2} label="Área" value={scaffold.area} />
+              <TechRow
+                icon={Layers}
+                label="Tipo"
+                value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
+              />
+              <TechRow
+                icon={Ruler}
+                label="Altura"
+                value={scaffold.height + " m"}
+              />
+              {scaffold.max_load && (
+                <TechRow
+                  icon={Weight}
+                  label="Carga Máxima"
+                  value={scaffold.max_load + " kg"}
+                />
               )}
-            </span>
-          }
-        />
-        <InfoRow
-          label="Data"
-          value={
-            <span className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-muted-foreground/40" />
-              {format(inspection.date, "dd/MM/yyyy")}
-            </span>
-          }
-        />
-        <InfoRow
-          label="Inspetor"
-          value={
-            <span className="flex items-center gap-1.5">
-              <User className="w-3.5 h-3.5 text-muted-foreground/40" />
-              {inspection.inspector_name}
-            </span>
-          }
-        />
-        <InfoRow
-          label="Resultado"
-          value={<StatusBadge status={inspection.result} />}
-        />
-        <InfoRow
-          label="Validade"
-          value={
-            validadeDate ? (
-              <span className="font-mono font-bold">
-                {inspection.validity_days} dias — até {validadeDate}
-              </span>
-            ) : (
-              <span className="text-muted-foreground">—</span>
-            )
-          }
-        />
-        {inspection.notes && (
-          <InfoRow
-            label="Observações"
-            value={
-              <span className="text-[12px] text-muted-foreground leading-relaxed">
-                {inspection.notes}
-              </span>
-            }
-          />
-        )}
-        {scaffold && (
-          <>
-            <InfoRow label="Tipo" value={scaffold.code} />
-            <InfoRow
-              label="Localização"
+            </>
+          ) : (
+            <TechRow
+              icon={Construction}
+              label="Código"
               value={
-                <Link
-                  href={"/andaimes/" + scaffold.id}
-                  className="flex items-center gap-1.5 hover:text-primary"
-                >
-                  <Construction className="w-3.5 h-3.5 text-muted-foreground/40" />
-                  {scaffold.location} — {scaffold.area}
-                </Link>
+                <span className="font-mono">{inspection.scaffold_code}</span>
               }
             />
-          </>
-        )}
+          )}
+        </div>
+
+        {/* Dados da Inspeção */}
+        <div className="bg-card border border-border shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+            <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground/60" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+              Dados da Inspeção
+            </p>
+          </div>
+          <TechRow
+            icon={User}
+            label="Inspetor"
+            value={inspection.inspector_name}
+          />
+          {scaffold?.responsible && (
+            <TechRow
+              icon={User}
+              label="Responsável"
+              value={scaffold.responsible}
+            />
+          )}
+          {scaffold?.company && (
+            <TechRow
+              icon={Building2}
+              label="Empresa"
+              value={scaffold.company}
+            />
+          )}
+          <TechRow
+            icon={Calendar}
+            label="Data da Inspeção"
+            value={format(inspection.date, "dd/MM/yyyy")}
+          />
+          <TechRow
+            icon={Clock}
+            label="Validade da Liberação"
+            value={
+              validadeDate
+                ? inspection.validity_days + " dias (até " + validadeDate + ")"
+                : "—"
+            }
+          />
+          {inspection.notes && (
+            <div className="px-4 py-3 border-t border-border bg-muted/20">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                Observações
+              </p>
+              <p className="text-[11px] text-foreground leading-relaxed">
+                {inspection.notes}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="bg-card border border-border shadow-sm overflow-hidden">
@@ -344,6 +442,28 @@ export default async function InspectionDetailPage({ params }: Props) {
         ))}
       </div>
 
+      {scaffold && (
+        <div className="bg-muted/40 border border-border flex items-center gap-4 px-5 py-4">
+          <QrCode className="w-9 h-9 text-muted-foreground/40 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[12px] font-semibold text-foreground">
+              Consulta Online via QR Code
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Escaneie o QR Code no documento PDF para acessar o status atual,
+              validade e histórico de inspeções deste andaime.
+            </p>
+          </div>
+          <Link
+            href={"/qr/" + inspection.scaffold_id}
+            target="_blank"
+            className="flex items-center gap-1.5 h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors shrink-0"
+          >
+            Ver Página
+          </Link>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <Link
           href="/inspecoes"
@@ -351,35 +471,6 @@ export default async function InspectionDetailPage({ params }: Props) {
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Voltar
         </Link>
-        <Link
-          href={"/andaimes/" + inspection.scaffold_id}
-          className="flex items-center gap-1.5 h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
-        >
-          <Construction className="w-3.5 h-3.5" /> Ver Andaime
-        </Link>
-        <PdfDownloadButton
-          inspection={{
-            id: inspection.id,
-            scaffold_code: inspection.scaffold_code,
-            date: inspection.date,
-            inspector_name: inspection.inspector_name,
-            result: inspection.result,
-            validity_days: inspection.validity_days,
-            notes: inspection.notes,
-            checklist: inspection.checklist,
-            scaffold: scaffold
-              ? {
-                  id: scaffold.id,
-                  location: scaffold.location,
-                  area: scaffold.area,
-                  type: scaffold.type,
-                  height: scaffold.height,
-                  max_load: scaffold.max_load,
-                  responsible: scaffold.responsible,
-                }
-              : null,
-          }}
-        />
       </div>
     </div>
   );

@@ -135,8 +135,7 @@ export function NovaInspecaoForm({
         checklist,
       });
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
-      router.push("/inspecoes/" + created.id);
-      router.refresh();
+      router.replace("/inspecoes/" + created.id);
     } catch (err) {
       console.error(err);
       toast.error("Não foi possível salvar a inspeção. Tente novamente.", {
@@ -336,7 +335,7 @@ export function NovaInspecaoForm({
           type="button"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? (
             <>

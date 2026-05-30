@@ -222,22 +222,22 @@ interface KpiCardProps {
 }
 const THEMES = {
   green: {
-    border: "border-l-[3px] border-l-green-600",
+    border: "border-l-4 border-l-green-600",
     val: "text-green-700",
     bar: "bg-green-500",
   },
   amber: {
-    border: "border-l-[3px] border-l-amber-500",
+    border: "border-l-4 border-l-amber-500",
     val: "text-amber-700",
     bar: "bg-amber-400",
   },
   red: {
-    border: "border-l-[3px] border-l-red-600",
+    border: "border-l-4 border-l-red-600",
     val: "text-red-700",
     bar: "bg-red-500",
   },
   orange: {
-    border: "border-l-[3px] border-l-orange-500",
+    border: "border-l-4 border-l-orange-500",
     val: "text-orange-700",
     bar: "bg-orange-400",
   },

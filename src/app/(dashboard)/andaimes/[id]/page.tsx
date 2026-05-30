@@ -5,6 +5,7 @@ import {
   Calendar,
   ChevronRight,
   ClipboardCheck,
+  Clock,
   Construction,
   MapPin,
   Ruler,
@@ -42,21 +43,35 @@ export default async function AndaimeDetailPage({ params }: Props) {
   const origin = `${proto}://${host}`;
 
   return (
-    <div className="space-y-5 max-w-4xl">
-      <div className="flex items-center gap-2">
-        <Link
-          href="/andaimes"
-          className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          <Link href="/andaimes" className="hover:text-foreground">
-            Andaimes
+    <div className="space-y-5 max-w-4xl mx-auto">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Link
+            href="/andaimes"
+            className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
           </Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-foreground">{scaffold.code}</span>
-        </p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Link href="/andaimes" className="hover:text-foreground">
+              Andaimes
+            </Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-foreground">{scaffold.code}</span>
+          </p>
+        </div>
+        <Link
+          href={
+            "/inspecoes/nova?scaffold_id=" +
+            scaffold.id +
+            "&scaffold_code=" +
+            scaffold.code
+          }
+          className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+        >
+          <ClipboardCheck className="w-4 h-4" />
+          Iniciar Inspeção
+        </Link>
       </div>
 
       <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
@@ -65,28 +80,16 @@ export default async function AndaimeDetailPage({ params }: Props) {
             <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/40 mb-1">
               Ficha Técnica do Ativo
             </p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">
-                {scaffold.code}
-              </h1>
-              <StatusBadge status={scaffold.status} size="lg" />
-            </div>
+            <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">
+              {scaffold.code}
+            </h1>
             <p className="text-[11px] text-primary-foreground/50 mt-1">
               {scaffold.location}
             </p>
           </div>
-          <Link
-            href={
-              "/inspecoes/nova?scaffold_id=" +
-              scaffold.id +
-              "&scaffold_code=" +
-              scaffold.code
-            }
-            className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-9 px-4 shrink-0"
-          >
-            <ClipboardCheck className="w-4 h-4" />
-            Iniciar Inspeção
-          </Link>
+          <div className="shrink-0">
+            <StatusBadge status={scaffold.status} size="xl" />
+          </div>
         </div>
       </div>
 
@@ -119,20 +122,46 @@ export default async function AndaimeDetailPage({ params }: Props) {
           )}
         </TechCard>
 
-        <TechCard title="Responsabilidade Técnica" icon={User}>
+        <TechCard title="Dados da Inspeção" icon={ClipboardCheck}>
           {scaffold.responsible && (
             <TechRow
               icon={User}
-              label="Responsável Técnico"
+              label="Responsável"
               value={scaffold.responsible}
             />
           )}
-          {scaffold.validity_date && (
+          {scaffold.company && (
             <TechRow
-              icon={Calendar}
-              label="Data de Validade"
-              value={format(scaffold.validity_date, "dd/MM/yyyy")}
+              icon={Building2}
+              label="Empresa"
+              value={scaffold.company}
             />
+          )}
+          {inspections.length > 0 && (
+            <>
+              <TechRow
+                icon={User}
+                label="Inspetor"
+                value={inspections[0].inspector_name}
+              />
+              <TechRow
+                icon={Calendar}
+                label="Data da Inspeção"
+                value={format(inspections[0].date, "dd/MM/yyyy")}
+              />
+              {inspections[0].validity_days > 0 && scaffold.validity_date && (
+                <TechRow
+                  icon={Clock}
+                  label="Validade da Liberação"
+                  value={
+                    inspections[0].validity_days +
+                    " dias (até " +
+                    format(scaffold.validity_date, "dd/MM/yyyy") +
+                    ")"
+                  }
+                />
+              )}
+            </>
           )}
           {scaffold.notes && (
             <div className="px-4 py-3 border-t border-border bg-muted/20">
