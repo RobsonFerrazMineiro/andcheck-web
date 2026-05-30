@@ -3,6 +3,7 @@ import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { Activity } from "lucide-react";
+import { Toaster } from "sonner";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494"];
 
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
         <div className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
           {children}
         </div>
+        <Toaster richColors position="top-right" closeButton />
       </main>
     </div>
   );

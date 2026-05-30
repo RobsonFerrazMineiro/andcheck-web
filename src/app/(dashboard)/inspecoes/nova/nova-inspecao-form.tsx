@@ -6,11 +6,13 @@ import {
   ArrowLeft,
   CheckCircle2,
   ClipboardCheck,
+  Loader2,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import ChecklistSection from "@/components/inspection/checklist-section";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -58,7 +60,7 @@ export function NovaInspecaoForm({
   const [validityDays, setValidityDays] = useState("7");
   const [observations, setObservations] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const submittingRef = useRef(false);
   const [checklistValues, setChecklistValues] = useState<FormValue[][]>(
     checklistTemplate.map((cat) =>
       cat.items.map(() => ({ status: "", observation: "" })),
@@ -103,7 +105,12 @@ export function NovaInspecaoForm({
 
   const handleSubmit = async () => {
     if (!canSubmit || !selectedScaffold) return;
+    // Previne duplo clique via ref (guard extra além do state)
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
+
+    const toastId = toast.loading("Salvando inspeção...");
     try {
       const checklist = checklistTemplate.flatMap((cat, ci) =>
         cat.items.map((item, ii) => ({
@@ -115,7 +122,7 @@ export function NovaInspecaoForm({
           observation: checklistValues[ci][ii].observation || undefined,
         })),
       );
-      await createInspection({
+      const created = await createInspection({
         scaffold_id: selectedScaffold.id,
         scaffold_code: selectedScaffold.code,
         inspector_name: inspectorName.trim(),
@@ -127,12 +134,15 @@ export function NovaInspecaoForm({
         notes: observations.trim() || undefined,
         checklist,
       });
-      router.push("/inspecoes");
+      toast.success("Inspeção registrada com sucesso!", { id: toastId });
+      router.push("/inspecoes/" + created.id);
       router.refresh();
     } catch (err) {
       console.error(err);
-      alert("Erro ao registrar inspeção. Tente novamente.");
-    } finally {
+      toast.error("Não foi possível salvar a inspeção. Tente novamente.", {
+        id: toastId,
+      });
+      submittingRef.current = false;
       setSubmitting(false);
     }
   };
@@ -311,7 +321,7 @@ export function NovaInspecaoForm({
           placeholder="Registre observações gerais sobre a inspeção..."
           value={observations}
           onChange={(e) => setObservations(e.target.value)}
-          className="text-[11px] rounded-none min-h-[80px]"
+          className="text-[11px] rounded-none min-h-20"
         />
       </div>
 
@@ -328,12 +338,17 @@ export function NovaInspecaoForm({
           onClick={handleSubmit}
           className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          <ClipboardCheck className="w-3.5 h-3.5" />
-          {submitting
-            ? "Registrando..."
-            : isComplete
-              ? "Registrar Inspeção"
-              : "Preencha todos os itens"}
+          {submitting ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              Salvando...
+            </>
+          ) : (
+            <>
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              {isComplete ? "Registrar Inspeção" : "Preencha todos os itens"}
+            </>
+          )}
         </button>
       </div>
     </div>
