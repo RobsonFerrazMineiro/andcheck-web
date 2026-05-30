@@ -56,7 +56,7 @@ export async function createScaffold(data: {
   length?: number;
   max_load?: number;
   responsible: string;
-  validity_date?: Date;
+  company?: string;
   notes?: string;
 }) {
   return prisma.scaffold.create({

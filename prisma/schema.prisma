@@ -66,6 +66,7 @@ model Scaffold {
   length       Float?
   max_load     Float?                          // kg
   responsible  String
+  company      String?                         // empresa montadora
   notes        String?
   validity_date DateTime?
 

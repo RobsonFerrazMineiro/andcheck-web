@@ -28,7 +28,7 @@ interface ScaffoldForm {
   length: string;
   max_load: string;
   responsible: string;
-  validity_date: string;
+  company: string;
   notes: string;
 }
 
@@ -42,7 +42,7 @@ const INITIAL: ScaffoldForm = {
   length: "",
   max_load: "",
   responsible: "",
-  validity_date: "",
+  company: "",
   notes: "",
 };
 
@@ -78,9 +78,7 @@ export default function NovoAndaimePage() {
         length: form.length ? parseFloat(form.length) : undefined,
         max_load: form.max_load ? parseFloat(form.max_load) : undefined,
         responsible: form.responsible.trim(),
-        validity_date: form.validity_date
-          ? new Date(form.validity_date)
-          : undefined,
+        company: form.company.trim() || undefined,
         notes: form.notes.trim() || undefined,
       });
       router.push("/andaimes/" + scaffold.id);
@@ -236,11 +234,11 @@ export default function NovoAndaimePage() {
                   className="rounded-none h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Validade (data)">
+              <Field label="Empresa Montadora">
                 <Input
-                  type="date"
-                  value={form.validity_date}
-                  onChange={set("validity_date")}
+                  placeholder="Nome da empresa"
+                  value={form.company}
+                  onChange={set("company")}
                   className="rounded-none h-9 text-[12px]"
                 />
               </Field>
