@@ -43,15 +43,17 @@ export interface InspectionForPDF {
 type RGB = [number, number, number];
 
 const C: Record<string, RGB> = {
-  navyDark: [27, 54, 93],
-  navyMid: [56, 93, 138],
-  navyLight: [37, 99, 235],
-  navyUltraLight: [235, 241, 248],
-  orangeEng: [196, 88, 18],
-  grayDark: [31, 41, 55],
-  grayMid: [100, 116, 139],
-  grayLight: [226, 232, 240],
-  grayBg: [245, 247, 250],
+  // ── Cores da aplicação AndCheck ──────────────────────────────────────────
+  // --primary: #2a2f38  |  --sidebar: #171b22  |  --accent: #ea6a12
+  navyDark: [42, 47, 56], // --primary
+  navyMid: [58, 68, 82], // tom intermediário sobre o primary
+  navyLight: [82, 96, 114], // tom claro para sub-headers de categoria
+  navyUltraLight: [228, 230, 234], // fundo claro sobre primary (--muted aprox.)
+  orangeEng: [234, 106, 18], // --accent #ea6a12 exato
+  grayDark: [27, 31, 39], // --foreground #1b1f27
+  grayMid: [87, 103, 120], // --muted-foreground
+  grayLight: [214, 218, 224], // --border #d6dae0
+  grayBg: [242, 243, 245], // --background #f2f3f5
   white: [255, 255, 255],
   green: [22, 163, 74],
   greenBg: [240, 253, 244],
@@ -183,7 +185,7 @@ function dataGrid(
   const totalH = TITLE_H + rows.length * ROW_H;
 
   rect(doc, x, y, w, totalH, C.white, C.grayLight, 0.25);
-  rect(doc, x, y, w, TITLE_H, [213, 227, 245], null);
+  rect(doc, x, y, w, TITLE_H, C.navyUltraLight, null);
   rect(doc, x, y, 2.5, TITLE_H, C.navyMid, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
@@ -218,10 +220,10 @@ function addPageHeader(doc: jsPDF, docNum: string, now: string) {
   rect(doc, 0, 0, 3, 10, C.orangeEng, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
-  st(doc, [178, 205, 230]);
+  st(doc, C.navyUltraLight);
   doc.text(`AndCheck EHS  ·  ${docNum}  ·  Continuação`, M + 3, 6.5);
   doc.setFont("helvetica", "normal");
-  st(doc, [148, 178, 214]);
+  st(doc, C.navyLight);
   doc.text(now, PW - M - 2, 6.5, { align: "right" });
   return 15;
 }
@@ -261,9 +263,9 @@ export async function generateInspectionPDF(
 
   rect(doc, 0, 0, PW, HDR_H, C.navyDark, null);
   rect(doc, 0, 0, 3, HDR_H, C.orangeEng, null);
-  rect(doc, 3, HDR_H - 7, PW - 3, 7, [43, 79, 117], null);
+  rect(doc, 3, HDR_H - 7, PW - 3, 7, C.navyMid, null);
 
-  sd(doc, [56, 93, 138]);
+  sd(doc, C.navyLight);
   doc.setLineWidth(0.25);
   doc.line(QX - 3, 5, QX - 3, HDR_H - 8);
 
@@ -274,7 +276,7 @@ export async function generateInspectionPDF(
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6.5);
-  st(doc, [148, 178, 214]);
+  st(doc, C.navyUltraLight);
   doc.text(
     "DOCUMENTO CONTROLADO  ·  NR-18  ·  NR-35  ·  ABNT NBR 6494  ·  ISO 45001:2018  ·  ISO 9001:2015",
     M + 6,
@@ -292,7 +294,7 @@ export async function generateInspectionPDF(
     const dx = M + 6 + i * fW;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(5.5);
-    st(doc, [148, 178, 214]);
+    st(doc, C.navyUltraLight);
     doc.text(lbl, dx, 28.5);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
@@ -305,7 +307,7 @@ export async function generateInspectionPDF(
   st(doc, C.orangeEng);
   doc.text("SISTEMA ANDCHECK EHS", M + 6, 49.5);
   doc.setFont("helvetica", "normal");
-  st(doc, [178, 205, 230]);
+  st(doc, C.navyLight);
   const infoStr = `Inspetor: ${inspection.inspector_name}  ·  Responsável: ${inspection.scaffold?.responsible ?? "—"}`;
   doc.text(doc.splitTextToSize(infoStr, TW - 55)[0] as string, M + 58, 49.5);
 
@@ -576,7 +578,7 @@ export async function generateInspectionPDF(
   const sigH = 40;
 
   rect(doc, M, y, sigW, sigH, C.white, C.grayLight, 0.3);
-  rect(doc, M, y, sigW, 6.5, [235, 241, 248], null);
+  rect(doc, M, y, sigW, 6.5, C.navyUltraLight, null);
   rect(doc, M, y, 2.5, 6.5, C.navyMid, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
@@ -595,7 +597,7 @@ export async function generateInspectionPDF(
 
   const qrBX = M + sigW + 6;
   rect(doc, qrBX, y, sigW, sigH, C.white, C.grayLight, 0.3);
-  rect(doc, qrBX, y, sigW, 6.5, [235, 241, 248], null);
+  rect(doc, qrBX, y, sigW, 6.5, C.navyUltraLight, null);
   rect(doc, qrBX, y, 2.5, 6.5, C.orangeEng, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
@@ -647,7 +649,7 @@ export async function generateInspectionPDF(
     rect(doc, 0, FY, 3, 12, C.orangeEng, null);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6);
-    st(doc, [148, 178, 214]);
+    st(doc, C.navyUltraLight);
     doc.text(
       `AndCheck EHS  ·  Documento Controlado  ·  ${docNum}  ·  Rev. ${revNum}  ·  NR-18  ·  NR-35  ·  ABNT NBR 6494`,
       PW / 2,
@@ -655,7 +657,7 @@ export async function generateInspectionPDF(
       { align: "center" },
     );
     doc.setFont("helvetica", "bold");
-    st(doc, [178, 205, 230]);
+    st(doc, C.navyLight);
     doc.text(`Página ${p} de ${totalPages}`, PW - M - 2, FY + 4.5, {
       align: "right",
     });
