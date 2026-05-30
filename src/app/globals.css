@@ -49,56 +49,50 @@
 }
 
 :root {
-  /* ── Background ── */
-  --background: hsl(210 20% 94%);
-  --foreground: hsl(214 40% 10%);
+  --background: #f2f3f5;
+  --foreground: #1b1f27;
 
-  /* ── Cards ── */
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(214 40% 10%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(214 40% 10%);
+  --card: #ffffff;
+  --card-foreground: #1b1f27;
 
-  /* ── Primary: azul navy ── */
-  --primary: hsl(214 72% 28%);
-  --primary-foreground: hsl(0 0% 100%);
+  --popover: #ffffff;
+  --popover-foreground: #1b1f27;
 
-  /* ── Secondary ── */
-  --secondary: hsl(210 22% 82%);
-  --secondary-foreground: hsl(214 40% 10%);
+  --primary: #2a2f38;
+  --primary-foreground: #ffffff;
 
-  /* ── Muted ── */
-  --muted: hsl(210 18% 88%);
-  --muted-foreground: hsl(214 22% 38%);
+  --secondary: hsl(214 20% 88%);
+  --secondary-foreground: #1b1f27;
 
-  /* ── Accent: laranja industrial ── */
-  --accent: hsl(24 92% 48%);
-  --accent-foreground: hsl(0 0% 100%);
+  --muted: #e7e9ec;
+  --muted-foreground: hsl(215 18% 42%);
 
-  --destructive: hsl(0 84% 44%);
-  --destructive-foreground: hsl(0 0% 100%);
+  --accent: #ea6a12;
+  --accent-foreground: #ffffff;
 
-  --border: hsl(213 22% 76%);
-  --input: hsl(213 22% 76%);
-  --ring: hsl(214 72% 28%);
+  --destructive: hsl(0 72% 42%);
+  --destructive-foreground: #ffffff;
+
+  --border: #d6dae0;
+  --input: #d6dae0;
+  --ring: #2a2f38;
+
+  --chart-1: hsl(215 44% 22%);
+  --chart-2: hsl(145 63% 32%);
+  --chart-3: hsl(0 72% 42%);
+  --chart-4: hsl(38 92% 44%);
+  --chart-5: hsl(210 72% 42%);
+
+  --sidebar: #171b22;
+  --sidebar-foreground: hsl(214 28% 88%);
+  --sidebar-primary: #ea6a12;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #232933;
+  --sidebar-accent-foreground: hsl(214 28% 88%);
+  --sidebar-border: #2d3440;
+  --sidebar-ring: #ea6a12;
+
   --radius: 0.25rem;
-
-  /* ── Charts ── */
-  --chart-1: hsl(214 72% 28%);
-  --chart-2: hsl(142 68% 28%);
-  --chart-3: hsl(0 84% 44%);
-  --chart-4: hsl(38 100% 44%);
-  --chart-5: hsl(210 100% 50%);
-
-  /* ── Sidebar: azul petróleo profundo ── */
-  --sidebar: hsl(216 62% 8%);
-  --sidebar-foreground: hsl(210 35% 90%);
-  --sidebar-primary: hsl(24 92% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(216 52% 15%);
-  --sidebar-accent-foreground: hsl(210 35% 90%);
-  --sidebar-border: hsl(216 50% 14%);
-  --sidebar-ring: hsl(24 92% 48%);
 }
 
 @layer base {
