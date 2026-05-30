@@ -1,14 +1,14 @@
 import { format, isPast } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
   Building2,
-  Calendar,
+  CalendarDays,
   CheckCircle2,
   ClipboardCheck,
   Clock,
-  Construction,
   MapPin,
-  Shield,
+  ShieldCheck,
   User,
   Wrench,
   XCircle,
@@ -26,32 +26,42 @@ const STATUS_CFG = {
   liberado: {
     label: "LIBERADO",
     bg: "bg-emerald-500",
+    iconBg: "bg-emerald-400/25",
+    iconRing: "ring-emerald-300/50",
+    ring: "ring-emerald-500/50",
     icon: CheckCircle2,
-    ring: "ring-emerald-300/60",
   },
   pendente: {
     label: "PENDENTE",
     bg: "bg-amber-500",
+    iconBg: "bg-amber-400/25",
+    iconRing: "ring-amber-300/50",
+    ring: "ring-amber-500/50",
     icon: Clock,
-    ring: "ring-amber-300/60",
   },
   reprovado: {
     label: "REPROVADO",
     bg: "bg-red-600",
+    iconBg: "bg-red-400/25",
+    iconRing: "ring-red-300/50",
+    ring: "ring-red-600/50",
     icon: XCircle,
-    ring: "ring-red-300/60",
   },
   vencido: {
     label: "VENCIDO",
     bg: "bg-red-700",
+    iconBg: "bg-red-400/25",
+    iconRing: "ring-red-300/50",
+    ring: "ring-red-700/50",
     icon: AlertTriangle,
-    ring: "ring-red-400/60",
   },
   em_montagem: {
     label: "EM MONTAGEM",
-    bg: "bg-blue-600",
+    bg: "bg-sky-600",
+    iconBg: "bg-sky-400/25",
+    iconRing: "ring-sky-300/50",
+    ring: "ring-sky-600/50",
     icon: Wrench,
-    ring: "ring-blue-300/60",
   },
 };
 
@@ -64,43 +74,19 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const RESULT_STYLE: Record<string, { label: string; color: string }> = {
-  aprovado: { label: "Aprovado", color: "text-emerald-600" },
+  aprovado: { label: "Aprovado", color: "text-emerald-400 font-bold" },
   aprovado_com_ressalvas: {
     label: "Aprovado c/ Ressalvas",
-    color: "text-amber-600",
+    color: "text-amber-400 font-bold",
   },
-  reprovado: { label: "Reprovado", color: "text-red-600" },
+  reprovado: { label: "Reprovado", color: "text-red-500 font-bold" },
 };
-
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-3 py-3 border-b border-white/10 last:border-0">
-      <Icon className="w-4 h-4 text-white/40 mt-0.5 shrink-0" />
-      <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-0.5">
-          {label}
-        </p>
-        <p className="text-[13px] text-white font-medium">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 export default async function QRPage({ params }: Props) {
   const { tag } = await params;
-
   const scaffold = await getScaffoldByTag(tag);
   if (!scaffold) notFound();
 
-  // Verifica validade vencida
   const effectiveStatus =
     scaffold.status === "liberado" &&
     scaffold.validity_date &&
@@ -121,112 +107,138 @@ export default async function QRPage({ params }: Props) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex flex-col items-center justify-center p-4 gap-0"
       style={{ background: "hsl(215,46%,9%)" }}
     >
-      <div className="w-full max-w-sm space-y-4">
-        {/* Status Card */}
+      <div className="w-full max-w-sm flex flex-col gap-3">
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <div className="flex items-center justify-center gap-2.5 py-2">
+          <ShieldCheck className="w-5 h-5 text-[#ea6a12]" />
+          <span className="text-[15px] font-black tracking-widest text-white uppercase">
+            AndCheck
+          </span>
+          <span className="text-[11px] text-white/30 font-medium">
+            · NR-18 / NR-35
+          </span>
+        </div>
+
+        {/* ── Card principal ──────────────────────────────────────── */}
         <div
           className={
-            "rounded-2xl overflow-hidden shadow-2xl ring-4 " + cfg.ring
+            "rounded-2xl overflow-hidden shadow-2xl ring-1 " + cfg.ring
           }
-          style={{ background: "hsl(215,46%,13%)" }}
+          style={{ background: "hsl(220,10%,18%)" }}
         >
           {/* Status banner */}
-          <div className={"p-6 flex flex-col items-center gap-3 " + cfg.bg}>
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <StatusIcon className="w-8 h-8 text-white" />
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">
-                Status de Segurança
+          <div
+            className={"px-6 py-5 flex items-center justify-between " + cfg.bg}
+          >
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">
+                Status
               </p>
-              <p className="text-[28px] font-black text-white tracking-tight leading-none">
+              <p className="text-[32px] font-black text-white leading-none tracking-tight">
                 {cfg.label}
               </p>
             </div>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white/20 ring-2 ring-white/40 backdrop-blur-sm">
+              <StatusIcon
+                className="w-9 h-9 text-white drop-shadow"
+                strokeWidth={2}
+              />
+            </div>
           </div>
 
-          {/* Andaime Info */}
-          <div className="p-5 space-y-0">
-            <div className="flex items-center gap-3 pb-4 mb-2 border-b border-white/10">
-              <div className="w-10 h-10 rounded bg-white/8 flex items-center justify-center shrink-0">
-                <Construction className="w-5 h-5 text-white/40" />
-              </div>
-              <div>
-                <p className="text-[22px] font-black font-mono text-white leading-none">
-                  {scaffold.code}
-                </p>
-                <p className="text-[11px] text-white/40 mt-0.5">
-                  {TYPE_LABELS[scaffold.type] ?? scaffold.type} ·{" "}
-                  {scaffold.height}m
-                </p>
-              </div>
+          {/* TAG + tipo */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-white/8">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-0.5">
+                Tag do Andaime
+              </p>
+              <p className="text-[26px] font-black font-mono text-white leading-none">
+                {scaffold.code}
+              </p>
             </div>
+            <span className="text-[11px] font-semibold text-white/60 bg-white/8 px-3 py-1 rounded-md">
+              {TYPE_LABELS[scaffold.type] ?? scaffold.type}
+            </span>
+          </div>
+
+          {/* Informações */}
+          <div className="px-6 py-2">
             <InfoRow
               icon={MapPin}
               label="Localização"
               value={scaffold.location}
             />
-            <InfoRow icon={Building2} label="Área" value={scaffold.area} />
             <InfoRow
               icon={User}
               label="Responsável"
               value={scaffold.responsible}
             />
+            {scaffold.company && (
+              <InfoRow
+                icon={Building2}
+                label="Empresa"
+                value={scaffold.company}
+              />
+            )}
             {validadeFormatted && (
               <InfoRow
-                icon={Calendar}
-                label="Válido até"
+                icon={CalendarDays}
+                label="Validade"
                 value={validadeFormatted}
+                valueClass="text-[#ea6a12] font-bold"
               />
             )}
-            {scaffold.max_load && (
-              <InfoRow
-                icon={Shield}
-                label="Carga Máxima"
-                value={scaffold.max_load + " kg"}
-              />
-            )}
+          </div>
+
+          {/* Última inspeção */}
+          {lastInspection && (
+            <div
+              className="mx-4 mb-4 mt-2 rounded-xl p-4"
+              style={{ background: "hsl(215,46%,9%)" }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <ClipboardCheck className="w-3.5 h-3.5 text-white/40" />
+                <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                  Última Inspeção
+                </p>
+              </div>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-[14px] text-white font-semibold leading-snug">
+                    {lastInspection.inspector_name}
+                  </p>
+                  <p className="text-[11px] text-white/40 mt-0.5">
+                    {format(lastInspection.date, "dd 'de' MMMM 'de' yyyy", {
+                      locale: ptBR,
+                    })}
+                  </p>
+                </div>
+                <span
+                  className={
+                    "text-[11px] font-bold shrink-0 mt-0.5 " +
+                    (RESULT_STYLE[lastInspection.result]?.color ??
+                      "text-white/60")
+                  }
+                >
+                  {RESULT_STYLE[lastInspection.result]?.label ??
+                    lastInspection.result}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* ID */}
+          <div className="px-6 pb-4 text-center">
+            <p className="text-[9px] text-white/20 font-mono tracking-wider">
+              {scaffold.id}
+            </p>
           </div>
         </div>
 
-        {/* Última inspeção */}
-        {lastInspection && (
-          <div
-            className="rounded-xl p-4"
-            style={{ background: "hsl(215,46%,13%)" }}
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <ClipboardCheck className="w-3.5 h-3.5 text-white/40" />
-              <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">
-                Última Inspeção
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[12px] text-white font-medium">
-                  {lastInspection.inspector_name}
-                </p>
-                <p className="text-[11px] text-white/40 font-mono">
-                  {format(lastInspection.date, "dd/MM/yyyy")}
-                </p>
-              </div>
-              <span
-                className={
-                  "text-[11px] font-bold uppercase " +
-                  (RESULT_STYLE[lastInspection.result]?.color ??
-                    "text-white/60")
-                }
-              >
-                {RESULT_STYLE[lastInspection.result]?.label ??
-                  lastInspection.result}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* CTA */}
+        {/* ── CTA ────────────────────────────────────────────────── */}
         <Link
           href={
             "/inspecoes/nova?scaffold_id=" +
@@ -234,18 +246,50 @@ export default async function QRPage({ params }: Props) {
             "&scaffold_code=" +
             scaffold.code
           }
-          className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-colors"
+          className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-colors"
+          style={{ background: "#ea6a12", color: "#fff" }}
         >
           <ClipboardCheck className="w-4 h-4" />
           Realizar Nova Inspeção
         </Link>
 
-        {/* Rodapé */}
-        <div className="text-center">
-          <p className="text-[9px] text-white/20 uppercase tracking-widest">
-            AndCheck EHS · NR-18 / NR-35 / NBR 6494
+        {/* ── Rodapé ─────────────────────────────────────────────── */}
+        <div className="text-center pt-1 pb-2">
+          <p className="text-[9px] text-white/20">
+            Gerado por AndCheck · Sistema de Gestão de Andaimes
+          </p>
+          <p className="text-[9px] text-white/20 mt-0.5">
+            NR-18 · NR-35 · ABNT NBR 6494
           </p>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  valueClass = "text-white font-semibold text-[13px]",
+}: {
+  icon?: React.ElementType;
+  label: string;
+  value: string;
+  valueClass?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-3">
+      {Icon && (
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-white/5 ring-1 ring-white/15">
+          <Icon className="w-3.5 h-3.5 text-white/60" />
+        </div>
+      )}
+      <div>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-white/40 mb-0.5">
+          {label}
+        </p>
+        <p className={valueClass}>{value}</p>
       </div>
     </div>
   );
