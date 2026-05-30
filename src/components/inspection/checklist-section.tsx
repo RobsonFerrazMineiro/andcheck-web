@@ -15,6 +15,7 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
+import { compressImage } from "@/lib/compress-image";
 
 interface Props {
   category: ChecklistCategory["category"];
@@ -71,22 +72,16 @@ export default function ChecklistSection({
     onChange(updated);
   };
 
-  const handlePhotoChange = (
+  const handlePhotoChange = async (
     itemIndex: number,
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const updated = [...values];
-      updated[itemIndex] = {
-        ...updated[itemIndex],
-        photo: ev.target?.result as string,
-      };
-      onChange(updated);
-    };
-    reader.readAsDataURL(file);
+    const b64 = await compressImage(file);
+    const updated = [...values];
+    updated[itemIndex] = { ...updated[itemIndex], photo: b64 };
+    onChange(updated);
     e.target.value = "";
   };
 

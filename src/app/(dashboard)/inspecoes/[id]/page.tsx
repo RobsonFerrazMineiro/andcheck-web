@@ -153,6 +153,8 @@ export default async function InspectionDetailPage({ params }: Props) {
               result: inspection.result,
               validity_days: inspection.validity_days,
               notes: inspection.notes,
+              photos: inspection.photos,
+              signature: inspection.signature,
               checklist: inspection.checklist,
               scaffold: scaffold
                 ? {

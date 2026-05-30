@@ -17,6 +17,7 @@ export interface ChecklistItem {
   value: "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA";
   critical: boolean;
   observation?: string | null;
+  photo?: string | null;
 }
 
 export interface InspectionForPDF {
@@ -27,6 +28,8 @@ export interface InspectionForPDF {
   result: "aprovado" | "aprovado_com_ressalvas" | "reprovado";
   validity_days: number;
   notes?: string | null;
+  photos?: string[] | null;
+  signature?: string | null;
   checklist: ChecklistItem[];
   scaffold?: {
     id: string;
@@ -595,15 +598,117 @@ export async function generateInspectionPDF(
   });
   y += 24; // 22mm card + 2mm gap
 
-  // ── SEÇÃO 4 — OBSERVAÇÕES ─────────────────────────────────────────────────
+  // ── SEÇÃO 4 — REGISTRO FOTOGRÁFICO ───────────────────────────────────────
+  const itemPhotos = inspection.checklist.filter(
+    (i) => i.photo && i.value !== "CL_OK",
+  );
+  const generalPhotos = inspection.photos ?? [];
+  const hasPhotos = itemPhotos.length > 0 || generalPhotos.length > 0;
+
+  if (hasPhotos) {
+    if (y > 256) {
+      doc.addPage();
+      y = addPageHeader(doc, docNum, now);
+    }
+    y = sectionHeader(doc, "SEÇÃO 4 — REGISTRO FOTOGRÁFICO", y, M, CW);
+
+    const COLS = 3;
+    const GAP = 3;
+    const LABEL_H = 7;
+    const IMG_W = (CW - GAP * (COLS - 1)) / COLS;
+    const IMG_H = IMG_W * 0.65;
+    const CELL_H = IMG_H + LABEL_H;
+
+    const allPhotoItems: Array<{
+      src: string;
+      label: string;
+      isItem: boolean;
+    }> = [
+      ...itemPhotos.map((i) => ({
+        src: i.photo!,
+        label: i.item_label,
+        isItem: true,
+      })),
+      ...generalPhotos.map((src) => ({
+        src,
+        label: "Foto geral",
+        isItem: false,
+      })),
+    ];
+
+    allPhotoItems.forEach((p, idx) => {
+      const col = idx % COLS;
+
+      // início de nova linha: verificar quebra de página e avançar rowY
+      if (col === 0) {
+        if (idx === 0) {
+          // primeira linha: rowY já está em y
+        } else {
+          // avançar para a próxima linha
+          y += CELL_H + GAP;
+          // verificar se cabe na página
+          if (y + CELL_H > 278) {
+            doc.addPage();
+            y = addPageHeader(doc, docNum, now);
+          }
+        }
+      }
+
+      const px = M + col * (IMG_W + GAP);
+      const py = y; // y já aponta para o topo da linha atual
+
+      // fundo + borda
+      const borderColor = p.isItem ? C.red : C.navyDark;
+      rect(
+        doc,
+        px,
+        py,
+        IMG_W,
+        CELL_H,
+        C.white,
+        borderColor,
+        p.isItem ? 0.5 : 0.25,
+      );
+
+      // imagem
+      try {
+        doc.addImage(p.src, "JPEG", px, py, IMG_W, IMG_H);
+      } catch {
+        // fallback: placeholder cinza se imagem inválida
+        rect(doc, px, py, IMG_W, IMG_H, C.grayBg, null);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6);
+        st(doc, C.grayMid);
+        doc.text("Imagem indisponível", px + IMG_W / 2, py + IMG_H / 2, {
+          align: "center",
+        });
+      }
+
+      // label
+      const labelBg: RGB = p.isItem ? C.red : C.navyDark;
+      rect(doc, px, py + IMG_H, IMG_W, LABEL_H, labelBg, null);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(5.5);
+      st(doc, C.white);
+      const labelText = doc.splitTextToSize(p.label, IMG_W - 4)[0] as string;
+      doc.text(labelText, px + IMG_W / 2, py + IMG_H + LABEL_H / 2 + 1.2, {
+        align: "center",
+      });
+    });
+
+    // avançar y para depois da última linha
+    y += CELL_H + 4;
+  }
+
+  // ── SEÇÃO 5 — OBSERVAÇÕES ─────────────────────────────────────────────────
   if (inspection.notes) {
     if (y > 260) {
       doc.addPage();
-      y = 14;
+      y = addPageHeader(doc, docNum, now);
     }
     y = sectionHeader(
       doc,
-      "SEÇÃO 4 — OBSERVAÇÕES TÉCNICAS / AÇÕES CORRETIVAS",
+      "SEÇÃO 5 — OBSERVAÇÕES TÉCNICAS / AÇÕES CORRETIVAS",
       y,
       M,
       CW,
@@ -618,14 +723,14 @@ export async function generateInspectionPDF(
     y += obsH + 3;
   }
 
-  // ── SEÇÃO 5 — ASSINATURAS ────────────────────────────────────────────────
+  // ── SEÇÃO 6 — ASSINATURAS ────────────────────────────────────────────────
   if (y > 240) {
     doc.addPage();
-    y = 14;
+    y = addPageHeader(doc, docNum, now);
   }
   y = sectionHeader(
     doc,
-    "SEÇÃO 5 — APROVAÇÃO TÉCNICA E VALIDAÇÃO DOCUMENTAL",
+    "SEÇÃO 6 — APROVAÇÃO TÉCNICA E VALIDAÇÃO DOCUMENTAL",
     y,
     M,
     CW,
@@ -642,6 +747,26 @@ export async function generateInspectionPDF(
   doc.text("ASSINATURA DO INSPETOR RESPONSÁVEL", M + sigW / 2, y + 4.5, {
     align: "center",
   });
+
+  // Imagem da assinatura digital (se disponível)
+  if (inspection.signature) {
+    try {
+      const sigImgW = sigW - 12;
+      const sigImgH = 20;
+      const sigImgX = M + 6;
+      const sigImgY = y + 9;
+      doc.addImage(
+        inspection.signature,
+        "PNG",
+        sigImgX,
+        sigImgY,
+        sigImgW,
+        sigImgH,
+      );
+    } catch {
+      // ignora se imagem inválida
+    }
+  }
 
   hline(doc, y + 35, M + 6, M + sigW - 6, C.grayMid, 0.35);
   doc.setFont("helvetica", "normal");

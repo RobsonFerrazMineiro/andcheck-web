@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
+import { compressImage } from "@/lib/compress-image";
 
 type ScaffoldOption = {
   id: string;
@@ -119,17 +120,12 @@ export function NovaInspecaoForm({
   }, [getCtx]);
 
   const handlePhotoAdd = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const b64 = ev.target?.result as string;
-          setPhotos((prev) => [...prev, b64]);
-        };
-        reader.readAsDataURL(file);
-      });
-      // reset input para permitir re-selecionar o mesmo arquivo
+      for (const file of files) {
+        const b64 = await compressImage(file);
+        setPhotos((prev) => [...prev, b64]);
+      }
       e.target.value = "";
     },
     [],
