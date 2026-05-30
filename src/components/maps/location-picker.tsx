@@ -2,17 +2,14 @@
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import {
-  CheckCircle2,
-  Crosshair,
-  Loader2,
-  MapPin,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Crosshair, Loader2, MapPin, Navigation2, XCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-// ── Fallback da planta (ajuste conforme necessidade) ──────────────────────────
-const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 16 };
+// ── Constantes de zoom / fallback ─────────────────────────────────────────────
+const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 18 };
+const GEO_ZOOM = 19;   // zoom ao detectar localização atual
+const SAVED_ZOOM = 18; // zoom ao carregar coords já salvas
+const MAX_ZOOM = 22;   // máximo suportado pelo tile ESRI
 
 interface Props {
   latitude: number | null;
@@ -33,7 +30,6 @@ const PIN_ICON = () =>
 
 export function LocationPicker({ latitude, longitude, onChange }: Props) {
   const [geoState, setGeoState] = useState<GeoState>("idle");
-  const [geoMsg, setGeoMsg] = useState("");
   const [mapGeoState, setMapGeoState] = useState<MapGeoState>("detecting");
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,139 +38,112 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
 
   const hasCoords = latitude !== null && longitude !== null;
 
-  // ── Helper: criar ou mover o pin ───────────────────────────────────────────
+  // ── Criar ou mover pin draggable ──────────────────────────────────────────
   function placeOrMoveMarker(map: L.Map, lat: number, lng: number) {
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
     } else {
-      const m = L.marker([lat, lng], {
-        icon: PIN_ICON(),
-        draggable: true,
-      }).addTo(map);
+      const m = L.marker([lat, lng], { icon: PIN_ICON(), draggable: true }).addTo(map);
       markerRef.current = m;
       m.on("dragend", () => {
         const pos = m.getLatLng();
         onChange(pos.lat, pos.lng);
-        setGeoMsg(`${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`);
         setGeoState("success");
         setMapGeoState("manual");
       });
     }
   }
 
-  // ── Botão: Usar localização atual ──────────────────────────────────────────
+  // ── Centralizar mapa no pin atual ─────────────────────────────────────────
+  function handleCenterOnPin() {
+    if (mapRef.current && markerRef.current) {
+      mapRef.current.setView(markerRef.current.getLatLng(), mapRef.current.getZoom());
+    }
+  }
+
+  // ── Usar localização atual ────────────────────────────────────────────────
   function handleGeolocate() {
     if (!navigator.geolocation) {
       setGeoState("error");
-      setGeoMsg("Geolocalização não suportada neste dispositivo.");
       return;
     }
     setGeoState("loading");
-    setGeoMsg("Capturando localização...");
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
         onChange(lat, lng);
         setGeoState("success");
-        setGeoMsg("Localização atual detectada");
         if (mapRef.current) {
-          mapRef.current.setView([lat, lng], 17);
+          mapRef.current.setView([lat, lng], GEO_ZOOM);
           placeOrMoveMarker(mapRef.current, lat, lng);
           setMapGeoState("detected");
         }
       },
       (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
-          setGeoState("denied");
-          setGeoMsg("Permissão negada. Ajuste o pin manualmente no mapa.");
-        } else {
-          setGeoState("error");
-          setGeoMsg("Não foi possível obter a localização.");
-        }
+        setGeoState(err.code === err.PERMISSION_DENIED ? "denied" : "error");
       },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   }
 
-  // ── Inicializar mapa (sempre visível — sem toggle) ─────────────────────────
+  // ── Inicializar mapa ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     setMapGeoState("detecting");
     setGeoState("loading");
-    setGeoMsg("Obtendo localização...");
 
-    // Centro provisório: coords já salvas ou fallback da planta
     const initLat = latitude ?? DEFAULT_PLANT.lat;
     const initLng = longitude ?? DEFAULT_PLANT.lng;
-    const initZoom = latitude ? 17 : DEFAULT_PLANT.zoom;
+    const initZoom = latitude ? SAVED_ZOOM : DEFAULT_PLANT.zoom;
 
-    const map = L.map(containerRef.current, {
-      center: [initLat, initLng],
-      zoom: initZoom,
-    });
+    const map = L.map(containerRef.current, { center: [initLat, initLng], zoom: initZoom });
     mapRef.current = map;
 
-    // Satélite ESRI + labels
     L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { attribution: "Tiles © Esri", maxZoom: 20 },
+      { attribution: "Tiles © Esri", maxZoom: MAX_ZOOM },
     ).addTo(map);
     L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-      { opacity: 0.7, maxZoom: 20 },
+      { opacity: 0.7, maxZoom: MAX_ZOOM },
     ).addTo(map);
 
-    // Pin inicial se já houver coords salvas
     if (latitude && longitude) {
       placeOrMoveMarker(map, latitude, longitude);
       setTimeout(() => {
         setGeoState("success");
-        setGeoMsg("Localização confirmada");
         setMapGeoState("detected");
       }, 0);
-    } else {
-      // Auto-geolocalização ao carregar
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const { latitude: lat, longitude: lng } = pos.coords;
-            if (!mapRef.current) return;
-            mapRef.current.setView([lat, lng], 17);
-            placeOrMoveMarker(mapRef.current, lat, lng);
-            onChange(lat, lng);
-            setGeoState("success");
-            setGeoMsg("Localização atual detectada");
-            setMapGeoState("detected");
-          },
-          () => {
-            setMapGeoState("failed");
-            setGeoState("error");
-            setGeoMsg(
-              "Não foi possível obter sua localização. Ajuste o pin manualmente no mapa.",
-            );
-          },
-          { enableHighAccuracy: true, timeout: 8000 },
-        );
-      } else {
-        setTimeout(() => {
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude: lat, longitude: lng } = pos.coords;
+          if (!mapRef.current) return;
+          mapRef.current.setView([lat, lng], GEO_ZOOM);
+          placeOrMoveMarker(mapRef.current, lat, lng);
+          onChange(lat, lng);
+          setGeoState("success");
+          setMapGeoState("detected");
+        },
+        () => {
           setMapGeoState("failed");
           setGeoState("error");
-          setGeoMsg(
-            "Geolocalização não suportada. Ajuste o pin manualmente no mapa.",
-          );
-        }, 0);
-      }
+        },
+        { enableHighAccuracy: true, timeout: 8000 },
+      );
+    } else {
+      setTimeout(() => {
+        setMapGeoState("failed");
+        setGeoState("error");
+      }, 0);
     }
 
-    // Clique no mapa move/cria pin
     map.on("click", (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       placeOrMoveMarker(map, lat, lng);
       onChange(lat, lng);
       setGeoState("success");
-      setGeoMsg(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
       setMapGeoState("manual");
     });
 
@@ -188,32 +157,41 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Instrução + botão recentralizar */}
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] text-muted-foreground">
-          Confirme a localização do andaime no mapa.
+      {/* Instrução + ações */}
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Arraste o pin ou clique no mapa para ajustar a posição exata do andaime.
         </p>
-        <button
-          type="button"
-          onClick={handleGeolocate}
-          disabled={geoState === "loading"}
-          className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-50 transition-colors shrink-0"
-        >
-          {geoState === "loading" ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
-          ) : (
-            <Crosshair className="w-3 h-3" />
+        <div className="flex gap-2 shrink-0">
+          {hasCoords && (
+            <button
+              type="button"
+              onClick={handleCenterOnPin}
+              title="Centralizar no pin"
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-bold uppercase tracking-widest border border-border bg-card text-foreground hover:bg-muted transition-colors"
+            >
+              <MapPin className="w-3 h-3" />
+              Centralizar no pin
+            </button>
           )}
-          Usar localização atual
-        </button>
+          <button
+            type="button"
+            onClick={handleGeolocate}
+            disabled={geoState === "loading"}
+            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-50 transition-colors"
+          >
+            {geoState === "loading" ? (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            ) : (
+              <Crosshair className="w-3 h-3" />
+            )}
+            Localização atual
+          </button>
+        </div>
       </div>
 
-      {/* Mapa sempre visível */}
-      <div
-        className="border border-border rounded-md overflow-hidden relative"
-        style={{ height: 320 }}
-      >
-        {/* Banner de status */}
+      {/* Mapa */}
+      <div className="border border-border rounded-md overflow-hidden relative" style={{ height: 340 }}>
         {mapGeoState === "detecting" && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none">
             <Loader2 className="w-3 h-3 animate-spin" />
@@ -228,7 +206,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
         )}
         {mapGeoState === "failed" && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-amber-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none whitespace-nowrap">
-            <MapPin className="w-3 h-3" />
+            <Navigation2 className="w-3 h-3" />
             Ajuste o pin manualmente
           </div>
         )}
@@ -238,37 +216,25 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
             Localização ajustada
           </div>
         )}
-        <div
-          ref={containerRef}
-          style={{ height: "100%", width: "100%" }}
-          className="z-0"
-        />
+        <div ref={containerRef} style={{ height: "100%", width: "100%" }} className="z-0" />
       </div>
 
-      {/* Coordenadas capturadas */}
+      {/* Coordenadas em tempo real */}
       {hasCoords ? (
         <div className="flex gap-3">
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-              Latitude
-            </p>
-            <p className="text-[12px] font-mono text-foreground">
-              {latitude!.toFixed(6)}
-            </p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Latitude</p>
+            <p className="text-[12px] font-mono text-foreground">{latitude!.toFixed(6)}</p>
           </div>
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-              Longitude
-            </p>
-            <p className="text-[12px] font-mono text-foreground">
-              {longitude!.toFixed(6)}
-            </p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Longitude</p>
+            <p className="text-[12px] font-mono text-foreground">{longitude!.toFixed(6)}</p>
           </div>
         </div>
-      ) : geoState === "error" || geoState === "denied" ? (
+      ) : (geoState === "error" || geoState === "denied") ? (
         <div className="flex items-start gap-2 text-[11px] px-3 py-2 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
           <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-          <span>{geoMsg}</span>
+          <span>Não foi possível obter sua localização. Ajuste o pin manualmente no mapa.</span>
         </div>
       ) : null}
     </div>
