@@ -36,6 +36,7 @@ export interface InspectionForPDF {
     height: number;
     max_load?: number | null;
     responsible: string;
+    empresa?: string | null;
   } | null;
 }
 
@@ -60,6 +61,7 @@ const C: Record<string, RGB> = {
   greenBorder: [134, 239, 172],
   red: [220, 38, 38],
   redBg: [254, 242, 242],
+  redBgStrong: [252, 210, 210],
   redBorder: [252, 165, 165],
   amber: [217, 119, 6],
   amberBg: [255, 251, 235],
@@ -168,7 +170,7 @@ function sectionHeader(
   doc.setFontSize(7);
   st(doc, C.white);
   doc.text(title, M + 4, y + 5.2);
-  return y + H + 5;
+  return y + H + 2;
 }
 
 function dataGrid(
@@ -179,35 +181,41 @@ function dataGrid(
   title: string,
   rows: [string, string][],
 ) {
-  const TITLE_H = 7;
-  const ROW_H = 9;
+  const TITLE_H = 6;
+  const ROW_H = 8;
   const totalH = TITLE_H + rows.length * ROW_H;
 
-  rect(doc, x, y, w, totalH, C.white, C.grayLight, 0.25);
-  rect(doc, x, y, w, TITLE_H, C.navyUltraLight, null);
+  // fundo branco base (sem stroke aqui)
+  rect(doc, x, y, w, totalH, C.white, null);
+  rect(doc, x, y, w, TITLE_H, C.navyDark, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
-  st(doc, C.navyDark);
-  doc.text(title, x + w / 2, y + TITLE_H - 1.8, { align: "center" });
+  st(doc, C.white);
+  doc.text(title, x + w / 2, y + TITLE_H / 2 + 1.2, { align: "center" });
 
+  const LBL_W = w * 0.42; // largura reservada para o label
   let ry = y + TITLE_H;
   rows.forEach(([lbl, val], i) => {
     if (i % 2 !== 0) rect(doc, x, ry, w, ROW_H, C.grayBg, null);
+    // label — pequeno, cinza, à esquerda
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.8);
+    doc.setFontSize(6);
     st(doc, C.grayMid);
-    doc.text(lbl.toUpperCase(), x + 4, ry + 3.5);
+    doc.text(lbl, x + 4, ry + ROW_H / 2 + 1.5);
+    // valor — negrito, escuro, após o label
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
     st(doc, C.grayDark);
     doc.text(
-      doc.splitTextToSize(String(val), w - 8)[0] as string,
-      x + 4,
-      ry + 7.5,
+      doc.splitTextToSize(String(val), w - LBL_W - 6)[0] as string,
+      x + 4 + LBL_W,
+      ry + ROW_H / 2 + 1.5,
     );
     hline(doc, ry + ROW_H, x, x + w, C.grayLight, 0.15);
     ry += ROW_H;
   });
+  // borda externa desenhada por último para não ser coberta pelos fundos cinza
+  rect(doc, x, y, w, totalH, null, C.navyDark, 0.4);
   return ry + 4;
 }
 
@@ -260,12 +268,12 @@ export async function generateInspectionPDF(
   const RES_H = 10;
 
   // ── CABEÇALHO ─────────────────────────────────────────────────────────────
-  const HDR_BODY = 48; // parte escura
-  const HDR_H = HDR_BODY + RES_H; // total = escuro + barra de resultado
-  const QW = 26;
+  const HDR_BODY = 32; // parte escura (reduzida)
+  const HDR_H = HDR_BODY + RES_H;
+  const QW = 22;
   const QX = PW - 6 - QW;
-  const QY = 5;
-  const TX = 8; // texto rente à borda esquerda
+  const QY = 3;
+  const TX = 8;
 
   // Fundo escuro
   rect(doc, 0, 0, PW, HDR_BODY, C.navyDark, null);
@@ -277,7 +285,7 @@ export async function generateInspectionPDF(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   st(doc, C.white);
-  doc.text("RELATÓRIO TÉCNICO DE INSPEÇÃO DE ANDAIME", TX, 12);
+  doc.text("RELATÓRIO TÉCNICO DE INSPEÇÃO DE ANDAIME", TX, 9);
 
   // Normas
   doc.setFont("helvetica", "normal");
@@ -286,33 +294,26 @@ export async function generateInspectionPDF(
   doc.text(
     "NR-18  ·  NR-35  ·  ABNT NBR 6494  ·  ISO 45001:2018  ·  ISO 9001:2015  ·  DOCUMENTO CONTROLADO",
     TX,
-    18,
+    13.5,
   );
 
   // Nº do documento
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6.5);
   st(doc, C.navyUltraLight);
-  doc.text(`DOC N:  ${docNum}`, TX, 24.5);
+  doc.text(`DOC N:  ${docNum}`, TX, 18);
 
   // Data de emissão
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6.5);
   st(doc, C.navyUltraLight);
-  doc.text(`Gerado em:  ${now}`, TX, 30);
+  doc.text(`Gerado em:  ${now}`, TX, 22.5);
 
   // TAG / Andaime em destaque laranja
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.5);
   st(doc, C.orangeEng);
-  doc.text(`ANDAIME:  ${inspection.scaffold_code}`, TX, 37);
-
-  // Inspetor + Responsável
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6);
-  st(doc, C.navyLight);
-  const infoStr = `Inspetor: ${inspection.inspector_name}  ·  Responsável: ${inspection.scaffold?.responsible ?? "—"}`;
-  doc.text(infoStr, TX, HDR_BODY - 3);
+  doc.text(`ANDAIME:  ${inspection.scaffold_code}`, TX, 27.5);
 
   // QR Code
   rect(doc, QX - 1, QY - 1, QW + 2, QW + 2, C.white, null);
@@ -320,7 +321,7 @@ export async function generateInspectionPDF(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(4.5);
   st(doc, C.navyUltraLight);
-  doc.text("VERIFICAR ONLINE", QX + QW / 2, QY + QW + 3.5, {
+  doc.text("VERIFICAR ONLINE", QX + QW / 2, QY + QW + 3, {
     align: "center",
   });
 
@@ -349,26 +350,32 @@ export async function generateInspectionPDF(
 
   const scaffoldRows: [string, string][] = [
     ["TAG / Código", inspection.scaffold_code],
-    ["Localização", inspection.scaffold?.location ?? "—"],
-    ["Área / Setor", inspection.scaffold?.area ?? "—"],
+    ["Área", inspection.scaffold?.area ?? "—"],
     ["Tipo", inspection.scaffold?.type ?? "—"],
+    ["Localização", inspection.scaffold?.location ?? "—"],
     [
       "Altura",
-      inspection.scaffold?.height ? `${inspection.scaffold.height} m` : "—",
+      inspection.scaffold?.height ? `${inspection.scaffold.height}m` : "—",
     ],
     [
-      "Carga Máxima",
-      inspection.scaffold?.max_load
-        ? `${inspection.scaffold.max_load} kg`
-        : "—",
+      "Carga Max.",
+      inspection.scaffold?.max_load ? `${inspection.scaffold.max_load}kg` : "—",
     ],
   ];
+
+  const statusLabel: Record<string, string> = {
+    aprovado: "Aprovado",
+    aprovado_com_ressalvas: "Aprovado c/ Ressalvas",
+    reprovado: "Reprovado",
+  };
+
   const inspRows: [string, string][] = [
     ["Inspetor", inspection.inspector_name],
     ["Data da Inspeção", format(inspection.date, "dd/MM/yyyy")],
-    ["Válido até", validDate],
-    ["Prazo (dias)", String(inspection.validity_days || 7)],
+    ["Validade", `${inspection.validity_days || 7} dias (ate ${validDate})`],
     ["Responsável", inspection.scaffold?.responsible ?? "—"],
+    ["Empresa", inspection.scaffold?.empresa ?? "—"],
+    ["Status", statusLabel[inspection.result] ?? inspection.result],
   ];
 
   const gridStartY = y;
@@ -381,10 +388,10 @@ export async function generateInspectionPDF(
     scaffoldRows,
   );
   dataGrid(doc, M + half + 4, gridStartY, half, "DADOS DA INSPEÇÃO", inspRows);
-  y = yAfterA + 4;
+  y = yAfterA + 1;
 
   // ── SEÇÃO 2 — CHECKLIST ───────────────────────────────────────────────────
-  if (y > 228) {
+  if (y > 270) {
     doc.addPage();
     y = 14;
   }
@@ -409,81 +416,135 @@ export async function generateInspectionPDF(
     grouped[item.category].push(item);
   });
 
+  const CATEGORY_ORDER = [
+    "SEGURANÇA DOCUMENTAL",
+    "ESTRUTURA",
+    "ACESSO E PROTEÇÃO",
+    "INSTALAÇÕES ELÉTRICAS",
+    "EPIS E SEGURANÇA",
+  ];
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
+    const ia = CATEGORY_ORDER.indexOf(a.toUpperCase());
+    const ib = CATEGORY_ORDER.indexOf(b.toUpperCase());
+    if (ia === -1 && ib === -1) return a.localeCompare(b);
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+
   let rowIdx = 0;
-  for (const [category, items] of Object.entries(grouped)) {
-    if (y > 256) {
+  for (const category of sortedCategories) {
+    const items = grouped[category];
+    // constantes de badge (fora do loop de item para clareza)
+    const BADGE_H = 4.0;
+    const BADGE_H_RES = 5;
+    const BADGE_R = 1.5;
+    const BADGE_R_RES = 0.8;
+    const CRIT_W = 11;
+    const RES_W = 26;
+
+    const CAT_H = 6;
+    const blockH =
+      CAT_H + 1 + items.reduce((acc, it) => acc + (it.observation ? 13 : 8), 0);
+
+    if (y + blockH > 282) {
       doc.addPage();
       y = addPageHeader(doc, docNum, now);
     }
 
-    rect(doc, M, y, CW, 6, C.navyUltraLight, C.grayLight, 0.25);
+    const blockY = y;
+
+    // fundo branco base do bloco (sem stroke)
+    rect(doc, M, blockY, CW, blockH, C.white, null);
+
+    // cabeçalho da categoria
+    rect(doc, M, y, CW, CAT_H, C.navyDark, null);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
-    st(doc, C.navyDark);
+    st(doc, C.white);
     doc.text(category.toUpperCase(), M + 4, y + 4.2);
-    y += 7;
+    y += CAT_H + 1;
 
     for (const item of items) {
-      if (y > 268) {
-        doc.addPage();
-        y = addPageHeader(doc, docNum, now);
-      }
-
       const status = itemStatus(item.value);
-      const rowH = item.observation ? 12 : 9;
+      const rowH = item.observation ? 13 : 8;
       const rowBg = rowIdx % 2 === 0 ? C.white : C.grayBg;
       const iCfg = ITEM_CFG[status];
 
       rect(doc, M, y, CW, rowH, rowBg, null);
 
-      const textX = M + 4;
-      const textY = y + (item.observation ? 4.5 : rowH / 2 + 2);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7);
-      st(doc, C.grayDark);
-      doc.text(
-        (doc.splitTextToSize(item.item_label, COL_ITEM_W - 4) as string[])[0],
-        textX,
-        textY,
-      );
-
-      if (item.observation) {
-        doc.setFontSize(5.8);
-        st(doc, C.grayMid);
-        doc.text(`↳  ${item.observation}`, textX, y + 9.5);
-      }
-
-      const critX = M + COL_ITEM_W + 2;
-      const critBY = y + (rowH - 4) / 2;
+      // Badge CRÍTICO
+      const critX = M + 2;
+      const critBY = y + (rowH - BADGE_H) / 2;
       if (item.critical) {
-        rect(doc, critX, critBY, COL_BADGE_W - 2, 4, C.redBg, C.redBorder, 0.3);
+        sf(doc, C.redBgStrong);
+        doc.roundedRect(critX, critBY, CRIT_W, BADGE_H, BADGE_R, BADGE_R, "F");
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(5.2);
+        doc.setFontSize(6);
         st(doc, C.red);
-        doc.text("CRÍTICO", critX + (COL_BADGE_W - 2) / 2, critBY + 2.8, {
+        doc.text("CRÍTICO", critX + CRIT_W / 2, critBY + BADGE_H * 0.68, {
           align: "center",
         });
       }
 
-      const resW = COL_RES_W - 2;
-      const resX = PW - M - resW - 1;
-      const resBY = y + (rowH - 4) / 2;
-      rect(doc, resX, resBY, resW, 4, iCfg.bg, iCfg.border, 0.3);
+      // Texto do item
+      const textX = M + 2 + CRIT_W + 2;
+      const textY = y + rowH / 2 + 1.3;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      st(doc, C.grayDark);
+      doc.text(
+        (
+          doc.splitTextToSize(
+            item.item_label,
+            CW - CRIT_W - 10 - (RES_W + 2),
+          ) as string[]
+        )[0],
+        textX,
+        item.observation ? y + 5 : textY,
+      );
+
+      if (item.observation) {
+        doc.setFontSize(6);
+        st(doc, C.grayMid);
+        doc.text(`↳  ${item.observation}`, textX, y + 10);
+      }
+
+      // Badge RESULTADO
+      const resX = PW - M - RES_W - 1;
+      const resBY = y + (rowH - BADGE_H_RES) / 2;
+      sf(doc, iCfg.fg);
+      doc.setLineWidth(0);
+      doc.roundedRect(
+        resX,
+        resBY,
+        RES_W,
+        BADGE_H_RES,
+        BADGE_R_RES,
+        BADGE_R_RES,
+        "F",
+      );
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(5.5);
-      st(doc, iCfg.fg);
-      doc.text(iCfg.label, resX + resW / 2, resBY + 2.8, { align: "center" });
+      doc.setFontSize(7.5);
+      st(doc, C.white);
+      doc.text(iCfg.label, resX + RES_W / 2, resBY + BADGE_H_RES * 0.68, {
+        align: "center",
+      });
 
       hline(doc, y + rowH, M, M + CW, C.grayLight, 0.15);
       y += rowH;
       rowIdx++;
     }
-    y += 2;
+
+    // borda externa do bloco — navyDark, desenhada por último
+    rect(doc, M, blockY, CW, y - blockY, null, C.navyDark, 0.4);
+
+    y += 1.5; // espaçamento entre categorias
   }
-  y += 5;
+  y += 2;
 
   // ── SEÇÃO 3 — RESUMO ESTATÍSTICO ─────────────────────────────────────────
-  if (y > 238) {
+  if (y > 256) {
     doc.addPage();
     y = 14;
   }
@@ -522,7 +583,7 @@ export async function generateInspectionPDF(
   const sW = (CW - 4 * 4) / 5;
   stats.forEach((s, i) => {
     const sx = M + i * (sW + 4);
-    rect(doc, sx, y, sW, 22, s.bg, C.grayLight, 0.25);
+    rect(doc, sx, y, sW, 22, s.bg, C.navyDark, 0.25);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     st(doc, s.color);
@@ -532,11 +593,11 @@ export async function generateInspectionPDF(
     st(doc, C.grayMid);
     doc.text(s.lbl, sx + sW / 2, y + 19.5, { align: "center" });
   });
-  y += 28;
+  y += 24; // 22mm card + 2mm gap
 
   // ── SEÇÃO 4 — OBSERVAÇÕES ─────────────────────────────────────────────────
   if (inspection.notes) {
-    if (y > 246) {
+    if (y > 260) {
       doc.addPage();
       y = 14;
     }
@@ -549,16 +610,16 @@ export async function generateInspectionPDF(
     );
     const obsLines = doc.splitTextToSize(inspection.notes, CW - 8) as string[];
     const obsH = obsLines.length * 5.2 + 10;
-    rect(doc, M, y, CW, obsH, C.grayBg, C.grayLight, 0.25);
+    rect(doc, M, y, CW, obsH, C.grayBg, C.navyDark, 0.25);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     st(doc, C.grayDark);
     doc.text(obsLines, M + 4, y + 7);
-    y += obsH + 6;
+    y += obsH + 3;
   }
 
   // ── SEÇÃO 5 — ASSINATURAS ────────────────────────────────────────────────
-  if (y > 228) {
+  if (y > 240) {
     doc.addPage();
     y = 14;
   }
@@ -573,11 +634,11 @@ export async function generateInspectionPDF(
   const sigW = (CW - 6) / 2;
   const sigH = 40;
 
-  rect(doc, M, y, sigW, sigH, C.white, C.grayLight, 0.3);
-  rect(doc, M, y, sigW, 6.5, C.navyUltraLight, null);
+  rect(doc, M, y, sigW, sigH, C.white, C.navyDark, 0.3);
+  rect(doc, M, y, sigW, 6.5, C.navyDark, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
-  st(doc, C.navyDark);
+  st(doc, C.white);
   doc.text("ASSINATURA DO INSPETOR RESPONSÁVEL", M + sigW / 2, y + 4.5, {
     align: "center",
   });
@@ -591,11 +652,11 @@ export async function generateInspectionPDF(
   });
 
   const qrBX = M + sigW + 6;
-  rect(doc, qrBX, y, sigW, sigH, C.white, C.grayLight, 0.3);
-  rect(doc, qrBX, y, sigW, 6.5, C.navyUltraLight, null);
+  rect(doc, qrBX, y, sigW, sigH, C.white, C.navyDark, 0.3);
+  rect(doc, qrBX, y, sigW, 6.5, C.navyDark, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
-  st(doc, C.navyDark);
+  st(doc, C.white);
   doc.text("VERIFICAÇÃO E RASTREABILIDADE ONLINE", qrBX + sigW / 2, y + 4.5, {
     align: "center",
   });
@@ -610,7 +671,7 @@ export async function generateInspectionPDF(
     qrSz + 2,
     qrSz + 2,
     [245, 247, 250],
-    C.grayLight,
+    C.navyDark,
     0.25,
   );
   doc.addImage(qrDataUrl, "PNG", qrBQX, qrBQY, qrSz, qrSz);
