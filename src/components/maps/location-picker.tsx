@@ -32,7 +32,8 @@ const PIN_ICON = () =>
     className: "",
     iconSize: [28, 36],
     iconAnchor: [14, 36],
-    html: `<div style="width:28px;height:36px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))"><div style="width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#ea6a12;border:2.5px solid #fff;"></div><div style="width:2px;height:12px;background:#ea6a12;margin-top:-2px;border-radius:2px;"></div></div>`,
+    // Azul — corresponde ao status inicial "em_montagem"
+    html: `<div style="width:28px;height:36px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))"><div style="width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#3b82f6;border:2.5px solid #fff;"></div><div style="width:2px;height:12px;background:#3b82f6;margin-top:-2px;border-radius:2px;"></div></div>`,
   });
 
 export function LocationPicker({ latitude, longitude, onChange }: Props) {
