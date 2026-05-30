@@ -2,14 +2,21 @@
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { CheckCircle2, Crosshair, Loader2, MapPin, Navigation2, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Crosshair,
+  Loader2,
+  MapPin,
+  Navigation2,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 // ── Constantes de zoom / fallback ─────────────────────────────────────────────
-const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 18 };
-const GEO_ZOOM = 19;   // zoom ao detectar localização atual
-const SAVED_ZOOM = 18; // zoom ao carregar coords já salvas
-const MAX_ZOOM = 22;   // máximo suportado pelo tile ESRI
+const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 13 };
+const GEO_ZOOM = 17; // zoom ao detectar localização atual
+const SAVED_ZOOM = 17; // zoom ao carregar coords já salvas
+const MAX_ZOOM = 20; // máximo suportado pelo tile ESRI
 
 interface Props {
   latitude: number | null;
@@ -43,7 +50,10 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
     if (markerRef.current) {
       markerRef.current.setLatLng([lat, lng]);
     } else {
-      const m = L.marker([lat, lng], { icon: PIN_ICON(), draggable: true }).addTo(map);
+      const m = L.marker([lat, lng], {
+        icon: PIN_ICON(),
+        draggable: true,
+      }).addTo(map);
       markerRef.current = m;
       m.on("dragend", () => {
         const pos = m.getLatLng();
@@ -57,7 +67,10 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
   // ── Centralizar mapa no pin atual ─────────────────────────────────────────
   function handleCenterOnPin() {
     if (mapRef.current && markerRef.current) {
-      mapRef.current.setView(markerRef.current.getLatLng(), mapRef.current.getZoom());
+      mapRef.current.setView(
+        markerRef.current.getLatLng(),
+        mapRef.current.getZoom(),
+      );
     }
   }
 
@@ -97,7 +110,10 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
     const initLng = longitude ?? DEFAULT_PLANT.lng;
     const initZoom = latitude ? SAVED_ZOOM : DEFAULT_PLANT.zoom;
 
-    const map = L.map(containerRef.current, { center: [initLat, initLng], zoom: initZoom });
+    const map = L.map(containerRef.current, {
+      center: [initLat, initLng],
+      zoom: initZoom,
+    });
     mapRef.current = map;
 
     L.tileLayer(
@@ -160,7 +176,8 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
       {/* Instrução + ações */}
       <div className="flex items-start justify-between gap-3">
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Arraste o pin ou clique no mapa para ajustar a posição exata do andaime.
+          Arraste o pin ou clique no mapa para ajustar a posição exata do
+          andaime.
         </p>
         <div className="flex gap-2 shrink-0">
           {hasCoords && (
@@ -191,7 +208,10 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
       </div>
 
       {/* Mapa */}
-      <div className="border border-border rounded-md overflow-hidden relative" style={{ height: 340 }}>
+      <div
+        className="border border-border rounded-md overflow-hidden relative"
+        style={{ height: 340 }}
+      >
         {mapGeoState === "detecting" && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none">
             <Loader2 className="w-3 h-3 animate-spin" />
@@ -216,25 +236,40 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
             Localização ajustada
           </div>
         )}
-        <div ref={containerRef} style={{ height: "100%", width: "100%" }} className="z-0" />
+        <div
+          ref={containerRef}
+          style={{ height: "100%", width: "100%" }}
+          className="z-0"
+        />
       </div>
 
       {/* Coordenadas em tempo real */}
       {hasCoords ? (
         <div className="flex gap-3">
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Latitude</p>
-            <p className="text-[12px] font-mono text-foreground">{latitude!.toFixed(6)}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+              Latitude
+            </p>
+            <p className="text-[12px] font-mono text-foreground">
+              {latitude!.toFixed(6)}
+            </p>
           </div>
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Longitude</p>
-            <p className="text-[12px] font-mono text-foreground">{longitude!.toFixed(6)}</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+              Longitude
+            </p>
+            <p className="text-[12px] font-mono text-foreground">
+              {longitude!.toFixed(6)}
+            </p>
           </div>
         </div>
-      ) : (geoState === "error" || geoState === "denied") ? (
+      ) : geoState === "error" || geoState === "denied" ? (
         <div className="flex items-start gap-2 text-[11px] px-3 py-2 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
           <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-          <span>Não foi possível obter sua localização. Ajuste o pin manualmente no mapa.</span>
+          <span>
+            Não foi possível obter sua localização. Ajuste o pin manualmente no
+            mapa.
+          </span>
         </div>
       ) : null}
     </div>

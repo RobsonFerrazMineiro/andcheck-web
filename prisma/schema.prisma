@@ -58,7 +58,7 @@ model Scaffold {
   code         String         @unique          // ex: AND-001
   tag          String         @unique          // QR tag = id (gerado automaticamente)
   type         ScaffoldType
-  status       ScaffoldStatus @default(pendente)
+  status       ScaffoldStatus @default(em_montagem)
   location     String
   area         String
   height       Float                           // metros
@@ -69,6 +69,10 @@ model Scaffold {
   company      String?                         // empresa montadora
   notes        String?
   validity_date DateTime?
+
+  latitude          Float?
+  longitude         Float?
+  location_description String?
 
   created_at   DateTime       @default(now())
   updated_at   DateTime       @updatedAt

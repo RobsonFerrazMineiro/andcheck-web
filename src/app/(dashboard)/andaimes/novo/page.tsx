@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Save } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -17,6 +18,12 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createScaffold } from "@/lib/actions/scaffold-actions";
+
+const LocationPicker = dynamic(
+  () =>
+    import("@/components/maps/location-picker").then((m) => m.LocationPicker),
+  { ssr: false },
+);
 
 interface ScaffoldForm {
   code: string;
@@ -49,6 +56,8 @@ const INITIAL: ScaffoldForm = {
 export default function NovoAndaimePage() {
   const router = useRouter();
   const [form, setForm] = useState<ScaffoldForm>(INITIAL);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +89,8 @@ export default function NovoAndaimePage() {
         responsible: form.responsible.trim(),
         company: form.company.trim() || undefined,
         notes: form.notes.trim() || undefined,
+        latitude: latitude ?? undefined,
+        longitude: longitude ?? undefined,
       });
       router.push("/andaimes/" + scaffold.id);
     } catch (err) {
@@ -171,6 +182,16 @@ export default function NovoAndaimePage() {
                 />
               </Field>
             </div>
+            <Field label="Geolocalização (opcional)">
+              <LocationPicker
+                latitude={latitude}
+                longitude={longitude}
+                onChange={(lat, lng) => {
+                  setLatitude(lat);
+                  setLongitude(lng);
+                }}
+              />
+            </Field>
           </FormSection>
 
           {/* Dados Técnicos */}
@@ -262,8 +283,8 @@ export default function NovoAndaimePage() {
           <div className="bg-muted/30 border border-border px-4 py-3">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
               Status inicial:{" "}
-              <span className="font-bold text-amber-700">PENDENTE</span> — o
-              andaime aguardará inspeção antes de ser liberado.
+              <span className="font-bold text-blue-700">EM MONTAGEM</span> — o
+              andaime ficará em montagem até ser liberado após inspeção.
             </p>
           </div>
 

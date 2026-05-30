@@ -58,12 +58,15 @@ export async function createScaffold(data: {
   responsible: string;
   company?: string;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
+  location_description?: string;
 }) {
   return prisma.scaffold.create({
     data: {
       ...data,
       tag: crypto.randomUUID(),
-      status: "pendente",
+      status: "em_montagem",
     },
   });
 }
