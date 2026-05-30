@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { DashboardMapPreview } from "@/components/dashboard/dashboard-map-preview";
+import { InspectionPerformanceChart } from "@/components/dashboard/inspection-performance-chart";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getInspections } from "@/lib/actions/inspection-actions";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
@@ -112,8 +114,15 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3">
+      {/* ── Gráfico + Mapa ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 min-h-96">
+        <InspectionPerformanceChart inspections={inspections} />
+        <DashboardMapPreview scaffolds={scaffolds} />
+      </div>
+
+      {/* ── Listas ── */}
+      <div className="grid lg:grid-cols-[3fr_2fr] gap-4">
+        <div>
           <PanelBlock
             title="Andaimes Cadastrados"
             subtitle={scaffolds.length + " ativos"}
@@ -149,7 +158,7 @@ export default async function DashboardPage() {
           </PanelBlock>
         </div>
 
-        <div className="lg:col-span-2">
+        <div>
           <PanelBlock
             title="Últimos Registros"
             subtitle={inspections.length + " total"}

@@ -87,10 +87,7 @@ export default async function InspectionDetailPage({ params }: Props) {
       : null;
 
   const docNum =
-    "AND-" +
-    inspection.scaffold_code +
-    "-" +
-    format(inspection.date, "yyyyMMdd");
+    inspection.scaffold_code + "-" + format(inspection.date, "yyyyMMdd");
 
   const grouped: Record<string, typeof checklist> = {};
   checklist.forEach((item) => {

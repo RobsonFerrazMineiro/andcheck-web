@@ -240,7 +240,7 @@ export async function generateInspectionPDF(
 
   const now = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   const dateStr = format(inspection.date, "yyyyMMdd");
-  const docNum = `AND-${inspection.scaffold_code}-${dateStr}`;
+  const docNum = `${inspection.scaffold_code}-${dateStr}`;
   const revNum = "00";
   const qrUrl = `${origin}/qr/${inspection.scaffold?.id ?? inspection.scaffold_code}`;
 

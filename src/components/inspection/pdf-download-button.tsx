@@ -24,7 +24,7 @@ export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
         .toISOString()
         .slice(0, 10)
         .replace(/-/g, "");
-      doc.save(`AND-${inspection.scaffold_code}-${dateStr}.pdf`);
+      doc.save(`${inspection.scaffold_code}-${dateStr}.pdf`);
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Não foi possível gerar o PDF. Tente novamente.");
