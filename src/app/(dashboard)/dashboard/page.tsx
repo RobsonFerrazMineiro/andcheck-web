@@ -62,7 +62,7 @@ export default async function DashboardPage() {
         <div className="flex gap-2 shrink-0">
           <Link
             href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold tracking-widest uppercase h-8 px-3"
+            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold tracking-widest uppercase h-8 px-3"
           >
             <Plus className="w-3.5 h-3.5" />
             Novo Andaime
@@ -78,23 +78,69 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard label="Andaimes Liberados" value={liberados} total={scaffolds.length} icon={CheckCircle2} theme="green" hint="Status operacional" />
-        <KpiCard label="Aguardando Inspeção" value={pendentes} total={scaffolds.length} icon={Clock} theme="amber" hint="Pendente / Em montagem" />
-        <KpiCard label="Andaimes Reprovados" value={reprovados} total={scaffolds.length} icon={XCircle} theme="red" hint="Ação corretiva requerida" />
-        <KpiCard label="Vencimento em 3 dias" value={proxVenc} total={scaffolds.length} icon={AlertTriangle} theme="orange" hint="Requer renovação" />
+        <KpiCard
+          label="Andaimes Liberados"
+          value={liberados}
+          total={scaffolds.length}
+          icon={CheckCircle2}
+          theme="green"
+          hint="Status operacional"
+        />
+        <KpiCard
+          label="Aguardando Inspeção"
+          value={pendentes}
+          total={scaffolds.length}
+          icon={Clock}
+          theme="amber"
+          hint="Pendente / Em montagem"
+        />
+        <KpiCard
+          label="Andaimes Reprovados"
+          value={reprovados}
+          total={scaffolds.length}
+          icon={XCircle}
+          theme="red"
+          hint="Ação corretiva requerida"
+        />
+        <KpiCard
+          label="Vencimento em 3 dias"
+          value={proxVenc}
+          total={scaffolds.length}
+          icon={AlertTriangle}
+          theme="orange"
+          hint="Requer renovação"
+        />
       </div>
 
       <div className="grid lg:grid-cols-5 gap-4">
         <div className="lg:col-span-3">
-          <PanelBlock title="Andaimes Cadastrados" subtitle={scaffolds.length + " ativos"} icon={Construction}
-            action={<Link href="/andaimes" className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1">Ver todos <ArrowRight className="w-3 h-3" /></Link>}
+          <PanelBlock
+            title="Andaimes Cadastrados"
+            subtitle={scaffolds.length + " ativos"}
+            icon={Construction}
+            action={
+              <Link
+                href="/andaimes"
+                className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                Ver todos <ArrowRight className="w-3 h-3" />
+              </Link>
+            }
           >
             <div className="divide-y divide-border">
               {scaffolds.slice(0, 6).map((s) => (
-                <Link key={s.id} href={"/andaimes/" + s.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors">
+                <Link
+                  key={s.id}
+                  href={"/andaimes/" + s.id}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
+                >
                   <div className="min-w-0">
-                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">{s.code}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{s.location} · {s.area}</p>
+                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">
+                      {s.code}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                      {s.location} · {s.area}
+                    </p>
                   </div>
                   <StatusBadge status={s.status} />
                 </Link>
@@ -104,14 +150,30 @@ export default async function DashboardPage() {
         </div>
 
         <div className="lg:col-span-2">
-          <PanelBlock title="Últimos Registros" subtitle={inspections.length + " total"} icon={FileText}
-            action={<Link href="/inspecoes" className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1">Ver todos <ArrowRight className="w-3 h-3" /></Link>}
+          <PanelBlock
+            title="Últimos Registros"
+            subtitle={inspections.length + " total"}
+            icon={FileText}
+            action={
+              <Link
+                href="/inspecoes"
+                className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                Ver todos <ArrowRight className="w-3 h-3" />
+              </Link>
+            }
           >
             <div className="divide-y divide-border">
               {inspections.slice(0, 7).map((insp) => (
-                <Link key={insp.id} href={"/inspecoes/" + insp.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors">
+                <Link
+                  key={insp.id}
+                  href={"/inspecoes/" + insp.id}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
+                >
                   <div className="min-w-0">
-                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">{insp.scaffold_code}</p>
+                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">
+                      {insp.scaffold_code}
+                    </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       {format(insp.date, "dd/MM/yyyy")} · {insp.inspector_name}
                     </p>
@@ -125,47 +187,120 @@ export default async function DashboardPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border">
-        <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest font-semibold">Conformidade:</span>
+        <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest font-semibold">
+          Conformidade:
+        </span>
         {NORMS.map((n) => (
-          <span key={n} className="text-[9px] font-mono px-2 py-0.5 border border-border/60 text-muted-foreground/50 uppercase tracking-wider bg-muted/30">{n}</span>
+          <span
+            key={n}
+            className="text-[9px] font-mono px-2 py-0.5 border border-border/60 text-muted-foreground/50 uppercase tracking-wider bg-muted/30"
+          >
+            {n}
+          </span>
         ))}
       </div>
     </div>
   );
 }
 
-interface KpiCardProps { label: string; value: number; total: number; icon: React.ElementType; theme: "green" | "amber" | "red" | "orange"; hint: string; }
+interface KpiCardProps {
+  label: string;
+  value: number;
+  total: number;
+  icon: React.ElementType;
+  theme: "green" | "amber" | "red" | "orange";
+  hint: string;
+}
 const THEMES = {
-  green:  { border: "border-l-[3px] border-l-green-600",  val: "text-green-700",  bar: "bg-green-500" },
-  amber:  { border: "border-l-[3px] border-l-amber-500",  val: "text-amber-700",  bar: "bg-amber-400" },
-  red:    { border: "border-l-[3px] border-l-red-600",    val: "text-red-700",    bar: "bg-red-500" },
-  orange: { border: "border-l-[3px] border-l-orange-500", val: "text-orange-700", bar: "bg-orange-400" },
+  green: {
+    border: "border-l-[3px] border-l-green-600",
+    val: "text-green-700",
+    bar: "bg-green-500",
+  },
+  amber: {
+    border: "border-l-[3px] border-l-amber-500",
+    val: "text-amber-700",
+    bar: "bg-amber-400",
+  },
+  red: {
+    border: "border-l-[3px] border-l-red-600",
+    val: "text-red-700",
+    bar: "bg-red-500",
+  },
+  orange: {
+    border: "border-l-[3px] border-l-orange-500",
+    val: "text-orange-700",
+    bar: "bg-orange-400",
+  },
 } as const;
-function KpiCard({ label, value, total, icon: Icon, theme, hint }: KpiCardProps) {
-  const t = THEMES[theme]; const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+function KpiCard({
+  label,
+  value,
+  total,
+  icon: Icon,
+  theme,
+  hint,
+}: KpiCardProps) {
+  const t = THEMES[theme];
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
-    <div className={"bg-card " + t.border + " border border-border p-4 shadow-sm"}>
+    <div
+      className={"bg-card " + t.border + " border border-border p-4 shadow-sm"}
+    >
       <div className="flex items-start justify-between mb-2">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-tight pr-2">{label}</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-tight pr-2">
+          {label}
+        </p>
         <Icon className="w-4 h-4 shrink-0 text-muted-foreground/40" />
       </div>
-      <p className={"text-[28px] font-bold " + t.val + " leading-none tracking-tight"}>{value}</p>
+      <p
+        className={
+          "text-[28px] font-bold " + t.val + " leading-none tracking-tight"
+        }
+      >
+        {value}
+      </p>
       <div className="mt-3">
-        <div className="w-full bg-border/60 h-0.75 mb-1.5"><div className={t.bar + " h-0.75 transition-all"} style={{ width: pct + "%" }} /></div>
-        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">{hint}</p>
+        <div className="w-full bg-border/60 h-0.75 mb-1.5">
+          <div
+            className={t.bar + " h-0.75 transition-all"}
+            style={{ width: pct + "%" }}
+          />
+        </div>
+        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">
+          {hint}
+        </p>
       </div>
     </div>
   );
 }
-interface PanelBlockProps { title: string; subtitle?: string; icon: React.ElementType; action?: React.ReactNode; children: React.ReactNode; }
-function PanelBlock({ title, subtitle, icon: Icon, action, children }: PanelBlockProps) {
+interface PanelBlockProps {
+  title: string;
+  subtitle?: string;
+  icon: React.ElementType;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}
+function PanelBlock({
+  title,
+  subtitle,
+  icon: Icon,
+  action,
+  children,
+}: PanelBlockProps) {
   return (
     <div className="bg-card border border-border shadow-sm h-full flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">{title}</span>
-          {subtitle && <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider hidden sm:inline">· {subtitle}</span>}
+          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            {title}
+          </span>
+          {subtitle && (
+            <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider hidden sm:inline">
+              · {subtitle}
+            </span>
+          )}
         </div>
         {action}
       </div>
