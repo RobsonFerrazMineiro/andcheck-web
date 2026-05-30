@@ -20,18 +20,25 @@ export interface ScaffoldPin {
 
 const STATUS_COLOR: Record<string, string> = {
   liberado: "#10b981",
-  pendente: "#f59e0b",
-  reprovado: "#ef4444",
-  vencido: "#374151",
   em_montagem: "#3b82f6",
+  pendente_liberacao: "#f59e0b",
+  reprovado: "#ef4444",
+  interditado: "#7f1d1d",
+  vencido: "#374151",
+  desmontado: "#9ca3af",
+  // legado
+  pendente: "#f59e0b",
 };
 
 const STATUS_LABEL: Record<string, string> = {
   liberado: "Liberado",
-  pendente: "Pendente",
-  reprovado: "Reprovado",
-  vencido: "Vencido",
   em_montagem: "Em Montagem",
+  pendente_liberacao: "Pend. Liberação",
+  reprovado: "Reprovado",
+  interditado: "Interditado",
+  vencido: "Vencido",
+  desmontado: "Desmontado",
+  pendente: "Pendente",
 };
 
 const RESULT_LABEL: Record<string, string> = {

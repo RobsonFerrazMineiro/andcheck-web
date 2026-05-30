@@ -25,43 +25,76 @@ interface Props {
 const STATUS_CFG = {
   liberado: {
     label: "LIBERADO",
+    msg: "Andaime liberado para uso. Verifique a validade antes de utilizar.",
     bg: "bg-emerald-500",
     iconBg: "bg-emerald-400/25",
     iconRing: "ring-emerald-300/50",
     ring: "ring-emerald-500/50",
     icon: CheckCircle2,
   },
-  pendente: {
-    label: "PENDENTE",
+  pendente_liberacao: {
+    label: "PEND. LIBERAÇÃO",
+    msg: "Montagem concluída. Aguardando inspeção de liberação. Uso não autorizado.",
     bg: "bg-amber-500",
     iconBg: "bg-amber-400/25",
     iconRing: "ring-amber-300/50",
     ring: "ring-amber-500/50",
     icon: Clock,
   },
+  em_montagem: {
+    label: "EM MONTAGEM",
+    msg: "Andaime em montagem. Uso não autorizado.",
+    bg: "bg-sky-600",
+    iconBg: "bg-sky-400/25",
+    iconRing: "ring-sky-300/50",
+    ring: "ring-sky-600/50",
+    icon: Wrench,
+  },
   reprovado: {
     label: "REPROVADO",
+    msg: "Andaime reprovado na inspeção. Uso proibido até correção e nova liberação.",
     bg: "bg-red-600",
     iconBg: "bg-red-400/25",
     iconRing: "ring-red-300/50",
     ring: "ring-red-600/50",
     icon: XCircle,
   },
+  interditado: {
+    label: "INTERDITADO",
+    msg: "⚠️ ANDAIME INTERDITADO. Uso estritamente proibido. Risco de acidente.",
+    bg: "bg-red-800",
+    iconBg: "bg-red-400/25",
+    iconRing: "ring-red-300/50",
+    ring: "ring-red-800/50",
+    icon: AlertTriangle,
+  },
   vencido: {
     label: "VENCIDO",
+    msg: "Validade expirada. Uso proibido até nova inspeção e liberação.",
     bg: "bg-red-700",
     iconBg: "bg-red-400/25",
     iconRing: "ring-red-300/50",
     ring: "ring-red-700/50",
     icon: AlertTriangle,
   },
-  em_montagem: {
-    label: "EM MONTAGEM",
-    bg: "bg-sky-600",
-    iconBg: "bg-sky-400/25",
-    iconRing: "ring-sky-300/50",
-    ring: "ring-sky-600/50",
-    icon: Wrench,
+  desmontado: {
+    label: "DESMONTADO",
+    msg: "Este andaime foi desmontado e está fora de operação.",
+    bg: "bg-slate-500",
+    iconBg: "bg-slate-400/25",
+    iconRing: "ring-slate-300/50",
+    ring: "ring-slate-500/50",
+    icon: AlertTriangle,
+  },
+  // legado
+  pendente: {
+    label: "PENDENTE",
+    msg: "Aguardando inspeção de liberação. Uso não autorizado.",
+    bg: "bg-amber-500",
+    iconBg: "bg-amber-400/25",
+    iconRing: "ring-amber-300/50",
+    ring: "ring-amber-500/50",
+    icon: Clock,
   },
 };
 
@@ -148,6 +181,15 @@ export default async function QRPage({ params }: Props) {
               />
             </div>
           </div>
+
+          {/* Mensagem operacional */}
+          {"msg" in cfg && (
+            <div className="px-6 py-3 bg-black/30 border-b border-white/8">
+              <p className="text-[11px] font-semibold text-white/80 leading-snug">
+                {cfg.msg}
+              </p>
+            </div>
+          )}
 
           {/* TAG + tipo */}
           <div className="px-6 py-4 flex items-center justify-between border-b border-white/8">

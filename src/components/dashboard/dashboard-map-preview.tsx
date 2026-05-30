@@ -114,10 +114,11 @@ export function DashboardMapPreview({ scaffolds }: Props) {
       <div className="px-4 py-2 border-t border-border flex flex-wrap gap-3">
         {[
           { label: "Liberado", dot: "bg-emerald-500" },
-          { label: "Pendente", dot: "bg-amber-400" },
-          { label: "Reprovado", dot: "bg-red-500" },
           { label: "Em Montagem", dot: "bg-blue-500" },
-          { label: "Vencido", dot: "bg-red-700" },
+          { label: "Pend. Lib.", dot: "bg-amber-400" },
+          { label: "Reprovado", dot: "bg-red-500" },
+          { label: "Interditado", dot: "bg-red-900" },
+          { label: "Vencido", dot: "bg-gray-600" },
         ].map((v) => (
           <div key={v.label} className="flex items-center gap-1.5">
             <div className={"w-2 h-2 rounded-full " + v.dot} />

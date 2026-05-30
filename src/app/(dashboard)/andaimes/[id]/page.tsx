@@ -16,6 +16,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ScaffoldActionsBar } from "@/components/scaffold/actions-bar";
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
@@ -60,18 +61,11 @@ export default async function AndaimeDetailPage({ params }: Props) {
             <span className="text-foreground">{scaffold.code}</span>
           </p>
         </div>
-        <Link
-          href={
-            "/inspecoes/nova?scaffold_id=" +
-            scaffold.id +
-            "&scaffold_code=" +
-            scaffold.code
-          }
-          className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
-        >
-          <ClipboardCheck className="w-4 h-4" />
-          Iniciar Inspeção
-        </Link>
+        <ScaffoldActionsBar
+          scaffoldId={scaffold.id}
+          scaffoldCode={scaffold.code}
+          status={scaffold.status}
+        />
       </div>
 
       <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">

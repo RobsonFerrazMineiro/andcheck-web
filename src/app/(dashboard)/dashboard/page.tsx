@@ -34,10 +34,13 @@ export default async function DashboardPage() {
   ]);
 
   const liberados = scaffolds.filter((s) => s.status === "liberado").length;
-  const pendentes = scaffolds.filter((s) =>
-    ["pendente", "em_montagem"].includes(s.status),
+  const emMontagem = scaffolds.filter((s) => s.status === "em_montagem").length;
+  const pendenteLiberacao = scaffolds.filter(
+    (s) => s.status === "pendente_liberacao",
   ).length;
-  const reprovados = scaffolds.filter((s) => s.status === "reprovado").length;
+  const reprovados = scaffolds.filter((s) =>
+    ["reprovado", "interditado"].includes(s.status),
+  ).length;
   const proxVenc = scaffolds.filter((s) => {
     if (!s.validity_date || s.status !== "liberado") return false;
     return differenceInDays(s.validity_date, new Date()) <= 3;
@@ -89,15 +92,15 @@ export default async function DashboardPage() {
           hint="Status operacional"
         />
         <KpiCard
-          label="Aguardando Inspeção"
-          value={pendentes}
+          label="Em Montagem"
+          value={emMontagem}
           total={scaffolds.length}
           icon={Clock}
           theme="amber"
-          hint="Pendente / Em montagem"
+          hint={"Pend. liberação: " + pendenteLiberacao}
         />
         <KpiCard
-          label="Andaimes Reprovados"
+          label="Reprovados / Interditados"
           value={reprovados}
           total={scaffolds.length}
           icon={XCircle}

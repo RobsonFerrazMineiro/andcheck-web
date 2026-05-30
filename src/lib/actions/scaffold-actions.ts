@@ -76,6 +76,28 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
   return prisma.scaffold.update({ where: { id }, data: { status } });
 }
 
+// ── Concluir montagem → PENDENTE_LIBERACAO ────────────────────────────────────
+export async function completeAssembly(id: string) {
+  return prisma.scaffold.update({
+    where: { id },
+    data: {
+      status: "pendente_liberacao",
+      assembly_completed_at: new Date(),
+    },
+  });
+}
+
+// ── Desmontar → DESMONTADO ────────────────────────────────────────────────────
+export async function dismantleScaffold(id: string) {
+  return prisma.scaffold.update({
+    where: { id },
+    data: {
+      status: "desmontado",
+      dismantled_at: new Date(),
+    },
+  });
+}
+
 // ── Deletar ───────────────────────────────────────────────────────────────────
 export async function deleteScaffold(id: string) {
   return prisma.scaffold.delete({ where: { id } });

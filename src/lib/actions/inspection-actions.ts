@@ -64,17 +64,29 @@ export async function createInspection(data: {
     include: { checklist: true },
   });
 
-  // Atualizar status e validade do andaime
+  // Atualizar status e validade do andaime conforme resultado
   const validityDate =
     data.validity_days > 0
       ? new Date(Date.now() + data.validity_days * 86_400_000)
       : null;
 
+  // Se há item crítico reprovado → INTERDITADO; reprovado simples → REPROVADO; aprovado → LIBERADO
+  const hasCriticalFail = checklist.some(
+    (c) => c.critical && c.value === "CL_FAIL",
+  );
+  const newStatus =
+    data.result === "reprovado"
+      ? hasCriticalFail
+        ? "interditado"
+        : "reprovado"
+      : "liberado";
+
   await prisma.scaffold.update({
     where: { id: data.scaffold_id },
     data: {
-      status: data.result === "reprovado" ? "reprovado" : "liberado",
+      status: newStatus,
       validity_date: validityDate,
+      released_at: newStatus === "liberado" ? new Date() : undefined,
     },
   });
 

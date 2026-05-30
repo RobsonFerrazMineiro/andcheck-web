@@ -14,11 +14,13 @@ datasource db {
 // ──────────────────────────────────────────────────────────────────────────────
 
 enum ScaffoldStatus {
-  liberado
-  pendente
   em_montagem
+  pendente_liberacao
+  liberado
   reprovado
+  interditado
   vencido
+  desmontado
 }
 
 enum ScaffoldType {
@@ -69,6 +71,9 @@ model Scaffold {
   company      String?                         // empresa montadora
   notes        String?
   validity_date DateTime?
+  assembly_completed_at DateTime?   // data conclusão montagem → PENDENTE_LIBERACAO
+  released_at           DateTime?   // data liberação → LIBERADO
+  dismantled_at         DateTime?   // data desmontagem → DESMONTADO
 
   latitude          Float?
   longitude         Float?

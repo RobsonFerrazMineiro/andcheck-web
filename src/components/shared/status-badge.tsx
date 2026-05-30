@@ -2,16 +2,23 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock,
+  HardHat,
+  ShieldOff,
   Wrench,
   XCircle,
 } from "lucide-react";
 
 type StatusKey =
-  | "liberado"
-  | "pendente"
   | "em_montagem"
+  | "pendente_liberacao"
+  | "liberado"
   | "reprovado"
+  | "interditado"
   | "vencido"
+  | "desmontado"
+  // legado (não deve mais surgir, mas mantido para compatibilidade)
+  | "pendente"
+  // resultados de inspeção
   | "aprovado"
   | "aprovado_com_ressalvas"
   | "nao_conforme"
@@ -25,31 +32,49 @@ interface StatusConfig {
 }
 
 const STATUS_MAP: Record<StatusKey, StatusConfig> = {
-  liberado: {
-    label: "LIBERADO",
-    icon: CheckCircle2,
-    cls: "bg-green-50 text-green-800 border-green-400/60",
-  },
-  pendente: {
-    label: "PENDENTE",
-    icon: Clock,
-    cls: "bg-amber-50 text-amber-800 border-amber-400/60",
-  },
+  // ── Ciclo de vida do andaime ──────────────────────────────────────────────
   em_montagem: {
     label: "EM MONTAGEM",
     icon: Wrench,
     cls: "bg-blue-50 text-blue-800 border-blue-400/60",
+  },
+  pendente_liberacao: {
+    label: "PEND. LIBERAÇÃO",
+    icon: Clock,
+    cls: "bg-amber-50 text-amber-800 border-amber-400/60",
+  },
+  liberado: {
+    label: "LIBERADO",
+    icon: CheckCircle2,
+    cls: "bg-green-50 text-green-800 border-green-400/60",
   },
   reprovado: {
     label: "REPROVADO",
     icon: XCircle,
     cls: "bg-red-50 text-red-800 border-red-400/60",
   },
+  interditado: {
+    label: "INTERDITADO",
+    icon: ShieldOff,
+    cls: "bg-red-100 text-red-900 border-red-600/60",
+  },
   vencido: {
     label: "VENCIDO",
     icon: AlertTriangle,
     cls: "bg-orange-50 text-orange-800 border-orange-400/60",
   },
+  desmontado: {
+    label: "DESMONTADO",
+    icon: HardHat,
+    cls: "bg-slate-100 text-slate-600 border-slate-400/60",
+  },
+  // ── Legado ────────────────────────────────────────────────────────────────
+  pendente: {
+    label: "PENDENTE",
+    icon: Clock,
+    cls: "bg-amber-50 text-amber-800 border-amber-400/60",
+  },
+  // ── Resultados de inspeção ────────────────────────────────────────────────
   aprovado: {
     label: "APROVADO",
     icon: CheckCircle2,
