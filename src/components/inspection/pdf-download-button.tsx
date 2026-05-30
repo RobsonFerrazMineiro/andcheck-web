@@ -1,0 +1,52 @@
+"use client";
+
+import type { InspectionForPDF } from "@/lib/generate-inspection-pdf";
+import { Download, Loader2 } from "lucide-react";
+import { useState } from "react";
+
+interface PdfDownloadButtonProps {
+  inspection: InspectionForPDF;
+}
+
+export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
+  const [loading, setLoading] = useState(false);
+
+  async function handleDownload() {
+    setLoading(true);
+    try {
+      const { generateInspectionPDF } =
+        await import("@/lib/generate-inspection-pdf");
+      const doc = await generateInspectionPDF(
+        inspection,
+        window.location.origin,
+      );
+      const dateStr = new Date(inspection.date)
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "");
+      doc.save(`AND-${inspection.scaffold_code}-${dateStr}.pdf`);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      alert("Não foi possível gerar o PDF. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={loading}
+      className="flex items-center gap-1.5 h-8 px-4 bg-primary text-primary-foreground
+                 text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90
+                 disabled:opacity-60 transition-colors"
+    >
+      {loading ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : (
+        <Download className="w-3.5 h-3.5" />
+      )}
+      {loading ? "Gerando..." : "Exportar PDF"}
+    </button>
+  );
+}
