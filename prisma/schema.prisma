@@ -93,6 +93,8 @@ model Inspection {
   result          InspectionResult
   validity_days   Int               @default(0)
   notes           String?
+  photos          String[]          // base64 ou URLs das fotos
+  signature       String?           // base64 da assinatura digital
 
   created_at      DateTime          @default(now())
   updated_at      DateTime          @updatedAt
@@ -117,6 +119,7 @@ model ChecklistEntry {
   value          ChecklistValue
   critical       Boolean         @default(false)
   observation    String?
+  photo          String?         // base64 da foto do item não conforme
 
   @@map("checklist_entries")
 }

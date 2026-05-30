@@ -16,6 +16,7 @@ export interface ChecklistCategory {
 export interface ChecklistValue {
   status: "conforme" | "nao_conforme" | "nao_aplicavel" | "";
   observation: string;
+  photo?: string; // base64 da foto do item não conforme
 }
 
 export interface ChecklistEntry extends ChecklistItem {

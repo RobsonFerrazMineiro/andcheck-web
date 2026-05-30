@@ -77,13 +77,13 @@ export default async function AndaimeDetailPage({ params }: Props) {
       <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/40 mb-1">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40 mb-1">
               Ficha Técnica do Ativo
             </p>
-            <h1 className="text-xl font-bold text-primary-foreground font-mono tracking-widest">
+            <h1 className="text-[22px] font-bold text-primary-foreground font-mono tracking-tight">
               {scaffold.code}
             </h1>
-            <p className="text-[11px] text-primary-foreground/50 mt-1">
+            <p className="text-[11px] text-primary-foreground/60 mt-0.5">
               {scaffold.location}
             </p>
           </div>

@@ -2,10 +2,12 @@
 
 import {
   AlertTriangle,
+  Camera,
   CheckCircle2,
   MinusCircle,
   XCircle,
 } from "lucide-react";
+import { useRef } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -57,6 +59,8 @@ export default function ChecklistSection({
   values,
   onChange,
 }: Props) {
+  const photoInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
   const handleChange = (
     itemIndex: number,
     field: keyof ChecklistValue,
@@ -65,6 +69,25 @@ export default function ChecklistSection({
     const updated = [...values];
     updated[itemIndex] = { ...updated[itemIndex], [field]: value };
     onChange(updated);
+  };
+
+  const handlePhotoChange = (
+    itemIndex: number,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const updated = [...values];
+      updated[itemIndex] = {
+        ...updated[itemIndex],
+        photo: ev.target?.result as string,
+      };
+      onChange(updated);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   return (
@@ -119,14 +142,39 @@ export default function ChecklistSection({
 
               {/* Observation input — só aparece se não for "conforme" */}
               {val.status !== "" && val.status !== "conforme" && (
-                <Input
-                  placeholder="Observação sobre este item..."
-                  value={val.observation}
-                  onChange={(e) =>
-                    handleChange(idx, "observation", e.target.value)
-                  }
-                  className="text-[11px] h-8 rounded-none border-border"
-                />
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Observação sobre este item..."
+                    value={val.observation}
+                    onChange={(e) =>
+                      handleChange(idx, "observation", e.target.value)
+                    }
+                    className="text-[11px] h-8 rounded-none border-border flex-1"
+                  />
+                  {/* Input de arquivo oculto */}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    ref={(el) => {
+                      photoInputRefs.current[idx] = el;
+                    }}
+                    onChange={(e) => handlePhotoChange(idx, e)}
+                  />
+                  <button
+                    type="button"
+                    title={val.photo ? "Foto adicionada" : "Adicionar foto"}
+                    onClick={() => photoInputRefs.current[idx]?.click()}
+                    className={`shrink-0 w-8 h-8 flex items-center justify-center border transition-colors ${
+                      val.photo
+                        ? "border-red-400 bg-red-50 text-red-600"
+                        : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
             </div>
           );

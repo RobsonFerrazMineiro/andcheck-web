@@ -42,6 +42,8 @@ export async function createInspection(data: {
   result: InspectionResult;
   validity_days: number;
   notes?: string;
+  photos?: string[];
+  signature?: string;
   checklist: {
     item_id: string;
     item_label: string;
@@ -49,6 +51,7 @@ export async function createInspection(data: {
     value: "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA";
     critical: boolean;
     observation?: string;
+    photo?: string;
   }[];
 }) {
   const { checklist, ...inspectionData } = data;

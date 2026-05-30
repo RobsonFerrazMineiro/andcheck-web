@@ -4,14 +4,17 @@ import { addDays, format } from "date-fns";
 import {
   AlertTriangle,
   ArrowLeft,
+  Camera,
   CheckCircle2,
   ClipboardCheck,
   Loader2,
+  RotateCcw,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import ChecklistSection from "@/components/inspection/checklist-section";
@@ -61,6 +64,76 @@ export function NovaInspecaoForm({
   const [observations, setObservations] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
+
+  // Registro fotográfico
+  const [photos, setPhotos] = useState<string[]>([]); // base64
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  // Assinatura digital
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sigDrawing = useRef(false);
+  const [hasSig, setHasSig] = useState(false);
+
+  const getCtx = useCallback(() => {
+    const c = canvasRef.current;
+    if (!c) return null;
+    const ctx = c.getContext("2d");
+    if (!ctx) return null;
+    return { c, ctx };
+  }, []);
+
+  const clearSignature = useCallback(() => {
+    const r = getCtx();
+    if (!r) return;
+    r.ctx.clearRect(0, 0, r.c.width, r.c.height);
+    setHasSig(false);
+  }, [getCtx]);
+
+  const sigPos = useCallback(
+    (e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      if ("touches" in e) {
+        const t = e.touches[0];
+        return {
+          x: (t.clientX - rect.left) * scaleX,
+          y: (t.clientY - rect.top) * scaleY,
+        };
+      }
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const r = getCtx();
+    if (!r) return;
+    r.ctx.strokeStyle = "#1a1a2e";
+    r.ctx.lineWidth = 2;
+    r.ctx.lineCap = "round";
+    r.ctx.lineJoin = "round";
+  }, [getCtx]);
+
+  const handlePhotoAdd = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files ?? []);
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const b64 = ev.target?.result as string;
+          setPhotos((prev) => [...prev, b64]);
+        };
+        reader.readAsDataURL(file);
+      });
+      // reset input para permitir re-selecionar o mesmo arquivo
+      e.target.value = "";
+    },
+    [],
+  );
   const [checklistValues, setChecklistValues] = useState<FormValue[][]>(
     checklistTemplate.map((cat) =>
       cat.items.map(() => ({ status: "", observation: "" })),
@@ -120,6 +193,7 @@ export function NovaInspecaoForm({
           value: statusToPrisma(checklistValues[ci][ii].status),
           critical: item.critical ?? false,
           observation: checklistValues[ci][ii].observation || undefined,
+          photo: checklistValues[ci][ii].photo || undefined,
         })),
       );
       const created = await createInspection({
@@ -132,6 +206,11 @@ export function NovaInspecaoForm({
           | "reprovado",
         validity_days: autoResult !== "reprovado" ? Number(validityDays) : 0,
         notes: observations.trim() || undefined,
+        photos: photos.length > 0 ? photos : undefined,
+        signature:
+          hasSig && canvasRef.current
+            ? canvasRef.current.toDataURL("image/png")
+            : undefined,
         checklist,
       });
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
@@ -314,6 +393,107 @@ export function NovaInspecaoForm({
 
       <div className="bg-card border border-border shadow-sm p-5 space-y-3">
         <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+          Registro Fotográfico
+        </h3>
+
+        {/* Input de arquivo oculto */}
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          capture="environment"
+          className="hidden"
+          onChange={handlePhotoAdd}
+        />
+
+        {/* Grid: fotos gerais + fotos de itens não conformes */}
+        {(photos.length > 0 ||
+          checklistValues.some((cat) => cat.some((v) => v.photo))) && (
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+            {/* Fotos gerais */}
+            {photos.map((src, i) => (
+              <div
+                key={`general-${i}`}
+                className="relative group aspect-square"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={src}
+                  alt={`Foto ${i + 1}`}
+                  className="w-full h-full object-cover border border-border"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPhotos((prev) => prev.filter((_, j) => j !== i))
+                  }
+                  className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remover foto"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+
+            {/* Fotos de itens não conformes */}
+            {checklistTemplate.flatMap((cat, ci) =>
+              cat.items.map((item, ii) => {
+                const photo = checklistValues[ci]?.[ii]?.photo;
+                if (!photo) return null;
+                return (
+                  <div
+                    key={`item-${ci}-${ii}`}
+                    className="relative group aspect-square"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo}
+                      alt={item.item}
+                      className="w-full h-full object-cover border-2 border-red-500"
+                    />
+                    {/* Label do item */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-red-600/80 px-1 py-0.5">
+                      <p className="text-[8px] text-white font-bold leading-tight truncate">
+                        {item.item}
+                      </p>
+                    </div>
+                    {/* Botão remover */}
+                    <button
+                      type="button"
+                      title="Remover foto"
+                      onClick={() => {
+                        const updated = checklistValues.map((c) => [...c]);
+                        updated[ci][ii] = {
+                          ...updated[ci][ii],
+                          photo: undefined,
+                        };
+                        setChecklistValues(updated);
+                      }}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                );
+              }),
+            )}
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={() => photoInputRef.current?.click()}
+          className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          Adicionar foto{photos.length > 0 ? ` (${photos.length})` : ""}
+        </button>
+      </div>
+
+      {/* Assinatura Digital */}
+      <div className="bg-card border border-border shadow-sm p-5 space-y-3">
+        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
           Observações Gerais
         </h3>
         <Textarea
@@ -322,6 +502,82 @@ export function NovaInspecaoForm({
           onChange={(e) => setObservations(e.target.value)}
           className="text-[11px] rounded-none min-h-20"
         />
+      </div>
+
+      {/* Assinatura Digital */}
+      <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-2">
+        <div className="flex items-center justify-between border-b border-border pb-2">
+          <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            Assinatura Digital
+          </h3>
+          <button
+            type="button"
+            onClick={clearSignature}
+            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Limpar
+          </button>
+        </div>
+
+        <div className="relative border border-dashed border-border bg-muted/20">
+          <canvas
+            ref={canvasRef}
+            width={800}
+            height={160}
+            className="w-full touch-none cursor-crosshair"
+            onMouseDown={(e) => {
+              const r = getCtx();
+              if (!r) return;
+              sigDrawing.current = true;
+              const pos = sigPos(e, r.c);
+              r.ctx.beginPath();
+              r.ctx.moveTo(pos.x, pos.y);
+            }}
+            onMouseMove={(e) => {
+              if (!sigDrawing.current) return;
+              const r = getCtx();
+              if (!r) return;
+              const pos = sigPos(e, r.c);
+              r.ctx.lineTo(pos.x, pos.y);
+              r.ctx.stroke();
+              if (!hasSig) setHasSig(true);
+            }}
+            onMouseUp={() => {
+              sigDrawing.current = false;
+            }}
+            onMouseLeave={() => {
+              sigDrawing.current = false;
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              const r = getCtx();
+              if (!r) return;
+              sigDrawing.current = true;
+              const pos = sigPos(e, r.c);
+              r.ctx.beginPath();
+              r.ctx.moveTo(pos.x, pos.y);
+            }}
+            onTouchMove={(e) => {
+              e.preventDefault();
+              if (!sigDrawing.current) return;
+              const r = getCtx();
+              if (!r) return;
+              const pos = sigPos(e, r.c);
+              r.ctx.lineTo(pos.x, pos.y);
+              r.ctx.stroke();
+              if (!hasSig) setHasSig(true);
+            }}
+            onTouchEnd={() => {
+              sigDrawing.current = false;
+            }}
+          />
+          {!hasSig && (
+            <p className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground pointer-events-none">
+              Assine com o dedo ou mouse acima
+            </p>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
