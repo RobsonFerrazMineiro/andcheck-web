@@ -1,14 +1,19 @@
+import { auth } from "@/auth";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { UserMenu } from "@/components/layout/user-menu";
 import { Activity } from "lucide-react";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494"];
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const user = session?.user;
+
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
@@ -23,15 +28,24 @@ export default function DashboardLayout({
               Sistema operacional
             </span>
           </div>
-          <div className="flex items-center gap-4">
-            {NORMS.map((n) => (
-              <span
-                key={n}
-                className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-wider"
-              >
-                {n}
-              </span>
-            ))}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              {NORMS.map((n) => (
+                <span
+                  key={n}
+                  className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-wider"
+                >
+                  {n}
+                </span>
+              ))}
+            </div>
+            {user && (
+              <UserMenu
+                name={user.name ?? "Usuário"}
+                email={user.email ?? ""}
+                role={(user as { role?: string }).role ?? "viewer"}
+              />
+            )}
           </div>
         </div>
 

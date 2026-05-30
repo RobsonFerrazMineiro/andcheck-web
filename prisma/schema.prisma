@@ -42,6 +42,13 @@ enum ChecklistValue {
   CL_NA
 }
 
+enum UserRole {
+  admin
+  inspector
+  viewer
+}
+
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Scaffold
 // ──────────────────────────────────────────────────────────────────────────────
@@ -112,3 +119,22 @@ model ChecklistEntry {
 
   @@map("checklist_entries")
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// User
+// ──────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  password_hash  String
+  role           UserRole  @default(inspector)
+  avatar_url     String?
+
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  @@map("users")
+}
+
