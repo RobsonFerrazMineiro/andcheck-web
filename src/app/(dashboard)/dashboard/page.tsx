@@ -9,7 +9,8 @@ import {
   Construction,
   FileText,
   Plus,
-  XCircle,
+  ShieldOff,
+  Wrench,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -82,33 +83,41 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <KpiCard
-          label="Andaimes Liberados"
+          label="Liberados"
           value={liberados}
           total={scaffolds.length}
           icon={CheckCircle2}
           theme="green"
-          hint="Status operacional"
+          hint="Operacional"
         />
         <KpiCard
           label="Em Montagem"
           value={emMontagem}
           total={scaffolds.length}
+          icon={Wrench}
+          theme="blue"
+          hint="Aguardando conclusão"
+        />
+        <KpiCard
+          label="Pend. Liberação"
+          value={pendenteLiberacao}
+          total={scaffolds.length}
           icon={Clock}
           theme="amber"
-          hint={"Pend. liberação: " + pendenteLiberacao}
+          hint="Aguardando inspeção"
         />
         <KpiCard
-          label="Reprovados / Interditados"
+          label="Reprov. / Interdit."
           value={reprovados}
           total={scaffolds.length}
-          icon={XCircle}
+          icon={ShieldOff}
           theme="red"
-          hint="Ação corretiva requerida"
+          hint="Ação corretiva"
         />
         <KpiCard
-          label="Vencimento em 3 dias"
+          label="Vence em 3 dias"
           value={proxVenc}
           total={scaffolds.length}
           icon={AlertTriangle}
@@ -220,7 +229,7 @@ interface KpiCardProps {
   value: number;
   total: number;
   icon: React.ElementType;
-  theme: "green" | "amber" | "red" | "orange";
+  theme: "green" | "blue" | "amber" | "red" | "orange";
   hint: string;
 }
 const THEMES = {
@@ -228,6 +237,11 @@ const THEMES = {
     border: "border-l-4 border-l-green-600",
     val: "text-green-700",
     bar: "bg-green-500",
+  },
+  blue: {
+    border: "border-l-4 border-l-blue-600",
+    val: "text-blue-700",
+    bar: "bg-blue-500",
   },
   amber: {
     border: "border-l-4 border-l-amber-500",
