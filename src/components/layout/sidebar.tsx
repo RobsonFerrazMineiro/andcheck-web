@@ -1,12 +1,10 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   ChevronRight,
   ClipboardCheck,
   Construction,
   LayoutDashboard,
-  LogOut,
   Map,
   Shield,
 } from "lucide-react";
@@ -149,17 +147,6 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="px-3 pb-4 border-t border-sidebar-border pt-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent text-[11px] h-8 cursor-pointer"
-          asChild
-        >
-          <Link href="/auth/sair">
-            <LogOut className="w-3.5 h-3.5 mr-2" />
-            Encerrar Sessão
-          </Link>
-        </Button>
         <p className="text-[8px] text-sidebar-foreground/20 mt-2 text-center tracking-wider">
           AndCheck v1.0 · Documento Controlado
         </p>
