@@ -17,8 +17,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ScaffoldActionsBar } from "@/components/scaffold/actions-bar";
+import { ScaffoldDocumentSection } from "@/components/scaffold/document-section";
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -37,6 +39,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
   if (!scaffold) notFound();
 
   const inspections = scaffold.inspections;
+  const documents = await getScaffoldDocuments(id);
 
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
@@ -169,6 +172,11 @@ export default async function AndaimeDetailPage({ params }: Props) {
           )}
         </TechCard>
       </div>
+
+      <ScaffoldDocumentSection
+        scaffoldId={scaffold.id}
+        initialDocuments={documents}
+      />
 
       <ScaffoldQRCard
         scaffoldCode={scaffold.code}

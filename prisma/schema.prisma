@@ -50,6 +50,17 @@ enum UserRole {
   viewer
 }
 
+enum DocumentType {
+  ART
+  RRT
+  MEMORIAL_CALCULO
+  CROQUI
+  PROJETO
+  PROCEDIMENTO
+  CERTIFICADO
+  OUTRO
+}
+
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Scaffold
@@ -83,8 +94,32 @@ model Scaffold {
   updated_at   DateTime       @updatedAt
 
   inspections  Inspection[]
+  documents    ScaffoldDocument[]
 
   @@map("scaffolds")
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// ScaffoldDocument
+// ──────────────────────────────────────────────────────────────────────────────
+
+model ScaffoldDocument {
+  id            String       @id @default(cuid())
+  scaffold      Scaffold     @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
+  scaffold_id   String
+  type          DocumentType
+  title         String
+  file_url      String       // base64 ou URL do arquivo
+  file_name     String
+  file_size     Int?         // bytes
+  mime_type     String?
+  uploaded_by   String       // nome do responsável
+  expires_at    DateTime?    // data de validade/revisão (opcional)
+  observation   String?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+
+  @@map("scaffold_documents")
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
