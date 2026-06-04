@@ -7,6 +7,16 @@ import { ptBR } from "date-fns/locale";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 
+import checklistTemplate from "@/lib/checklist-template";
+
+// Mapa de referência normativa: item_label → referência
+// Construído uma única vez a partir do template (source of truth)
+const NORM_REF_MAP: Record<string, string> = Object.fromEntries(
+  checklistTemplate.flatMap((cat) =>
+    cat.items.map((item) => [item.item, item.reference ?? "—"]),
+  ),
+);
+
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
 export interface ChecklistItem {
@@ -261,6 +271,23 @@ export async function generateInspectionPDF(
     color: { dark: "#0f172a", light: "#ffffff" },
   });
 
+  // ── Pré-cálculo: seções opcionais e numeração dinâmica ───────────────────
+  const hasPhotos =
+    inspection.checklist.some((i) => i.photo && i.value !== "CL_OK") ||
+    (inspection.photos?.length ?? 0) > 0;
+  const hasNotes = !!inspection.notes;
+
+  // Cada seção recebe um número sequencial apenas se for renderizada
+  let _sn = 0;
+  const SN = {
+    ident: ++_sn, // sempre
+    checklist: ++_sn, // sempre
+    resumo: ++_sn, // sempre
+    fotos: hasPhotos ? ++_sn : 0, // condicional
+    obs: hasNotes ? ++_sn : 0, // condicional
+    assin: ++_sn, // sempre
+  };
+
   // ── Resultado calculado antes para embutir no cabeçalho ─────────────────
   const resCfg = STATUS_CFG[inspection.result] ?? {
     label: inspection.result.toUpperCase(),
@@ -342,7 +369,13 @@ export async function generateInspectionPDF(
   y = HDR_H + 4;
 
   // ── SEÇÃO 1 — IDENTIFICAÇÃO ───────────────────────────────────────────────
-  y = sectionHeader(doc, "SEÇÃO 1 — IDENTIFICAÇÃO E DADOS GERAIS", y, M, CW);
+  y = sectionHeader(
+    doc,
+    `SEÇÃO ${SN.ident} — IDENTIFICAÇÃO E DADOS GERAIS`,
+    y,
+    M,
+    CW,
+  );
   const half = (CW - 4) / 2;
 
   const validDate = format(
@@ -398,18 +431,26 @@ export async function generateInspectionPDF(
     doc.addPage();
     y = 14;
   }
-  y = sectionHeader(doc, "SEÇÃO 2 — CHECKLIST TÉCNICO DE INSPEÇÃO", y, M, CW);
+  y = sectionHeader(
+    doc,
+    `SEÇÃO ${SN.checklist} — CHECKLIST TÉCNICO DE INSPEÇÃO`,
+    y,
+    M,
+    CW,
+  );
 
+  const COL_REF_W = 44;
   const COL_BADGE_W = 22,
     COL_RES_W = 28;
-  const COL_ITEM_W = CW - COL_BADGE_W - COL_RES_W - 2;
+  const COL_ITEM_W = CW - COL_REF_W - COL_BADGE_W - COL_RES_W; // = 88
 
   rect(doc, M, y, CW, 6.5, C.navyMid, null);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.white);
   doc.text("ITEM / CRITÉRIO INSPECIONADO", M + 4, y + 4.5);
-  doc.text("CRITICIDADE", M + COL_ITEM_W + 4, y + 4.5);
+  doc.text("REFERÊNCIA NORMATIVA", M + COL_ITEM_W + 3, y + 4.5);
+  doc.text("CRITICIDADE", M + COL_ITEM_W + COL_REF_W + 3, y + 4.5);
   doc.text("RESULTADO", PW - M - COL_RES_W + 1, y + 4.5);
   y += 7.5;
 
@@ -500,7 +541,7 @@ export async function generateInspectionPDF(
         (
           doc.splitTextToSize(
             item.item_label,
-            CW - CRIT_W - 10 - (RES_W + 2),
+            COL_ITEM_W - CRIT_W - 8,
           ) as string[]
         )[0],
         textX,
@@ -512,6 +553,17 @@ export async function generateInspectionPDF(
         st(doc, C.grayMid);
         doc.text(`↳  ${item.observation}`, textX, y + 10);
       }
+
+      // Referência normativa
+      const refX = M + COL_ITEM_W + 3;
+      const normRef = NORM_REF_MAP[item.item_label] ?? "—";
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      st(doc, C.navyMid);
+      const refLines = doc.splitTextToSize(normRef, COL_REF_W - 6) as string[];
+      const refY =
+        refLines.length > 1 ? y + rowH / 2 - 0.5 : y + rowH / 2 + 1.3;
+      doc.text(refLines.slice(0, 2), refX, refY);
 
       // Badge RESULTADO
       const resX = PW - M - RES_W - 1;
@@ -551,7 +603,13 @@ export async function generateInspectionPDF(
     doc.addPage();
     y = 14;
   }
-  y = sectionHeader(doc, "SEÇÃO 3 — RESUMO DE CONFORMIDADE", y, M, CW);
+  y = sectionHeader(
+    doc,
+    `SEÇÃO ${SN.resumo} — RESUMO DE CONFORMIDADE`,
+    y,
+    M,
+    CW,
+  );
 
   const conformes = inspection.checklist.filter(
     (i) => itemStatus(i.value) === "conforme",
@@ -603,14 +661,20 @@ export async function generateInspectionPDF(
     (i) => i.photo && i.value !== "CL_OK",
   );
   const generalPhotos = inspection.photos ?? [];
-  const hasPhotos = itemPhotos.length > 0 || generalPhotos.length > 0;
+  // hasPhotos já calculado no pré-cálculo de seções acima
 
   if (hasPhotos) {
     if (y > 256) {
       doc.addPage();
       y = addPageHeader(doc, docNum, now);
     }
-    y = sectionHeader(doc, "SEÇÃO 4 — REGISTRO FOTOGRÁFICO", y, M, CW);
+    y = sectionHeader(
+      doc,
+      `SEÇÃO ${SN.fotos} — REGISTRO FOTOGRÁFICO`,
+      y,
+      M,
+      CW,
+    );
 
     const COLS = 3;
     const GAP = 3;
@@ -700,7 +764,7 @@ export async function generateInspectionPDF(
     y += CELL_H + 4;
   }
 
-  // ── SEÇÃO 5 — OBSERVAÇÕES ─────────────────────────────────────────────────
+  // ── SEÇÃO OBS — OBSERVAÇÕES ───────────────────────────────────────────────
   if (inspection.notes) {
     if (y > 260) {
       doc.addPage();
@@ -708,7 +772,7 @@ export async function generateInspectionPDF(
     }
     y = sectionHeader(
       doc,
-      "SEÇÃO 5 — OBSERVAÇÕES TÉCNICAS / AÇÕES CORRETIVAS",
+      `SEÇÃO ${SN.obs} — OBSERVAÇÕES TÉCNICAS / AÇÕES CORRETIVAS`,
       y,
       M,
       CW,
@@ -723,14 +787,14 @@ export async function generateInspectionPDF(
     y += obsH + 3;
   }
 
-  // ── SEÇÃO 6 — ASSINATURAS ────────────────────────────────────────────────
+  // ── SEÇÃO ASSINATURAS ────────────────────────────────────────────────────
   if (y > 240) {
     doc.addPage();
     y = addPageHeader(doc, docNum, now);
   }
   y = sectionHeader(
     doc,
-    "SEÇÃO 6 — APROVAÇÃO TÉCNICA E VALIDAÇÃO DOCUMENTAL",
+    `SEÇÃO ${SN.assin} — APROVAÇÃO TÉCNICA E VALIDAÇÃO DOCUMENTAL`,
     y,
     M,
     CW,
