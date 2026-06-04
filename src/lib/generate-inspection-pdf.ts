@@ -440,9 +440,8 @@ export async function generateInspectionPDF(
   );
 
   const COL_REF_W = 44;
-  const COL_BADGE_W = 22,
-    COL_RES_W = 28;
-  const COL_ITEM_W = CW - COL_REF_W - COL_BADGE_W - COL_RES_W; // = 88
+  const COL_RES_W = 28;
+  const COL_ITEM_W = CW - COL_REF_W - COL_RES_W; // = 110
 
   rect(doc, M, y, CW, 6.5, C.navyMid, null);
   doc.setFont("helvetica", "bold");
@@ -450,7 +449,6 @@ export async function generateInspectionPDF(
   st(doc, C.white);
   doc.text("ITEM / CRITÉRIO INSPECIONADO", M + 4, y + 4.5);
   doc.text("REFERÊNCIA NORMATIVA", M + COL_ITEM_W + 3, y + 4.5);
-  doc.text("CRITICIDADE", M + COL_ITEM_W + COL_REF_W + 3, y + 4.5);
   doc.text("RESULTADO", PW - M - COL_RES_W + 1, y + 4.5);
   y += 7.5;
 
@@ -479,7 +477,7 @@ export async function generateInspectionPDF(
   let rowIdx = 0;
   for (const category of sortedCategories) {
     const items = grouped[category];
-    // constantes de badge (fora do loop de item para clareza)
+    // constantes de badge
     const BADGE_H = 4.0;
     const BADGE_H_RES = 5;
     const BADGE_R = 1.5;
