@@ -93,7 +93,7 @@ export function InspectionPerformanceChart({ inspections }: Props) {
 
       {/* Gráfico */}
       <div className="flex-1 px-2 pb-3 pt-2 min-h-50">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={290}>
           <BarChart data={chartData} barGap={3} barCategoryGap="30%">
             <CartesianGrid
               strokeDasharray="3 3"
