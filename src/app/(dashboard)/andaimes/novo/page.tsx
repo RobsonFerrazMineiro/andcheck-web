@@ -26,7 +26,6 @@ const LocationPicker = dynamic(
 );
 
 interface ScaffoldForm {
-  code: string;
   type: string;
   location: string;
   area: string;
@@ -40,7 +39,6 @@ interface ScaffoldForm {
 }
 
 const INITIAL: ScaffoldForm = {
-  code: "",
   type: "tubular",
   location: "",
   area: "",
@@ -73,7 +71,6 @@ export default function NovoAndaimePage() {
 
     try {
       const scaffold = await createScaffold({
-        code: form.code.trim().toUpperCase(),
         type: form.type as
           | "tubular"
           | "fachadeiro"
@@ -130,14 +127,12 @@ export default function NovoAndaimePage() {
           {/* TAG e Tipo */}
           <FormSection title="Identificação">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Código / TAG *">
-                <Input
-                  placeholder="AND-001"
-                  value={form.code}
-                  onChange={set("code")}
-                  required
-                  className="rounded-none h-9 text-[12px]"
-                />
+              <Field label="Código / TAG">
+                <div className="flex items-center h-9 px-3 border border-border bg-muted/40">
+                  <span className="text-[11px] text-muted-foreground italic">
+                    Gerado automaticamente ao salvar
+                  </span>
+                </div>
               </Field>
               <Field label="Tipo *">
                 <Select

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { generateNextScaffoldTag } from "@/lib/scaffold-code";
 import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
@@ -34,7 +35,7 @@ export async function getScaffoldById(id: string) {
 // ── Buscar por tag (QR) ───────────────────────────────────────────────────────
 export async function getScaffoldByTag(tag: string) {
   return prisma.scaffold.findFirst({
-    where: { OR: [{ tag }, { id: tag }] },
+    where: { OR: [{ tag }, { code: tag }, { id: tag }] },
     include: {
       inspections: {
         orderBy: { date: "desc" },
@@ -46,29 +47,43 @@ export async function getScaffoldByTag(tag: string) {
 }
 
 // ── Criar ─────────────────────────────────────────────────────────────────────
-export async function createScaffold(data: {
-  code: string;
-  type: ScaffoldType;
-  location: string;
-  area: string;
-  height: number;
-  width?: number;
-  length?: number;
-  max_load?: number;
-  responsible: string;
-  company?: string;
-  notes?: string;
-  latitude?: number;
-  longitude?: number;
-  location_description?: string;
-}) {
-  return prisma.scaffold.create({
-    data: {
-      ...data,
-      tag: crypto.randomUUID(),
-      status: "em_montagem",
-    },
-  });
+export async function createScaffold(
+  data: {
+    type: ScaffoldType;
+    location: string;
+    area: string;
+    height: number;
+    width?: number;
+    length?: number;
+    max_load?: number;
+    responsible: string;
+    company?: string;
+    notes?: string;
+    latitude?: number;
+    longitude?: number;
+    location_description?: string;
+  },
+  attempt = 0,
+): Promise<Awaited<ReturnType<typeof prisma.scaffold.create>>> {
+  const code = await generateNextScaffoldTag(attempt);
+  try {
+    return await prisma.scaffold.create({
+      data: {
+        ...data,
+        code,
+        tag: code, // QR Code usa o mesmo código fixo e legível
+        status: "em_montagem",
+      },
+    });
+  } catch (err: unknown) {
+    // Conflito de unique constraint por concorrência → tenta novamente
+    const isUniqueViolation =
+      err instanceof Error && err.message.includes("Unique constraint");
+    if (isUniqueViolation) {
+      return createScaffold(data, attempt + 1);
+    }
+    throw err;
+  }
 }
 
 // ── Atualizar status ──────────────────────────────────────────────────────────
