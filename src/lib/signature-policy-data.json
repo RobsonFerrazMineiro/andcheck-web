@@ -1,0 +1,21 @@
+{
+  "policies": [
+    {
+      "name": "Supervisor/Encarregado + HSE Empresa",
+      "description": "Regra padrao global para concluir inspecoes com assinatura operacional e HSE.",
+      "isDefault": true,
+      "requirements": [
+        {
+          "roleCode": "SUPERVISOR_ENCARREGADO",
+          "label": "Supervisor/Encarregado",
+          "sortOrder": 1
+        },
+        {
+          "roleCode": "HSE_EMPRESA",
+          "label": "HSE Empresa",
+          "sortOrder": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,12 @@
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
+import { canCurrentUser } from "@/lib/authz";
 import { AndaimesClient } from "./andaimes-client";
 
 export default async function AndaimesPage() {
-  const raw = await getScaffolds();
+  const [raw, canCreateScaffold] = await Promise.all([
+    getScaffolds(),
+    canCurrentUser("scaffolds.create"),
+  ]);
   const scaffolds = raw.map((s) => ({
     id: s.id,
     code: s.code,
@@ -15,5 +19,10 @@ export default async function AndaimesPage() {
     validity_date: s.validity_date ? s.validity_date.toISOString() : null,
     _count: s._count,
   }));
-  return <AndaimesClient initialData={scaffolds} />;
+  return (
+    <AndaimesClient
+      initialData={scaffolds}
+      canCreateScaffold={canCreateScaffold}
+    />
+  );
 }

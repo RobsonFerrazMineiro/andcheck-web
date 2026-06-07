@@ -301,11 +301,15 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 interface Props {
   scaffoldId: string;
   initialDocuments: ScaffoldDocument[];
+  canAddDocument?: boolean;
+  canDeleteDocument?: boolean;
 }
 
 export function ScaffoldDocumentSection({
   scaffoldId,
   initialDocuments,
+  canAddDocument = false,
+  canDeleteDocument = false,
 }: Props) {
   const router = useRouter();
   const [docs, setDocs] = useState<ScaffoldDocument[]>(initialDocuments);
@@ -348,13 +352,6 @@ export function ScaffoldDocumentSection({
     a.click();
   }
 
-  // Documentos prioritários que ainda não foram anexados
-  const attachedTypes = new Set(docs.map((d) => d.type));
-  const pendingPriority = DOC_TYPES.filter(
-    (d) =>
-      d.priority && !attachedTypes.has(d.value as ScaffoldDocument["type"]),
-  );
-
   return (
     <>
       {/* ── Seção ── */}
@@ -370,34 +367,16 @@ export function ScaffoldDocumentSection({
               {docs.length} doc(s)
             </span>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="flex items-center gap-1 h-7 px-3 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors"
-          >
-            <Plus className="w-3 h-3" />
-            Adicionar
-          </button>
+          {canAddDocument && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-1 h-7 px-3 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              Adicionar
+            </button>
+          )}
         </div>
-
-        {/* Documentos prioritários pendentes */}
-        {pendingPriority.length > 0 && (
-          <div className="px-4 py-3 bg-amber-50 border-b border-amber-200">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-amber-700 mb-1.5">
-              Documentos Prioritários Pendentes
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {pendingPriority.map((d) => (
-                <span
-                  key={d.value}
-                  className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 border border-amber-300 text-[9px] font-semibold text-amber-700 uppercase tracking-wider"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                  {d.label.split(" — ")[0]}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Lista de documentos */}
         {docs.length === 0 ? (
@@ -493,18 +472,20 @@ export function ScaffoldDocumentSection({
                     >
                       <Download className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      disabled={deleting === doc.id}
-                      title="Remover"
-                      className="w-7 h-7 flex items-center justify-center border border-border hover:bg-red-50 hover:border-red-300 transition-colors disabled:opacity-40"
-                    >
-                      {deleting === doc.id ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
-                      ) : (
-                        <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-600" />
-                      )}
-                    </button>
+                    {canDeleteDocument && (
+                      <button
+                        onClick={() => handleDelete(doc.id)}
+                        disabled={deleting === doc.id}
+                        title="Remover"
+                        className="w-7 h-7 flex items-center justify-center border border-border hover:bg-red-50 hover:border-red-300 transition-colors disabled:opacity-40"
+                      >
+                        {deleting === doc.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-600" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -514,7 +495,7 @@ export function ScaffoldDocumentSection({
       </div>
 
       {/* Modal */}
-      {modalOpen && (
+      {modalOpen && canAddDocument && (
         <AddDocumentModal
           scaffoldId={scaffoldId}
           onClose={() => setModalOpen(false)}

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requirePermission, requireRole } from "@/lib/authz";
 import { DocumentType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -25,6 +26,8 @@ export async function addScaffoldDocument(data: {
   expires_at?: Date;
   observation?: string;
 }) {
+  await requirePermission("documents.create");
+
   const doc = await prisma.scaffoldDocument.create({ data });
   revalidatePath(`/andaimes/${data.scaffold_id}`);
   return doc;
@@ -32,6 +35,7 @@ export async function addScaffoldDocument(data: {
 
 // ── Deletar documento ─────────────────────────────────────────────────────────
 export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
+  await requireRole("SUPER_ADMIN");
   await prisma.scaffoldDocument.delete({ where: { id } });
   revalidatePath(`/andaimes/${scaffold_id}`);
 }

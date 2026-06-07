@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   Loader2,
   RotateCcw,
+  ShieldCheck,
   Trash2,
   XCircle,
 } from "lucide-react";
@@ -39,6 +40,38 @@ type ScaffoldOption = {
   code: string;
   location: string;
   area: string;
+  company: string | null;
+  type: string;
+};
+
+type SignaturePolicyOption = {
+  id: string;
+  name: string;
+  company: string | null;
+  area: string | null;
+  scaffold_type: string | null;
+  is_default: boolean;
+  requirements: {
+    id: string;
+    role_code: string;
+    label: string | null;
+    min_count: number;
+    is_required: boolean;
+    sort_order: number;
+    role: {
+      code: string;
+      name: string;
+    };
+  }[];
+};
+
+type CollectedSignature = {
+  role_code: string;
+  role_label: string;
+  signer_name: string;
+  signer_company?: string;
+  signer_position?: string;
+  signature_data: string;
 };
 
 function statusToPrisma(
@@ -51,8 +84,10 @@ function statusToPrisma(
 
 export function NovaInspecaoForm({
   scaffolds,
+  signaturePolicies,
 }: {
   scaffolds: ScaffoldOption[];
+  signaturePolicies: SignaturePolicyOption[];
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -65,6 +100,13 @@ export function NovaInspecaoForm({
   const [observations, setObservations] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const submittingRef = useRef(false);
+  const [collectedSignatures, setCollectedSignatures] = useState<
+    CollectedSignature[]
+  >([]);
+  const [signatureRoleCode, setSignatureRoleCode] = useState("");
+  const [signerName, setSignerName] = useState("");
+  const [signerCompany, setSignerCompany] = useState("");
+  const [signerPosition, setSignerPosition] = useState("");
 
   // Registro fotográfico
   const [photos, setPhotos] = useState<string[]>([]); // base64
@@ -138,6 +180,73 @@ export function NovaInspecaoForm({
 
   const selectedScaffold = scaffolds.find((s) => s.id === selectedScaffoldId);
 
+  const selectedPolicy = useMemo(() => {
+    if (!selectedScaffold) return null;
+
+    return (
+      signaturePolicies
+        .map((policy) => {
+          let score = policy.is_default ? 1 : 0;
+
+          if (policy.company) {
+            if (policy.company !== selectedScaffold.company) return null;
+            score += 8;
+          }
+
+          if (policy.area) {
+            if (policy.area !== selectedScaffold.area) return null;
+            score += 4;
+          }
+
+          if (policy.scaffold_type) {
+            if (policy.scaffold_type !== selectedScaffold.type) return null;
+            score += 2;
+          }
+
+          return { policy, score };
+        })
+        .filter(
+          (item): item is { policy: SignaturePolicyOption; score: number } =>
+            Boolean(item),
+        )
+        .sort((a, b) => b.score - a.score)[0]?.policy ?? null
+    );
+  }, [selectedScaffold, signaturePolicies]);
+
+  const requiredSignatures = useMemo(
+    () =>
+      (selectedPolicy?.requirements ?? [])
+        .filter((requirement) => requirement.is_required)
+        .sort((a, b) => a.sort_order - b.sort_order),
+    [selectedPolicy],
+  );
+
+  const pendingSignatures = useMemo(
+    () =>
+      requiredSignatures.filter((requirement) => {
+        const signedCount = collectedSignatures.filter(
+          (signature) => signature.role_code === requirement.role_code,
+        ).length;
+        return signedCount < requirement.min_count;
+      }),
+    [collectedSignatures, requiredSignatures],
+  );
+
+  const signaturesReady = pendingSignatures.length === 0;
+
+  const activeSignatureRoleCode =
+    signatureRoleCode || pendingSignatures[0]?.role_code || "";
+
+  const handleScaffoldChange = (value: string) => {
+    setSelectedScaffoldId(value);
+    setCollectedSignatures([]);
+    setSignatureRoleCode("");
+    setSignerName("");
+    setSignerCompany("");
+    setSignerPosition("");
+    clearSignature();
+  };
+
   const criticalIssues = useMemo(() => {
     const issues: string[] = [];
     checklistTemplate.forEach((cat, ci) => {
@@ -168,9 +277,53 @@ export function NovaInspecaoForm({
   );
   const canSubmit =
     isComplete &&
+    signaturesReady &&
     !!selectedScaffoldId &&
     inspectorName.trim().length > 0 &&
     !submitting;
+
+  const handleRegisterSignature = () => {
+    const requirement = requiredSignatures.find(
+      (item) => item.role_code === activeSignatureRoleCode,
+    );
+
+    if (!requirement) {
+      toast.error("Selecione o perfil da assinatura.");
+      return;
+    }
+
+    if (!signerName.trim()) {
+      toast.error("Informe o nome de quem esta assinando.");
+      return;
+    }
+
+    if (!hasSig || !canvasRef.current) {
+      toast.error("Colete a assinatura digital antes de registrar.");
+      return;
+    }
+
+    const signatureData = canvasRef.current.toDataURL("image/png");
+
+    setCollectedSignatures((current) => [
+      ...current.filter(
+        (signature) => signature.role_code !== requirement.role_code,
+      ),
+      {
+        role_code: requirement.role_code,
+        role_label: requirement.label ?? requirement.role.name,
+        signer_name: signerName.trim(),
+        signer_company: signerCompany.trim() || undefined,
+        signer_position: signerPosition.trim() || undefined,
+        signature_data: signatureData,
+      },
+    ]);
+    setSignerName("");
+    setSignerCompany("");
+    setSignerPosition("");
+    setSignatureRoleCode("");
+    clearSignature();
+    toast.success("Assinatura registrada.");
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit || !selectedScaffold) return;
@@ -203,19 +356,26 @@ export function NovaInspecaoForm({
         validity_days: autoResult !== "reprovado" ? Number(validityDays) : 0,
         notes: observations.trim() || undefined,
         photos: photos.length > 0 ? photos : undefined,
-        signature:
-          hasSig && canvasRef.current
-            ? canvasRef.current.toDataURL("image/png")
-            : undefined,
+        signature: collectedSignatures[0]?.signature_data,
+        signatures: collectedSignatures.map((signature) => ({
+          role_code: signature.role_code,
+          signer_name: signature.signer_name,
+          signer_company: signature.signer_company,
+          signer_position: signature.signer_position,
+          signature_data: signature.signature_data,
+        })),
         checklist,
       });
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {
       console.error(err);
-      toast.error("Não foi possível salvar a inspeção. Tente novamente.", {
-        id: toastId,
-      });
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar a inspeção. Tente novamente.",
+        { id: toastId },
+      );
       submittingRef.current = false;
       setSubmitting(false);
     }
@@ -264,7 +424,7 @@ export function NovaInspecaoForm({
             </Label>
             <Select
               value={selectedScaffoldId}
-              onValueChange={setSelectedScaffoldId}
+              onValueChange={handleScaffoldChange}
             >
               <SelectTrigger className="h-8 text-[11px] rounded-none">
                 <SelectValue placeholder="Selecionar andaime..." />
@@ -500,11 +660,10 @@ export function NovaInspecaoForm({
         />
       </div>
 
-      {/* Assinatura Digital */}
-      <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-2">
+      <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2">
           <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Assinatura Digital
+            Assinaturas obrigatorias
           </h3>
           <button
             type="button"
@@ -514,6 +673,129 @@ export function NovaInspecaoForm({
             <RotateCcw className="w-3 h-3" />
             Limpar
           </button>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-[11px] text-muted-foreground">
+            Politica:{" "}
+            <span className="font-semibold text-foreground">
+              {selectedPolicy?.name ?? "Nenhuma politica ativa"}
+            </span>
+          </p>
+          <div className="grid gap-2">
+            {requiredSignatures.map((requirement) => {
+              const collected = collectedSignatures.find(
+                (signature) => signature.role_code === requirement.role_code,
+              );
+              return (
+                <div
+                  key={requirement.id}
+                  className="flex items-center justify-between gap-3 border border-border bg-muted/20 px-3 py-2"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {collected ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-foreground truncate">
+                        {requirement.label ?? requirement.role.name}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {collected
+                          ? "Assinado por " + collected.signer_name
+                          : "Pendente"}
+                      </p>
+                    </div>
+                  </div>
+                  {collected && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCollectedSignatures((current) =>
+                          current.filter(
+                            (signature) =>
+                              signature.role_code !== requirement.role_code,
+                          ),
+                        )
+                      }
+                      className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-red-600"
+                    >
+                      Remover
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {!signaturesReady && (
+            <p className="text-[10px] text-red-600 font-semibold">
+              Assinaturas pendentes:{" "}
+              {pendingSignatures
+                .map((item) => item.label ?? item.role.name)
+                .join(", ")}
+            </p>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">
+              Perfil da assinatura
+            </Label>
+            <Select
+              value={activeSignatureRoleCode}
+              onValueChange={setSignatureRoleCode}
+            >
+              <SelectTrigger className="h-8 text-[11px] rounded-none">
+                <SelectValue placeholder="Selecionar perfil..." />
+              </SelectTrigger>
+              <SelectContent>
+                {requiredSignatures.map((requirement) => (
+                  <SelectItem
+                    key={requirement.id}
+                    value={requirement.role_code}
+                  >
+                    {requirement.label ?? requirement.role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">
+              Nome do assinante
+            </Label>
+            <Input
+              value={signerName}
+              onChange={(event) => setSignerName(event.target.value)}
+              placeholder="Nome completo"
+              className="h-8 text-[11px] rounded-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">
+              Empresa
+            </Label>
+            <Input
+              value={signerCompany}
+              onChange={(event) => setSignerCompany(event.target.value)}
+              placeholder="Empresa"
+              className="h-8 text-[11px] rounded-none"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] uppercase tracking-wider font-bold">
+              Cargo / funcao
+            </Label>
+            <Input
+              value={signerPosition}
+              onChange={(event) => setSignerPosition(event.target.value)}
+              placeholder="Cargo"
+              className="h-8 text-[11px] rounded-none"
+            />
+          </div>
         </div>
 
         <div className="relative border border-dashed border-border bg-muted/20">
@@ -574,6 +856,14 @@ export function NovaInspecaoForm({
             </p>
           )}
         </div>
+        <button
+          type="button"
+          onClick={handleRegisterSignature}
+          className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          Registrar assinatura
+        </button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
@@ -597,7 +887,11 @@ export function NovaInspecaoForm({
           ) : (
             <>
               <ClipboardCheck className="w-3.5 h-3.5" />
-              {isComplete ? "Registrar Inspeção" : "Preencha todos os itens"}
+              {!isComplete
+                ? "Preencha todos os itens"
+                : !signaturesReady
+                  ? "Colete as assinaturas"
+                  : "Registrar Inspeção"}
             </>
           )}
         </button>

@@ -1,0 +1,110 @@
+{
+  "roles": [
+    { "code": "SUPER_ADMIN", "name": "Super Admin" },
+    { "code": "HSE_HYDRO", "name": "HSE Hydro" },
+    { "code": "HSE_GERENCIADORA", "name": "HSE Gerenciadora" },
+    { "code": "ADMIN_EMPRESA", "name": "Admin Empresa" },
+    { "code": "HSE_EMPRESA", "name": "HSE Empresa" },
+    { "code": "PLANEJAMENTO", "name": "Planejamento" },
+    { "code": "SUPERVISOR_ENCARREGADO", "name": "Supervisor/Encarregado" },
+    { "code": "MONTADOR_LIDER", "name": "Montador Lider" },
+    { "code": "AUDITOR", "name": "Auditor" }
+  ],
+  "permissions": [
+    { "code": "users.create", "name": "Create users" },
+    { "code": "users.update", "name": "Update users" },
+    { "code": "users.deactivate", "name": "Deactivate users" },
+    { "code": "users.reset_password", "name": "Reset user password" },
+    { "code": "users.manage_company", "name": "Manage company users" },
+    { "code": "companies.manage", "name": "Manage companies" },
+    { "code": "workspaces.manage", "name": "Manage workspaces" },
+    { "code": "signature_policies.manage", "name": "Manage signature policies" },
+    { "code": "permissions.manage", "name": "Manage permissions" },
+    { "code": "scaffolds.create", "name": "Create scaffolds" },
+    { "code": "scaffolds.update", "name": "Update scaffolds" },
+    { "code": "scaffolds.complete_assembly", "name": "Complete scaffold assembly" },
+    { "code": "scaffolds.dismantle", "name": "Dismantle scaffolds" },
+    { "code": "inspections.create", "name": "Create inspections" },
+    { "code": "inspections.finalize", "name": "Finalize inspections" },
+    { "code": "scaffolds.release", "name": "Release scaffolds" },
+    { "code": "scaffolds.interdict", "name": "Interdict scaffolds" },
+    { "code": "documents.view", "name": "View technical documents" },
+    { "code": "documents.create", "name": "Create technical documents" },
+    { "code": "pdf.generate", "name": "Generate PDF" },
+    { "code": "audit.view", "name": "View audit" },
+    { "code": "logs.view", "name": "View logs" },
+    { "code": "read.all", "name": "Read all data" },
+    { "code": "read.own_company", "name": "Read own company data" }
+  ],
+  "rolePermissions": {
+    "SUPER_ADMIN": ["*"],
+    "HSE_HYDRO": [
+      "inspections.create",
+      "inspections.finalize",
+      "scaffolds.release",
+      "scaffolds.interdict",
+      "documents.view",
+      "pdf.generate",
+      "audit.view",
+      "logs.view",
+      "read.all"
+    ],
+    "HSE_GERENCIADORA": [
+      "inspections.create",
+      "inspections.finalize",
+      "scaffolds.release",
+      "scaffolds.interdict",
+      "documents.view",
+      "pdf.generate",
+      "read.all"
+    ],
+    "ADMIN_EMPRESA": [
+      "users.create",
+      "users.update",
+      "users.deactivate",
+      "users.reset_password",
+      "users.manage_company",
+      "read.own_company"
+    ],
+    "HSE_EMPRESA": [
+      "inspections.create",
+      "inspections.finalize",
+      "scaffolds.release",
+      "scaffolds.interdict",
+      "documents.view",
+      "documents.create",
+      "pdf.generate",
+      "read.own_company"
+    ],
+    "PLANEJAMENTO": [
+      "scaffolds.create",
+      "scaffolds.update",
+      "scaffolds.complete_assembly",
+      "scaffolds.dismantle",
+      "documents.create",
+      "pdf.generate",
+      "read.own_company"
+    ],
+    "SUPERVISOR_ENCARREGADO": [
+      "scaffolds.create",
+      "scaffolds.update",
+      "scaffolds.complete_assembly",
+      "scaffolds.dismantle",
+      "documents.create",
+      "pdf.generate",
+      "read.own_company"
+    ],
+    "MONTADOR_LIDER": [
+      "scaffolds.create",
+      "scaffolds.complete_assembly",
+      "scaffolds.dismantle",
+      "read.own_company"
+    ],
+    "AUDITOR": [
+      "documents.view",
+      "pdf.generate",
+      "audit.view",
+      "read.all"
+    ]
+  }
+}

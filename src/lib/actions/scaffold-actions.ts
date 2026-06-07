@@ -1,6 +1,10 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import {
+  requirePermission,
+  requireRole,
+} from "@/lib/authz";
 import { generateNextScaffoldTag } from "@/lib/scaffold-code";
 import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
@@ -65,6 +69,8 @@ export async function createScaffold(
   },
   attempt = 0,
 ): Promise<Awaited<ReturnType<typeof prisma.scaffold.create>>> {
+  await requirePermission("scaffolds.create");
+
   const code = await generateNextScaffoldTag(attempt);
   try {
     return await prisma.scaffold.create({
@@ -88,11 +94,13 @@ export async function createScaffold(
 
 // ── Atualizar status ──────────────────────────────────────────────────────────
 export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
+  await requirePermission("scaffolds.update");
   return prisma.scaffold.update({ where: { id }, data: { status } });
 }
 
 // ── Concluir montagem → PENDENTE_LIBERACAO ────────────────────────────────────
 export async function completeAssembly(id: string) {
+  await requirePermission("scaffolds.complete_assembly");
   return prisma.scaffold.update({
     where: { id },
     data: {
@@ -104,6 +112,7 @@ export async function completeAssembly(id: string) {
 
 // ── Desmontar → DESMONTADO ────────────────────────────────────────────────────
 export async function dismantleScaffold(id: string) {
+  await requirePermission("scaffolds.dismantle");
   return prisma.scaffold.update({
     where: { id },
     data: {
@@ -115,5 +124,6 @@ export async function dismantleScaffold(id: string) {
 
 // ── Deletar ───────────────────────────────────────────────────────────────────
 export async function deleteScaffold(id: string) {
+  await requireRole("SUPER_ADMIN");
   return prisma.scaffold.delete({ where: { id } });
 }

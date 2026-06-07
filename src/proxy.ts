@@ -6,7 +6,7 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   // Rotas públicas que não precisam de autenticação
-  const publicPaths = ["/login", "/api/auth"];
+  const publicPaths = ["/login", "/api/auth", "/qr"];
   const isPublic = publicPaths.some((p) => pathname.startsWith(p));
 
   if (!isLoggedIn && !isPublic) {

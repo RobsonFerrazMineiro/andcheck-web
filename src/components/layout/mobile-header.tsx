@@ -8,6 +8,7 @@ import {
   Map,
   Menu,
   Shield,
+  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -19,9 +20,14 @@ const navItems = [
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
+  { path: "/usuarios", label: "Usuarios", icon: Users },
 ];
 
-export function MobileHeader() {
+export function MobileHeader({
+  canManageUsers = false,
+}: {
+  canManageUsers?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -69,7 +75,9 @@ export function MobileHeader() {
 
       {open && (
         <nav className="px-2 pb-3 space-y-px border-t border-sidebar-border">
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => item.path !== "/usuarios" || canManageUsers)
+            .map((item) => (
             <Link
               key={item.path}
               href={item.path}

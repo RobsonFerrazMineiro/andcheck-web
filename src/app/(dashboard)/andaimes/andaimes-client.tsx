@@ -45,8 +45,10 @@ export type ScaffoldRow = {
 
 export function AndaimesClient({
   initialData,
+  canCreateScaffold,
 }: {
   initialData: ScaffoldRow[];
+  canCreateScaffold: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -76,13 +78,15 @@ export function AndaimesClient({
             {scaffolds.length} unidades cadastradas
           </p>
         </div>
-        <Link
-          href="/andaimes/novo"
-          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Cadastrar Andaime
-        </Link>
+        {canCreateScaffold && (
+          <Link
+            href="/andaimes/novo"
+            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Cadastrar Andaime
+          </Link>
+        )}
       </div>
 
       <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
@@ -126,13 +130,15 @@ export function AndaimesClient({
           <p className="text-[10px] text-muted-foreground/60 mb-4">
             Cadastre o primeiro ativo para iniciar o controle
           </p>
-          <Link
-            href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Cadastrar
-          </Link>
+          {canCreateScaffold && (
+            <Link
+              href="/andaimes/novo"
+              className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Cadastrar
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-card border border-border shadow-sm overflow-hidden">

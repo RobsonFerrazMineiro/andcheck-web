@@ -1,0 +1,461 @@
+"use client";
+
+import {
+  CheckCircle2,
+  Filter,
+  Loader2,
+  Plus,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  Users,
+  XCircle,
+} from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { createUser, setUserActive } from "@/lib/actions/user-actions";
+
+type UserRow = {
+  id: string;
+  name: string;
+  email: string;
+  company: string | null;
+  registration: string | null;
+  department: string | null;
+  position: string | null;
+  is_active: boolean;
+  roles: Array<{
+    id: string;
+    code: string;
+    name: string;
+  }>;
+};
+
+type RoleOption = {
+  id: string;
+  code: string;
+  name: string;
+};
+
+const ROLE_BADGE: Record<string, string> = {
+  SUPER_ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
+  HSE_HYDRO: "bg-blue-100 text-blue-700 border-blue-200",
+  HSE_GERENCIADORA: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  ADMIN_EMPRESA: "bg-violet-100 text-violet-700 border-violet-200",
+  HSE_EMPRESA: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  PLANEJAMENTO: "bg-amber-100 text-amber-700 border-amber-200",
+  SUPERVISOR_ENCARREGADO: "bg-sky-100 text-sky-700 border-sky-200",
+  MONTADOR_LIDER: "bg-slate-100 text-slate-700 border-slate-200",
+  AUDITOR: "bg-zinc-100 text-zinc-700 border-zinc-200",
+};
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function RoleBadge({ role }: { role?: { code: string; name: string } }) {
+  if (!role) {
+    return (
+      <Badge variant="outline" className="rounded-none text-[9px] uppercase">
+        Sem perfil
+      </Badge>
+    );
+  }
+
+  return (
+    <span
+      className={
+        "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-bold " +
+        "uppercase tracking-wide " +
+        (ROLE_BADGE[role.code] ?? "bg-muted text-muted-foreground border-border")
+      }
+    >
+      <ShieldCheck className="w-3 h-3" />
+      {role.name}
+    </span>
+  );
+}
+
+export function UsuariosClient({
+  initialData,
+  roles,
+}: {
+  initialData: UserRow[];
+  roles: RoleOption[];
+}) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showForm, setShowForm] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  const users = initialData;
+  const activeCount = users.filter((user) => user.is_active).length;
+  const inspectorCount = users.filter((user) =>
+    user.roles.some((role) => role.code.includes("HSE")),
+  ).length;
+  const adminCount = users.filter((user) =>
+    user.roles.some(
+      (role) => role.code === "SUPER_ADMIN" || role.code === "ADMIN_EMPRESA",
+    ),
+  ).length;
+
+  const filtered = useMemo(
+    () =>
+      users.filter((user) => {
+        const role = user.roles[0];
+        const matchSearch =
+          !search ||
+          user.name.toLowerCase().includes(search.toLowerCase()) ||
+          user.email.toLowerCase().includes(search.toLowerCase()) ||
+          (user.company ?? "").toLowerCase().includes(search.toLowerCase()) ||
+          (user.registration ?? "")
+            .toLowerCase()
+            .includes(search.toLowerCase());
+        const matchStatus =
+          statusFilter === "all" ||
+          (statusFilter === "active" && user.is_active) ||
+          (statusFilter === "inactive" && !user.is_active) ||
+          role?.code === statusFilter;
+
+        return matchSearch && matchStatus;
+      }),
+    [search, statusFilter, users],
+  );
+
+  function handleCreateUser(formData: FormData) {
+    startTransition(async () => {
+      const toastId = toast.loading("Criando usuario...");
+      try {
+        await createUser(formData);
+        toast.success("Usuario criado com senha temporaria andcheck@2025.", {
+          id: toastId,
+        });
+        setShowForm(false);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Erro ao criar usuario.",
+          { id: toastId },
+        );
+      }
+    });
+  }
+
+  function handleStatus(userId: string, isActive: boolean) {
+    startTransition(async () => {
+      try {
+        await setUserActive(userId, isActive);
+        toast.success(isActive ? "Usuario ativado." : "Usuario desativado.");
+      } catch {
+        toast.error("Nao foi possivel alterar o status.");
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+            AndCheck EHS · Administracao
+          </p>
+          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+            Usuarios
+          </h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {activeCount} ativos · {users.length} total
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowForm((current) => !current)}
+          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          Novo Usuario
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: "Total", value: users.length, tone: "text-foreground" },
+          { label: "Ativos", value: activeCount, tone: "text-emerald-600" },
+          { label: "HSE", value: inspectorCount, tone: "text-blue-600" },
+          { label: "Admins", value: adminCount, tone: "text-purple-600" },
+        ].map((card) => (
+          <div key={card.label} className="bg-card border border-border p-4">
+            <p className={"text-[24px] font-bold font-mono " + card.tone}>
+              {card.value}
+            </p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              {card.label}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {showForm && (
+        <form
+          action={handleCreateUser}
+          className="bg-card border border-border shadow-sm p-4 space-y-4"
+        >
+          <div className="flex items-center gap-2 border-b border-border pb-2">
+            <Plus className="w-3.5 h-3.5 text-muted-foreground/60" />
+            <p className="text-[10px] font-bold uppercase tracking-widest">
+              Cadastro de Usuario
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Field label="Nome *" name="name" placeholder="Nome completo" />
+            <Field label="E-mail *" name="email" placeholder="email@empresa.com" />
+            <Field label="Empresa" name="company" placeholder="Hydro Alunorte" />
+            <Field label="Matricula" name="registration" placeholder="SUP-0001" />
+            <Field label="Departamento" name="department" placeholder="SMS" />
+            <Field label="Cargo" name="position" placeholder="Supervisor" />
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase tracking-wider font-bold">
+                Perfil *
+              </Label>
+              <Select name="role_id" required>
+                <SelectTrigger className="h-8 text-[11px] rounded-none">
+                  <SelectValue placeholder="Selecionar perfil" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase tracking-wider font-bold">
+                Status
+              </Label>
+              <Select name="status" defaultValue="active">
+                <SelectTrigger className="h-8 text-[11px] rounded-none">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 border-t border-border pt-3">
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="inline-flex items-center gap-2 h-8 px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+            >
+              {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Salvar Usuario
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+          <Input
+            placeholder="Buscar por nome, e-mail, matricula ou empresa..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="pl-9 h-8 text-[11px] rounded-none border-border"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-none">
+            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+            <SelectValue placeholder="Filtro" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="active">Ativos</SelectItem>
+            <SelectItem value="inactive">Inativos</SelectItem>
+            {roles.map((role) => (
+              <SelectItem key={role.id} value={role.code}>
+                {role.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="bg-card border border-border shadow-sm overflow-hidden">
+        <div className="hidden lg:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+          {["Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", ""].map(
+            (header, index) => (
+              <p
+                key={header}
+                className={
+                  "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                  (index === 0
+                    ? "col-span-3"
+                    : index === 1
+                      ? "col-span-2"
+                      : index === 2
+                        ? "col-span-1"
+                        : index === 3
+                          ? "col-span-2"
+                          : index === 4
+                            ? "col-span-2"
+                            : "col-span-1")
+                }
+              >
+                {header}
+              </p>
+            ),
+          )}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="text-center py-12">
+            <Users className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
+            <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+              Nenhum usuario encontrado
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {filtered.map((user, index) => {
+              const primaryRole = user.roles[0];
+              return (
+                <div
+                  key={user.id}
+                  className={
+                    "flex lg:grid lg:grid-cols-12 lg:gap-4 items-center px-4 py-3 " +
+                    (index % 2 === 1 ? "bg-muted/20" : "bg-card")
+                  }
+                >
+                  <div className="flex items-center gap-3 flex-1 lg:contents">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 lg:col-span-1">
+                      <span className="text-[11px] font-bold">
+                        {initials(user.name)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0 lg:col-span-2">
+                      <p className="text-[12px] font-bold text-foreground truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                    <p className="hidden lg:block lg:col-span-2 text-[11px] text-muted-foreground truncate">
+                      {user.company ?? "-"}
+                    </p>
+                    <p className="hidden lg:block lg:col-span-1 text-[11px] text-muted-foreground font-mono">
+                      {user.registration ?? "-"}
+                    </p>
+                    <div className="hidden lg:block lg:col-span-2">
+                      <RoleBadge role={primaryRole} />
+                    </div>
+                    <p className="hidden lg:block lg:col-span-2 text-[11px] text-muted-foreground truncate">
+                      {user.department ?? "-"}
+                    </p>
+                    <div className="hidden lg:flex lg:col-span-1">
+                      <StatusPill active={user.is_active} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="lg:hidden">
+                      <StatusPill active={user.is_active} />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleStatus(user.id, !user.is_active)}
+                      className="h-7 px-2 border border-border text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted disabled:opacity-50"
+                    >
+                      {user.is_active ? "Desativar" : "Ativar"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="px-4 py-2 bg-muted/30 border-t border-border">
+          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+            {filtered.length} registro(s) · Modulo de usuarios · AndCheck EHS
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  name,
+  placeholder,
+}: {
+  label: string;
+  name: string;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[10px] uppercase tracking-wider font-bold">
+        {label}
+      </Label>
+      <Input
+        name={name}
+        placeholder={placeholder}
+        required={label.includes("*")}
+        className="h-8 text-[11px] rounded-none"
+      />
+    </div>
+  );
+}
+
+function StatusPill({ active }: { active: boolean }) {
+  return (
+    <span
+      className={
+        "inline-flex items-center gap-1 px-2 py-0.5 border text-[10px] font-bold " +
+        (active
+          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+          : "bg-slate-100 text-slate-600 border-slate-200")
+      }
+    >
+      {active ? (
+        <CheckCircle2 className="w-3 h-3" />
+      ) : (
+        <XCircle className="w-3 h-3" />
+      )}
+      {active ? "Ativo" : "Inativo"}
+    </span>
+  );
+}

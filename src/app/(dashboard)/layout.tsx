@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
+import { canCurrentUser } from "@/lib/authz";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -14,11 +15,14 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   const user = session?.user;
+  const canManageUsers =
+    (await canCurrentUser("users.manage_company")) ||
+    (await canCurrentUser("users.create"));
 
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar />
-      <MobileHeader />
+      <Sidebar canManageUsers={canManageUsers} />
+      <MobileHeader canManageUsers={canManageUsers} />
 
       <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
         {/* Topbar — apenas desktop */}

@@ -375,6 +375,48 @@ export default async function InspectionDetailPage({ params }: Props) {
       <div className="bg-card border border-border shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
           <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            Assinaturas Obrigatorias
+          </p>
+        </div>
+        {inspection.signatures.length === 0 ? (
+          <div className="px-4 py-5">
+            <p className="text-[11px] text-muted-foreground">
+              Nenhuma assinatura obrigatoria registrada nesta inspecao.
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {inspection.signatures.map((signature) => (
+              <div
+                key={signature.id}
+                className="flex items-center justify-between gap-4 px-4 py-3"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-bold text-foreground truncate">
+                      {signature.role.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground truncate">
+                      Assinado por {signature.signer_name}
+                      {signature.signer_company
+                        ? " · " + signature.signer_company
+                        : ""}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-muted-foreground font-mono shrink-0">
+                  {format(signature.signed_at, "dd/MM/yyyy HH:mm")}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-card border border-border shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
             Checklist de Conformidade
           </p>
         </div>

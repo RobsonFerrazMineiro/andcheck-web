@@ -36,8 +36,10 @@ export type InspectionRow = {
 
 export function InspecoesClient({
   initialData,
+  canCreateInspection,
 }: {
   initialData: InspectionRow[];
+  canCreateInspection: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState("all");
@@ -66,13 +68,15 @@ export function InspecoesClient({
             {inspections.length} registros no sistema
           </p>
         </div>
-        <Link
+        {canCreateInspection && (
+          <Link
           href="/inspecoes/nova"
           className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Inspeção
-        </Link>
+          </Link>
+        )}
       </div>
 
       <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
@@ -116,13 +120,15 @@ export function InspecoesClient({
           <p className="text-[10px] text-muted-foreground/60 mb-4">
             Registre a primeira vistoria para iniciar o histórico
           </p>
-          <Link
+          {canCreateInspection && (
+            <Link
             href="/inspecoes/nova"
             className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Inspeção
-          </Link>
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-card border border-border shadow-sm overflow-hidden">

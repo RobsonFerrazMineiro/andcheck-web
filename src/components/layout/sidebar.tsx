@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Map,
   Shield,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,11 +37,17 @@ const navItems = [
     icon: Map,
     desc: "Localização de ativos",
   },
+  {
+    path: "/usuarios",
+    label: "Usuarios",
+    icon: Users,
+    desc: "Acessos e perfis",
+  },
 ];
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 
-export function Sidebar() {
+export function Sidebar({ canManageUsers = false }: { canManageUsers?: boolean }) {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -92,7 +99,9 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 px-2 space-y-px">
-        {navItems.map((item) => {
+        {navItems
+          .filter((item) => item.path !== "/usuarios" || canManageUsers)
+          .map((item) => {
           const active = isActive(item.path);
           return (
             <Link

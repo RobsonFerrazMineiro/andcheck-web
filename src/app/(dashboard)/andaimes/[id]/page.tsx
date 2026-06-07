@@ -22,6 +22,7 @@ import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
+import { canCurrentUser } from "@/lib/authz";
 
 const TYPE_LABELS: Record<string, string> = {
   tubular: "Tubular",
@@ -39,7 +40,21 @@ export default async function AndaimeDetailPage({ params }: Props) {
   if (!scaffold) notFound();
 
   const inspections = scaffold.inspections;
-  const documents = await getScaffoldDocuments(id);
+  const [
+    documents,
+    canCreateInspection,
+    canCompleteAssembly,
+    canDismantle,
+    canAddDocument,
+    canDeleteDocument,
+  ] = await Promise.all([
+    getScaffoldDocuments(id),
+    canCurrentUser("inspections.create"),
+    canCurrentUser("scaffolds.complete_assembly"),
+    canCurrentUser("scaffolds.dismantle"),
+    canCurrentUser("documents.create"),
+    canCurrentUser("permissions.manage"),
+  ]);
 
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
@@ -68,6 +83,9 @@ export default async function AndaimeDetailPage({ params }: Props) {
           scaffoldId={scaffold.id}
           scaffoldCode={scaffold.code}
           status={scaffold.status}
+          canCreateInspection={canCreateInspection}
+          canCompleteAssembly={canCompleteAssembly}
+          canDismantle={canDismantle}
         />
       </div>
 
@@ -176,6 +194,8 @@ export default async function AndaimeDetailPage({ params }: Props) {
       <ScaffoldDocumentSection
         scaffoldId={scaffold.id}
         initialDocuments={documents}
+        canAddDocument={canAddDocument}
+        canDeleteDocument={canDeleteDocument}
       />
 
       <ScaffoldQRCard
