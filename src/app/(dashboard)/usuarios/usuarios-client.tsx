@@ -4,9 +4,12 @@ import {
   CheckCircle2,
   Filter,
   Loader2,
+  Pencil,
   Plus,
+  Power,
   Search,
   ShieldCheck,
+  Trash2,
   UserPlus,
   Users,
   XCircle,
@@ -24,7 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createUser, setUserActive } from "@/lib/actions/user-actions";
+import {
+  createUser,
+  deleteUser,
+  setUserActive,
+  updateUser,
+} from "@/lib/actions/user-actions";
 
 type UserRow = {
   id: string;
@@ -96,13 +104,18 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
 export function UsuariosClient({
   initialData,
   roles,
+  currentUserId,
+  canDeleteUsers,
 }: {
   initialData: UserRow[];
   roles: RoleOption[];
+  currentUserId: string | null;
+  canDeleteUsers: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const users = initialData;
@@ -157,6 +170,22 @@ export function UsuariosClient({
     });
   }
 
+  function handleUpdateUser(formData: FormData) {
+    startTransition(async () => {
+      const toastId = toast.loading("Atualizando usuario...");
+      try {
+        await updateUser(formData);
+        toast.success("Usuario atualizado.", { id: toastId });
+        setEditingUser(null);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Erro ao atualizar usuario.",
+          { id: toastId },
+        );
+      }
+    });
+  }
+
   function handleStatus(userId: string, isActive: boolean) {
     startTransition(async () => {
       try {
@@ -164,6 +193,24 @@ export function UsuariosClient({
         toast.success(isActive ? "Usuario ativado." : "Usuario desativado.");
       } catch {
         toast.error("Nao foi possivel alterar o status.");
+      }
+    });
+  }
+
+  function handleDelete(user: UserRow) {
+    const confirmed = window.confirm(
+      `Excluir definitivamente o usuario ${user.name}?`,
+    );
+    if (!confirmed) return;
+
+    startTransition(async () => {
+      try {
+        await deleteUser(user.id);
+        toast.success("Usuario excluido.");
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Nao foi possivel excluir.",
+        );
       }
     });
   }
@@ -184,7 +231,10 @@ export function UsuariosClient({
         </div>
         <button
           type="button"
-          onClick={() => setShowForm((current) => !current)}
+          onClick={() => {
+            setEditingUser(null);
+            setShowForm((current) => !current);
+          }}
           className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
         >
           <UserPlus className="w-3.5 h-3.5" />
@@ -210,30 +260,64 @@ export function UsuariosClient({
         ))}
       </div>
 
-      {showForm && (
+      {(showForm || editingUser) && (
         <form
-          action={handleCreateUser}
+          key={editingUser?.id ?? "new-user"}
+          action={editingUser ? handleUpdateUser : handleCreateUser}
           className="bg-card border border-border shadow-sm p-4 space-y-4"
         >
+          {editingUser && (
+            <input type="hidden" name="user_id" value={editingUser.id} />
+          )}
           <div className="flex items-center gap-2 border-b border-border pb-2">
             <Plus className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className="text-[10px] font-bold uppercase tracking-widest">
-              Cadastro de Usuario
+              {editingUser ? "Edicao de Usuario" : "Cadastro de Usuario"}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Nome *" name="name" placeholder="Nome completo" />
-            <Field label="E-mail *" name="email" placeholder="email@empresa.com" />
-            <Field label="Empresa" name="company" placeholder="Hydro Alunorte" />
-            <Field label="Matricula" name="registration" placeholder="SUP-0001" />
-            <Field label="Departamento" name="department" placeholder="SMS" />
-            <Field label="Cargo" name="position" placeholder="Supervisor" />
+            <Field
+              label="Nome *"
+              name="name"
+              placeholder="Nome completo"
+              defaultValue={editingUser?.name}
+            />
+            <Field
+              label="E-mail *"
+              name="email"
+              placeholder="email@empresa.com"
+              defaultValue={editingUser?.email}
+            />
+            <Field
+              label="Empresa"
+              name="company"
+              placeholder="Hydro Alunorte"
+              defaultValue={editingUser?.company ?? undefined}
+            />
+            <Field
+              label="Matricula"
+              name="registration"
+              placeholder="SUP-0001"
+              defaultValue={editingUser?.registration ?? undefined}
+            />
+            <Field
+              label="Departamento"
+              name="department"
+              placeholder="SMS"
+              defaultValue={editingUser?.department ?? undefined}
+            />
+            <Field
+              label="Cargo"
+              name="position"
+              placeholder="Supervisor"
+              defaultValue={editingUser?.position ?? undefined}
+            />
             <div className="space-y-1.5">
               <Label className="text-[10px] uppercase tracking-wider font-bold">
                 Perfil *
               </Label>
-              <Select name="role_id" required>
+              <Select name="role_id" required defaultValue={editingUser?.roles[0]?.id}>
                 <SelectTrigger className="h-8 text-[11px] rounded-none">
                   <SelectValue placeholder="Selecionar perfil" />
                 </SelectTrigger>
@@ -250,7 +334,16 @@ export function UsuariosClient({
               <Label className="text-[10px] uppercase tracking-wider font-bold">
                 Status
               </Label>
-              <Select name="status" defaultValue="active">
+              {editingUser?.id === currentUserId && (
+                <input type="hidden" name="status" value="active" />
+              )}
+              <Select
+                name="status"
+                disabled={editingUser?.id === currentUserId}
+                defaultValue={
+                  editingUser?.is_active === false ? "inactive" : "active"
+                }
+              >
                 <SelectTrigger className="h-8 text-[11px] rounded-none">
                   <SelectValue />
                 </SelectTrigger>
@@ -265,7 +358,10 @@ export function UsuariosClient({
           <div className="flex justify-end gap-2 border-t border-border pt-3">
             <button
               type="button"
-              onClick={() => setShowForm(false)}
+              onClick={() => {
+                setShowForm(false);
+                setEditingUser(null);
+              }}
               className="h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted"
             >
               Cancelar
@@ -276,7 +372,7 @@ export function UsuariosClient({
               className="inline-flex items-center gap-2 h-8 px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
             >
               {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              Salvar Usuario
+              {editingUser ? "Atualizar Usuario" : "Salvar Usuario"}
             </button>
           </div>
         </form>
@@ -310,26 +406,13 @@ export function UsuariosClient({
         </Select>
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="hidden lg:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
-          {["Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", ""].map(
-            (header, index) => (
+      <div className="bg-card border border-border shadow-sm overflow-x-auto">
+        <div className="hidden lg:grid min-w-[1180px] grid-cols-[40px_minmax(200px,1.5fr)_minmax(130px,1fr)_90px_minmax(190px,1.2fr)_minmax(150px,1fr)_100px_132px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
+          {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Acoes"].map(
+            (header) => (
               <p
                 key={header}
-                className={
-                  "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
-                  (index === 0
-                    ? "col-span-3"
-                    : index === 1
-                      ? "col-span-2"
-                      : index === 2
-                        ? "col-span-1"
-                        : index === 3
-                          ? "col-span-2"
-                          : index === 4
-                            ? "col-span-2"
-                            : "col-span-1")
-                }
+                className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
               >
                 {header}
               </p>
@@ -345,24 +428,30 @@ export function UsuariosClient({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="min-w-[1180px] divide-y divide-border">
             {filtered.map((user, index) => {
               const primaryRole = user.roles[0];
+              const isCurrentUser = user.id === currentUserId;
+              const isProtectedAdmin = user.roles.some((role) =>
+                ["SUPER_ADMIN", "ADMIN_EMPRESA"].includes(role.code),
+              );
+              const canDeleteThisUser =
+                canDeleteUsers && !isCurrentUser && !isProtectedAdmin;
               return (
                 <div
                   key={user.id}
                   className={
-                    "flex lg:grid lg:grid-cols-12 lg:gap-4 items-center px-4 py-3 " +
+                    "flex lg:grid lg:grid-cols-[40px_minmax(200px,1.5fr)_minmax(130px,1fr)_90px_minmax(190px,1.2fr)_minmax(150px,1fr)_100px_132px] lg:gap-4 items-center px-4 py-3 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
                   <div className="flex items-center gap-3 flex-1 lg:contents">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 lg:col-span-1">
+                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                       <span className="text-[11px] font-bold">
                         {initials(user.name)}
                       </span>
                     </div>
-                    <div className="flex-1 min-w-0 lg:col-span-2">
+                    <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-bold text-foreground truncate">
                         {user.name}
                       </p>
@@ -370,34 +459,77 @@ export function UsuariosClient({
                         {user.email}
                       </p>
                     </div>
-                    <p className="hidden lg:block lg:col-span-2 text-[11px] text-muted-foreground truncate">
+                    <p className="hidden lg:block text-[11px] text-muted-foreground truncate">
                       {user.company ?? "-"}
                     </p>
-                    <p className="hidden lg:block lg:col-span-1 text-[11px] text-muted-foreground font-mono">
+                    <p className="hidden lg:block text-[11px] text-muted-foreground font-mono">
                       {user.registration ?? "-"}
                     </p>
-                    <div className="hidden lg:block lg:col-span-2">
+                    <div className="hidden lg:block min-w-0">
                       <RoleBadge role={primaryRole} />
                     </div>
-                    <p className="hidden lg:block lg:col-span-2 text-[11px] text-muted-foreground truncate">
+                    <p className="hidden lg:block text-[11px] text-muted-foreground truncate">
                       {user.department ?? "-"}
                     </p>
-                    <div className="hidden lg:flex lg:col-span-1">
+                    <div className="hidden lg:flex">
                       <StatusPill active={user.is_active} />
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center justify-end gap-2 shrink-0">
                     <div className="lg:hidden">
                       <StatusPill active={user.is_active} />
                     </div>
                     <button
                       type="button"
                       disabled={isPending}
-                      onClick={() => handleStatus(user.id, !user.is_active)}
-                      className="h-7 px-2 border border-border text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted disabled:opacity-50"
+                      title="Editar usuario"
+                      aria-label={`Editar usuario ${user.name}`}
+                      onClick={() => {
+                        setShowForm(false);
+                        setEditingUser(user);
+                      }}
+                      className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
                     >
-                      {user.is_active ? "Desativar" : "Ativar"}
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isPending || isCurrentUser}
+                      onClick={() => handleStatus(user.id, !user.is_active)}
+                      aria-label={
+                        user.is_active
+                          ? `Desativar usuario ${user.name}`
+                          : `Ativar usuario ${user.name}`
+                      }
+                      title={
+                        isCurrentUser
+                          ? "Nao e permitido desativar o proprio usuario."
+                          : user.is_active
+                            ? "Desativar usuario"
+                            : "Ativar usuario"
+                      }
+                      className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Power className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isPending || !canDeleteThisUser}
+                      onClick={() => handleDelete(user)}
+                      aria-label={`Excluir usuario ${user.name}`}
+                      title={
+                        isCurrentUser
+                          ? "Nao e permitido excluir o proprio usuario."
+                          : isProtectedAdmin
+                            ? "Nao e permitido excluir administradores."
+                            : !canDeleteUsers
+                              ? "Voce nao tem permissao para excluir usuarios."
+                              : undefined
+                      }
+                      className="inline-flex h-7 w-7 items-center justify-center border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
@@ -420,10 +552,12 @@ function Field({
   label,
   name,
   placeholder,
+  defaultValue,
 }: {
   label: string;
   name: string;
   placeholder: string;
+  defaultValue?: string;
 }) {
   return (
     <div className="space-y-1.5">
@@ -433,6 +567,7 @@ function Field({
       <Input
         name={name}
         placeholder={placeholder}
+        defaultValue={defaultValue}
         required={label.includes("*")}
         className="h-8 text-[11px] rounded-none"
       />

@@ -19,6 +19,7 @@ import { InspectionPerformanceChart } from "@/components/dashboard/inspection-pe
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getInspections } from "@/lib/actions/inspection-actions";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
+import { canCurrentUser } from "@/lib/authz";
 
 const NORMS = [
   "NR-18 / 2022",
@@ -29,9 +30,16 @@ const NORMS = [
 ];
 
 export default async function DashboardPage() {
-  const [scaffolds, inspections] = await Promise.all([
+  const [
+    scaffolds,
+    inspections,
+    canCreateScaffold,
+    canCreateInspection,
+  ] = await Promise.all([
     getScaffolds(),
     getInspections(),
+    canCurrentUser("scaffolds.create"),
+    canCurrentUser("inspections.create"),
   ]);
 
   const liberados = scaffolds.filter((s) => s.status === "liberado").length;
@@ -66,20 +74,24 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Link
-            href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold tracking-widest uppercase h-8 px-3"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Novo Andaime
-          </Link>
-          <Link
-            href="/inspecoes/nova"
-            className="inline-flex items-center gap-1.5 border border-border text-foreground hover:bg-muted text-[10px] font-bold tracking-widest uppercase h-8 px-3"
-          >
-            <ClipboardCheck className="w-3.5 h-3.5" />
-            Nova Inspeção
-          </Link>
+          {canCreateScaffold && (
+            <Link
+              href="/andaimes/novo"
+              className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold tracking-widest uppercase h-8 px-3"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Novo Andaime
+            </Link>
+          )}
+          {canCreateInspection && (
+            <Link
+              href="/inspecoes/nova"
+              className="inline-flex items-center gap-1.5 border border-border text-foreground hover:bg-muted text-[10px] font-bold tracking-widest uppercase h-8 px-3"
+            >
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              Nova Inspeção
+            </Link>
+          )}
         </div>
       </div>
 

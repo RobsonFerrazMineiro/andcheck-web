@@ -4,10 +4,22 @@ import Link from "next/link";
 
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
+import { canCurrentUser } from "@/lib/authz";
 import { MapaClient } from "./mapa-client";
 
 export default async function MapaPage() {
-  const raw = await getScaffolds();
+  const [
+    raw,
+    canCreateScaffold,
+    canCreateInspection,
+    canFinalizeInspection,
+  ] = await Promise.all([
+    getScaffolds(),
+    canCurrentUser("scaffolds.create"),
+    canCurrentUser("inspections.create"),
+    canCurrentUser("inspections.finalize"),
+  ]);
+  const canInspect = canCreateInspection || canFinalizeInspection;
   const scaffolds = raw.map((s) => ({
     id: s.id,
     code: s.code,
@@ -84,13 +96,15 @@ export default async function MapaPage() {
             )}
           </p>
         </div>
-        <Link
-          href="/andaimes/novo"
-          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
-        >
-          <Construction className="w-3.5 h-3.5" />
-          Novo Andaime
-        </Link>
+        {canCreateScaffold && (
+          <Link
+            href="/andaimes/novo"
+            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+          >
+            <Construction className="w-3.5 h-3.5" />
+            Novo Andaime
+          </Link>
+        )}
       </div>
 
       {/* KPIs */}
@@ -230,13 +244,15 @@ export default async function MapaPage() {
                 >
                   <QrCode className="w-3.5 h-3.5 text-muted-foreground" />
                 </Link>
-                <Link
-                  href={"/inspecoes/nova?scaffold_id=" + s.id}
-                  className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
-                  title="Inspecionar"
-                >
-                  <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                </Link>
+                {canInspect && (
+                  <Link
+                    href={"/inspecoes/nova?scaffold_id=" + s.id}
+                    className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
+                    title="Inspecionar"
+                  >
+                    <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Link>
+                )}
               </div>
             </div>
           ))}

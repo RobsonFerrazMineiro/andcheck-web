@@ -1,5 +1,5 @@
 import { getUserManagementData } from "@/lib/actions/user-actions";
-import { canCurrentUser } from "@/lib/authz";
+import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { redirect } from "next/navigation";
 import { UsuariosClient } from "./usuarios-client";
 
@@ -8,8 +8,12 @@ export default async function UsuariosPage() {
     (await canCurrentUser("users.manage_company")) ||
     (await canCurrentUser("users.create"));
   if (!canManageUsers) redirect("/dashboard");
+  const canDeleteUsers = await canCurrentUser("permissions.manage");
 
-  const { users, roles } = await getUserManagementData();
+  const [access, { users, roles }] = await Promise.all([
+    getCurrentUserAccess(),
+    getUserManagementData(),
+  ]);
 
   const rows = users.map((user) => ({
     id: user.id,
@@ -33,5 +37,12 @@ export default async function UsuariosPage() {
     name: role.name,
   }));
 
-  return <UsuariosClient initialData={rows} roles={roleOptions} />;
+  return (
+    <UsuariosClient
+      initialData={rows}
+      roles={roleOptions}
+      currentUserId={access?.userId ?? null}
+      canDeleteUsers={canDeleteUsers}
+    />
+  );
 }

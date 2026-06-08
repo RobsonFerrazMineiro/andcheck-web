@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import {
+  requireAnyPermission,
   requirePermission,
   requireRole,
 } from "@/lib/authz";
@@ -10,6 +11,8 @@ import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
 export async function getScaffolds() {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   return prisma.scaffold.findMany({
     orderBy: { code: "asc" },
     include: {
@@ -25,6 +28,8 @@ export async function getScaffolds() {
 
 // ── Buscar por ID ─────────────────────────────────────────────────────────────
 export async function getScaffoldById(id: string) {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   return prisma.scaffold.findUnique({
     where: { id },
     include: {

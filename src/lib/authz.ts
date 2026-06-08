@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { redirect } from "next/navigation";
 
 export class AuthorizationError extends Error {
   constructor(message = "Voce nao tem permissao para executar esta acao.") {
@@ -16,12 +17,19 @@ function legacyRoleCodes(role?: string | null) {
 }
 
 export async function getCurrentUserAccess() {
+  const state = await getCurrentUserAccessState();
+  return state.access;
+}
+
+async function getCurrentUserAccessState() {
   const session = await auth();
   const sessionUser = session?.user as
     | { id?: string; email?: string | null; role?: string | null }
     | undefined;
 
-  if (!sessionUser?.email && !sessionUser?.id) return null;
+  if (!sessionUser?.email && !sessionUser?.id) {
+    return { status: "unauthenticated" as const, access: null };
+  }
 
   const user = await prisma.user.findFirst({
     where: {
@@ -37,7 +45,9 @@ export async function getCurrentUserAccess() {
     },
   });
 
-  if (!user || !user.is_active) return null;
+  if (!user || !user.is_active) {
+    return { status: "inactive" as const, access: null };
+  }
 
   const roleCodes =
     user.roles.length > 0
@@ -45,9 +55,12 @@ export async function getCurrentUserAccess() {
       : legacyRoleCodes(user.role);
 
   return {
-    userId: user.id,
-    email: user.email,
-    roleCodes,
+    status: "active" as const,
+    access: {
+      userId: user.id,
+      email: user.email,
+      roleCodes,
+    },
   };
 }
 
@@ -61,12 +74,24 @@ export async function canCurrentUser(permission: PermissionCode) {
 }
 
 export async function requirePermission(permission: PermissionCode) {
-  if (await canCurrentUser(permission)) return;
+  const state = await getCurrentUserAccessState();
+  if (
+    state.access?.roleCodes.some((roleCode) =>
+      roleHasPermission(roleCode, permission),
+    )
+  ) {
+    return;
+  }
+
+  if (state.status === "inactive") redirect("/logout");
+  if (state.status === "unauthenticated") redirect("/login");
+
   throw new AuthorizationError();
 }
 
 export async function requireAnyPermission(permissions: PermissionCode[]) {
-  const access = await getCurrentUserAccess();
+  const state = await getCurrentUserAccessState();
+  const access = state.access;
   if (
     access &&
     permissions.some((permission) =>
@@ -76,11 +101,19 @@ export async function requireAnyPermission(permissions: PermissionCode[]) {
     return;
   }
 
+  if (state.status === "inactive") redirect("/logout");
+  if (state.status === "unauthenticated") redirect("/login");
+
   throw new AuthorizationError();
 }
 
 export async function requireRole(roleCode: string) {
-  const access = await getCurrentUserAccess();
+  const state = await getCurrentUserAccessState();
+  const access = state.access;
   if (access?.roleCodes.includes(roleCode)) return;
+
+  if (state.status === "inactive") redirect("/logout");
+  if (state.status === "unauthenticated") redirect("/login");
+
   throw new AuthorizationError();
 }

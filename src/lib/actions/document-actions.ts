@@ -1,12 +1,19 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { requirePermission, requireRole } from "@/lib/authz";
+import { requireAnyPermission, requirePermission, requireRole } from "@/lib/authz";
 import { DocumentType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 // ── Listar documentos de um andaime ──────────────────────────────────────────
 export async function getScaffoldDocuments(scaffold_id: string) {
+  await requireAnyPermission([
+    "documents.view",
+    "documents.create",
+    "read.all",
+    "read.own_company",
+  ]);
+
   return prisma.scaffoldDocument.findMany({
     where: { scaffold_id },
     orderBy: { created_at: "desc" },

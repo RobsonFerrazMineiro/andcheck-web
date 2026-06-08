@@ -7,6 +7,8 @@ import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-
 
 // ── Listar todas ──────────────────────────────────────────────────────────────
 export async function getInspections() {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   return prisma.inspection.findMany({
     orderBy: { date: "desc" },
     include: {
@@ -18,6 +20,8 @@ export async function getInspections() {
 
 // ── Buscar por ID ─────────────────────────────────────────────────────────────
 export async function getInspectionById(id: string) {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   return prisma.inspection.findUnique({
     where: { id },
     include: {
@@ -33,6 +37,8 @@ export async function getInspectionById(id: string) {
 
 // ── Listar por andaime ────────────────────────────────────────────────────────
 export async function getInspectionsByScaffold(scaffold_id: string) {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   return prisma.inspection.findMany({
     where: { scaffold_id },
     orderBy: { date: "desc" },
@@ -144,6 +150,8 @@ export async function createInspection(data: {
 
 // ── Stats gerais ──────────────────────────────────────────────────────────────
 export async function getInspectionStats() {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   const [total, aprovados, comRessalvas, reprovados] = await Promise.all([
     prisma.inspection.count(),
     prisma.inspection.count({ where: { result: "aprovado" } }),

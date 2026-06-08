@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
-import { canCurrentUser } from "@/lib/authz";
+import { canCurrentUser, requireAnyPermission } from "@/lib/authz";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -15,6 +15,8 @@ export default async function DashboardLayout({
 }) {
   const session = await auth();
   const user = session?.user;
+  await requireAnyPermission(["read.all", "read.own_company"]);
+
   const canManageUsers =
     (await canCurrentUser("users.manage_company")) ||
     (await canCurrentUser("users.create"));

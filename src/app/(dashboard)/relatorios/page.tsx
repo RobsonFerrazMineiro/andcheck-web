@@ -14,8 +14,17 @@ import Link from "next/link";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getInspections } from "@/lib/actions/inspection-actions";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
+import { canCurrentUser } from "@/lib/authz";
+import { redirect } from "next/navigation";
 
 export default async function RelatoriosPage() {
+  const [canGeneratePdf, canCreateInspection] = await Promise.all([
+    canCurrentUser("pdf.generate"),
+    canCurrentUser("inspections.create"),
+  ]);
+
+  if (!canGeneratePdf) redirect("/dashboard");
+
   const [inspections, scaffolds] = await Promise.all([
     getInspections(),
     getScaffolds(),
@@ -264,20 +273,22 @@ export default async function RelatoriosPage() {
 
       {/* Atalhos */}
       <div className="grid grid-cols-2 gap-3">
-        <Link
-          href="/inspecoes/nova"
-          className="flex items-center gap-3 bg-card border border-border p-4 hover:bg-muted/30 transition-colors group"
-        >
-          <ClipboardCheck className="w-5 h-5 text-primary/40 group-hover:text-primary/60 transition-colors" />
-          <div>
-            <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">
-              Nova Inspeção
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Registrar vistoria agora
-            </p>
-          </div>
-        </Link>
+        {canCreateInspection && (
+          <Link
+            href="/inspecoes/nova"
+            className="flex items-center gap-3 bg-card border border-border p-4 hover:bg-muted/30 transition-colors group"
+          >
+            <ClipboardCheck className="w-5 h-5 text-primary/40 group-hover:text-primary/60 transition-colors" />
+            <div>
+              <p className="text-[11px] font-bold text-foreground uppercase tracking-wide">
+                Nova Inspeção
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Registrar vistoria agora
+              </p>
+            </div>
+          </Link>
+        )}
         <Link
           href="/andaimes"
           className="flex items-center gap-3 bg-card border border-border p-4 hover:bg-muted/30 transition-colors group"

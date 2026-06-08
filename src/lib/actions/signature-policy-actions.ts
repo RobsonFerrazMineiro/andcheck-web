@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireAnyPermission } from "@/lib/authz";
 
 const policyInclude = {
   requirements: {
@@ -10,6 +11,12 @@ const policyInclude = {
 };
 
 export async function getInspectionSignaturePolicies() {
+  await requireAnyPermission([
+    "inspections.create",
+    "inspections.finalize",
+    "signature_policies.manage",
+  ]);
+
   return prisma.inspectionSignaturePolicy.findMany({
     orderBy: [{ is_default: "desc" }, { name: "asc" }],
     include: policyInclude,
@@ -19,6 +26,12 @@ export async function getInspectionSignaturePolicies() {
 export async function resolveInspectionSignaturePolicyForScaffold(
   scaffoldId: string,
 ) {
+  await requireAnyPermission([
+    "inspections.create",
+    "inspections.finalize",
+    "signature_policies.manage",
+  ]);
+
   const scaffold = await prisma.scaffold.findUnique({
     where: { id: scaffoldId },
     select: {
