@@ -4,11 +4,13 @@ import { format, isPast, parseISO } from "date-fns";
 import {
   AlertTriangle,
   Calendar,
+  ChevronRight,
   ClipboardList,
   Filter,
   Search,
   User,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
@@ -408,10 +410,11 @@ export function NaoConformidadesClient({
               const overdue = isOverdue(nc);
 
               return (
-                <div
+                <Link
                   key={nc.id}
+                  href={"/nao-conformidades/" + nc.id}
                   className={
-                    "flex xl:grid xl:grid-cols-12 xl:gap-4 items-center px-4 py-3 " +
+                    "flex xl:grid xl:grid-cols-12 xl:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
@@ -479,12 +482,10 @@ export function NaoConformidadesClient({
                           styles={STATUS_STYLE}
                         />
                       </div>
-                      <span className="hidden xl:inline-flex h-7 items-center justify-center border border-border px-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
-                        Etapa 3
-                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
