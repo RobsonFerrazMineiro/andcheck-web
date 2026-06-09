@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
   ClipboardCheck,
   Construction,
+  FileClock,
   LayoutDashboard,
   Map,
   Menu,
@@ -21,12 +22,15 @@ const navItems = [
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
+  { path: "/auditoria", label: "Auditoria", icon: FileClock },
 ];
 
 export function MobileHeader({
   canManageUsers = false,
+  canViewAudit = false,
 }: {
   canManageUsers?: boolean;
+  canViewAudit?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -77,6 +81,7 @@ export function MobileHeader({
         <nav className="px-2 pb-3 space-y-px border-t border-sidebar-border">
           {navItems
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
+            .filter((item) => item.path !== "/auditoria" || canViewAudit)
             .map((item) => (
             <Link
               key={item.path}

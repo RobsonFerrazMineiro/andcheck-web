@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAnyPermission } from "@/lib/authz";
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { InspectionResult } from "@prisma/client";
 import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-actions";
 
@@ -76,6 +77,9 @@ export async function createInspection(data: {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
 
   const { checklist, signatures, ...inspectionData } = data;
+  const oldScaffold = await prisma.scaffold.findUnique({
+    where: { id: data.scaffold_id },
+  });
   const policy = await resolveInspectionSignaturePolicyForScaffold(
     data.scaffold_id,
   );
@@ -136,13 +140,86 @@ export async function createInspection(data: {
         : "reprovado"
       : "liberado";
 
-  await prisma.scaffold.update({
+  const scaffold = await prisma.scaffold.update({
     where: { id: data.scaffold_id },
     data: {
       status: newStatus,
       validity_date: validityDate,
       released_at: newStatus === "liberado" ? new Date() : undefined,
     },
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.INSPECTION,
+    entityId: inspection.id,
+    entityLabel: `${inspection.scaffold_code}-${inspection.id.slice(-6)}`,
+    action: AuditAction.CREATE,
+    description: `Inspecao ${inspection.id} criada para o andaime ${inspection.scaffold_code}`,
+    newValue: {
+      scaffold_id: inspection.scaffold_id,
+      scaffold_code: inspection.scaffold_code,
+      inspector_name: inspection.inspector_name,
+      result: inspection.result,
+      validity_days: inspection.validity_days,
+      checklist_items: checklist.length,
+      signatures: providedSignatures.map((signature) => ({
+        role_code: signature.role_code,
+        signer_name: signature.signer_name,
+        signer_company: signature.signer_company,
+        signer_position: signature.signer_position,
+      })),
+    },
+    companyId: scaffold.company,
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.INSPECTION,
+    entityId: inspection.id,
+    entityLabel: `${inspection.scaffold_code}-${inspection.id.slice(-6)}`,
+    action: AuditAction.COMPLETE,
+    description: `Checklist da inspecao ${inspection.id} finalizado`,
+    newValue: {
+      checklist_items: checklist.length,
+      failed_items: checklist.filter((item) => item.value === "CL_FAIL").length,
+      warning_items: checklist.filter((item) => item.value === "CL_WARN").length,
+    },
+    companyId: scaffold.company,
+  });
+
+  for (const signature of providedSignatures) {
+    await createAuditLog({
+      entityType: AuditEntityType.SIGNATURE,
+      entityId: inspection.id,
+      entityLabel: `${inspection.scaffold_code}-${signature.role_code}`,
+      action: AuditAction.SIGN,
+      description: `Assinatura ${signature.role_code} adicionada na inspecao ${inspection.id}`,
+      newValue: {
+        role_code: signature.role_code,
+        signer_name: signature.signer_name,
+        signer_company: signature.signer_company,
+        signer_position: signature.signer_position,
+      },
+      companyId: scaffold.company,
+    });
+  }
+
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.STATUS_CHANGE,
+    description: `Inspecao ${inspection.id} alterou o status do andaime ${scaffold.code} para ${scaffold.status}`,
+    oldValue: {
+      status: oldScaffold?.status ?? null,
+      validity_date: oldScaffold?.validity_date?.toISOString() ?? null,
+    },
+    newValue: {
+      status: scaffold.status,
+      validity_date: scaffold.validity_date?.toISOString() ?? null,
+      released_at: scaffold.released_at?.toISOString() ?? null,
+      inspection_result: inspection.result,
+    },
+    companyId: scaffold.company,
   });
 
   return inspection;

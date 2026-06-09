@@ -20,11 +20,15 @@ export default async function DashboardLayout({
   const canManageUsers =
     (await canCurrentUser("users.manage_company")) ||
     (await canCurrentUser("users.create"));
+  const canViewAudit =
+    (await canCurrentUser("audit.view")) ||
+    (await canCurrentUser("logs.view")) ||
+    (await canCurrentUser("permissions.manage"));
 
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar canManageUsers={canManageUsers} />
-      <MobileHeader canManageUsers={canManageUsers} />
+      <Sidebar canManageUsers={canManageUsers} canViewAudit={canViewAudit} />
+      <MobileHeader canManageUsers={canManageUsers} canViewAudit={canViewAudit} />
 
       <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
         {/* Topbar — apenas desktop */}

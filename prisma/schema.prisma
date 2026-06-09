@@ -63,6 +63,33 @@ enum DocumentType {
   OUTRO
 }
 
+enum AuditEntityType {
+  SCAFFOLD
+  INSPECTION
+  DOCUMENT
+  USER
+  SIGNATURE
+  PDF
+  QR_CODE
+  SETTINGS
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  STATUS_CHANGE
+  SIGN
+  COMPLETE
+  UPLOAD
+  DOWNLOAD
+  GENERATE_PDF
+  VIEW_QR
+  LOGIN
+  LOGOUT
+  ROLE_CHANGE
+}
+
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Scaffold
@@ -324,4 +351,30 @@ model InspectionSignature {
   @@index([user_id])
   @@index([role_code])
   @@map("inspection_signatures")
+}
+
+model AuditLog {
+  id          String          @id @default(cuid())
+  userId      String?
+  userName    String?
+  userRole    String?
+  entityType  AuditEntityType
+  entityId    String?
+  entityLabel String?
+  action      AuditAction
+  description String
+  oldValue    Json?
+  newValue    Json?
+  ipAddress   String?
+  userAgent   String?
+  workspaceId String?
+  companyId   String?
+  createdAt   DateTime        @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([userId])
+  @@index([companyId])
+  @@map("audit_logs")
 }

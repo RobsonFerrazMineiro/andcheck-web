@@ -4,6 +4,7 @@ import {
   ChevronRight,
   ClipboardCheck,
   Construction,
+  FileClock,
   LayoutDashboard,
   Map,
   Shield,
@@ -43,11 +44,23 @@ const navItems = [
     icon: Users,
     desc: "Acessos e perfis",
   },
+  {
+    path: "/auditoria",
+    label: "Auditoria",
+    icon: FileClock,
+    desc: "Logs e rastreabilidade",
+  },
 ];
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 
-export function Sidebar({ canManageUsers = false }: { canManageUsers?: boolean }) {
+export function Sidebar({
+  canManageUsers = false,
+  canViewAudit = false,
+}: {
+  canManageUsers?: boolean;
+  canViewAudit?: boolean;
+}) {
   const pathname = usePathname();
 
   const isActive = (path: string) => {
@@ -101,6 +114,7 @@ export function Sidebar({ canManageUsers = false }: { canManageUsers?: boolean }
       <nav className="flex-1 px-2 space-y-px">
         {navItems
           .filter((item) => item.path !== "/usuarios" || canManageUsers)
+          .filter((item) => item.path !== "/auditoria" || canViewAudit)
           .map((item) => {
           const active = isActive(item.path);
           return (

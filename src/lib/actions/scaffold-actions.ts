@@ -6,6 +6,7 @@ import {
   requirePermission,
   requireRole,
 } from "@/lib/authz";
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextScaffoldTag } from "@/lib/scaffold-code";
 import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
@@ -43,7 +44,7 @@ export async function getScaffoldById(id: string) {
 
 // ── Buscar por tag (QR) ───────────────────────────────────────────────────────
 export async function getScaffoldByTag(tag: string) {
-  return prisma.scaffold.findFirst({
+  const scaffold = await prisma.scaffold.findFirst({
     where: { OR: [{ tag }, { code: tag }, { id: tag }] },
     include: {
       inspections: {
@@ -53,6 +54,22 @@ export async function getScaffoldByTag(tag: string) {
       },
     },
   });
+  if (scaffold) {
+    await createAuditLog({
+      entityType: AuditEntityType.QR_CODE,
+      entityId: scaffold.id,
+      entityLabel: scaffold.code,
+      action: AuditAction.VIEW_QR,
+      description: `QR Code do andaime ${scaffold.code} consultado`,
+      newValue: {
+        tag,
+        code: scaffold.code,
+        status: scaffold.status,
+      },
+      companyId: scaffold.company,
+    });
+  }
+  return scaffold;
 }
 
 // ── Criar ─────────────────────────────────────────────────────────────────────
@@ -78,7 +95,7 @@ export async function createScaffold(
 
   const code = await generateNextScaffoldTag(attempt);
   try {
-    return await prisma.scaffold.create({
+    const scaffold = await prisma.scaffold.create({
       data: {
         ...data,
         code,
@@ -86,6 +103,25 @@ export async function createScaffold(
         status: "em_montagem",
       },
     });
+    await createAuditLog({
+      entityType: AuditEntityType.SCAFFOLD,
+      entityId: scaffold.id,
+      entityLabel: scaffold.code,
+      action: AuditAction.CREATE,
+      description: `Andaime ${scaffold.code} criado`,
+      newValue: {
+        code: scaffold.code,
+        status: scaffold.status,
+        type: scaffold.type,
+        location: scaffold.location,
+        area: scaffold.area,
+        company: scaffold.company,
+        latitude: scaffold.latitude,
+        longitude: scaffold.longitude,
+      },
+      companyId: scaffold.company,
+    });
+    return scaffold;
   } catch (err: unknown) {
     // Conflito de unique constraint por concorrência → tenta novamente
     const isUniqueViolation =
@@ -100,35 +136,97 @@ export async function createScaffold(
 // ── Atualizar status ──────────────────────────────────────────────────────────
 export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
   await requirePermission("scaffolds.update");
-  return prisma.scaffold.update({ where: { id }, data: { status } });
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffold = await prisma.scaffold.update({ where: { id }, data: { status } });
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.STATUS_CHANGE,
+    description: `Status do andaime ${scaffold.code} alterado de ${oldScaffold?.status ?? "-"} para ${scaffold.status}`,
+    oldValue: { status: oldScaffold?.status ?? null },
+    newValue: { status: scaffold.status },
+    companyId: scaffold.company,
+  });
+  return scaffold;
 }
 
 // ── Concluir montagem → PENDENTE_LIBERACAO ────────────────────────────────────
 export async function completeAssembly(id: string) {
   await requirePermission("scaffolds.complete_assembly");
-  return prisma.scaffold.update({
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffold = await prisma.scaffold.update({
     where: { id },
     data: {
       status: "pendente_liberacao",
       assembly_completed_at: new Date(),
     },
   });
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.COMPLETE,
+    description: `Montagem do andaime ${scaffold.code} concluida`,
+    oldValue: { status: oldScaffold?.status ?? null },
+    newValue: {
+      status: scaffold.status,
+      assembly_completed_at: scaffold.assembly_completed_at?.toISOString(),
+    },
+    companyId: scaffold.company,
+  });
+  return scaffold;
 }
 
 // ── Desmontar → DESMONTADO ────────────────────────────────────────────────────
 export async function dismantleScaffold(id: string) {
   await requirePermission("scaffolds.dismantle");
-  return prisma.scaffold.update({
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffold = await prisma.scaffold.update({
     where: { id },
     data: {
       status: "desmontado",
       dismantled_at: new Date(),
     },
   });
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.STATUS_CHANGE,
+    description: `Andaime ${scaffold.code} desmontado`,
+    oldValue: { status: oldScaffold?.status ?? null },
+    newValue: {
+      status: scaffold.status,
+      dismantled_at: scaffold.dismantled_at?.toISOString(),
+    },
+    companyId: scaffold.company,
+  });
+  return scaffold;
 }
 
 // ── Deletar ───────────────────────────────────────────────────────────────────
 export async function deleteScaffold(id: string) {
   await requireRole("SUPER_ADMIN");
-  return prisma.scaffold.delete({ where: { id } });
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffold = await prisma.scaffold.delete({ where: { id } });
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.DELETE,
+    description: `Andaime ${scaffold.code} excluido`,
+    oldValue: oldScaffold
+      ? {
+          code: oldScaffold.code,
+          status: oldScaffold.status,
+          type: oldScaffold.type,
+          location: oldScaffold.location,
+          area: oldScaffold.area,
+          company: oldScaffold.company,
+        }
+      : undefined,
+    companyId: scaffold.company,
+  });
+  return scaffold;
 }

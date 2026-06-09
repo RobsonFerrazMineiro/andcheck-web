@@ -9,6 +9,7 @@ import {
   requireAnyPermission,
   requirePermission,
 } from "@/lib/authz";
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 
 const TEMPORARY_PASSWORD = "andcheck@2025";
@@ -68,7 +69,7 @@ export async function createUser(formData: FormData) {
 
   const legacyRole = role.code === "SUPER_ADMIN" ? "admin" : "inspector";
 
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name,
       email,
@@ -85,6 +86,24 @@ export async function createUser(formData: FormData) {
         },
       },
     },
+  });
+  await createAuditLog({
+    entityType: AuditEntityType.USER,
+    entityId: user.id,
+    entityLabel: user.name,
+    action: AuditAction.CREATE,
+    description: `Usuario ${user.name} criado`,
+    newValue: {
+      name: user.name,
+      email: user.email,
+      company: user.company,
+      registration: user.registration,
+      department: user.department,
+      position: user.position,
+      is_active: user.is_active,
+      role: role.code,
+    },
+    companyId: user.company,
   });
 
   revalidatePath("/usuarios");
@@ -138,8 +157,9 @@ export async function updateUser(formData: FormData) {
   }
 
   const legacyRole = role.code === "SUPER_ADMIN" ? "admin" : "inspector";
+  const oldRoleCode = targetUser.roles[0]?.role.code ?? null;
 
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       name,
@@ -157,6 +177,37 @@ export async function updateUser(formData: FormData) {
         },
       },
     },
+  });
+  await createAuditLog({
+    entityType: AuditEntityType.USER,
+    entityId: user.id,
+    entityLabel: user.name,
+    action: oldRoleCode !== role.code ? AuditAction.ROLE_CHANGE : AuditAction.UPDATE,
+    description:
+      oldRoleCode !== role.code
+        ? `Perfil do usuario ${user.name} alterado de ${oldRoleCode ?? "-"} para ${role.code}`
+        : `Usuario ${user.name} atualizado`,
+    oldValue: {
+      name: targetUser.name,
+      email: targetUser.email,
+      company: targetUser.company,
+      registration: targetUser.registration,
+      department: targetUser.department,
+      position: targetUser.position,
+      is_active: targetUser.is_active,
+      role: oldRoleCode,
+    },
+    newValue: {
+      name: user.name,
+      email: user.email,
+      company: user.company,
+      registration: user.registration,
+      department: user.department,
+      position: user.position,
+      is_active: user.is_active,
+      role: role.code,
+    },
+    companyId: user.company,
   });
 
   revalidatePath("/usuarios");
@@ -183,9 +234,19 @@ export async function setUserActive(userId: string, isActive: boolean) {
     throw new Error("Voce nao pode desativar o proprio usuario.");
   }
 
-  await prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: { is_active: isActive },
+  });
+  await createAuditLog({
+    entityType: AuditEntityType.USER,
+    entityId: user.id,
+    entityLabel: user.name,
+    action: AuditAction.STATUS_CHANGE,
+    description: `Usuario ${user.name} ${isActive ? "reativado" : "desativado"}`,
+    oldValue: { is_active: targetUser?.is_active ?? null },
+    newValue: { is_active: user.is_active },
+    companyId: user.company,
   });
 
   revalidatePath("/usuarios");
@@ -217,6 +278,24 @@ export async function deleteUser(userId: string) {
   }
 
   await prisma.user.delete({ where: { id: userId } });
+  await createAuditLog({
+    entityType: AuditEntityType.USER,
+    entityId: targetUser.id,
+    entityLabel: targetUser.name,
+    action: AuditAction.DELETE,
+    description: `Usuario ${targetUser.name} excluido`,
+    oldValue: {
+      name: targetUser.name,
+      email: targetUser.email,
+      company: targetUser.company,
+      registration: targetUser.registration,
+      department: targetUser.department,
+      position: targetUser.position,
+      is_active: targetUser.is_active,
+      roles: targetUser.roles.map((userRole) => userRole.role.code),
+    },
+    companyId: targetUser.company,
+  });
 
   revalidatePath("/usuarios");
 }
