@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import {
   ClipboardCheck,
+  ClipboardList,
   Construction,
   FileClock,
   LayoutDashboard,
@@ -20,6 +21,7 @@ const navItems = [
   { path: "/dashboard", label: "Painel Operacional", icon: LayoutDashboard },
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
+  { path: "/nao-conformidades", label: "Nao Conformidades", icon: ClipboardList },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
@@ -28,9 +30,11 @@ const navItems = [
 export function MobileHeader({
   canManageUsers = false,
   canViewAudit = false,
+  canViewNonConformities = false,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
+  canViewNonConformities?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -82,6 +86,10 @@ export function MobileHeader({
           {navItems
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
             .filter((item) => item.path !== "/auditoria" || canViewAudit)
+            .filter(
+              (item) =>
+                item.path !== "/nao-conformidades" || canViewNonConformities,
+            )
             .map((item) => (
             <Link
               key={item.path}

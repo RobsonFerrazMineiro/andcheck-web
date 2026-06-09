@@ -24,11 +24,25 @@ export default async function DashboardLayout({
     (await canCurrentUser("audit.view")) ||
     (await canCurrentUser("logs.view")) ||
     (await canCurrentUser("permissions.manage"));
+  const canViewNonConformities =
+    (await canCurrentUser("non_conformities.view")) ||
+    (await canCurrentUser("non_conformities.create")) ||
+    (await canCurrentUser("non_conformities.update")) ||
+    (await canCurrentUser("non_conformities.close")) ||
+    (await canCurrentUser("non_conformities.add_evidence"));
 
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar canManageUsers={canManageUsers} canViewAudit={canViewAudit} />
-      <MobileHeader canManageUsers={canManageUsers} canViewAudit={canViewAudit} />
+      <Sidebar
+        canManageUsers={canManageUsers}
+        canViewAudit={canViewAudit}
+        canViewNonConformities={canViewNonConformities}
+      />
+      <MobileHeader
+        canManageUsers={canManageUsers}
+        canViewAudit={canViewAudit}
+        canViewNonConformities={canViewNonConformities}
+      />
 
       <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
         {/* Topbar — apenas desktop */}

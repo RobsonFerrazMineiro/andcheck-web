@@ -3,6 +3,7 @@
 import {
   ChevronRight,
   ClipboardCheck,
+  ClipboardList,
   Construction,
   FileClock,
   LayoutDashboard,
@@ -33,6 +34,12 @@ const navItems = [
     desc: "Histórico técnico",
   },
   {
+    path: "/nao-conformidades",
+    label: "Nao Conformidades",
+    icon: ClipboardList,
+    desc: "Controle de tratativas",
+  },
+  {
     path: "/mapa",
     label: "Mapa Operacional",
     icon: Map,
@@ -57,9 +64,11 @@ const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 export function Sidebar({
   canManageUsers = false,
   canViewAudit = false,
+  canViewNonConformities = false,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
+  canViewNonConformities?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -115,6 +124,10 @@ export function Sidebar({
         {navItems
           .filter((item) => item.path !== "/usuarios" || canManageUsers)
           .filter((item) => item.path !== "/auditoria" || canViewAudit)
+          .filter(
+            (item) =>
+              item.path !== "/nao-conformidades" || canViewNonConformities,
+          )
           .map((item) => {
           const active = isActive(item.path);
           return (

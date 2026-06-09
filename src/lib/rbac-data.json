@@ -31,6 +31,11 @@
     { "code": "documents.view", "name": "View technical documents" },
     { "code": "documents.create", "name": "Create technical documents" },
     { "code": "pdf.generate", "name": "Generate PDF" },
+    { "code": "non_conformities.view", "name": "View non conformities" },
+    { "code": "non_conformities.create", "name": "Create non conformities" },
+    { "code": "non_conformities.update", "name": "Update non conformities" },
+    { "code": "non_conformities.close", "name": "Close non conformities" },
+    { "code": "non_conformities.add_evidence", "name": "Add non conformity evidence" },
     { "code": "audit.view", "name": "View audit" },
     { "code": "logs.view", "name": "View logs" },
     { "code": "read.all", "name": "Read all data" },
@@ -45,6 +50,11 @@
       "scaffolds.interdict",
       "documents.view",
       "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.create",
+      "non_conformities.update",
+      "non_conformities.close",
+      "non_conformities.add_evidence",
       "audit.view",
       "logs.view",
       "read.all"
@@ -56,6 +66,11 @@
       "scaffolds.interdict",
       "documents.view",
       "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.create",
+      "non_conformities.update",
+      "non_conformities.close",
+      "non_conformities.add_evidence",
       "read.all"
     ],
     "ADMIN_EMPRESA": [
@@ -74,6 +89,11 @@
       "documents.view",
       "documents.create",
       "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.create",
+      "non_conformities.update",
+      "non_conformities.close",
+      "non_conformities.add_evidence",
       "read.own_company"
     ],
     "PLANEJAMENTO": [
@@ -83,6 +103,8 @@
       "scaffolds.dismantle",
       "documents.create",
       "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.add_evidence",
       "read.own_company"
     ],
     "SUPERVISOR_ENCARREGADO": [
@@ -92,6 +114,8 @@
       "scaffolds.dismantle",
       "documents.create",
       "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.add_evidence",
       "read.own_company"
     ],
     "MONTADOR_LIDER": [
@@ -104,6 +128,7 @@
       "documents.view",
       "pdf.generate",
       "audit.view",
+      "non_conformities.view",
       "read.all"
     ]
   }
