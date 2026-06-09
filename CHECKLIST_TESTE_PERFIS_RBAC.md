@@ -26,202 +26,192 @@ Use este roteiro para validar manualmente os acessos por perfil no AndCheck.
 
 ## SUPER_ADMIN
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Acessa `/andaimes/novo`.
-- [ ] Consegue cadastrar andaime.
-- [ ] Acessa detalhe de andaime.
-- [ ] Consegue concluir montagem.
-- [ ] Consegue registrar desmontagem.
-- [ ] Consegue anexar documento.
-- [ ] Consegue excluir documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Acessa `/inspecoes/nova`.
-- [ ] Consegue criar/finalizar inspecao.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Acessa `/relatorios`.
-- [ ] Acessa `/usuarios`.
-- [ ] Consegue criar usuario.
-- [ ] Consegue desativar usuario.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Acessa `/andaimes/novo`.
+- [x] Consegue cadastrar andaime.
+- [x] Acessa detalhe de andaime.
+- [x] Consegue concluir montagem.
+- [x] Consegue registrar desmontagem.
+- [x] Consegue anexar documento.
+- [x] Consegue excluir documento.
+- [x] Acessa `/inspecoes`.
+- [x] Acessa `/inspecoes/nova`.
+- [x] Consegue criar/finalizar inspecao.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Acessa `/relatorios`.
+- [x] Acessa `/usuarios`.
+- [x] Consegue criar usuario.
+- [x] Consegue desativar usuario.
 
 ## HSE_HYDRO
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Nao ve botao de novo andaime.
-- [ ] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
-- [ ] Acessa detalhe de andaime.
-- [ ] Nao ve acoes de concluir montagem/desmontagem.
-- [ ] Nao consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Acessa `/inspecoes/nova`.
-- [ ] Consegue criar/finalizar inspecao.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Nao ve botao de novo andaime.
+- [x] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
+- [x] Acessa detalhe de andaime.
+- [x] Nao ve acoes de concluir montagem/desmontagem.
+- [x] Nao consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Acessa `/inspecoes/nova`.
+- [x] Consegue criar/finalizar inspecao.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## HSE_GERENCIADORA
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Nao ve botao de novo andaime.
-- [ ] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
-- [ ] Acessa detalhe de andaime.
-- [ ] Nao ve acoes de concluir montagem/desmontagem.
-- [ ] Nao consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Acessa `/inspecoes/nova`.
-- [ ] Consegue criar/finalizar inspecao.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Nao ve botao de novo andaime.
+- [x] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
+- [x] Acessa detalhe de andaime.
+- [x] Nao ve acoes de concluir montagem/desmontagem.
+- [x] Nao consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Acessa `/inspecoes/nova`.
+- [x] Consegue criar/finalizar inspecao.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## ADMIN_EMPRESA
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Nao ve botao de novo andaime.
-- [ ] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
-- [ ] Acessa detalhe de andaime.
-- [ ] Nao ve acoes de concluir montagem/desmontagem.
-- [ ] Nao consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Nao ve botao de nova inspecao.
-- [ ] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Nao ve acao de inspecionar no mapa.
-- [ ] Ao abrir `/relatorios`, deve voltar para `/dashboard`.
-- [ ] Acessa `/usuarios`.
-- [ ] Consegue criar usuario comum da empresa.
-- [ ] Consegue editar/desativar usuario permitido.
-- [ ] Nao consegue criar ou alterar `SUPER_ADMIN`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Nao ve botao de novo andaime.
+- [x] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
+- [x] Acessa detalhe de andaime.
+- [x] Nao ve acoes de concluir montagem/desmontagem.
+- [x] Nao consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Nao ve botao de nova inspecao.
+- [x] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Nao ve acao de inspecionar no mapa.
+- [x] Ao abrir `/relatorios`, deve voltar para `/dashboard`.
+- [x] Acessa `/usuarios`.
+- [x] Consegue criar usuario comum da empresa.
+- [x] Consegue editar/desativar usuario permitido.
+- [x] Nao consegue editar/desativar seu proprio usuario.
+- [x] Nao consegue criar ou alterar `SUPER_ADMIN`.
 
 ## HSE_EMPRESA
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Nao ve botao de novo andaime.
-- [ ] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
-- [ ] Acessa detalhe de andaime.
-- [ ] Nao ve acoes de concluir montagem/desmontagem.
-- [ ] Consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Acessa `/inspecoes/nova`.
-- [ ] Consegue criar/finalizar inspecao.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Nao ve botao de novo andaime.
+- [x] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
+- [x] Acessa detalhe de andaime.
+- [x] Nao ve acoes de concluir montagem/desmontagem.
+- [x] Consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Acessa `/inspecoes/nova`.
+- [x] Consegue criar/finalizar inspecao.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## PLANEJAMENTO
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Ve botao de novo andaime.
-- [ ] Acessa `/andaimes/novo`.
-- [ ] Consegue cadastrar andaime.
-- [ ] Acessa detalhe de andaime.
-- [ ] Consegue concluir montagem.
-- [ ] Consegue registrar desmontagem.
-- [ ] Consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Nao ve botao de nova inspecao.
-- [ ] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Nao ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Ve botao de novo andaime.
+- [x] Acessa `/andaimes/novo`.
+- [x] Consegue cadastrar andaime.
+- [x] Acessa detalhe de andaime.
+- [x] Consegue concluir montagem.
+- [x] Consegue registrar desmontagem.
+- [x] Consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Nao ve botao de nova inspecao.
+- [x] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Nao ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## SUPERVISOR_ENCARREGADO
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Ve botao de novo andaime.
-- [ ] Acessa `/andaimes/novo`.
-- [ ] Consegue cadastrar andaime.
-- [ ] Acessa detalhe de andaime.
-- [ ] Consegue concluir montagem.
-- [ ] Consegue registrar desmontagem.
-- [ ] Consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Nao ve botao de nova inspecao.
-- [ ] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Nao ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Ve botao de novo andaime.
+- [x] Acessa `/andaimes/novo`.
+- [x] Consegue cadastrar andaime.
+- [x] Acessa detalhe de andaime.
+- [x] Consegue concluir montagem.
+- [x] Consegue registrar desmontagem.
+- [x] Consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Nao ve botao de nova inspecao.
+- [x] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Nao ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## MONTADOR_LIDER
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Ve botao de novo andaime.
-- [ ] Acessa `/andaimes/novo`.
-- [ ] Consegue cadastrar andaime.
-- [ ] Acessa detalhe de andaime.
-- [ ] Consegue concluir montagem.
-- [ ] Consegue registrar desmontagem.
-- [ ] Nao deve conseguir editar status via acao de update generica.
-- [ ] Nao consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Nao ve botao de nova inspecao.
-- [ ] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Nao ve acao de inspecionar no mapa.
-- [ ] Ao abrir `/relatorios`, deve voltar para `/dashboard`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Ve botao de novo andaime.
+- [x] Acessa `/andaimes/novo`.
+- [x] Consegue cadastrar andaime.
+- [x] Acessa detalhe de andaime.
+- [x] Consegue concluir montagem.
+- [x] Consegue registrar desmontagem.
+- [x] Nao deve conseguir editar status via acao de update generica.
+- [x] Nao consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Nao ve botao de nova inspecao.
+- [x] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Nao ve acao de inspecionar no mapa.
+- [x] Ao abrir `/relatorios`, deve voltar para `/dashboard`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## AUDITOR
 
-- [ ] Acessa `/dashboard`.
-- [ ] Acessa `/andaimes`.
-- [ ] Nao ve botao de novo andaime.
-- [ ] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
-- [ ] Acessa detalhe de andaime.
-- [ ] Nao ve acoes de concluir montagem/desmontagem.
-- [ ] Nao consegue anexar documento.
-- [ ] Acessa `/inspecoes`.
-- [ ] Nao ve botao de nova inspecao.
-- [ ] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
-- [ ] Acessa detalhe de inspecao.
-- [ ] Acessa `/mapa`.
-- [ ] Nao ve acao de inspecionar no mapa.
-- [ ] Acessa `/relatorios`.
-- [ ] Nao ve menu `/usuarios`.
-- [ ] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
+- [x] Acessa `/dashboard`.
+- [x] Acessa `/andaimes`.
+- [x] Nao ve botao de novo andaime.
+- [x] Ao abrir `/andaimes/novo`, deve voltar para `/andaimes`.
+- [x] Acessa detalhe de andaime.
+- [x] Nao ve acoes de concluir montagem/desmontagem.
+- [x] Nao consegue anexar documento.
+- [x] Acessa `/inspecoes`.
+- [x] Nao ve botao de nova inspecao.
+- [x] Ao abrir `/inspecoes/nova`, deve voltar para `/inspecoes`.
+- [x] Acessa detalhe de inspecao.
+- [x] Acessa `/mapa`.
+- [x] Nao ve acao de inspecionar no mapa.
+- [x] Acessa `/relatorios`.
+- [x] Nao ve menu `/usuarios`.
+- [x] Ao abrir `/usuarios`, deve voltar para `/dashboard`.
 
 ## Testes publicos e sessao
 
-- [ ] Sem login, abrir `/dashboard` redireciona para `/login`.
-- [ ] Sem login, abrir `/andaimes` redireciona para `/login`.
-- [ ] Sem login, abrir `/inspecoes` redireciona para `/login`.
-- [ ] Sem login, abrir `/qr/[tag]` carrega pagina publica.
-- [ ] Usuario desativado nao consegue logar.
-- [ ] Usuario que foi desativado com sessao antiga deve ser redirecionado para `/login` ao acessar dashboard.
-
-## Evidencias recomendadas
-
-- [ ] Print do menu lateral por perfil.
-- [ ] Print de tentativa bloqueada em `/andaimes/novo`.
-- [ ] Print de tentativa bloqueada em `/inspecoes/nova`.
-- [ ] Print de tentativa bloqueada em `/usuarios`.
-- [ ] Print de tentativa bloqueada em `/relatorios`.
-- [ ] Print de criacao de andaime por `SUPERVISOR_ENCARREGADO`.
-- [ ] Print de criacao de andaime por `MONTADOR_LIDER`.
-- [ ] Print comprovando que `MONTADOR_LIDER` nao edita andaime.
+- [x] Sem login, abrir `/dashboard` redireciona para `/login`.
+- [x] Sem login, abrir `/andaimes` redireciona para `/login`.
+- [x] Sem login, abrir `/inspecoes` redireciona para `/login`.
+- [x] Sem login, abrir `/qr/[tag]` carrega pagina publica.
+- [x] Usuario desativado nao consegue logar.
+- [x] Usuario que foi desativado com sessao antiga deve ser redirecionado para `/login` ao acessar dashboard.
