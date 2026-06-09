@@ -72,6 +72,7 @@ enum AuditEntityType {
   PDF
   QR_CODE
   SETTINGS
+  NON_CONFORMITY
 }
 
 enum AuditAction {
@@ -90,40 +91,65 @@ enum AuditAction {
   ROLE_CHANGE
 }
 
+enum NonConformityClassification {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum NonConformityStatus {
+  OPEN
+  IN_PROGRESS
+  PENDING_VERIFICATION
+  CLOSED
+  CANCELLED
+}
+
+enum NonConformityEvidenceType {
+  PHOTO
+  PDF
+  ART
+  MEMORIAL_CALCULO
+  CROQUI
+  DOCUMENT
+  OTHER
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Scaffold
 // ──────────────────────────────────────────────────────────────────────────────
 
 model Scaffold {
-  id           String         @id @default(cuid())
-  code         String         @unique          // ex: AND-001
-  tag          String         @unique          // QR tag = id (gerado automaticamente)
-  type         ScaffoldType
-  status       ScaffoldStatus @default(em_montagem)
-  location     String
-  area         String
-  height       Float                           // metros
-  width        Float?
-  length       Float?
-  max_load     Float?                          // kg
-  responsible  String
-  company      String?                         // empresa montadora
-  notes        String?
-  validity_date DateTime?
-  assembly_completed_at DateTime?   // data conclusão montagem → PENDENTE_LIBERACAO
-  released_at           DateTime?   // data liberação → LIBERADO
-  dismantled_at         DateTime?   // data desmontagem → DESMONTADO
+  id                    String         @id @default(cuid())
+  code                  String         @unique // ex: AND-001
+  tag                   String         @unique // QR tag = id (gerado automaticamente)
+  type                  ScaffoldType
+  status                ScaffoldStatus @default(em_montagem)
+  location              String
+  area                  String
+  height                Float // metros
+  width                 Float?
+  length                Float?
+  max_load              Float? // kg
+  responsible           String
+  company               String? // empresa montadora
+  notes                 String?
+  validity_date         DateTime?
+  assembly_completed_at DateTime? // data conclusão montagem → PENDENTE_LIBERACAO
+  released_at           DateTime? // data liberação → LIBERADO
+  dismantled_at         DateTime? // data desmontagem → DESMONTADO
 
-  latitude          Float?
-  longitude         Float?
+  latitude             Float?
+  longitude            Float?
   location_description String?
 
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  inspections  Inspection[]
-  documents    ScaffoldDocument[]
+  inspections     Inspection[]
+  documents       ScaffoldDocument[]
+  nonConformities NonConformity[]
 
   @@map("scaffolds")
 }
@@ -133,20 +159,20 @@ model Scaffold {
 // ──────────────────────────────────────────────────────────────────────────────
 
 model ScaffoldDocument {
-  id            String       @id @default(cuid())
-  scaffold      Scaffold     @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
-  scaffold_id   String
-  type          DocumentType
-  title         String
-  file_url      String       // base64 ou URL do arquivo
-  file_name     String
-  file_size     Int?         // bytes
-  mime_type     String?
-  uploaded_by   String       // nome do responsável
-  expires_at    DateTime?    // data de validade/revisão (opcional)
-  observation   String?
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  scaffold    Scaffold     @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
+  scaffold_id String
+  type        DocumentType
+  title       String
+  file_url    String // base64 ou URL do arquivo
+  file_name   String
+  file_size   Int? // bytes
+  mime_type   String?
+  uploaded_by String // nome do responsável
+  expires_at  DateTime? // data de validade/revisão (opcional)
+  observation String?
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
 
   @@map("scaffold_documents")
 }
@@ -156,24 +182,25 @@ model ScaffoldDocument {
 // ──────────────────────────────────────────────────────────────────────────────
 
 model Inspection {
-  id              String            @id @default(cuid())
-  scaffold        Scaffold          @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
-  scaffold_id     String
-  scaffold_code   String            // desnormalizado para relatórios
+  id            String   @id @default(cuid())
+  scaffold      Scaffold @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
+  scaffold_id   String
+  scaffold_code String // desnormalizado para relatórios
 
-  date            DateTime          @default(now())
-  inspector_name  String
-  result          InspectionResult
-  validity_days   Int               @default(0)
-  notes           String?
-  photos          String[]          // base64 ou URLs das fotos
-  signature       String?           // base64 da assinatura digital
+  date           DateTime         @default(now())
+  inspector_name String
+  result         InspectionResult
+  validity_days  Int              @default(0)
+  notes          String?
+  photos         String[] // base64 ou URLs das fotos
+  signature      String? // base64 da assinatura digital
 
-  created_at      DateTime          @default(now())
-  updated_at      DateTime          @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   checklist       ChecklistEntry[]
   signatures      InspectionSignature[]
+  nonConformities NonConformity[]
 
   @@map("inspections")
 }
@@ -183,17 +210,19 @@ model Inspection {
 // ──────────────────────────────────────────────────────────────────────────────
 
 model ChecklistEntry {
-  id             String          @id @default(cuid())
-  inspection     Inspection      @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
-  inspection_id  String
+  id            String     @id @default(cuid())
+  inspection    Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+  inspection_id String
 
-  item_id        String          // ex: "ITEM_01"
-  item_label     String
-  category       String
-  value          ChecklistValue
-  critical       Boolean         @default(false)
-  observation    String?
-  photo          String?         // base64 da foto do item não conforme
+  item_id     String // ex: "ITEM_01"
+  item_label  String
+  category    String
+  value       ChecklistValue
+  critical    Boolean        @default(false)
+  observation String?
+  photo       String? // base64 da foto do item não conforme
+
+  nonConformityItems NonConformityChecklistItem[]
 
   @@map("checklist_entries")
 }
@@ -202,24 +231,119 @@ model ChecklistEntry {
 // User
 // ──────────────────────────────────────────────────────────────────────────────
 
+model NonConformity {
+  id             String                      @id @default(cuid())
+  code           String                      @unique
+  title          String
+  description    String
+  classification NonConformityClassification
+  status         NonConformityStatus         @default(OPEN)
+
+  originInspection   Inspection @relation(fields: [originInspectionId], references: [id], onDelete: Cascade)
+  originInspectionId String
+  scaffold           Scaffold   @relation(fields: [scaffoldId], references: [id], onDelete: Cascade)
+  scaffoldId         String
+
+  companyId         String?
+  responsibleUser   User?     @relation("NonConformityResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
+  responsibleUserId String?
+  dueDate           DateTime?
+  closedAt          DateTime?
+  createdBy         User?     @relation("NonConformityCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById       String?
+
+  checklistItems NonConformityChecklistItem[]
+  evidences      NonConformityEvidence[]
+  history        NonConformityHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([originInspectionId])
+  @@index([scaffoldId])
+  @@index([companyId])
+  @@index([responsibleUserId])
+  @@index([classification])
+  @@index([status])
+  @@index([dueDate])
+  @@map("non_conformities")
+}
+
+model NonConformityChecklistItem {
+  id               String         @id @default(cuid())
+  nonConformity    NonConformity  @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
+  nonConformityId  String
+  checklistEntry   ChecklistEntry @relation(fields: [checklistEntryId], references: [id], onDelete: Cascade)
+  checklistEntryId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([nonConformityId, checklistEntryId])
+  @@index([checklistEntryId])
+  @@map("non_conformity_checklist_items")
+}
+
+model NonConformityEvidence {
+  id              String                    @id @default(cuid())
+  nonConformity   NonConformity             @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
+  nonConformityId String
+  type            NonConformityEvidenceType
+  title           String
+  fileUrl         String
+  fileName        String
+  fileSize        Int?
+  mimeType        String?
+  uploadedBy      User?                     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById    String?
+  observation     String?
+  createdAt       DateTime                  @default(now())
+
+  @@index([nonConformityId])
+  @@index([type])
+  @@index([uploadedById])
+  @@map("non_conformity_evidences")
+}
+
+model NonConformityHistory {
+  id              String        @id @default(cuid())
+  nonConformity   NonConformity @relation(fields: [nonConformityId], references: [id], onDelete: Cascade)
+  nonConformityId String
+  action          String
+  description     String
+  oldValue        Json?
+  newValue        Json?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?
+  createdAt       DateTime      @default(now())
+
+  @@index([nonConformityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("non_conformity_history")
+}
+
 model User {
-  id             String          @id @default(cuid())
-  name           String
-  email          String          @unique
-  password_hash  String
-  role           LegacyUserRole  @default(inspector)
-  avatar_url     String?
-  company        String?
-  registration   String?
-  department     String?
-  position       String?
-  is_active      Boolean         @default(true)
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password_hash String
+  role          LegacyUserRole @default(inspector)
+  avatar_url    String?
+  company       String?
+  registration  String?
+  department    String?
+  position      String?
+  is_active     Boolean        @default(true)
 
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  roles          UserRole[]
-  signatures     InspectionSignature[]
+  roles                      UserRole[]
+  signatures                 InspectionSignature[]
+  responsibleNonConformities NonConformity[]         @relation("NonConformityResponsible")
+  createdNonConformities     NonConformity[]         @relation("NonConformityCreatedBy")
+  nonConformityEvidences     NonConformityEvidence[]
+  nonConformityHistory       NonConformityHistory[]
 
   @@map("users")
 }
@@ -238,8 +362,8 @@ model Role {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  users       UserRole[]
-  permissions RolePermission[]
+  users                 UserRole[]
+  permissions           RolePermission[]
   signatureRequirements InspectionSignatureRequirement[]
   inspectionSignatures  InspectionSignature[]
 
@@ -300,10 +424,10 @@ model InspectionSignaturePolicy {
   is_default    Boolean       @default(false)
   is_active     Boolean       @default(true)
 
-  created_at    DateTime      @default(now())
-  updated_at    DateTime      @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  requirements  InspectionSignatureRequirement[]
+  requirements InspectionSignatureRequirement[]
 
   @@index([is_active, is_default])
   @@index([company])
@@ -323,8 +447,8 @@ model InspectionSignatureRequirement {
   is_required Boolean                   @default(true)
   sort_order  Int                       @default(0)
 
-  created_at  DateTime                  @default(now())
-  updated_at  DateTime                  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@unique([policy_id, role_code])
   @@index([role_code])
@@ -332,20 +456,20 @@ model InspectionSignatureRequirement {
 }
 
 model InspectionSignature {
-  id                  String      @id @default(cuid())
-  inspection          Inspection  @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
+  id                  String     @id @default(cuid())
+  inspection          Inspection @relation(fields: [inspection_id], references: [id], onDelete: Cascade)
   inspection_id       String
-  user                User?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  user                User?      @relation(fields: [user_id], references: [id], onDelete: SetNull)
   user_id             String?
-  role                Role        @relation(fields: [role_code], references: [code], onDelete: Restrict)
+  role                Role       @relation(fields: [role_code], references: [code], onDelete: Restrict)
   role_code           String
   signer_name         String
   signer_company      String?
   signer_position     String?
   signature_image_url String?
   signature_data      String?
-  signed_at           DateTime    @default(now())
-  created_at          DateTime    @default(now())
+  signed_at           DateTime   @default(now())
+  created_at          DateTime   @default(now())
 
   @@index([inspection_id])
   @@index([user_id])
