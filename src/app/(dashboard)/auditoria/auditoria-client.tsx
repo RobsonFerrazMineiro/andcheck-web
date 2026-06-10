@@ -74,6 +74,7 @@ const ENTITY_LABELS: Record<string, string> = {
   PDF: "PDF",
   QR_CODE: "QR Code",
   SETTINGS: "Configuracao",
+  NON_CONFORMITY: "Nao conformidade",
 };
 
 const ENTITY_ARTICLES: Record<string, string> = {
@@ -85,18 +86,26 @@ const ENTITY_ARTICLES: Record<string, string> = {
   PDF: "o PDF",
   QR_CODE: "o QR Code",
   SETTINGS: "a configuracao",
+  NON_CONFORMITY: "a nao conformidade",
 };
 
 const FIELD_LABELS: Record<string, string> = {
   area: "Area",
   assembly_completed_at: "Montagem concluida em",
   checklist_items: "Itens do checklist",
+  classification: "Classificacao",
   code: "Codigo",
   company: "Empresa",
+  companyId: "Empresa",
+  closedAt: "Encerrada em",
+  createdById: "Criado por",
   department: "Departamento",
   dismantled_at: "Desmontado em",
+  dueDate: "Prazo",
   email: "E-mail",
+  evidenceType: "Tipo de evidencia",
   failed_items: "Itens reprovados",
+  fileName: "Arquivo",
   file_name: "Arquivo",
   inspection_id: "Inspecao",
   inspection_result: "Resultado da inspecao",
@@ -106,9 +115,11 @@ const FIELD_LABELS: Record<string, string> = {
   location: "Local",
   longitude: "Longitude",
   name: "Nome",
+  originInspectionId: "Inspecao de origem",
   position: "Cargo",
   registration: "Matricula",
   released_at: "Liberado em",
+  responsibleUserId: "Responsavel",
   result: "Resultado",
   role: "Perfil",
   role_code: "Perfil",
@@ -119,6 +130,7 @@ const FIELD_LABELS: Record<string, string> = {
   signer_position: "Cargo do assinante",
   status: "Status",
   tag: "Tag",
+  title: "Titulo",
   type: "Tipo",
   validity_date: "Validade",
   validity_days: "Validade em dias",
@@ -139,6 +151,9 @@ const ROLE_LABELS: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Ativo",
+  cancelled: "Cancelada",
+  closed: "Encerrada",
+  critical: "Critica",
   aprovado: "Aprovado",
   aprovado_com_ressalvas: "Aprovado com ressalvas",
   cl_fail: "Reprovado",
@@ -148,10 +163,16 @@ const STATUS_LABELS: Record<string, string> = {
   desmontado: "Desmontado",
   em_montagem: "Em montagem",
   inactive: "Inativo",
+  in_progress: "Em tratamento",
   interditado: "Interditado",
   liberado: "Liberado",
+  low: "Baixa",
+  medium: "Media",
+  open: "Aberta",
   pendente_liberacao: "Pendente de liberacao",
+  pending_verification: "Aguardando verificacao",
   reprovado: "Reprovado",
+  high: "Alta",
 };
 
 const ACTIONS = Object.keys(ACTION_LABELS);
@@ -202,6 +223,8 @@ function entityDisplay(row: AuditRow) {
       return `PDF da inspecao ${label}`;
     case "QR_CODE":
       return `QR Code do andaime ${label}`;
+    case "NON_CONFORMITY":
+      return `Nao conformidade ${label}`;
     case "SETTINGS":
       return `Configuracao ${label}`;
     default:
