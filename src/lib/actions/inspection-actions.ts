@@ -1,10 +1,43 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { requireAnyPermission } from "@/lib/authz";
+import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
-import { InspectionResult } from "@prisma/client";
+import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
+import {
+  InspectionResult,
+  NonConformityClassification,
+  NonConformityStatus,
+  Prisma,
+} from "@prisma/client";
 import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-actions";
+
+const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
+
+function resolveNonConformityClassification({
+  hasCriticalFail,
+  inspectionResult,
+}: {
+  hasCriticalFail: boolean;
+  inspectionResult: InspectionResult;
+}) {
+  if (hasCriticalFail) return NonConformityClassification.CRITICAL;
+  if (inspectionResult === "reprovado") return NonConformityClassification.HIGH;
+  return NonConformityClassification.MEDIUM;
+}
+
+function resolveNonConformityDueDate(
+  classification: NonConformityClassification,
+) {
+  const days =
+    classification === NonConformityClassification.CRITICAL
+      ? 1
+      : classification === NonConformityClassification.HIGH
+        ? 3
+        : 7;
+
+  return new Date(Date.now() + days * 86_400_000);
+}
 
 // ── Listar todas ──────────────────────────────────────────────────────────────
 export async function getInspections() {
@@ -48,6 +81,132 @@ export async function getInspectionsByScaffold(scaffold_id: string) {
 }
 
 // ── Criar ─────────────────────────────────────────────────────────────────────
+type NonConformingChecklistItem = {
+  id: string;
+  item_label: string;
+  category: string;
+  value: string;
+  critical: boolean;
+  observation: string | null;
+};
+
+async function createNonConformityFromInspection({
+  inspection,
+  scaffold,
+  failedItems,
+  hasCriticalFail,
+  currentUserId,
+}: {
+  inspection: {
+    id: string;
+    scaffold_code: string;
+    result: InspectionResult;
+  };
+  scaffold: {
+    id: string;
+    code: string;
+    company: string | null;
+  };
+  failedItems: NonConformingChecklistItem[];
+  hasCriticalFail: boolean;
+  currentUserId?: string | null;
+}) {
+  if (failedItems.length === 0) return;
+
+  const classification = resolveNonConformityClassification({
+    hasCriticalFail,
+    inspectionResult: inspection.result,
+  });
+  const dueDate = resolveNonConformityDueDate(classification);
+  const itemSummary = failedItems
+    .slice(0, 5)
+    .map((item) => item.item_label)
+    .join("; ");
+  const extraItems =
+    failedItems.length > 5 ? `; +${failedItems.length - 5} item(ns)` : "";
+
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const code = await generateNextNonConformityCode();
+    const title = `Tratativa da inspecao ${inspection.id.slice(-6)} - ${scaffold.code}`;
+    const description =
+      `${failedItems.length} item(ns) nao conforme(s) identificados na ` +
+      `inspecao do andaime ${scaffold.code}: ${itemSummary}${extraItems}`;
+    const newValue: Prisma.InputJsonObject = {
+      code,
+      title,
+      description,
+      classification,
+      status: NonConformityStatus.OPEN,
+      scaffoldId: scaffold.id,
+      originInspectionId: inspection.id,
+      companyId: scaffold.company,
+      dueDate: dueDate.toISOString(),
+      checklistItems: failedItems.map((item) => ({
+        id: item.id,
+        item_label: item.item_label,
+        category: item.category,
+        value: item.value,
+        critical: item.critical,
+        observation: item.observation,
+      })),
+    };
+
+    try {
+      const nonConformity = await prisma.nonConformity.create({
+        data: {
+          code,
+          title,
+          description,
+          classification,
+          status: NonConformityStatus.OPEN,
+          originInspectionId: inspection.id,
+          scaffoldId: scaffold.id,
+          companyId: scaffold.company,
+          dueDate,
+          createdById: currentUserId ?? null,
+          checklistItems: {
+            create: failedItems.map((item) => ({
+              checklistEntryId: item.id,
+            })),
+          },
+          history: {
+            create: {
+              action: AuditAction.CREATE,
+              description: `Nao conformidade ${code} criada a partir da inspecao ${inspection.id}`,
+              oldValue: Prisma.JsonNull,
+              newValue,
+              userId: currentUserId ?? null,
+            },
+          },
+        },
+      });
+
+      await createAuditLog({
+        entityType: AuditEntityType.NON_CONFORMITY,
+        entityId: nonConformity.id,
+        entityLabel: nonConformity.code,
+        action: AuditAction.CREATE,
+        description: `Nao conformidade ${nonConformity.code} criada a partir da inspecao do andaime ${scaffold.code}`,
+        newValue,
+        companyId: scaffold.company,
+      });
+
+      return;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002" &&
+        attempt < 4
+      ) {
+        continue;
+      }
+
+      console.error("Non conformity creation from inspection failed:", error);
+      return;
+    }
+  }
+}
+
 export async function createInspection(data: {
   scaffold_id: string;
   scaffold_code: string;
@@ -75,6 +234,7 @@ export async function createInspection(data: {
   }[];
 }) {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  const currentAccess = await getCurrentUserAccess();
 
   const { checklist, signatures, ...inspectionData } = data;
   const oldScaffold = await prisma.scaffold.findUnique({
@@ -147,6 +307,18 @@ export async function createInspection(data: {
       validity_date: validityDate,
       released_at: newStatus === "liberado" ? new Date() : undefined,
     },
+  });
+
+  const nonConformingItems = inspection.checklist.filter((item) =>
+    NON_CONFORMING_CHECKLIST_VALUES.has(item.value),
+  );
+
+  await createNonConformityFromInspection({
+    inspection,
+    scaffold,
+    failedItems: nonConformingItems,
+    hasCriticalFail,
+    currentUserId: currentAccess?.userId,
   });
 
   await createAuditLog({
