@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { requireAnyPermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { sanitizeForLog } from "@/lib/safe-log";
 import { AuditAction, AuditEntityType, Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 
@@ -37,6 +38,14 @@ const SENSITIVE_KEYS = new Set([
   "signatureData",
   "file_url",
   "fileUrl",
+  "fileContent",
+  "fileData",
+  "imageData",
+  "photo",
+  "photos",
+  "buffer",
+  "blob",
+  "arrayBuffer",
 ]);
 
 function sanitizeAuditValue(value: AuditValue): Prisma.InputJsonValue | undefined {
@@ -60,6 +69,12 @@ function sanitizeAuditValue(value: AuditValue): Prisma.InputJsonValue | undefine
     }
 
     return clean;
+  }
+
+  if (typeof value === "string") {
+    if (/^data:image\//i.test(value)) return "[image-data-hidden]";
+    if (/^data:[^;,]+;base64,/i.test(value)) return "[base64-hidden]";
+    if (value.length > 2_000) return `[long-string-hidden:${value.length}]`;
   }
 
   return value;
@@ -125,7 +140,7 @@ export async function createAuditLog(input: CreateAuditLogInput) {
       },
     });
   } catch (error) {
-    console.error("Audit log failed:", error);
+    console.error("Audit log failed:", sanitizeForLog(error));
   }
 }
 
@@ -184,7 +199,16 @@ export async function getAuditLogs({
     prisma.auditLog.count({ where }),
   ]);
 
-  return { items, total, page, pageSize };
+  return {
+    items: items.map((item) => ({
+      ...item,
+      oldValue: sanitizeAuditValue(item.oldValue) ?? null,
+      newValue: sanitizeAuditValue(item.newValue) ?? null,
+    })),
+    total,
+    page,
+    pageSize,
+  };
 }
 
 export { AuditAction, AuditEntityType };

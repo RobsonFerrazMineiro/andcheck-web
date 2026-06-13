@@ -53,6 +53,44 @@ export interface InspectionForPDF {
   } | null;
 }
 
+async function imageSourceToDataUrl(source?: string | null) {
+  if (!source || source.startsWith("data:")) return source ?? null;
+
+  try {
+    const response = await fetch(source, { credentials: "same-origin" });
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function resolveInspectionAssets(inspection: InspectionForPDF) {
+  const [photos, signature, checklist] = await Promise.all([
+    Promise.all((inspection.photos ?? []).map(imageSourceToDataUrl)),
+    imageSourceToDataUrl(inspection.signature),
+    Promise.all(
+      inspection.checklist.map(async (item) => ({
+        ...item,
+        photo: await imageSourceToDataUrl(item.photo),
+      })),
+    ),
+  ]);
+
+  return {
+    ...inspection,
+    photos: photos.filter((photo): photo is string => Boolean(photo)),
+    signature,
+    checklist,
+  };
+}
+
 // ── Paleta ───────────────────────────────────────────────────────────────────
 type RGB = [number, number, number];
 
@@ -252,6 +290,7 @@ export async function generateInspectionPDF(
   inspection: InspectionForPDF,
   origin: string,
 ): Promise<jsPDF> {
+  inspection = await resolveInspectionAssets(inspection);
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const PW = 210,
     M = 14,

@@ -9,7 +9,12 @@ export async function logInspectionPdfGenerated(inspectionId: string) {
 
   const inspection = await prisma.inspection.findUnique({
     where: { id: inspectionId },
-    include: { scaffold: true },
+    select: {
+      id: true,
+      scaffold_code: true,
+      result: true,
+      scaffold: { select: { company: true } },
+    },
   });
 
   if (!inspection) return;

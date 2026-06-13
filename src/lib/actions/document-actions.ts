@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAnyPermission, requirePermission, requireRole } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
+import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import { DocumentType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -15,10 +16,29 @@ export async function getScaffoldDocuments(scaffold_id: string) {
     "read.own_company",
   ]);
 
-  return prisma.scaffoldDocument.findMany({
+  const documents = await prisma.scaffoldDocument.findMany({
     where: { scaffold_id },
     orderBy: { created_at: "desc" },
+    select: {
+      id: true,
+      scaffold_id: true,
+      type: true,
+      title: true,
+      file_name: true,
+      file_size: true,
+      mime_type: true,
+      uploaded_by: true,
+      expires_at: true,
+      observation: true,
+      created_at: true,
+      updated_at: true,
+    },
   });
+
+  return documents.map((document) => ({
+    ...document,
+    file_url: `/api/scaffold-documents/${document.id}`,
+  }));
 }
 
 // ── Adicionar documento ───────────────────────────────────────────────────────
@@ -26,7 +46,7 @@ export async function addScaffoldDocument(data: {
   scaffold_id: string;
   type: DocumentType;
   title: string;
-  file_url: string; // base64
+  file_url: string;
   file_name: string;
   file_size?: number;
   mime_type?: string;
@@ -35,6 +55,7 @@ export async function addScaffoldDocument(data: {
   observation?: string;
 }) {
   await requirePermission("documents.create");
+  assertStoredFileReference(data.file_url, "Documento");
 
   const [doc, scaffold] = await Promise.all([
     prisma.scaffoldDocument.create({ data }),
@@ -60,7 +81,7 @@ export async function addScaffoldDocument(data: {
     companyId: scaffold?.company,
   });
   revalidatePath(`/andaimes/${data.scaffold_id}`);
-  return doc;
+  return { id: doc.id };
 }
 
 // ── Deletar documento ─────────────────────────────────────────────────────────
@@ -68,7 +89,19 @@ export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
   await requireRole("SUPER_ADMIN");
   const oldDocument = await prisma.scaffoldDocument.findUnique({
     where: { id },
-    include: { scaffold: true },
+    select: {
+      id: true,
+      scaffold_id: true,
+      type: true,
+      title: true,
+      file_name: true,
+      file_size: true,
+      mime_type: true,
+      uploaded_by: true,
+      scaffold: {
+        select: { code: true, company: true },
+      },
+    },
   });
   await prisma.scaffoldDocument.delete({ where: { id } });
   await createAuditLog({

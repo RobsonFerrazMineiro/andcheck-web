@@ -15,7 +15,9 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
-import { compressImage } from "@/lib/compress-image";
+import { compressImageBlob } from "@/lib/compress-image";
+import { uploadFile } from "@/lib/upload-file";
+import { toast } from "sonner";
 
 interface Props {
   category: ChecklistCategory["category"];
@@ -78,11 +80,25 @@ export default function ChecklistSection({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const b64 = await compressImage(file);
-    const updated = [...values];
-    updated[itemIndex] = { ...updated[itemIndex], photo: b64 };
-    onChange(updated);
-    e.target.value = "";
+    try {
+      const compressed = await compressImageBlob(file);
+      const uploaded = await uploadFile(compressed, {
+        category: "checklist-photos",
+        fileName: file.name,
+      });
+      const updated = [...values];
+      updated[itemIndex] = {
+        ...updated[itemIndex],
+        photo: uploaded.reference,
+      };
+      onChange(updated);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Nao foi possivel enviar a foto.",
+      );
+    } finally {
+      e.target.value = "";
+    }
   };
 
   return (

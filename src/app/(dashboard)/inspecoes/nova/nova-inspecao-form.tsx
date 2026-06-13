@@ -33,7 +33,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
-import { compressImage } from "@/lib/compress-image";
+import { compressImageBlob } from "@/lib/compress-image";
+import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 
 type ScaffoldOption = {
   id: string;
@@ -74,6 +75,18 @@ type CollectedSignature = {
   signature_data: string;
 };
 
+function canvasToBlob(canvas: HTMLCanvasElement) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) =>
+        blob
+          ? resolve(blob)
+          : reject(new Error("Nao foi possivel processar a assinatura.")),
+      "image/png",
+    );
+  });
+}
+
 function statusToPrisma(
   status: string,
 ): "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA" {
@@ -109,13 +122,14 @@ export function NovaInspecaoForm({
   const [signerPosition, setSignerPosition] = useState("");
 
   // Registro fotográfico
-  const [photos, setPhotos] = useState<string[]>([]); // base64
+  const [photos, setPhotos] = useState<string[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   // Assinatura digital
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sigDrawing = useRef(false);
   const [hasSig, setHasSig] = useState(false);
+  const [registeringSignature, setRegisteringSignature] = useState(false);
 
   const getCtx = useCallback(() => {
     const c = canvasRef.current;
@@ -164,11 +178,24 @@ export function NovaInspecaoForm({
   const handlePhotoAdd = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
-      for (const file of files) {
-        const b64 = await compressImage(file);
-        setPhotos((prev) => [...prev, b64]);
+      try {
+        for (const file of files) {
+          const compressed = await compressImageBlob(file);
+          const uploaded = await uploadFile(compressed, {
+            category: "inspection-photos",
+            fileName: file.name,
+          });
+          setPhotos((prev) => [...prev, uploaded.reference]);
+        }
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Nao foi possivel enviar a foto.",
+        );
+      } finally {
+        e.target.value = "";
       }
-      e.target.value = "";
     },
     [],
   );
@@ -282,7 +309,7 @@ export function NovaInspecaoForm({
     inspectorName.trim().length > 0 &&
     !submitting;
 
-  const handleRegisterSignature = () => {
+  const handleRegisterSignature = async () => {
     const requirement = requiredSignatures.find(
       (item) => item.role_code === activeSignatureRoleCode,
     );
@@ -302,27 +329,42 @@ export function NovaInspecaoForm({
       return;
     }
 
-    const signatureData = canvasRef.current.toDataURL("image/png");
+    setRegisteringSignature(true);
+    try {
+      const signatureBlob = await canvasToBlob(canvasRef.current);
+      const uploaded = await uploadFile(signatureBlob, {
+        category: "inspection-signatures",
+        fileName: `assinatura-${requirement.role_code}.png`,
+      });
 
-    setCollectedSignatures((current) => [
-      ...current.filter(
-        (signature) => signature.role_code !== requirement.role_code,
-      ),
-      {
-        role_code: requirement.role_code,
-        role_label: requirement.label ?? requirement.role.name,
-        signer_name: signerName.trim(),
-        signer_company: signerCompany.trim() || undefined,
-        signer_position: signerPosition.trim() || undefined,
-        signature_data: signatureData,
-      },
-    ]);
-    setSignerName("");
-    setSignerCompany("");
-    setSignerPosition("");
-    setSignatureRoleCode("");
-    clearSignature();
-    toast.success("Assinatura registrada.");
+      setCollectedSignatures((current) => [
+        ...current.filter(
+          (signature) => signature.role_code !== requirement.role_code,
+        ),
+        {
+          role_code: requirement.role_code,
+          role_label: requirement.label ?? requirement.role.name,
+          signer_name: signerName.trim(),
+          signer_company: signerCompany.trim() || undefined,
+          signer_position: signerPosition.trim() || undefined,
+          signature_data: uploaded.reference,
+        },
+      ]);
+      setSignerName("");
+      setSignerCompany("");
+      setSignerPosition("");
+      setSignatureRoleCode("");
+      clearSignature();
+      toast.success("Assinatura registrada.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel enviar a assinatura.",
+      );
+    } finally {
+      setRegisteringSignature(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -369,7 +411,6 @@ export function NovaInspecaoForm({
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {
-      console.error(err);
       toast.error(
         err instanceof Error
           ? err.message
@@ -575,7 +616,7 @@ export function NovaInspecaoForm({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={src}
+                  src={getUploadedFilePreviewUrl(src)}
                   alt={`Foto ${i + 1}`}
                   className="w-full h-full object-cover border border-border"
                 />
@@ -604,7 +645,7 @@ export function NovaInspecaoForm({
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={photo}
+                      src={getUploadedFilePreviewUrl(photo)}
                       alt={item.item}
                       className="w-full h-full object-cover border-2 border-red-500"
                     />
@@ -859,6 +900,7 @@ export function NovaInspecaoForm({
         <button
           type="button"
           onClick={handleRegisterSignature}
+          disabled={registeringSignature}
           className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
         >
           <ShieldCheck className="w-3.5 h-3.5" />

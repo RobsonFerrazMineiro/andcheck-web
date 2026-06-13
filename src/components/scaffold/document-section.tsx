@@ -1,17 +1,19 @@
 "use client";
 
-import type { ScaffoldDocument } from "@prisma/client";
+import type { DocumentType } from "@prisma/client";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Download,
   Eye,
+  ExternalLink,
   FileText,
   Loader2,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -20,7 +22,18 @@ import {
   addScaffoldDocument,
   deleteScaffoldDocument,
 } from "@/lib/actions/document-actions";
-import { compressImage } from "@/lib/compress-image";
+import { compressImageBlob } from "@/lib/compress-image";
+import {
+  downloadDocumentFile,
+  getDocumentExtension,
+  getDocumentFileName,
+  getDocumentViewUrl,
+  getSafeOpenUrl,
+  isBrowserViewableDocument,
+  isImageDocument,
+  isPdfDocument,
+} from "@/lib/document-view";
+import { uploadFile } from "@/lib/upload-file";
 
 // ── Tipos e constantes ────────────────────────────────────────────────────────
 
@@ -46,13 +59,131 @@ const DOC_TYPES = [
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx";
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
+type ScaffoldDocumentMetadata = {
+  id: string;
+  scaffold_id: string;
+  type: DocumentType;
+  title: string;
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+  mime_type: string | null;
+  uploaded_by: string;
+  expires_at: Date | string | null;
+  observation: string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
+};
+
 function docTypeLabel(type: string) {
   return DOC_TYPES.find((d) => d.value === type)?.label.split(" — ")[0] ?? type;
 }
 
-function statusOf(doc: ScaffoldDocument): "anexado" | "vencido" {
-  if (doc.expires_at && isPast(doc.expires_at)) return "vencido";
+function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
+  if (doc.expires_at && isPast(new Date(doc.expires_at))) return "vencido";
   return "anexado";
+}
+
+function DocumentPreviewModal({
+  doc,
+  onClose,
+}: {
+  doc: ScaffoldDocumentMetadata;
+  onClose: () => void;
+}) {
+  const viewUrl = getDocumentViewUrl(doc);
+  const safeOpenUrl = getSafeOpenUrl(doc);
+  const isImage = isImageDocument(doc);
+  const isPdf = isPdfDocument(doc);
+  const canOpenInTab = isBrowserViewableDocument(doc) && Boolean(safeOpenUrl);
+
+  function handleDownload() {
+    if (!downloadDocumentFile(doc)) {
+      toast.error("Arquivo indisponível ou URL inválida.");
+    }
+  }
+
+  function handleOpenInTab() {
+    if (!safeOpenUrl) {
+      toast.error("Arquivo indisponível ou URL inválida.");
+      return;
+    }
+    window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
+        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="w-4 h-4 text-muted-foreground/70 shrink-0" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground truncate">
+              {doc.title}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-muted transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-4">
+          {isImage && viewUrl && (
+            <Image
+              src={viewUrl}
+              alt={doc.title}
+              width={1200}
+              height={800}
+              unoptimized
+              className="mx-auto max-h-[70vh] w-auto max-w-full object-contain"
+            />
+          )}
+
+          {isPdf && safeOpenUrl && (
+            <iframe
+              src={safeOpenUrl}
+              title={doc.title}
+              className="h-[70vh] w-full border border-border"
+            />
+          )}
+
+          {!isImage && !isPdf && (
+            <div className="flex items-start gap-3 border border-dashed border-border bg-muted/20 p-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-border bg-background">
+                <FileText className="h-7 w-7 text-muted-foreground" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold text-foreground">
+                  {getDocumentFileName(doc)}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Este formato deve ser baixado para visualização.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="h-8 px-3 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted transition-colors inline-flex items-center gap-1.5"
+            >
+              <Download className="w-3.5 h-3.5" /> Baixar
+            </button>
+            {canOpenInTab && (
+              <button
+                type="button"
+                onClick={handleOpenInTab}
+                className="h-8 px-3 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors inline-flex items-center gap-1.5"
+              >
+                <ExternalLink className="w-3.5 h-3.5" /> Abrir em nova guia
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Sub-componente: badge de status ──────────────────────────────────────────
@@ -109,27 +240,23 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
     setSaving(true);
     try {
-      // Lê o arquivo como base64
-      let fileUrl: string;
-      if (file.type.startsWith("image/")) {
-        fileUrl = await compressImage(file);
-      } else {
-        fileUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      }
+      // Comprime imagens antes de enviar; o banco recebe apenas a referencia.
+      const uploadBody = file.type.startsWith("image/")
+        ? await compressImageBlob(file)
+        : file;
+      const uploaded = await uploadFile(uploadBody, {
+        category: "scaffold-documents",
+        fileName: file.name,
+      });
 
       await addScaffoldDocument({
         scaffold_id: scaffoldId,
         type: type as Parameters<typeof addScaffoldDocument>[0]["type"],
         title: title.trim() || docTypeLabel(type),
-        file_url: fileUrl,
+        file_url: uploaded.reference,
         file_name: file.name,
-        file_size: file.size,
-        mime_type: file.type,
+        file_size: uploaded.size,
+        mime_type: uploaded.contentType,
         uploaded_by: uploadedBy.trim(),
         expires_at: expiresAt ? new Date(expiresAt) : undefined,
         observation: observation.trim() || undefined,
@@ -300,7 +427,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 // ── Componente principal ──────────────────────────────────────────────────────
 interface Props {
   scaffoldId: string;
-  initialDocuments: ScaffoldDocument[];
+  initialDocuments: ScaffoldDocumentMetadata[];
   canAddDocument?: boolean;
   canDeleteDocument?: boolean;
 }
@@ -312,9 +439,13 @@ export function ScaffoldDocumentSection({
   canDeleteDocument = false,
 }: Props) {
   const router = useRouter();
-  const [docs, setDocs] = useState<ScaffoldDocument[]>(initialDocuments);
+  const [removedDocumentIds, setRemovedDocumentIds] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<ScaffoldDocumentMetadata | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const docs = initialDocuments.filter(
+    (document) => !removedDocumentIds.includes(document.id),
+  );
 
   function handleAdded() {
     // Revalida a página para recarregar os documentos via server
@@ -326,7 +457,7 @@ export function ScaffoldDocumentSection({
     setDeleting(id);
     try {
       await deleteScaffoldDocument(id, scaffoldId);
-      setDocs((prev) => prev.filter((d) => d.id !== id));
+      setRemovedDocumentIds((current) => [...current, id]);
       toast.success("Documento removido.");
       router.refresh();
     } catch {
@@ -336,20 +467,18 @@ export function ScaffoldDocumentSection({
     }
   }
 
-  function handleView(doc: ScaffoldDocument) {
-    // Abre o arquivo em nova aba
-    const a = window.document.createElement("a");
-    a.href = doc.file_url;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.click();
+  function handleView(doc: ScaffoldDocumentMetadata) {
+    if (!getDocumentViewUrl(doc)) {
+      toast.error("Arquivo indisponível ou URL inválida.");
+      return;
+    }
+    setPreviewDoc(doc);
   }
 
-  function handleDownload(doc: ScaffoldDocument) {
-    const a = window.document.createElement("a");
-    a.href = doc.file_url;
-    a.download = doc.file_name;
-    a.click();
+  function handleDownload(doc: ScaffoldDocumentMetadata) {
+    if (!downloadDocumentFile(doc)) {
+      toast.error("Arquivo indisponível ou URL inválida.");
+    }
   }
 
   return (
@@ -413,8 +542,12 @@ export function ScaffoldDocumentSection({
                   {/* Info */}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
+                      <FileText className="w-3.5 h-3.5 text-muted-foreground/50" />
                       <span className="text-[9px] font-bold uppercase tracking-widest text-accent">
                         {docTypeLabel(doc.type)}
+                      </span>
+                      <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        {getDocumentExtension(doc)}
                       </span>
                     </div>
                     <p className="text-[11px] font-semibold text-foreground truncate">
@@ -422,7 +555,7 @@ export function ScaffoldDocumentSection({
                     </p>
                     <p className="text-[9px] text-muted-foreground truncate">
                       {doc.file_name} · {doc.uploaded_by} ·{" "}
-                      {format(doc.created_at, "dd/MM/yyyy", { locale: ptBR })}
+                      {format(new Date(doc.created_at), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                     {doc.observation && (
                       <p className="text-[9px] text-muted-foreground/70 italic mt-0.5 truncate">
@@ -441,7 +574,7 @@ export function ScaffoldDocumentSection({
                         <p
                           className={`text-[11px] font-semibold ${status === "vencido" ? "text-red-600" : "text-foreground"}`}
                         >
-                          {format(doc.expires_at, "dd/MM/yyyy", {
+                          {format(new Date(doc.expires_at), "dd/MM/yyyy", {
                             locale: ptBR,
                           })}
                         </p>
@@ -500,6 +633,12 @@ export function ScaffoldDocumentSection({
           scaffoldId={scaffoldId}
           onClose={() => setModalOpen(false)}
           onAdded={handleAdded}
+        />
+      )}
+      {previewDoc && (
+        <DocumentPreviewModal
+          doc={previewDoc}
+          onClose={() => setPreviewDoc(null)}
         />
       )}
     </>

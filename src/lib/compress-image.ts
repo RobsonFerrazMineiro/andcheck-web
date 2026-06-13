@@ -1,43 +1,56 @@
 /**
- * Comprime e redimensiona uma imagem para no máximo maxSize px em
- * qualquer dimensão, exportando como JPEG com a qualidade especificada.
- * Retorna uma string base64 (data URL).
+ * Comprime e redimensiona uma imagem para no maximo maxSize px em qualquer
+ * dimensao. Retorna um Blob JPEG para upload sem criar uma string Base64.
  */
-export function compressImage(
+export function compressImageBlob(
   file: File,
   maxSize = 1024,
   quality = 0.72,
-): Promise<string> {
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const src = ev.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        const { width, height } = img;
-        let w = width;
-        let h = height;
-        if (w > maxSize || h > maxSize) {
-          if (w >= h) {
-            h = Math.round((h * maxSize) / w);
-            w = maxSize;
-          } else {
-            w = Math.round((w * maxSize) / h);
-            h = maxSize;
-          }
+    const sourceUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(sourceUrl);
+
+      const { width, height } = image;
+      let targetWidth = width;
+      let targetHeight = height;
+      if (targetWidth > maxSize || targetHeight > maxSize) {
+        if (targetWidth >= targetHeight) {
+          targetHeight = Math.round((targetHeight * maxSize) / targetWidth);
+          targetWidth = maxSize;
+        } else {
+          targetWidth = Math.round((targetWidth * maxSize) / targetHeight);
+          targetHeight = maxSize;
         }
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return reject(new Error("Canvas ctx unavailable"));
-        ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", quality));
-      };
-      img.onerror = reject;
-      img.src = src;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("Canvas indisponivel para compressao."));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, targetWidth, targetHeight);
+      canvas.toBlob(
+        (blob) =>
+          blob
+            ? resolve(blob)
+            : reject(new Error("Nao foi possivel comprimir a imagem.")),
+        "image/jpeg",
+        quality,
+      );
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+
+    image.onerror = (error) => {
+      URL.revokeObjectURL(sourceUrl);
+      reject(error);
+    };
+    image.src = sourceUrl;
   });
 }
