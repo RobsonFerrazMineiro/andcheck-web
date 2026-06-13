@@ -6,6 +6,7 @@ import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
+import { ACTIVE_NON_CONFORMITY_STATUSES } from "@/lib/non-conformity-status";
 import {
   calculateInspectionResult,
   calculateScaffoldStatus,
@@ -20,6 +21,37 @@ import {
 import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-actions";
 
 const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
+
+async function findActiveNonConformity(scaffoldId: string) {
+  return prisma.nonConformity.findFirst({
+    where: {
+      scaffoldId,
+      status: { in: [...ACTIVE_NON_CONFORMITY_STATUSES] },
+    },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      code: true,
+      scaffoldId: true,
+      status: true,
+    },
+  });
+}
+
+export async function getActiveNonConformitiesForInspection() {
+  await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+
+  return prisma.nonConformity.findMany({
+    where: { status: { in: [...ACTIVE_NON_CONFORMITY_STATUSES] } },
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      code: true,
+      scaffoldId: true,
+      status: true,
+    },
+  });
+}
 
 function resolveNonConformityClassification({
   hasCriticalFail,
@@ -337,6 +369,13 @@ export async function createInspection(data: {
   }[];
 }) {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  const activeNonConformity = await findActiveNonConformity(data.scaffold_id);
+  if (activeNonConformity) {
+    throw new Error(
+      "Não é possível iniciar nova inspeção enquanto houver não conformidade ativa para este andaime.",
+    );
+  }
+
   data.photos?.forEach((photo) =>
     assertStoredFileReference(photo, "Foto da inspecao"),
   );

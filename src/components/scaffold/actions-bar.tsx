@@ -15,6 +15,7 @@ interface Props {
   scaffoldCode: string;
   status: string;
   canCreateInspection: boolean;
+  hasActiveNonConformity: boolean;
   canCompleteAssembly: boolean;
   canDismantle: boolean;
 }
@@ -24,6 +25,7 @@ export function ScaffoldActionsBar({
   scaffoldCode,
   status,
   canCreateInspection,
+  hasActiveNonConformity,
   canCompleteAssembly,
   canDismantle,
 }: Props) {
@@ -89,6 +91,7 @@ export function ScaffoldActionsBar({
       scaffoldId={scaffoldId}
       scaffoldCode={scaffoldCode}
       canCreateInspection={canCreateInspection}
+      hasActiveNonConformity={hasActiveNonConformity}
       showDismantle={canDismantle && status !== "interditado" && status !== "reprovado"}
       onDismantle={handleDismantle}
       isPending={isPending}
@@ -100,6 +103,7 @@ function ActionRow({
   scaffoldId,
   scaffoldCode,
   canCreateInspection,
+  hasActiveNonConformity,
   showDismantle = false,
   onDismantle,
   isPending = false,
@@ -107,13 +111,14 @@ function ActionRow({
   scaffoldId: string;
   scaffoldCode: string;
   canCreateInspection: boolean;
+  hasActiveNonConformity: boolean;
   showDismantle?: boolean;
   onDismantle?: () => void;
   isPending?: boolean;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {canCreateInspection && (
+      {canCreateInspection && !hasActiveNonConformity && (
         <Link
           href={`/inspecoes/nova?scaffold_id=${scaffoldId}&scaffold_code=${scaffoldCode}`}
           className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-8 px-4"
