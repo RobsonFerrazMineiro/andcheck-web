@@ -1,24 +1,20 @@
 import { isPast } from "date-fns";
-import { ClipboardCheck, Construction, MapPin, QrCode } from "lucide-react";
+import { Construction } from "lucide-react";
 import Link from "next/link";
 
-import { StatusBadge } from "@/components/shared/status-badge";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser } from "@/lib/authz";
-import { MapaClient } from "./mapa-client";
+import { MapaOperacionalClient } from "./mapa-client";
 
 export default async function MapaPage() {
-  const [
-    raw,
-    canCreateScaffold,
-    canCreateInspection,
-    canFinalizeInspection,
-  ] = await Promise.all([
-    getScaffolds(),
-    canCurrentUser("scaffolds.create"),
-    canCurrentUser("inspections.create"),
-    canCurrentUser("inspections.finalize"),
-  ]);
+  const [raw, canCreateScaffold, canCreateInspection, canFinalizeInspection] =
+    await Promise.all([
+      getScaffolds(),
+      canCurrentUser("scaffolds.create"),
+      canCurrentUser("inspections.create"),
+      canCurrentUser("inspections.finalize"),
+    ]);
+
   const canInspect = canCreateInspection || canFinalizeInspection;
   const scaffolds = raw.map((s) => ({
     id: s.id,
@@ -64,24 +60,12 @@ export default async function MapaPage() {
     (s) => s.effectiveStatus === "vencido",
   ).length;
 
-  const STATUS_DOT: Record<string, string> = {
-    liberado: "bg-emerald-500",
-    em_montagem: "bg-blue-500",
-    pendente_liberacao: "bg-amber-400",
-    reprovado: "bg-red-500",
-    interditado: "bg-red-900",
-    vencido: "bg-gray-600",
-    desmontado: "bg-gray-400",
-    pendente: "bg-amber-400",
-  };
-
   return (
     <div className="space-y-5">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Visualização Espacial
+            AndCheck EHS · Visualizacao Espacial
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional
@@ -107,7 +91,6 @@ export default async function MapaPage() {
         )}
       </div>
 
-      {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           {
@@ -125,7 +108,7 @@ export default async function MapaPage() {
             bar: "border-l-blue-600",
           },
           {
-            label: "Pend. Liberação",
+            label: "Pend. Liberacao",
             value: pendenteLiberacao,
             color: "text-amber-600",
             bg: "bg-amber-50 border-amber-200",
@@ -162,102 +145,7 @@ export default async function MapaPage() {
         ))}
       </div>
 
-      {/* Mapa satélite */}
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Mapa de Satélite — Posicionamento Real
-          </p>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
-            {comCoords} andaimes no mapa · clique no pin para detalhes
-          </p>
-        </div>
-        <div style={{ height: 480 }}>
-          <MapaClient scaffolds={scaffolds} />
-        </div>
-      </div>
-
-      {/* Legenda */}
-      <div className="bg-card border border-border p-4 flex flex-wrap gap-4">
-        {[
-          { label: "Liberado", dot: "bg-emerald-500" },
-          { label: "Em Montagem", dot: "bg-blue-500" },
-          { label: "Pend. Liberação", dot: "bg-amber-400" },
-          { label: "Reprovado", dot: "bg-red-500" },
-          { label: "Interditado", dot: "bg-red-900" },
-          { label: "Vencido", dot: "bg-gray-600" },
-          { label: "Desmontado", dot: "bg-gray-400" },
-        ].map((v) => (
-          <div key={v.label} className="flex items-center gap-2">
-            <div className={"w-3 h-3 rounded-full " + v.dot} />
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              {v.label}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Lista tabular */}
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Todos os Andaimes — Listagem
-          </p>
-        </div>
-        <div className="divide-y divide-border">
-          {scaffolds.map((s) => (
-            <div
-              key={s.id}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors"
-            >
-              <div
-                className={
-                  "w-2 h-2 rounded-full shrink-0 " +
-                  (STATUS_DOT[s.effectiveStatus] ?? "bg-gray-400")
-                }
-              />
-              <MapPin className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-[12px] font-mono text-foreground">
-                  {s.code}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {s.location} · {s.area}
-                  {!s.latitude && (
-                    <span className="text-amber-500 ml-1">· sem coords</span>
-                  )}
-                </p>
-              </div>
-              <StatusBadge status={s.effectiveStatus} />
-              <div className="flex gap-1.5 shrink-0">
-                <Link
-                  href={"/andaimes/" + s.id}
-                  className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
-                  title="Detalhe"
-                >
-                  <Construction className="w-3.5 h-3.5 text-muted-foreground" />
-                </Link>
-                <Link
-                  href={"/qr/" + s.id}
-                  className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
-                  title="QR Code"
-                >
-                  <QrCode className="w-3.5 h-3.5 text-muted-foreground" />
-                </Link>
-                {canInspect && (
-                  <Link
-                    href={"/inspecoes/nova?scaffold_id=" + s.id}
-                    className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
-                    title="Inspecionar"
-                  >
-                    <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <MapaOperacionalClient scaffolds={scaffolds} canInspect={canInspect} />
     </div>
   );
 }
