@@ -23,8 +23,13 @@ import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
-import { canCurrentUser } from "@/lib/authz";
+import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
+
+const NC_RESPONSIBLE_ROLE_CODES = [
+  "PLANEJAMENTO",
+  "SUPERVISOR_ENCARREGADO",
+];
 
 const TYPE_LABELS: Record<string, string> = {
   tubular: "Tubular",
@@ -92,6 +97,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canDismantle,
     canAddDocument,
     canDeleteDocument,
+    access,
   ] = await Promise.all([
     getScaffoldDocuments(id),
     canCurrentUser("inspections.create"),
@@ -99,7 +105,15 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canCurrentUser("scaffolds.dismantle"),
     canCurrentUser("documents.create"),
     canCurrentUser("permissions.manage"),
+    getCurrentUserAccess(),
   ]);
+  const canActOnNonConformity = Boolean(
+    access?.roleCodes.some(
+      (roleCode) =>
+        roleCode === "SUPER_ADMIN" ||
+        NC_RESPONSIBLE_ROLE_CODES.includes(roleCode),
+    ),
+  );
 
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
@@ -136,20 +150,15 @@ export default async function AndaimeDetailPage({ params }: Props) {
       </div>
 
       {activeNonConformity && (
-        <div className="flex flex-col gap-3 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
             <p className="text-[11px] font-semibold leading-relaxed">
-              Existe não conformidade ativa vinculada a este andaime. Conclua
-              a tratativa antes de iniciar nova inspeção.
+              {canActOnNonConformity
+                ? "Existe não conformidade ativa vinculada a este andaime. Conclua a tratativa para permitir uma nova inspeção."
+                : "Existe não conformidade ativa vinculada a este andaime. Uma nova inspeção poderá ser iniciada após a conclusão da tratativa pelo responsável."}
             </p>
           </div>
-          <Link
-            href={`/nao-conformidades/${activeNonConformity.id}`}
-            className="shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-900 underline underline-offset-4"
-          >
-            Ver Não Conformidade
-          </Link>
         </div>
       )}
 

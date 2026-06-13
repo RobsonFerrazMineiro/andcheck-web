@@ -20,6 +20,7 @@ import {
   getNonConformityResponsibleOptions,
 } from "@/lib/actions/non-conformity-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { roleHasPermission } from "@/lib/rbac";
 import {
   NonConformityEvidencePreview,
   NonConformityItemEvidenceButton,
@@ -165,6 +166,11 @@ export default async function NonConformityDetailPage({ params }: Props) {
     getCurrentUserAccess(),
   ]);
   const roleCodes = access?.roleCodes ?? [];
+  const canStartInspection = roleCodes.some(
+    (roleCode) =>
+      roleHasPermission(roleCode, "inspections.create") ||
+      roleHasPermission(roleCode, "inspections.finalize"),
+  );
   const isHse = hasAnyRole(roleCodes, HSE_ROLE_CODES);
   const isResponsibleProfile = hasAnyRole(roleCodes, RESPONSIBLE_ROLE_CODES);
   const isFinal = FINAL_STATUSES.includes(nc.status);
@@ -247,7 +253,9 @@ export default async function NonConformityDetailPage({ params }: Props) {
         <div className="flex items-center gap-2 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <p className="text-[11px] font-semibold">
-            Nova inspeção necessária para liberação do andaime.
+            {canStartInspection
+              ? "A tratativa foi concluída. Inicie uma nova inspeção para liberar o andaime."
+              : "A tratativa foi concluída. O andaime aguarda nova inspeção por um perfil habilitado."}
           </p>
         </div>
       )}
