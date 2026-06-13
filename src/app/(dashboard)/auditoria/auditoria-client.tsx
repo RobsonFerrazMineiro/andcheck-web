@@ -59,7 +59,7 @@ const ACTION_LABELS: Record<string, string> = {
   UPLOAD: "Anexou documento",
   DOWNLOAD: "Baixou",
   GENERATE_PDF: "Gerou PDF",
-  VIEW_QR: "Consultou QR Code",
+  VIEW_QR: "Consultou status do andaime",
   LOGIN: "Entrou no sistema",
   LOGOUT: "Saiu do sistema",
   ROLE_CHANGE: "Alterou perfil",
@@ -72,7 +72,7 @@ const ENTITY_LABELS: Record<string, string> = {
   DOCUMENT: "Documento tecnico",
   SIGNATURE: "Assinatura",
   PDF: "PDF",
-  QR_CODE: "QR Code",
+  QR_CODE: "Status do andaime",
   SETTINGS: "Configuracao",
   NON_CONFORMITY: "Nao conformidade",
 };
@@ -84,7 +84,7 @@ const ENTITY_ARTICLES: Record<string, string> = {
   DOCUMENT: "o documento tecnico",
   SIGNATURE: "a assinatura",
   PDF: "o PDF",
-  QR_CODE: "o QR Code",
+  QR_CODE: "o status do andaime",
   SETTINGS: "a configuracao",
   NON_CONFORMITY: "a nao conformidade",
 };
@@ -222,7 +222,7 @@ function entityDisplay(row: AuditRow) {
     case "PDF":
       return `PDF da inspecao ${label}`;
     case "QR_CODE":
-      return `QR Code do andaime ${label}`;
+      return `Status do andaime ${label}`;
     case "NON_CONFORMITY":
       return `Nao conformidade ${label}`;
     case "SETTINGS":
@@ -324,7 +324,9 @@ function friendlyDescription(row: AuditRow) {
     case "COMPLETE":
       return `${actor} concluiu ${entity} ${entityLabel}.`;
     case "VIEW_QR":
-      return `${actor} consultou o QR Code de ${entity} ${entityLabel}.`;
+      return row.userName
+        ? `${actor} consultou o status do andaime ${entityLabel}.`
+        : `Consulta publica ao status do andaime ${entityLabel}.`;
     case "LOGIN":
       return `${actor} entrou no sistema.`;
     case "LOGOUT":

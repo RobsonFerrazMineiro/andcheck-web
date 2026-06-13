@@ -6,7 +6,12 @@ import {
   requirePermission,
   requireRole,
 } from "@/lib/authz";
-import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
+import {
+  AuditAction,
+  AuditEntityType,
+  createAuditLog,
+  logScaffoldStatusConsultation,
+} from "@/lib/audit";
 import { generateNextScaffoldTag } from "@/lib/scaffold-code";
 import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
@@ -73,19 +78,7 @@ export async function getScaffoldByTag(tag: string) {
     },
   });
   if (scaffold) {
-    await createAuditLog({
-      entityType: AuditEntityType.QR_CODE,
-      entityId: scaffold.id,
-      entityLabel: scaffold.code,
-      action: AuditAction.VIEW_QR,
-      description: `QR Code do andaime ${scaffold.code} consultado`,
-      newValue: {
-        tag,
-        code: scaffold.code,
-        status: scaffold.status,
-      },
-      companyId: scaffold.company,
-    });
+    await logScaffoldStatusConsultation(scaffold);
   }
   return scaffold;
 }

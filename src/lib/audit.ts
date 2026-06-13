@@ -48,6 +48,8 @@ const SENSITIVE_KEYS = new Set([
   "arrayBuffer",
 ]);
 
+const STATUS_CONSULTATION_DEDUPLICATION_MS = 5 * 60 * 1_000;
+
 function sanitizeAuditValue(value: AuditValue): Prisma.InputJsonValue | undefined {
   if (value === null || value === undefined) return undefined;
 
@@ -141,6 +143,78 @@ export async function createAuditLog(input: CreateAuditLogInput) {
     });
   } catch (error) {
     console.error("Audit log failed:", sanitizeForLog(error));
+  }
+}
+
+export async function logScaffoldStatusConsultation(scaffold: {
+  id: string;
+  code: string;
+  status: string;
+  company: string | null;
+}) {
+  try {
+    const [user, hdrs] = await Promise.all([resolveAuditUser(), headers()]);
+    const ipAddress =
+      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      hdrs.get("x-real-ip") ??
+      null;
+    const userAgent = hdrs.get("user-agent");
+    const identityKey = user?.id
+      ? `user:${user.id}`
+      : `ip:${ipAddress ?? "unknown"}`;
+    const lockKey = `scaffold-status:${scaffold.id}:${identityKey}`;
+    const createdAfter = new Date(
+      Date.now() - STATUS_CONSULTATION_DEDUPLICATION_MS,
+    );
+
+    await prisma.$transaction(async (transaction) => {
+      await transaction.$queryRaw`
+        SELECT pg_advisory_xact_lock(hashtext(${lockKey})::bigint) IS NULL AS locked
+      `;
+
+      const existingLog = await transaction.auditLog.findFirst({
+        where: {
+          entityType: AuditEntityType.QR_CODE,
+          entityId: scaffold.id,
+          action: AuditAction.VIEW_QR,
+          createdAt: { gte: createdAfter },
+          ...(user?.id
+            ? { userId: user.id }
+            : { userId: null, ipAddress }),
+        },
+        select: { id: true },
+      });
+      if (existingLog) return;
+
+      await transaction.auditLog.create({
+        data: {
+          userId: user?.id ?? null,
+          userName: user?.name ?? null,
+          userRole: user?.role ?? null,
+          entityType: AuditEntityType.QR_CODE,
+          entityId: scaffold.id,
+          entityLabel: scaffold.code,
+          action: AuditAction.VIEW_QR,
+          description: user
+            ? `${user.name ?? "Usuario"} consultou o status do andaime ${scaffold.code}`
+            : `Consulta publica ao status do andaime ${scaffold.code}`,
+          oldValue: Prisma.JsonNull,
+          newValue: {
+            code: scaffold.code,
+            status: scaffold.status,
+          },
+          ipAddress,
+          userAgent,
+          workspaceId: null,
+          companyId: scaffold.company,
+        },
+      });
+    });
+  } catch (error) {
+    console.error(
+      "Scaffold status consultation audit failed:",
+      sanitizeForLog(error),
+    );
   }
 }
 
