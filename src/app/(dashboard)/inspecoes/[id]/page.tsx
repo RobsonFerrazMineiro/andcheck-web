@@ -134,6 +134,9 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   const scaffold = inspection.scaffold;
   const checklist = inspection.checklist;
+  const hasCriticalFailure = checklist.some(
+    (item) => item.critical && item.value === "CL_FAIL",
+  );
 
   const totalItems = checklist.length;
   const conformes = checklist.filter(
@@ -249,6 +252,22 @@ export default async function InspectionDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {scaffold?.status === "interditado" && hasCriticalFailure && (
+        <div className="flex items-start gap-3 border border-red-300 bg-red-50 px-4 py-3 text-red-900">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider">
+              Inspecao reprovada com item critico
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed">
+              O resultado deste relatorio e Reprovado. Como houve falha em item
+              critico, o status operacional atual do andaime e Interditado e o
+              uso permanece proibido ate correcao e nova inspecao.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
@@ -323,6 +342,11 @@ export default async function InspectionDetailPage({ params }: Props) {
                 value={
                   <span className="font-mono font-bold">{scaffold.code}</span>
                 }
+              />
+              <TechRow
+                icon={AlertTriangle}
+                label="Status Atual"
+                value={<StatusBadge status={scaffold.status} />}
               />
               <TechRow
                 icon={MapPin}

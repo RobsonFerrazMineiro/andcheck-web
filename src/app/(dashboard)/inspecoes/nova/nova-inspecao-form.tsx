@@ -34,6 +34,7 @@ import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
 import { compressImageBlob } from "@/lib/compress-image";
+import { calculateInspectionResult } from "@/lib/inspection-outcome";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 
 type ScaffoldOption = {
@@ -290,13 +291,16 @@ export function NovaInspecaoForm({
   }, [checklistValues]);
 
   const autoResult = useMemo(() => {
-    if (criticalIssues.length > 0) return "reprovado";
-    const hasNonConform = checklistValues
-      .flat()
-      .some((v) => v.status === "nao_conforme");
-    if (hasNonConform) return "aprovado_com_ressalvas";
-    return "aprovado";
-  }, [criticalIssues, checklistValues]);
+    const checklist = checklistTemplate.flatMap((category, categoryIndex) =>
+      category.items.map((item, itemIndex) => ({
+        critical: item.critical ?? false,
+        value: statusToPrisma(
+          checklistValues[categoryIndex][itemIndex].status,
+        ),
+      })),
+    );
+    return calculateInspectionResult(checklist);
+  }, [checklistValues]);
 
   const isComplete = useMemo(
     () => checklistValues.every((cat) => cat.every((v) => v.status !== "")),

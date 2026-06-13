@@ -170,6 +170,19 @@ async function returnScaffoldToPendingReleaseAfterClosure({
     return false;
   }
 
+  const activeNonConformities = await prisma.nonConformity.count({
+    where: {
+      scaffoldId: scaffold.id,
+      status: {
+        notIn: [
+          NonConformityStatus.CLOSED,
+          NonConformityStatus.CANCELLED,
+        ],
+      },
+    },
+  });
+  if (activeNonConformities > 0) return false;
+
   const updatedScaffold = await prisma.scaffold.update({
     where: { id: scaffold.id },
     data: { status: ScaffoldStatus.pendente_liberacao },

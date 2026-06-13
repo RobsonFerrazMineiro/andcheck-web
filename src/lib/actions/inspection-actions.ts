@@ -7,6 +7,11 @@ import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import {
+  calculateInspectionResult,
+  calculateScaffoldStatus,
+  hasCriticalChecklistFailure,
+} from "@/lib/inspection-outcome";
+import {
   InspectionResult,
   NonConformityClassification,
   NonConformityStatus,
@@ -351,6 +356,7 @@ export async function createInspection(data: {
   const currentAccess = await getCurrentUserAccess();
 
   const { checklist, signatures, ...inspectionData } = data;
+  const calculatedResult = calculateInspectionResult(checklist);
   const oldScaffold = await prisma.scaffold.findUnique({
     where: { id: data.scaffold_id },
   });
@@ -383,6 +389,9 @@ export async function createInspection(data: {
   const inspection = await prisma.inspection.create({
     data: {
       ...inspectionData,
+      result: calculatedResult,
+      validity_days:
+        calculatedResult === "reprovado" ? 0 : data.validity_days,
       signatures: {
         create: providedSignatures.map((signature) => ({
           role_code: signature.role_code,
@@ -416,20 +425,13 @@ export async function createInspection(data: {
 
   // Atualizar status e validade do andaime conforme resultado
   const validityDate =
-    data.validity_days > 0
+    calculatedResult !== "reprovado" && data.validity_days > 0
       ? new Date(Date.now() + data.validity_days * 86_400_000)
       : null;
 
   // Se há item crítico reprovado → INTERDITADO; reprovado simples → REPROVADO; aprovado → LIBERADO
-  const hasCriticalFail = checklist.some(
-    (c) => c.critical && c.value === "CL_FAIL",
-  );
-  const newStatus =
-    data.result === "reprovado"
-      ? hasCriticalFail
-        ? "interditado"
-        : "reprovado"
-      : "liberado";
+  const hasCriticalFail = hasCriticalChecklistFailure(checklist);
+  const newStatus = calculateScaffoldStatus(calculatedResult, checklist);
 
   const scaffold = await prisma.scaffold.update({
     where: { id: data.scaffold_id },
