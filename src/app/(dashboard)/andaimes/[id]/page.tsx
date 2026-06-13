@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import {
+  AlertTriangle,
   ArrowLeft,
   Building2,
   Calendar,
@@ -31,6 +32,46 @@ const TYPE_LABELS: Record<string, string> = {
   suspenso: "Suspenso",
   torre: "Torre",
 };
+
+const NC_CLASSIFICATION_LABELS: Record<string, string> = {
+  LOW: "Baixa",
+  MEDIUM: "Media",
+  HIGH: "Alta",
+  CRITICAL: "Critica",
+};
+
+const NC_STATUS_LABELS: Record<string, string> = {
+  OPEN: "Aberta",
+  ASSIGNED: "Em Correcao",
+  IN_PROGRESS: "Em Tratamento",
+  PENDING_VERIFICATION: "Aguardando Verificacao",
+  CLOSED: "Encerrada",
+  REJECTED: "Rejeitada",
+  CANCELLED: "Cancelada",
+};
+
+const NC_STATUS_STYLE: Record<string, string> = {
+  OPEN: "border-blue-400/60 bg-blue-50 text-blue-800",
+  ASSIGNED: "border-amber-400/60 bg-amber-50 text-amber-800",
+  IN_PROGRESS: "border-amber-400/60 bg-amber-50 text-amber-800",
+  PENDING_VERIFICATION: "border-purple-400/60 bg-purple-50 text-purple-800",
+  CLOSED: "border-emerald-400/60 bg-emerald-50 text-emerald-800",
+  REJECTED: "border-red-400/60 bg-red-50 text-red-800",
+  CANCELLED: "border-slate-400/60 bg-slate-100 text-slate-600",
+};
+
+function NcBadge({ value }: { value: string }) {
+  return (
+    <span
+      className={
+        "inline-flex items-center border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
+        (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
+      }
+    >
+      {NC_STATUS_LABELS[value] ?? value}
+    </span>
+  );
+}
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -197,6 +238,63 @@ export default async function AndaimeDetailPage({ params }: Props) {
         canAddDocument={canAddDocument}
         canDeleteDocument={canDeleteDocument}
       />
+
+      <TechCard
+        title="Nao Conformidades Vinculadas"
+        icon={AlertTriangle}
+        extra={
+          <span className="text-[9px] text-muted-foreground font-mono">
+            {scaffold.nonConformities.length} registro(s)
+          </span>
+        }
+      >
+        {scaffold.nonConformities.length === 0 ? (
+          <div className="text-center py-8">
+            <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
+            <p className="text-[11px] text-muted-foreground">
+              Nenhuma nao conformidade vinculada a este andaime
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            <div className="grid grid-cols-5 gap-3 px-4 py-2 bg-muted/40">
+              {["Codigo", "Status", "Classificacao", "Prazo", "Responsavel"].map(
+                (h) => (
+                  <p
+                    key={h}
+                    className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
+                  >
+                    {h}
+                  </p>
+                ),
+              )}
+            </div>
+            {scaffold.nonConformities.map((nc) => (
+              <Link
+                key={nc.id}
+                href={"/nao-conformidades/" + nc.id}
+                className="grid grid-cols-5 gap-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors"
+              >
+                <p className="text-[11px] font-bold font-mono text-foreground">
+                  {nc.code}
+                </p>
+                <div>
+                  <NcBadge value={nc.status} />
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {NC_CLASSIFICATION_LABELS[nc.classification] ?? nc.classification}
+                </p>
+                <p className="text-[11px] text-muted-foreground font-mono">
+                  {nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {nc.responsibleUser?.name ?? "-"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </TechCard>
 
       <ScaffoldQRCard
         scaffoldCode={scaffold.code}

@@ -1,9 +1,11 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { sanitizeForLog } from "@/lib/safe-log";
 import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
+import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import {
   InspectionResult,
   NonConformityClassification,
@@ -45,7 +47,15 @@ export async function getInspections() {
 
   return prisma.inspection.findMany({
     orderBy: { date: "desc" },
-    include: {
+    select: {
+      id: true,
+      scaffold_id: true,
+      scaffold_code: true,
+      date: true,
+      inspector_name: true,
+      result: true,
+      validity_days: true,
+      notes: true,
       scaffold: { select: { code: true, location: true, area: true } },
       _count: { select: { checklist: true } },
     },
@@ -56,17 +66,82 @@ export async function getInspections() {
 export async function getInspectionById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
 
-  return prisma.inspection.findUnique({
+  const inspection = await prisma.inspection.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      scaffold_id: true,
+      scaffold_code: true,
+      date: true,
+      inspector_name: true,
+      result: true,
+      validity_days: true,
+      notes: true,
+      photos: true,
+      signature: true,
+      created_at: true,
+      updated_at: true,
       scaffold: true,
-      checklist: { orderBy: { category: "asc" } },
+      checklist: {
+        orderBy: { category: "asc" },
+        select: {
+          id: true,
+          inspection_id: true,
+          item_id: true,
+          item_label: true,
+          category: true,
+          value: true,
+          critical: true,
+          observation: true,
+          photo: true,
+        },
+      },
       signatures: {
-        include: { role: true },
+        select: {
+          id: true,
+          inspection_id: true,
+          user_id: true,
+          role_code: true,
+          signer_name: true,
+          signer_company: true,
+          signer_position: true,
+          signed_at: true,
+          created_at: true,
+          role: true,
+        },
         orderBy: { signed_at: "asc" },
+      },
+      nonConformities: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          responsibleUser: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
       },
     },
   });
+
+  if (!inspection) return null;
+
+  return {
+    ...inspection,
+    photos: inspection.photos.map(
+      (_photo, index) => `/api/inspection-assets/photo/${inspection.id}/${index}`,
+    ),
+    signature: inspection.signature
+      ? `/api/inspection-assets/signature/${inspection.id}/main`
+      : null,
+    checklist: inspection.checklist.map((item) => ({
+      ...item,
+      photo: item.photo
+        ? `/api/inspection-assets/checklist/${item.id}/photo`
+        : null,
+    })),
+  };
 }
 
 // ── Listar por andaime ────────────────────────────────────────────────────────
@@ -76,7 +151,27 @@ export async function getInspectionsByScaffold(scaffold_id: string) {
   return prisma.inspection.findMany({
     where: { scaffold_id },
     orderBy: { date: "desc" },
-    include: { checklist: true },
+    select: {
+      id: true,
+      scaffold_id: true,
+      scaffold_code: true,
+      date: true,
+      inspector_name: true,
+      result: true,
+      validity_days: true,
+      notes: true,
+      checklist: {
+        select: {
+          id: true,
+          item_id: true,
+          item_label: true,
+          category: true,
+          value: true,
+          critical: true,
+          observation: true,
+        },
+      },
+    },
   });
 }
 
@@ -201,7 +296,10 @@ async function createNonConformityFromInspection({
         continue;
       }
 
-      console.error("Non conformity creation from inspection failed:", error);
+      console.error(
+        "Non conformity creation from inspection failed:",
+        sanitizeForLog(error),
+      );
       return;
     }
   }
@@ -234,6 +332,22 @@ export async function createInspection(data: {
   }[];
 }) {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  data.photos?.forEach((photo) =>
+    assertStoredFileReference(photo, "Foto da inspecao"),
+  );
+  if (data.signature) {
+    assertStoredFileReference(data.signature, "Assinatura da inspecao");
+  }
+  data.signatures?.forEach((signature) => {
+    if (signature.signature_data) {
+      assertStoredFileReference(signature.signature_data, "Assinatura");
+    }
+  });
+  data.checklist.forEach((item) => {
+    if (item.photo) {
+      assertStoredFileReference(item.photo, "Foto do checklist");
+    }
+  });
   const currentAccess = await getCurrentUserAccess();
 
   const { checklist, signatures, ...inspectionData } = data;
@@ -280,7 +394,24 @@ export async function createInspection(data: {
       },
       checklist: { create: checklist },
     },
-    include: { checklist: true },
+    select: {
+      id: true,
+      scaffold_id: true,
+      scaffold_code: true,
+      inspector_name: true,
+      result: true,
+      validity_days: true,
+      checklist: {
+        select: {
+          id: true,
+          item_label: true,
+          category: true,
+          value: true,
+          critical: true,
+          observation: true,
+        },
+      },
+    },
   });
 
   // Atualizar status e validade do andaime conforme resultado
@@ -394,7 +525,7 @@ export async function createInspection(data: {
     companyId: scaffold.company,
   });
 
-  return inspection;
+  return { id: inspection.id };
 }
 
 // ── Stats gerais ──────────────────────────────────────────────────────────────

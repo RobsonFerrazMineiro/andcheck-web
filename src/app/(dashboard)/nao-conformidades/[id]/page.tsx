@@ -15,7 +15,16 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getNonConformityById } from "@/lib/actions/non-conformity-actions";
+import {
+  getNonConformityById,
+  getNonConformityResponsibleOptions,
+} from "@/lib/actions/non-conformity-actions";
+import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import {
+  NonConformityEvidencePreview,
+  NonConformityItemEvidenceButton,
+  NonConformityOperations,
+} from "./non-conformity-operations";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -37,17 +46,21 @@ const CLASSIFICATION_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
+  ASSIGNED: "Em Correcao",
   IN_PROGRESS: "Em Tratamento",
   PENDING_VERIFICATION: "Aguardando Verificacao",
   CLOSED: "Encerrada",
+  REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
 };
 
 const STATUS_STYLE: Record<string, string> = {
   OPEN: "bg-blue-50 text-blue-800 border-blue-400/60",
+  ASSIGNED: "bg-amber-50 text-amber-800 border-amber-400/60",
   IN_PROGRESS: "bg-amber-50 text-amber-800 border-amber-400/60",
   PENDING_VERIFICATION: "bg-purple-50 text-purple-800 border-purple-400/60",
   CLOSED: "bg-emerald-50 text-emerald-800 border-emerald-400/60",
+  REJECTED: "bg-red-50 text-red-800 border-red-400/60",
   CANCELLED: "bg-slate-100 text-slate-600 border-slate-400/60",
 };
 
@@ -60,6 +73,20 @@ const EVIDENCE_LABELS: Record<string, string> = {
   DOCUMENT: "Documento",
   OTHER: "Outro",
 };
+
+const RESPONSIBLE_ROLE_CODES = ["PLANEJAMENTO", "SUPERVISOR_ENCARREGADO"];
+const HSE_ROLE_CODES = ["HSE_HYDRO", "HSE_GERENCIADORA", "HSE_EMPRESA"];
+const FINAL_STATUSES = ["CLOSED", "CANCELLED"];
+
+function hasAnyRole(roleCodes: string[], allowed: string[]) {
+  return roleCodes.some(
+    (roleCode) => roleCode === "SUPER_ADMIN" || allowed.includes(roleCode),
+  );
+}
+
+function isCorrectionStatus(status: string) {
+  return ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(status);
+}
 
 function Badge({
   value,
@@ -133,6 +160,30 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
   const company = nc.companyId ?? nc.scaffold.company ?? "-";
   const responsible = nc.responsibleUser?.name ?? "-";
+  const [canUpdate, access] = await Promise.all([
+    canCurrentUser("non_conformities.update"),
+    getCurrentUserAccess(),
+  ]);
+  const roleCodes = access?.roleCodes ?? [];
+  const isHse = hasAnyRole(roleCodes, HSE_ROLE_CODES);
+  const isResponsibleProfile = hasAnyRole(roleCodes, RESPONSIBLE_ROLE_CODES);
+  const isFinal = FINAL_STATUSES.includes(nc.status);
+  const canAssign =
+    canUpdate &&
+    !isFinal &&
+    ["OPEN", "ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status);
+  const canRequestVerification =
+    isResponsibleProfile && isCorrectionStatus(nc.status);
+  const canReview = isHse && nc.status === "PENDING_VERIFICATION";
+  const canChangeDueDate = isHse && !isFinal;
+  const canAddEvidence = isResponsibleProfile && isCorrectionStatus(nc.status);
+  const canComment =
+    !isFinal && (isResponsibleProfile || isHse);
+  const canCancel =
+    isHse && ["OPEN", "ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status);
+  const responsibleOptions = canAssign
+    ? await getNonConformityResponsibleOptions()
+    : [];
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-10">
@@ -154,6 +205,18 @@ export default async function NonConformityDetailPage({ params }: Props) {
             </span>
           </div>
         </div>
+        <NonConformityOperations
+          id={nc.id}
+          responsibleUserId={nc.responsibleUserId}
+          dueDate={nc.dueDate?.toISOString() ?? null}
+          responsibleOptions={responsibleOptions}
+          canAssign={canAssign}
+          canRequestVerification={canRequestVerification}
+          canReview={canReview}
+          canChangeDueDate={canChangeDueDate}
+          canComment={canComment}
+          canCancel={canCancel}
+        />
       </div>
 
       <div className="bg-primary border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
@@ -179,6 +242,15 @@ export default async function NonConformityDetailPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {nc.status === "CLOSED" && nc.scaffold.status === "pendente_liberacao" && (
+        <div className="flex items-center gap-2 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          <p className="text-[11px] font-semibold">
+            Nova inspeção necessária para liberação do andaime.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Section title="Origem" icon={ClipboardCheck}>
@@ -220,37 +292,14 @@ export default async function NonConformityDetailPage({ params }: Props) {
           />
         </Section>
 
-        <Section title="Nao Conformidade" icon={AlertTriangle}>
-          <DetailRow icon={FileText} label="Codigo" value={nc.code} />
-          <DetailRow icon={FileText} label="Titulo" value={nc.title} />
-          <DetailRow
-            icon={AlertTriangle}
-            label="Classificacao"
-            value={
-              <Badge
-                value={nc.classification}
-                labels={CLASSIFICATION_LABELS}
-                styles={CLASSIFICATION_STYLE}
-              />
-            }
-          />
+        <Section title="Operacional" icon={AlertTriangle}>
+          <DetailRow icon={User} label="Responsavel" value={responsible} />
           <DetailRow
             icon={Clock}
             label="Prazo"
             value={nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
           />
-          <DetailRow icon={User} label="Responsavel" value={responsible} />
-          <DetailRow
-            icon={AlertTriangle}
-            label="Status"
-            value={
-              <Badge
-                value={nc.status}
-                labels={STATUS_LABELS}
-                styles={STATUS_STYLE}
-              />
-            }
-          />
+          <DetailRow icon={FileText} label="Titulo" value={nc.title} />
         </Section>
       </div>
 
@@ -273,46 +322,74 @@ export default async function NonConformityDetailPage({ params }: Props) {
           <div className="divide-y divide-border">
             {nc.checklistItems.map((item) => (
               <div key={item.id} className="px-4 py-3">
-                <p className="text-[12px] font-semibold text-foreground">
-                  {item.checklistEntry.item_label}
-                </p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                  {item.checklistEntry.category} · {item.checklistEntry.value}
-                  {item.checklistEntry.critical ? " · Critico" : ""}
-                </p>
-                {item.checklistEntry.observation && (
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    {item.checklistEntry.observation}
-                  </p>
-                )}
+                <div className="flex flex-wrap items-start gap-3">
+                  <div className="min-w-[320px] max-w-2xl pt-1">
+                    <p className="text-[12px] font-semibold text-foreground">
+                      {item.checklistEntry.item_label}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                      {item.checklistEntry.category} - {item.checklistEntry.value}
+                      {item.checklistEntry.critical ? " - Critico" : ""}
+                    </p>
+                    {item.checklistEntry.observation && (
+                      <p className="text-[11px] text-muted-foreground mt-2">
+                        {item.checklistEntry.observation}
+                      </p>
+                    )}
+                  </div>
+                  {(canAddEvidence || item.evidences.length > 0) && (
+                  <div className="flex flex-wrap items-start gap-2">
+                    {canAddEvidence && (
+                      <NonConformityItemEvidenceButton
+                        id={nc.id}
+                        itemId={item.id}
+                      />
+                    )}
+                    {item.evidences.map((evidence) => (
+                      <NonConformityEvidencePreview
+                        key={evidence.id}
+                        id={evidence.id}
+                        fileUrl={evidence.fileUrl}
+                        fileName={evidence.fileName}
+                        mimeType={evidence.mimeType}
+                        observation={evidence.observation}
+                        galleryItems={item.evidences.map((galleryEvidence) => ({
+                          id: galleryEvidence.id,
+                          fileUrl: galleryEvidence.fileUrl,
+                          fileName: galleryEvidence.fileName,
+                          mimeType: galleryEvidence.mimeType,
+                          observation: galleryEvidence.observation,
+                        }))}
+                      />
+                    ))}
+                  </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
       </Section>
 
-      <Section title="Evidencias" icon={Paperclip}>
-        {nc.evidences.length === 0 ? (
-          <div className="px-4 py-5">
-            <p className="text-[11px] text-muted-foreground">
-              Nenhuma evidencia anexada a esta NC.
-            </p>
-          </div>
-        ) : (
+      {nc.evidences.length > 0 && (
+        <Section title="Evidencias Gerais Legadas" icon={Paperclip}>
           <div className="divide-y divide-border">
             {nc.evidences.map((evidence) => (
               <div
                 key={evidence.id}
-                className="flex items-center justify-between gap-4 px-4 py-3"
+                className="flex items-start justify-between gap-4 px-4 py-3"
               >
-                <div className="min-w-0">
-                  <p className="text-[12px] font-semibold text-foreground truncate">
-                    {evidence.title}
-                  </p>
+                <div className="min-w-0 space-y-2">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                    {EVIDENCE_LABELS[evidence.type] ?? evidence.type} ·{" "}
-                    {evidence.fileName}
+                    {EVIDENCE_LABELS[evidence.type] ?? evidence.type} - {evidence.fileName}
                   </p>
+                  <NonConformityEvidencePreview
+                    id={evidence.id}
+                    fileUrl={evidence.fileUrl}
+                    fileName={evidence.fileName}
+                    mimeType={evidence.mimeType}
+                    observation={evidence.observation}
+                  />
                 </div>
                 <p className="text-[10px] text-muted-foreground font-mono shrink-0">
                   {format(evidence.createdAt, "dd/MM/yyyy HH:mm")}
@@ -320,8 +397,8 @@ export default async function NonConformityDetailPage({ params }: Props) {
               </div>
             ))}
           </div>
-        )}
-      </Section>
+        </Section>
+      )}
 
       <Section title="Historico" icon={History}>
         {nc.history.length === 0 ? (

@@ -36,7 +36,25 @@ export async function getScaffoldById(id: string) {
     include: {
       inspections: {
         orderBy: { date: "desc" },
-        include: { checklist: true },
+        select: {
+          id: true,
+          date: true,
+          inspector_name: true,
+          result: true,
+          validity_days: true,
+        },
+      },
+      nonConformities: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          responsibleUser: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          },
+        },
       },
     },
   });

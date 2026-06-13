@@ -74,17 +74,21 @@ const CLASSIFICATION_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
+  ASSIGNED: "Em Correcao",
   IN_PROGRESS: "Em Tratamento",
   PENDING_VERIFICATION: "Aguardando Verificacao",
   CLOSED: "Encerrada",
+  REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
 };
 
 const STATUS_STYLE: Record<string, string> = {
   OPEN: "bg-blue-50 text-blue-800 border-blue-400/60",
+  ASSIGNED: "bg-amber-50 text-amber-800 border-amber-400/60",
   IN_PROGRESS: "bg-amber-50 text-amber-800 border-amber-400/60",
   PENDING_VERIFICATION: "bg-purple-50 text-purple-800 border-purple-400/60",
   CLOSED: "bg-emerald-50 text-emerald-800 border-emerald-400/60",
+  REJECTED: "bg-red-50 text-red-800 border-red-400/60",
   CANCELLED: "bg-slate-100 text-slate-600 border-slate-400/60",
 };
 
@@ -124,7 +128,7 @@ export function NaoConformidadesClient({
   const [companyFilter, setCompanyFilter] = useState("all");
   const [classificationFilter, setClassificationFilter] = useState("all");
   const [responsibleFilter, setResponsibleFilter] = useState("all");
-  const [periodFilter, setPeriodFilter] = useState("all");
+  const [dueFilter, setDueFilter] = useState("all");
 
   const companies = useMemo(
     () =>
@@ -166,10 +170,18 @@ export function NaoConformidadesClient({
       .join(" ")
       .toLowerCase();
 
-    const createdAt = parseISO(nc.createdAt);
     const now = new Date();
-    const daysAgo =
-      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const dueDate = nc.dueDate ? parseISO(nc.dueDate) : null;
+    const daysUntilDue = dueDate
+      ? (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      : null;
+    const overdue = isOverdue(nc);
+    const dueNext7Days =
+      !!dueDate &&
+      !["CLOSED", "CANCELLED"].includes(nc.status) &&
+      !overdue &&
+      daysUntilDue !== null &&
+      daysUntilDue <= 7;
 
     const matchSearch = !search || text.includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || nc.status === statusFilter;
@@ -179,11 +191,10 @@ export function NaoConformidadesClient({
       nc.classification === classificationFilter;
     const matchResponsible =
       responsibleFilter === "all" || responsible === responsibleFilter;
-    const matchPeriod =
-      periodFilter === "all" ||
-      (periodFilter === "7d" && daysAgo <= 7) ||
-      (periodFilter === "30d" && daysAgo <= 30) ||
-      (periodFilter === "90d" && daysAgo <= 90);
+    const matchDue =
+      dueFilter === "all" ||
+      (dueFilter === "overdue" && overdue) ||
+      (dueFilter === "due7" && dueNext7Days);
 
     return (
       matchSearch &&
@@ -191,13 +202,13 @@ export function NaoConformidadesClient({
       matchCompany &&
       matchClassification &&
       matchResponsible &&
-      matchPeriod
+      matchDue
     );
   });
 
   const abertas = initialData.filter((nc) => nc.status === "OPEN").length;
-  const emTratamento = initialData.filter(
-    (nc) => nc.status === "IN_PROGRESS",
+  const emTratamento = initialData.filter((nc) =>
+    ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status),
   ).length;
   const criticas = initialData.filter(
     (nc) => nc.classification === "CRITICAL",
@@ -333,15 +344,14 @@ export function NaoConformidadesClient({
             ))}
           </SelectContent>
         </Select>
-        <Select value={periodFilter} onValueChange={setPeriodFilter}>
+        <Select value={dueFilter} onValueChange={setDueFilter}>
           <SelectTrigger className="h-8 text-[11px] rounded-none">
-            <SelectValue placeholder="Periodo" />
+            <SelectValue placeholder="Vencimento" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todo periodo</SelectItem>
-            <SelectItem value="7d">Ultimos 7 dias</SelectItem>
-            <SelectItem value="30d">Ultimos 30 dias</SelectItem>
-            <SelectItem value="90d">Ultimos 90 dias</SelectItem>
+            <SelectItem value="all">Todos prazos</SelectItem>
+            <SelectItem value="overdue">Vencidas</SelectItem>
+            <SelectItem value="due7">Vence em 7 dias</SelectItem>
           </SelectContent>
         </Select>
       </div>

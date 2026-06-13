@@ -100,9 +100,11 @@ enum NonConformityClassification {
 
 enum NonConformityStatus {
   OPEN
+  ASSIGNED
   IN_PROGRESS
   PENDING_VERIFICATION
   CLOSED
+  REJECTED
   CANCELLED
 }
 
@@ -164,7 +166,7 @@ model ScaffoldDocument {
   scaffold_id String
   type        DocumentType
   title       String
-  file_url    String // base64 ou URL do arquivo
+  file_url    String // referencia do arquivo no storage
   file_name   String
   file_size   Int? // bytes
   mime_type   String?
@@ -192,8 +194,8 @@ model Inspection {
   result         InspectionResult
   validity_days  Int              @default(0)
   notes          String?
-  photos         String[] // base64 ou URLs das fotos
-  signature      String? // base64 da assinatura digital
+  photos         String[] // referencias das fotos no storage
+  signature      String? // referencia da assinatura no storage
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -220,7 +222,7 @@ model ChecklistEntry {
   value       ChecklistValue
   critical    Boolean        @default(false)
   observation String?
-  photo       String? // base64 da foto do item não conforme
+  photo       String? // referencia da foto no storage
 
   nonConformityItems NonConformityChecklistItem[]
 
@@ -276,11 +278,34 @@ model NonConformityChecklistItem {
   checklistEntry   ChecklistEntry @relation(fields: [checklistEntryId], references: [id], onDelete: Cascade)
   checklistEntryId String
 
+  evidences NonConformityItemEvidence[]
+
   createdAt DateTime @default(now())
 
   @@unique([nonConformityId, checklistEntryId])
   @@index([checklistEntryId])
   @@map("non_conformity_checklist_items")
+}
+
+model NonConformityItemEvidence {
+  id                      String                    @id @default(cuid())
+  nonConformityItem       NonConformityChecklistItem @relation(fields: [nonConformityItemId], references: [id], onDelete: Cascade)
+  nonConformityItemId     String
+  type                    NonConformityEvidenceType
+  title                   String
+  fileUrl                 String
+  fileName                String
+  fileSize                Int?
+  mimeType                String?
+  uploadedBy              User?                     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById            String?
+  observation             String?
+  createdAt               DateTime                  @default(now())
+
+  @@index([nonConformityItemId])
+  @@index([type])
+  @@index([uploadedById])
+  @@map("non_conformity_item_evidences")
 }
 
 model NonConformityEvidence {
@@ -343,6 +368,7 @@ model User {
   responsibleNonConformities NonConformity[]         @relation("NonConformityResponsible")
   createdNonConformities     NonConformity[]         @relation("NonConformityCreatedBy")
   nonConformityEvidences     NonConformityEvidence[]
+  nonConformityItemEvidences NonConformityItemEvidence[]
   nonConformityHistory       NonConformityHistory[]
 
   @@map("users")
@@ -467,7 +493,7 @@ model InspectionSignature {
   signer_company      String?
   signer_position     String?
   signature_image_url String?
-  signature_data      String?
+  signature_data      String? // referencia da assinatura no storage
   signed_at           DateTime   @default(now())
   created_at          DateTime   @default(now())
 
