@@ -4,14 +4,14 @@
 		{
 			"label": "AndCheck Dev Server",
 			"type": "shell",
-			"command": "$env:DATABASE_URL='postgresql://andcheck:andcheck_secret@localhost:5433/andcheck'; npm run dev",
+			"command": "$env:DATABASE_URL='postgresql://andcheck:andcheck_secret@localhost:5433/andcheck'; pnpm dev",
 			"isBackground": true,
 			"problemMatcher": []
 		},
 		{
 			"label": "AndCheck Dev Server (Auth)",
 			"type": "shell",
-			"command": "$env:DATABASE_URL='postgresql://andcheck:andcheck_secret@localhost:5433/andcheck'; $env:AUTH_SECRET='XIsI9Uf4ckuTuu/gqnWMObLWh35mb0ZCJhY0bSb/0Bk='; $env:NEXTAUTH_URL='http://localhost:3000'; npm run dev",
+			"command": "$env:DATABASE_URL='postgresql://andcheck:andcheck_secret@localhost:5433/andcheck'; $env:AUTH_SECRET='XIsI9Uf4ckuTuu/gqnWMObLWh35mb0ZCJhY0bSb/0Bk='; $env:NEXTAUTH_URL='http://localhost:3000'; pnpm dev",
 			"isBackground": true,
 			"problemMatcher": []
 		}

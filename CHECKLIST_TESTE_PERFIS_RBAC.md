@@ -6,7 +6,7 @@ Use este roteiro para validar manualmente os acessos por perfil no AndCheck.
 
 - Rodar a aplicacao em `http://localhost:3000`.
 - Garantir que as migrations foram aplicadas.
-- Rodar `npm run db:seed:users` se precisar atualizar papeis/permissoes no banco.
+- Rodar `pnpm db:seed:users` se precisar atualizar papeis/permissoes no banco.
 - Criar ou editar usuarios de teste para cada perfil em `/usuarios`.
 - Testar sempre em janela anonima ou fazendo logout/login entre perfis.
 
