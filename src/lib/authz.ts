@@ -60,6 +60,8 @@ async function getCurrentUserAccessState() {
       userId: user.id,
       email: user.email,
       roleCodes,
+      companyId: user.companyId,
+      workspaceId: user.workspaceId,
     },
   };
 }

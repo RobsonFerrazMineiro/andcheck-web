@@ -2,6 +2,7 @@ import { getCurrentUserAccess } from "@/lib/authz";
 import { createStoredFileResponse } from "@/lib/file-response";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 
 const NC_PERMISSIONS: PermissionCode[] = [
   "non_conformities.view",
@@ -25,17 +26,18 @@ export async function GET(
   if (!access || !canAccessNonConformities(access.roleCodes)) {
     return new Response("Nao autorizado.", { status: 403 });
   }
+  const scope = await getDataScope();
 
   const { kind, id } = await context.params;
   const evidence =
     kind === "item"
-      ? await prisma.nonConformityItemEvidence.findUnique({
-          where: { id },
+      ? await prisma.nonConformityItemEvidence.findFirst({
+          where: { id, ...dataScopeWhere(scope) },
           select: { fileUrl: true, fileName: true, mimeType: true },
         })
       : kind === "general"
-        ? await prisma.nonConformityEvidence.findUnique({
-            where: { id },
+        ? await prisma.nonConformityEvidence.findFirst({
+            where: { id, ...dataScopeWhere(scope) },
             select: { fileUrl: true, fileName: true, mimeType: true },
           })
         : null;

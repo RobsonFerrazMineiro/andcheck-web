@@ -144,9 +144,63 @@ async function main() {
     },
   });
 
+  const testUsers = [];
+  for (const testUser of [
+    {
+      name: "SUPER_ADMIN",
+      email: "super.admin@andcheck.com",
+      roleCode: "SUPER_ADMIN",
+      company: "Hydro Alunorte",
+      companyId: DEFAULT_COMPANY_ID,
+    },
+    {
+      name: "HSE_HYDRO",
+      email: "hse.hydro@andcheck.com",
+      roleCode: "HSE_HYDRO",
+      company: "Hydro Alunorte",
+      companyId: DEFAULT_COMPANY_ID,
+    },
+    {
+      name: "ADMIN_EMPRESA_KW",
+      email: "admin.kw@andcheck.com",
+      roleCode: "ADMIN_EMPRESA",
+      company: "KW Brasil",
+      companyId: "company-kw-brasil",
+    },
+    {
+      name: "ADMIN_EMPRESA_MONTISOL",
+      email: "admin.montisol@andcheck.com",
+      roleCode: "ADMIN_EMPRESA",
+      company: "Montisol",
+      companyId: "company-montisol",
+    },
+  ]) {
+    const user = await prisma.user.upsert({
+      where: { email: testUser.email },
+      update: {
+        name: testUser.name,
+        company: testUser.company,
+        companyId: testUser.companyId,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+        is_active: true,
+      },
+      create: {
+        name: testUser.name,
+        email: testUser.email,
+        password_hash: hash,
+        role: testUser.roleCode === "SUPER_ADMIN" ? "admin" : "inspector",
+        company: testUser.company,
+        companyId: testUser.companyId,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+      },
+    });
+    testUsers.push({ user, roleCode: testUser.roleCode });
+  }
+
   const defaultAssignments = [
     { user: admin, roleCode: "SUPER_ADMIN" },
     { user: inspector, roleCode: "HSE_EMPRESA" },
+    ...testUsers,
   ];
 
   for (const assignment of defaultAssignments) {
@@ -175,6 +229,10 @@ async function main() {
   console.log("Usuarios criados:");
   console.log("   admin@andcheck.com / andcheck@2025");
   console.log("   inspetor@andcheck.com / inspetor@2025");
+  console.log("   super.admin@andcheck.com / andcheck@2025");
+  console.log("   hse.hydro@andcheck.com / andcheck@2025");
+  console.log("   admin.kw@andcheck.com / andcheck@2025");
+  console.log("   admin.montisol@andcheck.com / andcheck@2025");
 }
 
 main()

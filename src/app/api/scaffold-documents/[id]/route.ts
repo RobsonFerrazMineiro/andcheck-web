@@ -2,6 +2,7 @@ import { getCurrentUserAccess } from "@/lib/authz";
 import { createStoredFileResponse } from "@/lib/file-response";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 
 const DOCUMENT_PERMISSIONS: PermissionCode[] = [
   "documents.view",
@@ -21,10 +22,11 @@ export async function GET(
     ),
   );
   if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  const scope = await getDataScope();
 
   const { id } = await context.params;
-  const document = await prisma.scaffoldDocument.findUnique({
-    where: { id },
+  const document = await prisma.scaffoldDocument.findFirst({
+    where: { id, ...dataScopeWhere(scope) },
     select: { file_url: true, file_name: true, mime_type: true },
   });
   if (!document) {

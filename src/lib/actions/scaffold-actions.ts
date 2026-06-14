@@ -13,13 +13,21 @@ import {
   logScaffoldStatusConsultation,
 } from "@/lib/audit";
 import { generateNextScaffoldTag } from "@/lib/scaffold-code";
+import {
+  assertRecordInDataScope,
+  dataScopeWhere,
+  getDataScope,
+  getOwnedCreationContext,
+} from "@/lib/data-scope";
 import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
 export async function getScaffolds() {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
 
   return prisma.scaffold.findMany({
+    where: dataScopeWhere(scope),
     orderBy: { code: "asc" },
     include: {
       _count: { select: { inspections: true } },
@@ -35,9 +43,10 @@ export async function getScaffolds() {
 // ── Buscar por ID ─────────────────────────────────────────────────────────────
 export async function getScaffoldById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
 
-  return prisma.scaffold.findUnique({
-    where: { id },
+  return prisma.scaffold.findFirst({
+    where: { id, ...dataScopeWhere(scope) },
     include: {
       inspections: {
         orderBy: { date: "desc" },
@@ -103,12 +112,46 @@ export async function createScaffold(
   attempt = 0,
 ): Promise<Awaited<ReturnType<typeof prisma.scaffold.create>>> {
   await requirePermission("scaffolds.create");
+  const scope = await getDataScope();
+  const requestedCompany = data.company?.trim();
+  const selectedCompany =
+    scope.isGlobal && requestedCompany
+      ? await prisma.company.findFirst({
+          where: {
+            OR: [
+              { id: requestedCompany },
+              { name: { equals: requestedCompany, mode: "insensitive" } },
+              {
+                tradeName: {
+                  equals: requestedCompany,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+          select: { id: true, name: true },
+        })
+      : null;
+  const creationContext = scope.isGlobal
+    ? {
+        companyId: selectedCompany?.id ?? scope.actorCompanyId,
+        workspaceId: scope.actorWorkspaceId,
+      }
+    : getOwnedCreationContext(scope);
+  const tenantCompany =
+    selectedCompany ??
+    (await prisma.company.findUnique({
+      where: { id: creationContext.companyId },
+      select: { name: true },
+    }));
 
   const code = await generateNextScaffoldTag(attempt);
   try {
     const scaffold = await prisma.scaffold.create({
       data: {
         ...data,
+        ...creationContext,
+        company: tenantCompany?.name ?? data.company,
         code,
         tag: code, // QR Code usa o mesmo código fixo e legível
         status: "em_montagem",
@@ -130,7 +173,8 @@ export async function createScaffold(
         latitude: scaffold.latitude,
         longitude: scaffold.longitude,
       },
-      companyId: scaffold.company,
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
     });
     return scaffold;
   } catch (err: unknown) {
@@ -147,7 +191,9 @@ export async function createScaffold(
 // ── Atualizar status ──────────────────────────────────────────────────────────
 export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
   await requirePermission("scaffolds.update");
+  const scope = await getDataScope();
   const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  assertRecordInDataScope(scope, oldScaffold);
   const scaffold = await prisma.scaffold.update({ where: { id }, data: { status } });
   await createAuditLog({
     entityType: AuditEntityType.SCAFFOLD,
@@ -157,7 +203,8 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
     description: `Status do andaime ${scaffold.code} alterado de ${oldScaffold?.status ?? "-"} para ${scaffold.status}`,
     oldValue: { status: oldScaffold?.status ?? null },
     newValue: { status: scaffold.status },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
   return scaffold;
 }
@@ -165,7 +212,9 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
 // ── Concluir montagem → PENDENTE_LIBERACAO ────────────────────────────────────
 export async function completeAssembly(id: string) {
   await requirePermission("scaffolds.complete_assembly");
+  const scope = await getDataScope();
   const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  assertRecordInDataScope(scope, oldScaffold);
   const scaffold = await prisma.scaffold.update({
     where: { id },
     data: {
@@ -184,7 +233,8 @@ export async function completeAssembly(id: string) {
       status: scaffold.status,
       assembly_completed_at: scaffold.assembly_completed_at?.toISOString(),
     },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
   return scaffold;
 }
@@ -192,7 +242,9 @@ export async function completeAssembly(id: string) {
 // ── Desmontar → DESMONTADO ────────────────────────────────────────────────────
 export async function dismantleScaffold(id: string) {
   await requirePermission("scaffolds.dismantle");
+  const scope = await getDataScope();
   const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  assertRecordInDataScope(scope, oldScaffold);
   const scaffold = await prisma.scaffold.update({
     where: { id },
     data: {
@@ -211,7 +263,8 @@ export async function dismantleScaffold(id: string) {
       status: scaffold.status,
       dismantled_at: scaffold.dismantled_at?.toISOString(),
     },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
   return scaffold;
 }
@@ -237,7 +290,8 @@ export async function deleteScaffold(id: string) {
           company: oldScaffold.company,
         }
       : undefined,
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
   return scaffold;
 }

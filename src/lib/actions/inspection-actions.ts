@@ -8,6 +8,11 @@ import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import { ACTIVE_NON_CONFORMITY_STATUSES } from "@/lib/non-conformity-status";
 import {
+  assertRecordInDataScope,
+  dataScopeWhere,
+  getDataScope,
+} from "@/lib/data-scope";
+import {
   calculateInspectionResult,
   calculateScaffoldStatus,
   hasCriticalChecklistFailure,
@@ -40,9 +45,13 @@ async function findActiveNonConformity(scaffoldId: string) {
 
 export async function getActiveNonConformitiesForInspection() {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  const scope = await getDataScope();
 
   return prisma.nonConformity.findMany({
-    where: { status: { in: [...ACTIVE_NON_CONFORMITY_STATUSES] } },
+    where: {
+      status: { in: [...ACTIVE_NON_CONFORMITY_STATUSES] },
+      ...dataScopeWhere(scope),
+    },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -81,8 +90,10 @@ function resolveNonConformityDueDate(
 // ── Listar todas ──────────────────────────────────────────────────────────────
 export async function getInspections() {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
 
   return prisma.inspection.findMany({
+    where: dataScopeWhere(scope),
     orderBy: { date: "desc" },
     select: {
       id: true,
@@ -102,9 +113,10 @@ export async function getInspections() {
 // ── Buscar por ID ─────────────────────────────────────────────────────────────
 export async function getInspectionById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
 
-  const inspection = await prisma.inspection.findUnique({
-    where: { id },
+  const inspection = await prisma.inspection.findFirst({
+    where: { id, ...dataScopeWhere(scope) },
     select: {
       id: true,
       scaffold_id: true,
@@ -184,9 +196,10 @@ export async function getInspectionById(id: string) {
 // ── Listar por andaime ────────────────────────────────────────────────────────
 export async function getInspectionsByScaffold(scaffold_id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
 
   return prisma.inspection.findMany({
-    where: { scaffold_id },
+    where: { scaffold_id, ...dataScopeWhere(scope) },
     orderBy: { date: "desc" },
     select: {
       id: true,
@@ -323,7 +336,8 @@ async function createNonConformityFromInspection({
         action: AuditAction.CREATE,
         description: `Nao conformidade ${nonConformity.code} criada a partir da inspecao do andaime ${scaffold.code}`,
         newValue,
-        companyId: scaffold.company,
+        companyId: scaffold.companyId,
+        workspaceId: scaffold.workspaceId,
       });
 
       return;
@@ -372,6 +386,12 @@ export async function createInspection(data: {
   }[];
 }) {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  const scope = await getDataScope();
+  const oldScaffold = await prisma.scaffold.findUnique({
+    where: { id: data.scaffold_id },
+  });
+  assertRecordInDataScope(scope, oldScaffold);
+
   const activeNonConformity = await findActiveNonConformity(data.scaffold_id);
   if (activeNonConformity) {
     throw new Error(
@@ -399,9 +419,6 @@ export async function createInspection(data: {
 
   const { checklist, signatures, ...inspectionData } = data;
   const calculatedResult = calculateInspectionResult(checklist);
-  const oldScaffold = await prisma.scaffold.findUnique({
-    where: { id: data.scaffold_id },
-  });
   const policy = await resolveInspectionSignaturePolicyForScaffold(
     data.scaffold_id,
   );
@@ -520,7 +537,8 @@ export async function createInspection(data: {
         signer_position: signature.signer_position,
       })),
     },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
 
   await createAuditLog({
@@ -534,7 +552,8 @@ export async function createInspection(data: {
       failed_items: checklist.filter((item) => item.value === "CL_FAIL").length,
       warning_items: checklist.filter((item) => item.value === "CL_WARN").length,
     },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
 
   for (const signature of providedSignatures) {
@@ -550,7 +569,8 @@ export async function createInspection(data: {
         signer_company: signature.signer_company,
         signer_position: signature.signer_position,
       },
-      companyId: scaffold.company,
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
     });
   }
 
@@ -570,7 +590,8 @@ export async function createInspection(data: {
       released_at: scaffold.released_at?.toISOString() ?? null,
       inspection_result: inspection.result,
     },
-    companyId: scaffold.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
 
   return { id: inspection.id };
@@ -579,12 +600,16 @@ export async function createInspection(data: {
 // ── Stats gerais ──────────────────────────────────────────────────────────────
 export async function getInspectionStats() {
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
+  const where = dataScopeWhere(scope);
 
   const [total, aprovados, comRessalvas, reprovados] = await Promise.all([
-    prisma.inspection.count(),
-    prisma.inspection.count({ where: { result: "aprovado" } }),
-    prisma.inspection.count({ where: { result: "aprovado_com_ressalvas" } }),
-    prisma.inspection.count({ where: { result: "reprovado" } }),
+    prisma.inspection.count({ where }),
+    prisma.inspection.count({ where: { ...where, result: "aprovado" } }),
+    prisma.inspection.count({
+      where: { ...where, result: "aprovado_com_ressalvas" },
+    }),
+    prisma.inspection.count({ where: { ...where, result: "reprovado" } }),
   ]);
   return { total, aprovados, comRessalvas, reprovados };
 }

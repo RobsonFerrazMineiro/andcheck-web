@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAnyPermission } from "@/lib/authz";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 
 const policyInclude = {
   requirements: {
@@ -31,9 +32,10 @@ export async function resolveInspectionSignaturePolicyForScaffold(
     "inspections.finalize",
     "signature_policies.manage",
   ]);
+  const scope = await getDataScope();
 
-  const scaffold = await prisma.scaffold.findUnique({
-    where: { id: scaffoldId },
+  const scaffold = await prisma.scaffold.findFirst({
+    where: { id: scaffoldId, ...dataScopeWhere(scope) },
     select: {
       company: true,
       area: true,

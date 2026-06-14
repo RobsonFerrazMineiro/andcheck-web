@@ -2,6 +2,7 @@ import { getCurrentUserAccess } from "@/lib/authz";
 import { createStoredFileResponse } from "@/lib/file-response";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 
 const INSPECTION_PERMISSIONS: PermissionCode[] = [
   "read.all",
@@ -22,6 +23,8 @@ export async function GET(
     ),
   );
   if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  const scope = await getDataScope();
+  const scopeWhere = dataScopeWhere(scope);
 
   const { kind, id, asset } = await context.params;
   let fileUrl: string | null = null;
@@ -30,23 +33,23 @@ export async function GET(
   if (kind === "photo") {
     const index = Number(asset);
     const inspection = Number.isInteger(index)
-      ? await prisma.inspection.findUnique({
-          where: { id },
+      ? await prisma.inspection.findFirst({
+          where: { id, ...scopeWhere },
           select: { photos: true, scaffold_code: true },
         })
       : null;
     fileUrl = inspection?.photos[index] ?? null;
     fileName = `${inspection?.scaffold_code ?? "inspecao"}-foto-${index + 1}.jpg`;
   } else if (kind === "checklist") {
-    const item = await prisma.checklistEntry.findUnique({
-      where: { id },
+    const item = await prisma.checklistEntry.findFirst({
+      where: { id, inspection: scopeWhere },
       select: { photo: true, item_id: true },
     });
     fileUrl = item?.photo ?? null;
     fileName = `checklist-${item?.item_id ?? id}.jpg`;
   } else if (kind === "signature") {
-    const inspection = await prisma.inspection.findUnique({
-      where: { id },
+    const inspection = await prisma.inspection.findFirst({
+      where: { id, ...scopeWhere },
       select: { signature: true, scaffold_code: true },
     });
     fileUrl = inspection?.signature ?? null;

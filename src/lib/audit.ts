@@ -7,6 +7,7 @@ import {
   resolveTenantContext,
 } from "@/lib/multi-company";
 import { sanitizeForLog } from "@/lib/safe-log";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 import { AuditAction, AuditEntityType, Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 
@@ -252,8 +253,9 @@ export async function getAuditLogs({
   pageSize?: number;
 }) {
   await requireAnyPermission(["audit.view", "logs.view", "permissions.manage"]);
+  const scope = await getDataScope();
 
-  const where: Prisma.AuditLogWhereInput = {};
+  const where: Prisma.AuditLogWhereInput = dataScopeWhere(scope);
 
   if (action) where.action = action as AuditAction;
   if (entityType) where.entityType = entityType as AuditEntityType;

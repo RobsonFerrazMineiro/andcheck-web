@@ -10,6 +10,11 @@ import { prisma } from "@/lib/prisma";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import { sanitizeForLog } from "@/lib/safe-log";
 import {
+  assertRecordInDataScope,
+  dataScopeWhere,
+  getDataScope,
+} from "@/lib/data-scope";
+import {
   NonConformityEvidenceType,
   NonConformityStatus,
   Prisma,
@@ -102,13 +107,15 @@ async function writeNonConformityAudit({
   newValue?: NonConformityAuditValue;
 }) {
   try {
+    const scope = await getDataScope();
     const [nc, access] = await Promise.all([
-      prisma.nonConformity.findUnique({
-      where: { id },
+      prisma.nonConformity.findFirst({
+      where: { id, ...dataScopeWhere(scope) },
       select: {
         id: true,
         code: true,
         companyId: true,
+        workspaceId: true,
         scaffoldId: true,
         originInspectionId: true,
       },
@@ -138,6 +145,7 @@ async function writeNonConformityAudit({
         oldValue,
         newValue,
         companyId: nc.companyId,
+        workspaceId: nc.workspaceId,
       }),
     ]);
 
@@ -163,6 +171,8 @@ async function returnScaffoldToPendingReleaseAfterClosure({
     code: string;
     status: ScaffoldStatus;
     company: string | null;
+    companyId: string;
+    workspaceId: string;
     tag: string | null;
   } | null;
 }) {
@@ -203,7 +213,8 @@ async function returnScaffoldToPendingReleaseAfterClosure({
       nonConformityCode: ncCode,
       requiresNewInspection: true,
     },
-    companyId: updatedScaffold.company,
+    companyId: updatedScaffold.companyId,
+    workspaceId: updatedScaffold.workspaceId,
   });
 
   revalidatePath("/andaimes");
@@ -439,9 +450,11 @@ export async function getNonConformityResponsibleOptions() {
     "non_conformities.update",
     "non_conformities.close",
   ]);
+  const scope = await getDataScope();
 
   return prisma.user.findMany({
     where: {
+      ...dataScopeWhere(scope),
       is_active: true,
       roles: {
         some: {
@@ -464,6 +477,7 @@ export async function getNonConformityResponsibleOptions() {
 }
 
 export async function updateNonConformityStatus(formData: FormData) {
+  const scope = await getDataScope();
   const id = String(formData.get("id") ?? "").trim();
   const nextStatus = String(formData.get("status") ?? "").trim();
   const comment = String(formData.get("comment") ?? "").trim();
@@ -496,6 +510,8 @@ export async function updateNonConformityStatus(formData: FormData) {
           code: true,
           status: true,
           company: true,
+          companyId: true,
+          workspaceId: true,
           tag: true,
         },
       },
@@ -504,6 +520,7 @@ export async function updateNonConformityStatus(formData: FormData) {
   });
 
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
 
   assertAllowedTransition(nc.status, parsedNextStatus);
 
@@ -603,6 +620,7 @@ export async function updateNonConformityStatus(formData: FormData) {
 
 export async function updateNonConformityResponsible(formData: FormData) {
   await requirePermission("non_conformities.update");
+  const scope = await getDataScope();
 
   const id = String(formData.get("id") ?? "").trim();
   const responsibleUserIdRaw = String(
@@ -624,12 +642,14 @@ export async function updateNonConformityResponsible(formData: FormData) {
   ]);
 
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
   if (responsibleUserId && !responsible) {
     throw new Error("Responsavel selecionado nao existe.");
   }
+  if (responsible) assertRecordInDataScope(scope, responsible);
   if (!responsibleUserId) {
     throw new Error("Selecione um responsavel para iniciar a correcao.");
   }
@@ -687,6 +707,7 @@ export async function updateNonConformityDueDate(formData: FormData) {
     HSE_ROLE_CODES,
     "Somente HSE pode alterar o prazo da NC.",
   );
+  const scope = await getDataScope();
 
   const id = String(formData.get("id") ?? "").trim();
   const dueDateValue = String(formData.get("dueDate") ?? "").trim();
@@ -704,6 +725,7 @@ export async function updateNonConformityDueDate(formData: FormData) {
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
@@ -729,6 +751,7 @@ export async function updateNonConformityDueDate(formData: FormData) {
 
 export async function addNonConformityEvidence(formData: FormData) {
   await requirePermission("non_conformities.add_evidence");
+  const scope = await getDataScope();
 
   const id = String(formData.get("id") ?? "").trim();
   const evidenceType = parseEvidenceType(
@@ -751,6 +774,7 @@ export async function addNonConformityEvidence(formData: FormData) {
     getCurrentUserAccess(),
   ]);
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
   if (["CLOSED", "CANCELLED"].includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
@@ -792,6 +816,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
     RESPONSIBLE_ROLE_CODES,
     "Somente Planejamento ou Supervisor/Encarregado podem anexar evidencias de correcao.",
   );
+  const scope = await getDataScope();
 
   const id = String(formData.get("id") ?? "").trim();
   const nonConformityItemId = String(
@@ -826,6 +851,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   ]);
 
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
   if (!item) throw new Error("Item de checklist nao encontrado para esta NC.");
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
@@ -875,6 +901,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
 }
 
 export async function addNonConformityComment(formData: FormData) {
+  const scope = await getDataScope();
   const id = String(formData.get("id") ?? "").trim();
   const comment = String(formData.get("comment") ?? "").trim();
 
@@ -884,6 +911,7 @@ export async function addNonConformityComment(formData: FormData) {
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
@@ -908,8 +936,10 @@ export async function addNonConformityComment(formData: FormData) {
 
 export async function getNonConformities() {
   await requireNonConformityAccess();
+  const scope = await getDataScope();
 
   return prisma.nonConformity.findMany({
+    where: dataScopeWhere(scope),
     orderBy: [{ createdAt: "desc" }],
     include: {
       tenantCompany: { select: { name: true } },
@@ -950,9 +980,10 @@ export async function getNonConformities() {
 
 export async function getNonConformityById(id: string) {
   await requireNonConformityAccess();
+  const scope = await getDataScope();
 
-  const nc = await prisma.nonConformity.findUnique({
-    where: { id },
+  const nc = await prisma.nonConformity.findFirst({
+    where: { id, ...dataScopeWhere(scope) },
     include: {
       tenantCompany: { select: { name: true } },
       scaffold: {

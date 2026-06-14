@@ -6,6 +6,11 @@ import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import { DocumentType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import {
+  assertRecordInDataScope,
+  dataScopeWhere,
+  getDataScope,
+} from "@/lib/data-scope";
 
 // ── Listar documentos de um andaime ──────────────────────────────────────────
 export async function getScaffoldDocuments(scaffold_id: string) {
@@ -15,9 +20,10 @@ export async function getScaffoldDocuments(scaffold_id: string) {
     "read.all",
     "read.own_company",
   ]);
+  const scope = await getDataScope();
 
   const documents = await prisma.scaffoldDocument.findMany({
-    where: { scaffold_id },
+    where: { scaffold_id, ...dataScopeWhere(scope) },
     orderBy: { created_at: "desc" },
     select: {
       id: true,
@@ -55,12 +61,14 @@ export async function addScaffoldDocument(data: {
   observation?: string;
 }) {
   await requirePermission("documents.create");
+  const scope = await getDataScope();
   assertStoredFileReference(data.file_url, "Documento");
 
   const scaffold = await prisma.scaffold.findUnique({
     where: { id: data.scaffold_id },
   });
   if (!scaffold) throw new Error("Andaime nao encontrado.");
+  assertRecordInDataScope(scope, scaffold);
 
   const doc = await prisma.scaffoldDocument.create({
     data: {
@@ -86,7 +94,8 @@ export async function addScaffoldDocument(data: {
       uploaded_by: doc.uploaded_by,
       expires_at: doc.expires_at?.toISOString() ?? null,
     },
-    companyId: scaffold?.company,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
   });
   revalidatePath(`/andaimes/${data.scaffold_id}`);
   return { id: doc.id };
@@ -106,6 +115,8 @@ export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
       file_size: true,
       mime_type: true,
       uploaded_by: true,
+      companyId: true,
+      workspaceId: true,
       scaffold: {
         select: { code: true, company: true },
       },
@@ -130,7 +141,8 @@ export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
           uploaded_by: oldDocument.uploaded_by,
         }
       : undefined,
-    companyId: oldDocument?.scaffold.company,
+    companyId: oldDocument?.companyId,
+    workspaceId: oldDocument?.workspaceId,
   });
   revalidatePath(`/andaimes/${scaffold_id}`);
 }

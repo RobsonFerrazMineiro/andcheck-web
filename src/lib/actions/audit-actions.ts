@@ -3,17 +3,20 @@
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { requirePermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 
 export async function logInspectionPdfGenerated(inspectionId: string) {
   await requirePermission("pdf.generate");
+  const scope = await getDataScope();
 
-  const inspection = await prisma.inspection.findUnique({
-    where: { id: inspectionId },
+  const inspection = await prisma.inspection.findFirst({
+    where: { id: inspectionId, ...dataScopeWhere(scope) },
     select: {
       id: true,
       scaffold_code: true,
       result: true,
-      scaffold: { select: { company: true } },
+      companyId: true,
+      workspaceId: true,
     },
   });
 
@@ -30,6 +33,7 @@ export async function logInspectionPdfGenerated(inspectionId: string) {
       scaffold_code: inspection.scaffold_code,
       result: inspection.result,
     },
-    companyId: inspection.scaffold?.company,
+    companyId: inspection.companyId,
+    workspaceId: inspection.workspaceId,
   });
 }

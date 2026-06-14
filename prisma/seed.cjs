@@ -317,6 +317,14 @@ const inspections = [
   },
 ];
 
+const multiCompanyScaffolds = [
+  { id: 'sc_mc_kw', code: 'MC-KW-001', company: 'KW Brasil', companyId: 'company-kw-brasil' },
+  { id: 'sc_mc_montisol', code: 'MC-MONTISOL-001', company: 'Montisol', companyId: 'company-montisol' },
+  { id: 'sc_mc_omega', code: 'MC-OMEGA-001', company: 'Omega', companyId: 'company-omega' },
+  { id: 'sc_mc_superus', code: 'MC-SUPERUS-001', company: 'Superus', companyId: 'company-superus' },
+  { id: 'sc_mc_montcalm', code: 'MC-MONTCALM-001', company: 'Montcalm', companyId: 'company-montcalm' },
+];
+
 async function main() {
   console.log('Criando base multiempresa...');
   await seedMultiCompanyFoundation();
@@ -329,6 +337,31 @@ async function main() {
       create: {
         ...s,
         companyId: DEFAULT_COMPANY_ID,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+      },
+    });
+  }
+
+  for (const scaffold of multiCompanyScaffolds) {
+    await prisma.scaffold.upsert({
+      where: { id: scaffold.id },
+      update: {
+        company: scaffold.company,
+        companyId: scaffold.companyId,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+      },
+      create: {
+        id: scaffold.id,
+        code: scaffold.code,
+        tag: scaffold.code,
+        type: 'tubular',
+        status: 'em_montagem',
+        location: `Area de teste multiempresa - ${scaffold.company}`,
+        area: 'Teste Multiempresa',
+        height: 4,
+        responsible: `Responsavel ${scaffold.company}`,
+        company: scaffold.company,
+        companyId: scaffold.companyId,
         workspaceId: DEFAULT_WORKSPACE_ID,
       },
     });
