@@ -38,7 +38,7 @@ export default async function WorkspaceDetailPage({
   if (!workspace) notFound();
 
   const indicators = [
-    { label: "Empresas", value: workspace._count.companies, icon: Building2 },
+    { label: "Empresas", value: workspace._count.companyLinks, icon: Building2 },
     { label: "Usuarios", value: workspace._count.users, icon: Users },
     { label: "Andaimes", value: workspace._count.scaffolds, icon: Construction },
     { label: "Inspecoes", value: workspace._count.inspections, icon: ClipboardCheck },
@@ -83,14 +83,14 @@ export default async function WorkspaceDetailPage({
       <Card className="rounded-none">
         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Empresas vinculadas</CardTitle></CardHeader>
         <CardContent>
-          {workspace.companies.length === 0 ? (
+          {workspace.companyLinks.length === 0 ? (
             <div className="border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma empresa opera neste workspace.</div>
           ) : (
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-              {workspace.companies.map((company) => (
+              {workspace.companyLinks.map(({ company, role }) => (
                 <Link key={company.id} href={`/empresas/${company.id}`} className="flex items-center justify-between gap-3 border bg-muted/15 p-3 transition-colors hover:bg-muted/40">
                   <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
-                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-none text-[9px]">{TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
+                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-none text-[9px]">{role === "OWNER" ? "Proprietaria" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
                 </Link>
               ))}
             </div>

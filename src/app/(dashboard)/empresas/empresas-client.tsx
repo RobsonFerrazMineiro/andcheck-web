@@ -23,8 +23,7 @@ type CompanyRow = {
   active: boolean;
   description: string | null;
   logoUrl: string | null;
-  workspaceId: string;
-  workspaceName: string;
+  workspaceNames: string[];
   users: number;
   scaffolds: number;
 };
@@ -69,7 +68,7 @@ export function EmpresasClient({
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("pt-BR");
     return initialCompanies.filter((company) => {
-      const matchesSearch = !term || [company.name, company.code, company.workspaceName]
+      const matchesSearch = !term || [company.name, company.code, ...company.workspaceNames]
         .some((value) => value.toLocaleLowerCase("pt-BR").includes(term));
       const matchesStatus = status === "all" || (status === "active") === company.active;
       return matchesSearch && matchesStatus && (type === "all" || type === company.type);
@@ -150,7 +149,7 @@ export function EmpresasClient({
               <Field label="Nome" name="name" defaultValue={formCompany?.name} required />
               <Field label="Codigo" name="code" defaultValue={formCompany?.code} placeholder="Gerado automaticamente" />
               <SelectField label="Tipo" name="type" defaultValue={formCompany?.type === "CONTRACTOR" ? "SCAFFOLD_COMPANY" : formCompany?.type ?? "SCAFFOLD_COMPANY"} options={FORM_TYPE_OPTIONS} />
-              <SelectField label="Workspace" name="workspaceId" defaultValue={formCompany?.workspaceId ?? workspaces[0]?.id} options={workspaces.map((workspace) => [workspace.id, workspace.name])} />
+              <OptionalSelectField label="Vincular a workspace" name="workspaceId" options={workspaces.map((workspace) => [workspace.id, workspace.name])} />
               <SelectField label="Status" name="status" defaultValue={formCompany?.active === false ? "INACTIVE" : "ACTIVE"} options={[["ACTIVE", "Ativa"], ["INACTIVE", "Inativa"]]} />
               <Field label="Logo" name="logoUrl" defaultValue={formCompany?.logoUrl ?? undefined} placeholder="URL da logo (opcional)" />
               <div className="space-y-1.5 lg:col-span-2">
@@ -206,7 +205,7 @@ export function EmpresasClient({
               <p className="font-mono text-[10px] text-muted-foreground">{company.code}</p>
             </div>
             <Badge variant="outline" className={`hidden w-fit rounded-none text-[9px] lg:inline-flex ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
-            <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{company.workspaceName}</p>
+            <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
             <p className="hidden font-mono text-xs lg:block">{company.users}</p>
             <p className="hidden font-mono text-xs lg:block">{company.scaffolds}</p>
             <StatusBadge active={company.active} />
@@ -233,6 +232,10 @@ function Field({ label, name, defaultValue, placeholder, required }: { label: st
 
 function SelectField({ label, name, defaultValue, options }: { label: string; name: string; defaultValue?: string; options: Array<[string, string]> }) {
   return <div className="space-y-1.5"><Label>{label} *</Label><Select name={name} defaultValue={defaultValue} required><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select></div>;
+}
+
+function OptionalSelectField({ label, name, options }: { label: string; name: string; options: Array<[string, string]> }) {
+  return <div className="space-y-1.5"><Label>{label}</Label><Select name={name} defaultValue="none"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Nao vincular agora</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select><p className="text-[10px] text-muted-foreground">Opcional. Novos vinculos nao substituem os existentes.</p></div>;
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: { value: string; onValueChange: (value: string) => void; placeholder: string; options: Array<[string, string]> }) {

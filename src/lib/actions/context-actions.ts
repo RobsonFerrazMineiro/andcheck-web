@@ -37,18 +37,7 @@ export async function updateActiveContext(input: {
     throw new AuthorizationError("Escopo de todas as empresas nao permitido.");
   }
 
-  const [company, workspace] = await Promise.all([
-    allCompaniesSelected
-      ? Promise.resolve(null)
-      : prisma.company.findFirst({
-          where: {
-            id: input.companyId,
-            active: true,
-            type: "SCAFFOLD_COMPANY",
-          },
-          select: { id: true },
-        }),
-    prisma.workspace.findFirst({
+  const workspace = await prisma.workspace.findFirst({
       where: {
         id: input.workspaceId,
         active: true,
@@ -57,17 +46,36 @@ export async function updateActiveContext(input: {
           : {}),
       },
       select: { id: true },
-    }),
-  ]);
+    });
+  const company =
+    !allCompaniesSelected && workspace
+      ? await prisma.company.findFirst({
+          where: {
+            id: input.companyId,
+            active: true,
+            type: "SCAFFOLD_COMPANY",
+            workspaceLinks: {
+              some: {
+                workspaceId: workspace.id,
+                role: "SCAFFOLD_COMPANY",
+                active: true,
+              },
+            },
+          },
+          select: { id: true },
+        })
+      : null;
+  const useAllCompanies =
+    allCompaniesSelected || (!company && capabilities.canUseAllCompanies);
 
-  if ((!allCompaniesSelected && !company) || !workspace) {
+  if ((!useAllCompanies && !company) || !workspace) {
     throw new AuthorizationError("Contexto selecionado nao esta disponivel.");
   }
 
   const cookieStore = await cookies();
   cookieStore.set(
     COMPANY_CONTEXT_COOKIE,
-    allCompaniesSelected ? ALL_COMPANIES_CONTEXT : company!.id,
+    useAllCompanies ? ALL_COMPANIES_CONTEXT : company!.id,
     COOKIE_OPTIONS,
   );
   cookieStore.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, COOKIE_OPTIONS);

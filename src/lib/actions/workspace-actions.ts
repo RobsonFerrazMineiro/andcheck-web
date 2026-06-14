@@ -154,7 +154,7 @@ export async function getWorkspaceManagementData() {
       orderBy: { name: "asc" },
       include: {
         ownerCompany: { select: { id: true, name: true } },
-        companies: { select: { id: true } },
+        companyLinks: { where: { active: true }, select: { id: true } },
         _count: { select: { scaffolds: true } },
       },
     }),
@@ -175,13 +175,19 @@ export async function getWorkspaceDetail(id: string) {
     where: { id },
     include: {
       ownerCompany: { select: { id: true, name: true } },
-      companies: {
-        orderBy: [{ type: "asc" }, { name: "asc" }],
-        select: { id: true, name: true, code: true, type: true, active: true },
+      companyLinks: {
+        where: { active: true },
+        orderBy: [{ role: "asc" }, { company: { name: "asc" } }],
+        select: {
+          role: true,
+          company: {
+            select: { id: true, name: true, code: true, type: true, active: true },
+          },
+        },
       },
       _count: {
         select: {
-          companies: true,
+          companyLinks: { where: { active: true } },
           users: true,
           scaffolds: true,
           inspections: true,
@@ -199,19 +205,29 @@ export async function createWorkspace(formData: FormData) {
   await assertOwnerCompany(input.ownerCompanyId);
   const code = input.requestedCode || (await generateWorkspaceCode(input.name));
 
-  const workspace = await prisma.workspace.create({
-    data: {
-      name: input.name,
-      code,
-      ownerCompanyId: input.ownerCompanyId,
-      city: input.city,
-      state: input.state,
-      address: input.address,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      active: input.active,
-      description: input.description,
-    },
+  const workspace = await prisma.$transaction(async (transaction) => {
+    const created = await transaction.workspace.create({
+      data: {
+        name: input.name,
+        code,
+        ownerCompanyId: input.ownerCompanyId,
+        city: input.city,
+        state: input.state,
+        address: input.address,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        active: input.active,
+        description: input.description,
+      },
+    });
+    await transaction.companyWorkspace.create({
+      data: {
+        companyId: input.ownerCompanyId,
+        workspaceId: created.id,
+        role: "OWNER",
+      },
+    });
+    return created;
   });
 
   await createAuditLog({
@@ -242,20 +258,43 @@ export async function updateWorkspace(formData: FormData) {
     await assertWorkspaceCanBeDeactivated(id);
   }
 
-  const workspace = await prisma.workspace.update({
-    where: { id },
-    data: {
-      name: input.name,
-      code: input.requestedCode || current.code,
-      ownerCompanyId: input.ownerCompanyId,
-      city: input.city,
-      state: input.state,
-      address: input.address,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      active: input.active,
-      description: input.description,
-    },
+  const workspace = await prisma.$transaction(async (transaction) => {
+    const updated = await transaction.workspace.update({
+      where: { id },
+      data: {
+        name: input.name,
+        code: input.requestedCode || current.code,
+        ownerCompanyId: input.ownerCompanyId,
+        city: input.city,
+        state: input.state,
+        address: input.address,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        active: input.active,
+        description: input.description,
+      },
+    });
+    if (current.ownerCompanyId !== input.ownerCompanyId) {
+      await transaction.companyWorkspace.updateMany({
+        where: { workspaceId: id, role: "OWNER" },
+        data: { active: false },
+      });
+    }
+    await transaction.companyWorkspace.upsert({
+      where: {
+        companyId_workspaceId: {
+          companyId: input.ownerCompanyId,
+          workspaceId: id,
+        },
+      },
+      update: { role: "OWNER", active: true },
+      create: {
+        companyId: input.ownerCompanyId,
+        workspaceId: id,
+        role: "OWNER",
+      },
+    });
+    return updated;
   });
 
   const statusChanged = current.active !== workspace.active;

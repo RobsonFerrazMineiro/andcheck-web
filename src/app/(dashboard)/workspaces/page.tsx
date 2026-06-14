@@ -40,7 +40,7 @@ export default async function WorkspacesPage({ searchParams }: Props) {
         longitude: workspace.longitude,
         description: workspace.description,
         active: workspace.active,
-        companies: workspace.companies.length,
+        companies: workspace.companyLinks.length,
         scaffolds: workspace._count.scaffolds,
       }))}
     />

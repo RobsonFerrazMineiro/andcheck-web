@@ -7,7 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const TYPE_LABELS = {
-  CLIENT: "Cliente",
+  CLIENT: "Cliente / Contratante",
   HSE_MANAGER: "Gerenciadora HSE",
   SCAFFOLD_COMPANY: "Empresa de andaimes",
   CONTRACTOR: "Contratada",
@@ -44,7 +44,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
         <Card className="rounded-none">
           <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Info label="Workspace" value={company.workspace.name} />
+            <Info label="Workspaces vinculados" value={company.workspaceLinks.filter((link) => link.active).map((link) => link.workspace.name).join(", ") || "Sem vinculo operacional"} />
             <Info label="Tipo" value={TYPE_LABELS[company.type]} />
             <Info label="Status" value={company.active ? "Ativa" : "Inativa"} />
             <Info label="Data de criacao" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />

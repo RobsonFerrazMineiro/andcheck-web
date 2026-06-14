@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { getCurrentUserAccess, requireAnyPermission, requireRole } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-import { CompanyType } from "@prisma/client";
+import { CompanyType, CompanyWorkspaceRole } from "@prisma/client";
 
 const COMPANY_TYPES = new Set<CompanyType>([
   CompanyType.CLIENT,
@@ -20,7 +20,6 @@ function companySnapshot(company: {
   active: boolean;
   description: string | null;
   logoUrl: string | null;
-  workspaceId: string;
 }) {
   return {
     name: company.name,
@@ -29,8 +28,15 @@ function companySnapshot(company: {
     status: company.active ? "ACTIVE" : "INACTIVE",
     description: company.description,
     logoUrl: company.logoUrl,
-    workspaceId: company.workspaceId,
   };
+}
+
+function workspaceRoleForCompanyType(type: CompanyType) {
+  if (type === CompanyType.CLIENT) return CompanyWorkspaceRole.OWNER;
+  if (type === CompanyType.HSE_MANAGER) {
+    return CompanyWorkspaceRole.HSE_MANAGER;
+  }
+  return CompanyWorkspaceRole.SCAFFOLD_COMPANY;
 }
 
 function normalizeCode(value: string) {
@@ -60,13 +66,14 @@ function parseCompanyForm(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const requestedCode = normalizeCode(String(formData.get("code") ?? ""));
   const type = String(formData.get("type") ?? "") as CompanyType;
-  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
+  const workspaceValue = String(formData.get("workspaceId") ?? "").trim();
+  const workspaceId = workspaceValue === "none" ? "" : workspaceValue;
   const active = String(formData.get("status") ?? "ACTIVE") === "ACTIVE";
   const description = String(formData.get("description") ?? "").trim() || null;
   const logoUrl = String(formData.get("logoUrl") ?? "").trim() || null;
 
-  if (!name || !workspaceId || !COMPANY_TYPES.has(type)) {
-    throw new Error("Nome, tipo e workspace sao obrigatorios.");
+  if (!name || !COMPANY_TYPES.has(type)) {
+    throw new Error("Nome e tipo sao obrigatorios.");
   }
 
   return { name, requestedCode, type, workspaceId, active, description, logoUrl };
@@ -87,7 +94,11 @@ export async function getCompanyManagementData() {
     prisma.company.findMany({
       orderBy: { name: "asc" },
       include: {
-        workspace: { select: { id: true, name: true } },
+        workspaceLinks: {
+          where: { active: true },
+          orderBy: { workspace: { name: "asc" } },
+          include: { workspace: { select: { id: true, name: true } } },
+        },
         _count: { select: { users: true, scaffolds: true } },
       },
     }),
@@ -107,7 +118,12 @@ export async function getCompanyDetail(id: string) {
   return prisma.company.findUnique({
     where: { id },
     include: {
-      workspace: { select: { id: true, name: true, code: true } },
+      workspaceLinks: {
+        orderBy: { workspace: { name: "asc" } },
+        include: {
+          workspace: { select: { id: true, name: true, code: true, active: true } },
+        },
+      },
       _count: {
         select: {
           users: true,
@@ -123,19 +139,30 @@ export async function getCompanyDetail(id: string) {
 export async function createCompany(formData: FormData) {
   await requireRole("SUPER_ADMIN");
   const input = parseCompanyForm(formData);
-  await assertWorkspace(input.workspaceId);
+  if (input.workspaceId) await assertWorkspace(input.workspaceId);
   const code = input.requestedCode || (await generateCompanyCode(input.name));
 
-  const company = await prisma.company.create({
-    data: {
-      name: input.name,
-      code,
-      type: input.type,
-      workspaceId: input.workspaceId,
-      active: input.active,
-      description: input.description,
-      logoUrl: input.logoUrl,
-    },
+  const company = await prisma.$transaction(async (transaction) => {
+    const created = await transaction.company.create({
+      data: {
+        name: input.name,
+        code,
+        type: input.type,
+        active: input.active,
+        description: input.description,
+        logoUrl: input.logoUrl,
+      },
+    });
+    if (input.workspaceId) {
+      await transaction.companyWorkspace.create({
+        data: {
+          companyId: created.id,
+          workspaceId: input.workspaceId,
+          role: workspaceRoleForCompanyType(input.type),
+        },
+      });
+    }
+    return created;
   });
 
   await createAuditLog({
@@ -146,7 +173,7 @@ export async function createCompany(formData: FormData) {
     description: `Empresa ${company.name} criada`,
     newValue: companySnapshot(company),
     companyId: company.id,
-    workspaceId: company.workspaceId,
+    workspaceId: input.workspaceId || undefined,
   });
 
   revalidatePath("/empresas");
@@ -160,25 +187,63 @@ export async function updateCompany(formData: FormData) {
   if (!id) throw new Error("Empresa nao informada.");
 
   const input = parseCompanyForm(formData);
-  await assertWorkspace(input.workspaceId);
+  if (input.workspaceId) await assertWorkspace(input.workspaceId);
   const current = await prisma.company.findUnique({ where: { id } });
   if (!current) throw new Error("Empresa nao encontrada.");
+  if (current.type === CompanyType.CLIENT && input.type !== CompanyType.CLIENT) {
+    const ownedWorkspace = await prisma.workspace.findFirst({
+      where: { ownerCompanyId: id },
+      select: { id: true },
+    });
+    if (ownedWorkspace) {
+      throw new Error(
+        "Empresa proprietaria de workspace deve permanecer como cliente.",
+      );
+    }
+  }
   if (!input.active && current.active && actor?.companyId === id) {
     throw new Error("Nao e permitido desativar a empresa do usuario atual.");
   }
   const code = input.requestedCode || current.code;
 
-  const company = await prisma.company.update({
-    where: { id },
-    data: {
-      name: input.name,
-      code,
-      type: input.type,
-      workspaceId: input.workspaceId,
-      active: input.active,
-      description: input.description,
-      logoUrl: input.logoUrl,
-    },
+  const company = await prisma.$transaction(async (transaction) => {
+    const updated = await transaction.company.update({
+      where: { id },
+      data: {
+        name: input.name,
+        code,
+        type: input.type,
+        active: input.active,
+        description: input.description,
+        logoUrl: input.logoUrl,
+        workspaceLinks: {
+          updateMany: {
+            where: {},
+            data: { role: workspaceRoleForCompanyType(input.type) },
+          },
+        },
+      },
+    });
+    if (input.workspaceId) {
+      await transaction.companyWorkspace.upsert({
+        where: {
+          companyId_workspaceId: {
+            companyId: id,
+            workspaceId: input.workspaceId,
+          },
+        },
+        update: {
+          active: true,
+          role: workspaceRoleForCompanyType(input.type),
+        },
+        create: {
+          companyId: id,
+          workspaceId: input.workspaceId,
+          role: workspaceRoleForCompanyType(input.type),
+        },
+      });
+    }
+    return updated;
   });
 
   await createAuditLog({
@@ -198,7 +263,7 @@ export async function updateCompany(formData: FormData) {
     oldValue: companySnapshot(current),
     newValue: companySnapshot(company),
     companyId: company.id,
-    workspaceId: company.workspaceId,
+    workspaceId: input.workspaceId || undefined,
   });
 
   revalidatePath("/empresas");
@@ -232,7 +297,7 @@ export async function setCompanyActive(id: string, active: boolean) {
     oldValue: companySnapshot(current),
     newValue: companySnapshot(company),
     companyId: company.id,
-    workspaceId: company.workspaceId,
+    workspaceId: undefined,
   });
 
   revalidatePath("/empresas");

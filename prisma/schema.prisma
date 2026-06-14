@@ -135,6 +135,12 @@ enum CompanyType {
   CLIENT
 }
 
+enum CompanyWorkspaceRole {
+  OWNER
+  HSE_MANAGER
+  SCAFFOLD_COMPANY
+}
+
 model Company {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -145,8 +151,6 @@ model Company {
   active      Boolean     @default(true)
   description String?
   logoUrl     String?
-  workspace   Workspace   @relation("CompanyWorkspace", fields: [workspaceId], references: [id], onDelete: Restrict)
-  workspaceId String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -160,9 +164,9 @@ model Company {
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
+  workspaceLinks             CompanyWorkspace[]
 
   @@index([type, active])
-  @@index([workspaceId, active])
   @@map("companies")
 }
 
@@ -191,10 +195,27 @@ model Workspace {
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
-  companies                  Company[]                   @relation("CompanyWorkspace")
+  companyLinks               CompanyWorkspace[]
 
   @@index([ownerCompanyId, active])
   @@map("workspaces")
+}
+
+model CompanyWorkspace {
+  id          String               @id @default(cuid())
+  company     Company              @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId   String
+  workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId String
+  role        CompanyWorkspaceRole
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@unique([companyId, workspaceId])
+  @@index([workspaceId, role, active])
+  @@index([companyId, active])
+  @@map("company_workspaces")
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

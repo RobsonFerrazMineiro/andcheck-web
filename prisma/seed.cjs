@@ -34,8 +34,8 @@ async function seedMultiCompanyFoundation() {
   for (const company of companies) {
     await prisma.company.upsert({
       where: { name: company.name },
-      update: { code: company.code, type: company.type, workspaceId: DEFAULT_WORKSPACE_ID, active: true },
-      create: { ...company, workspaceId: DEFAULT_WORKSPACE_ID, active: true },
+      update: { code: company.code, type: company.type, active: true },
+      create: { ...company, active: true },
     });
   }
 
@@ -58,6 +58,30 @@ async function seedMultiCompanyFoundation() {
       active: true,
     },
   });
+
+  for (const company of companies) {
+    const role = company.type === 'CLIENT'
+      ? 'OWNER'
+      : company.type === 'HSE_MANAGER'
+        ? 'HSE_MANAGER'
+        : 'SCAFFOLD_COMPANY';
+
+    await prisma.companyWorkspace.upsert({
+      where: {
+        companyId_workspaceId: {
+          companyId: company.id,
+          workspaceId: DEFAULT_WORKSPACE_ID,
+        },
+      },
+      update: { role, active: true },
+      create: {
+        companyId: company.id,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+        role,
+        active: true,
+      },
+    });
+  }
 }
 
 // ── Andaimes ─────────────────────────────────────────────────────────────────

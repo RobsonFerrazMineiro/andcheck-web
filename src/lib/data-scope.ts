@@ -86,30 +86,45 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
     const allCompaniesSelected =
       capabilities.canUseAllCompanies &&
       (!selectedCompanyId || selectedCompanyId === ALL_COMPANIES_CONTEXT);
-    const [selectedCompany, selectedWorkspace] = await Promise.all([
-      selectedCompanyId && !allCompaniesSelected
-        ? prisma.company.findFirst({
-            where: {
-              id: selectedCompanyId,
-              active: true,
-              type: "SCAFFOLD_COMPANY",
-            },
-            select: { id: true },
-          })
-        : null,
-      selectedWorkspaceId
-        ? prisma.workspace.findFirst({
-            where: {
-              id: selectedWorkspaceId,
-              active: true,
-              ...(!capabilities.canSwitchWorkspace
-                ? { id: access.workspaceId }
-                : {}),
-            },
-            select: { id: true },
-          })
-        : null,
-    ]);
+    const selectedWorkspace = selectedWorkspaceId
+      ? await prisma.workspace.findFirst({
+          where: {
+            id: selectedWorkspaceId,
+            active: true,
+            ...(!capabilities.canSwitchWorkspace
+              ? { id: access.workspaceId }
+              : {}),
+          },
+          select: { id: true },
+        })
+      : null;
+    const effectiveWorkspaceId = selectedWorkspace?.id ?? access.workspaceId;
+    const linkedCompanies = await prisma.companyWorkspace.findMany({
+      where: {
+        workspaceId: effectiveWorkspaceId,
+        active: true,
+        company: { active: true },
+      },
+      select: {
+        companyId: true,
+        role: true,
+        company: { select: { type: true } },
+      },
+    });
+    const linkedCompanyIds = linkedCompanies.map((link) => link.companyId);
+    const selectableCompanyIds = linkedCompanies
+      .filter(
+        (link) =>
+          link.role === "SCAFFOLD_COMPANY" &&
+          link.company.type === "SCAFFOLD_COMPANY",
+      )
+      .map((link) => link.companyId);
+    const selectedCompany =
+      selectedCompanyId &&
+      !allCompaniesSelected &&
+      selectableCompanyIds.includes(selectedCompanyId)
+        ? { id: selectedCompanyId }
+        : null;
     const useAllCompanies = allCompaniesSelected || !selectedCompany;
 
     return {
@@ -117,8 +132,8 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
       companyScope: useAllCompanies
         ? "ALL_IN_WORKSPACE"
         : "SINGLE_COMPANY",
-      companyIds: useAllCompanies ? null : [selectedCompany.id],
-      workspaceIds: [selectedWorkspace?.id ?? access.workspaceId],
+      companyIds: useAllCompanies ? linkedCompanyIds : [selectedCompany.id],
+      workspaceIds: [effectiveWorkspaceId],
       userId: access.userId,
       actorCompanyId: access.companyId,
       actorWorkspaceId: access.workspaceId,

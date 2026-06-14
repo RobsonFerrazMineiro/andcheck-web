@@ -23,8 +23,9 @@ export default async function EmpresasPage() {
         active: company.active,
         description: company.description,
         logoUrl: company.logoUrl,
-        workspaceId: company.workspaceId,
-        workspaceName: company.workspace.name,
+        workspaceNames: company.workspaceLinks.map(
+          (link) => link.workspace.name,
+        ),
         users: company._count.users,
         scaffolds: company._count.scaffolds,
       }))}
