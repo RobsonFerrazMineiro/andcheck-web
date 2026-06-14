@@ -13,6 +13,7 @@ const CONTEXT_SWITCHER_ROLES = new Set([
 
 const GLOBAL_WORKSPACE_ROLES = new Set(["SUPER_ADMIN"]);
 
+export const ALL_COMPANIES_CONTEXT = "__all_companies__";
 export const COMPANY_CONTEXT_COOKIE = "andcheck_company_context";
 export const WORKSPACE_CONTEXT_COOKIE = "andcheck_workspace_context";
 
@@ -27,6 +28,7 @@ export const COMPANY_SCOPED_ROLE_CODES = [
 
 export type DataScope = {
   isGlobal: boolean;
+  companyScope: "ALL_IN_WORKSPACE" | "SINGLE_COMPANY" | "GLOBAL";
   companyIds: string[] | null;
   workspaceIds: string[] | null;
   userId: string;
@@ -39,25 +41,53 @@ type ScopedRecord = {
   workspaceId: string;
 };
 
+type UserAccess = NonNullable<Awaited<ReturnType<typeof getCurrentUserAccess>>>;
+
+export const getContextCapabilities = cache(async (access: UserAccess) => {
+  const hasWorkspaceRole = access.roleCodes.some((roleCode) =>
+    CONTEXT_SWITCHER_ROLES.has(roleCode),
+  );
+  const isAuditor = access.roleCodes.includes("AUDITOR");
+  // Until workspace grants exist, an auditor tied to the workspace owner is workspace-scoped.
+  const auditorHasWorkspaceScope = isAuditor
+    ? Boolean(
+        await prisma.workspace.findFirst({
+          where: {
+            id: access.workspaceId,
+            ownerCompanyId: access.companyId,
+            active: true,
+          },
+          select: { id: true },
+        }),
+      )
+    : false;
+
+  return {
+    canSwitchCompany: hasWorkspaceRole || auditorHasWorkspaceScope,
+    canSwitchWorkspace: access.roleCodes.some((roleCode) =>
+      GLOBAL_WORKSPACE_ROLES.has(roleCode),
+    ),
+    canUseAllCompanies: hasWorkspaceRole || auditorHasWorkspaceScope,
+  };
+});
+
 export const getDataScope = cache(async (): Promise<DataScope> => {
   const access = await getCurrentUserAccess();
   if (!access) throw new AuthorizationError("Usuario nao autenticado.");
 
-  const canSwitchContext = access.roleCodes.some((roleCode) =>
-    CONTEXT_SWITCHER_ROLES.has(roleCode),
-  );
+  const capabilities = await getContextCapabilities(access);
 
-  if (canSwitchContext) {
+  if (capabilities.canSwitchCompany) {
     const cookieStore = await cookies();
     const selectedCompanyId = cookieStore.get(COMPANY_CONTEXT_COOKIE)?.value;
     const selectedWorkspaceId = cookieStore.get(
       WORKSPACE_CONTEXT_COOKIE,
     )?.value;
-    const canSwitchAnyWorkspace = access.roleCodes.some((roleCode) =>
-      GLOBAL_WORKSPACE_ROLES.has(roleCode),
-    );
+    const allCompaniesSelected =
+      capabilities.canUseAllCompanies &&
+      (!selectedCompanyId || selectedCompanyId === ALL_COMPANIES_CONTEXT);
     const [selectedCompany, selectedWorkspace] = await Promise.all([
-      selectedCompanyId
+      selectedCompanyId && !allCompaniesSelected
         ? prisma.company.findFirst({
             where: { id: selectedCompanyId, active: true },
             select: { id: true },
@@ -68,7 +98,7 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
             where: {
               id: selectedWorkspaceId,
               active: true,
-              ...(!canSwitchAnyWorkspace
+              ...(!capabilities.canSwitchWorkspace
                 ? { id: access.workspaceId }
                 : {}),
             },
@@ -79,7 +109,12 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
 
     return {
       isGlobal: false,
-      companyIds: [selectedCompany?.id ?? access.companyId],
+      companyScope: allCompaniesSelected
+        ? "ALL_IN_WORKSPACE"
+        : "SINGLE_COMPANY",
+      companyIds: allCompaniesSelected
+        ? null
+        : [selectedCompany?.id ?? access.companyId],
       workspaceIds: [selectedWorkspace?.id ?? access.workspaceId],
       userId: access.userId,
       actorCompanyId: access.companyId,
@@ -89,6 +124,7 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
 
   return {
     isGlobal: false,
+    companyScope: "SINGLE_COMPANY",
     companyIds: [access.companyId],
     workspaceIds: [access.workspaceId],
     userId: access.userId,
@@ -96,14 +132,6 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
     actorWorkspaceId: access.workspaceId,
   };
 });
-
-export function canRoleSwitchContext(roleCodes: string[]) {
-  return roleCodes.some((roleCode) => CONTEXT_SWITCHER_ROLES.has(roleCode));
-}
-
-export function canRoleSwitchAnyWorkspace(roleCodes: string[]) {
-  return roleCodes.some((roleCode) => GLOBAL_WORKSPACE_ROLES.has(roleCode));
-}
 
 export function dataScopeWhere(scope: DataScope) {
   if (scope.isGlobal) return {};

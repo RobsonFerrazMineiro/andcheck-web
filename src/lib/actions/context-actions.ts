@@ -2,9 +2,9 @@
 
 import { AuthorizationError, getCurrentUserAccess } from "@/lib/authz";
 import {
-  canRoleSwitchAnyWorkspace,
-  canRoleSwitchContext,
+  ALL_COMPANIES_CONTEXT,
   COMPANY_CONTEXT_COOKIE,
+  getContextCapabilities,
   WORKSPACE_CONTEXT_COOKIE,
 } from "@/lib/data-scope";
 import { prisma } from "@/lib/prisma";
@@ -23,20 +23,32 @@ export async function updateActiveContext(input: {
   workspaceId: string;
 }) {
   const access = await getCurrentUserAccess();
-  if (!access || !canRoleSwitchContext(access.roleCodes)) {
+  if (!access) {
     throw new AuthorizationError("Troca de contexto nao permitida.");
   }
 
+  const capabilities = await getContextCapabilities(access);
+  if (!capabilities.canSwitchCompany && !capabilities.canSwitchWorkspace) {
+    throw new AuthorizationError("Troca de contexto nao permitida.");
+  }
+
+  const allCompaniesSelected = input.companyId === ALL_COMPANIES_CONTEXT;
+  if (allCompaniesSelected && !capabilities.canUseAllCompanies) {
+    throw new AuthorizationError("Escopo de todas as empresas nao permitido.");
+  }
+
   const [company, workspace] = await Promise.all([
-    prisma.company.findFirst({
-      where: { id: input.companyId, active: true },
-      select: { id: true },
-    }),
+    allCompaniesSelected
+      ? Promise.resolve(null)
+      : prisma.company.findFirst({
+          where: { id: input.companyId, active: true },
+          select: { id: true },
+        }),
     prisma.workspace.findFirst({
       where: {
         id: input.workspaceId,
         active: true,
-        ...(!canRoleSwitchAnyWorkspace(access.roleCodes)
+        ...(!capabilities.canSwitchWorkspace
           ? { id: access.workspaceId }
           : {}),
       },
@@ -44,11 +56,15 @@ export async function updateActiveContext(input: {
     }),
   ]);
 
-  if (!company || !workspace) {
+  if ((!allCompaniesSelected && !company) || !workspace) {
     throw new AuthorizationError("Contexto selecionado nao esta disponivel.");
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(COMPANY_CONTEXT_COOKIE, company.id, COOKIE_OPTIONS);
+  cookieStore.set(
+    COMPANY_CONTEXT_COOKIE,
+    allCompaniesSelected ? ALL_COMPANIES_CONTEXT : company!.id,
+    COOKIE_OPTIONS,
+  );
   cookieStore.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, COOKIE_OPTIONS);
 }
