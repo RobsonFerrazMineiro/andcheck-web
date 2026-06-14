@@ -41,7 +41,11 @@ export async function updateActiveContext(input: {
     allCompaniesSelected
       ? Promise.resolve(null)
       : prisma.company.findFirst({
-          where: { id: input.companyId, active: true },
+          where: {
+            id: input.companyId,
+            active: true,
+            type: "SCAFFOLD_COMPANY",
+          },
           select: { id: true },
         }),
     prisma.workspace.findFirst({

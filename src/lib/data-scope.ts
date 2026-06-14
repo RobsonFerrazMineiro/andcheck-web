@@ -89,7 +89,11 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
     const [selectedCompany, selectedWorkspace] = await Promise.all([
       selectedCompanyId && !allCompaniesSelected
         ? prisma.company.findFirst({
-            where: { id: selectedCompanyId, active: true },
+            where: {
+              id: selectedCompanyId,
+              active: true,
+              type: "SCAFFOLD_COMPANY",
+            },
             select: { id: true },
           })
         : null,
@@ -106,15 +110,14 @@ export const getDataScope = cache(async (): Promise<DataScope> => {
           })
         : null,
     ]);
+    const useAllCompanies = allCompaniesSelected || !selectedCompany;
 
     return {
       isGlobal: false,
-      companyScope: allCompaniesSelected
+      companyScope: useAllCompanies
         ? "ALL_IN_WORKSPACE"
         : "SINGLE_COMPANY",
-      companyIds: allCompaniesSelected
-        ? null
-        : [selectedCompany?.id ?? access.companyId],
+      companyIds: useAllCompanies ? null : [selectedCompany.id],
       workspaceIds: [selectedWorkspace?.id ?? access.workspaceId],
       userId: access.userId,
       actorCompanyId: access.companyId,

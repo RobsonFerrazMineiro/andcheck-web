@@ -26,7 +26,7 @@ export async function getContextSwitcherData() {
   const [companies, workspaces] = await Promise.all([
     capabilities.canSwitchCompany
       ? prisma.company.findMany({
-          where: { active: true },
+          where: { active: true, type: "SCAFFOLD_COMPANY" },
           orderBy: { name: "asc" },
           select: { id: true, name: true },
         })
