@@ -14,7 +14,6 @@ import { useEffect, useRef, useState } from "react";
 
 // ── Constantes de zoom / fallback ─────────────────────────────────────────────
 const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 13 };
-const GEO_ZOOM = 17; // zoom ao detectar localização atual
 const SAVED_ZOOM = 17; // zoom ao carregar coords já salvas
 const MAX_ZOOM = 20; // máximo suportado pelo tile ESRI
 
@@ -22,6 +21,12 @@ interface Props {
   latitude: number | null;
   longitude: number | null;
   onChange: (lat: number, lng: number) => void;
+  instruction?: string;
+  currentLocationLabel?: string;
+  height?: number;
+  defaultCenter?: { lat: number; lng: number };
+  defaultZoom?: number;
+  selectedZoom?: number;
 }
 
 type GeoState = "idle" | "loading" | "success" | "error" | "denied";
@@ -36,7 +41,17 @@ const PIN_ICON = () =>
     html: `<div style="width:28px;height:36px;display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))"><div style="width:24px;height:24px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#3b82f6;border:2.5px solid #fff;"></div><div style="width:2px;height:12px;background:#3b82f6;margin-top:-2px;border-radius:2px;"></div></div>`,
   });
 
-export function LocationPicker({ latitude, longitude, onChange }: Props) {
+export function LocationPicker({
+  latitude,
+  longitude,
+  onChange,
+  instruction = "Arraste o pin ou clique no mapa para ajustar a posição exata do andaime.",
+  currentLocationLabel = "Localização atual",
+  height = 340,
+  defaultCenter = DEFAULT_PLANT,
+  defaultZoom = DEFAULT_PLANT.zoom,
+  selectedZoom = SAVED_ZOOM,
+}: Props) {
   const [geoState, setGeoState] = useState<GeoState>("idle");
   const [mapGeoState, setMapGeoState] = useState<MapGeoState>("detecting");
 
@@ -88,7 +103,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
         onChange(lat, lng);
         setGeoState("success");
         if (mapRef.current) {
-          mapRef.current.setView([lat, lng], GEO_ZOOM);
+          mapRef.current.setView([lat, lng], selectedZoom);
           placeOrMoveMarker(mapRef.current, lat, lng);
           setMapGeoState("detected");
         }
@@ -107,9 +122,9 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
     setMapGeoState("detecting");
     setGeoState("loading");
 
-    const initLat = latitude ?? DEFAULT_PLANT.lat;
-    const initLng = longitude ?? DEFAULT_PLANT.lng;
-    const initZoom = latitude ? SAVED_ZOOM : DEFAULT_PLANT.zoom;
+    const initLat = latitude ?? defaultCenter.lat;
+    const initLng = longitude ?? defaultCenter.lng;
+    const initZoom = latitude !== null ? selectedZoom : defaultZoom;
 
     const map = L.map(containerRef.current, {
       center: [initLat, initLng],
@@ -126,7 +141,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
       { opacity: 0.7, maxZoom: MAX_ZOOM },
     ).addTo(map);
 
-    if (latitude && longitude) {
+    if (latitude !== null && longitude !== null) {
       placeOrMoveMarker(map, latitude, longitude);
       setTimeout(() => {
         setGeoState("success");
@@ -137,7 +152,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
         (pos) => {
           const { latitude: lat, longitude: lng } = pos.coords;
           if (!mapRef.current) return;
-          mapRef.current.setView([lat, lng], GEO_ZOOM);
+          mapRef.current.setView([lat, lng], selectedZoom);
           placeOrMoveMarker(mapRef.current, lat, lng);
           onChange(lat, lng);
           setGeoState("success");
@@ -172,13 +187,20 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!mapRef.current || latitude === null || longitude === null) return;
+    placeOrMoveMarker(mapRef.current, latitude, longitude);
+    mapRef.current.setView([latitude, longitude], mapRef.current.getZoom());
+    // onChange nao participa desta sincronizacao externa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latitude, longitude]);
+
   return (
     <div className="space-y-3">
       {/* Instrução + ações */}
       <div className="flex items-start justify-between gap-3">
         <p className="text-[11px] text-muted-foreground leading-relaxed">
-          Arraste o pin ou clique no mapa para ajustar a posição exata do
-          andaime.
+          {instruction}
         </p>
         <div className="flex gap-2 shrink-0">
           {hasCoords && (
@@ -203,7 +225,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
             ) : (
               <Crosshair className="w-3 h-3" />
             )}
-            Localização atual
+            {currentLocationLabel}
           </button>
         </div>
       </div>
@@ -211,7 +233,7 @@ export function LocationPicker({ latitude, longitude, onChange }: Props) {
       {/* Mapa */}
       <div
         className="border border-border rounded-md overflow-hidden relative"
-        style={{ height: 340 }}
+        style={{ height }}
       >
         {mapGeoState === "detecting" && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none">

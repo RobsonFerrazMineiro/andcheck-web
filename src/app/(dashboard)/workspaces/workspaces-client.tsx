@@ -32,9 +32,26 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+
+const LocationPicker = dynamic(
+  () =>
+    import("@/components/maps/location-picker").then(
+      (module) => module.LocationPicker,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[380px] items-center justify-center border border-border bg-muted/20 text-xs text-muted-foreground">
+        <Loader2 className="mr-2 size-4 animate-spin" />
+        Carregando mapa...
+      </div>
+    ),
+  },
+);
 
 type WorkspaceRow = {
   id: string;
@@ -211,8 +228,19 @@ export function WorkspacesClient({
               <div className="lg:col-span-2">
                 <Field label="Endereco" name="address" defaultValue={editing?.address ?? undefined} />
               </div>
-              <Field label="Latitude" name="latitude" type="number" step="any" defaultValue={editing?.latitude?.toString()} placeholder="-1.5205" />
-              <Field label="Longitude" name="longitude" type="number" step="any" defaultValue={editing?.longitude?.toString()} placeholder="-48.6278" />
+              <div className="space-y-3 lg:col-span-2">
+                <div>
+                  <Label>Localizacao da planta</Label>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Selecione no mapa a localizacao aproximada da planta operacional.
+                  </p>
+                </div>
+                <WorkspaceLocationFields
+                  key={editing?.id ?? "new-workspace"}
+                  initialLatitude={editing?.latitude ?? null}
+                  initialLongitude={editing?.longitude ?? null}
+                />
+              </div>
               <div className="space-y-1.5 lg:col-span-2">
                 <Label htmlFor="description">Descricao</Label>
                 <Textarea id="description" name="description" defaultValue={editing?.description ?? ""} placeholder="Descricao opcional da planta" />
@@ -312,6 +340,105 @@ function coordinatesLabel(latitude: number | null, longitude: number | null) {
   return latitude === null || longitude === null
     ? "Nao informadas"
     : `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+}
+
+function parseCoordinate(value: string, min: number, max: number) {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) && parsed >= min && parsed <= max
+    ? parsed
+    : null;
+}
+
+function WorkspaceLocationFields({
+  initialLatitude,
+  initialLongitude,
+}: {
+  initialLatitude: number | null;
+  initialLongitude: number | null;
+}) {
+  const [latitude, setLatitude] = useState<number | null>(initialLatitude);
+  const [longitude, setLongitude] = useState<number | null>(initialLongitude);
+  const [latitudeInput, setLatitudeInput] = useState(
+    initialLatitude?.toString() ?? "",
+  );
+  const [longitudeInput, setLongitudeInput] = useState(
+    initialLongitude?.toString() ?? "",
+  );
+
+  function updateCoordinates(lat: number, lng: number) {
+    const nextLatitude = Number(lat.toFixed(6));
+    const nextLongitude = Number(lng.toFixed(6));
+    setLatitude(nextLatitude);
+    setLongitude(nextLongitude);
+    setLatitudeInput(nextLatitude.toString());
+    setLongitudeInput(nextLongitude.toString());
+  }
+
+  function updateLatitude(value: string) {
+    setLatitudeInput(value);
+    setLatitude(parseCoordinate(value, -90, 90));
+  }
+
+  function updateLongitude(value: string) {
+    setLongitudeInput(value);
+    setLongitude(parseCoordinate(value, -180, 180));
+  }
+
+  return (
+    <div className="space-y-3">
+      <input
+        type="hidden"
+        name="latitude"
+        value={latitude !== null && longitude !== null ? latitude : ""}
+      />
+      <input
+        type="hidden"
+        name="longitude"
+        value={latitude !== null && longitude !== null ? longitude : ""}
+      />
+      <LocationPicker
+        latitude={latitude}
+        longitude={longitude}
+        onChange={updateCoordinates}
+        instruction="Clique no mapa ou arraste o pin para ajustar a localizacao aproximada da planta operacional."
+        currentLocationLabel="Usar localizacao atual"
+        height={380}
+        defaultCenter={{ lat: -1.536, lng: -48.752 }}
+        defaultZoom={14}
+        selectedZoom={17}
+      />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor="latitude">Latitude</Label>
+          <Input
+            id="latitude"
+            type="number"
+            step="any"
+            value={latitudeInput}
+            onChange={(event) => updateLatitude(event.target.value)}
+            placeholder="-1.5205"
+            className="font-mono"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="longitude">Longitude</Label>
+          <Input
+            id="longitude"
+            type="number"
+            step="any"
+            value={longitudeInput}
+            onChange={(event) => updateLongitude(event.target.value)}
+            placeholder="-48.6278"
+            className="font-mono"
+          />
+        </div>
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Coordenadas opcionais. Os campos acima podem ser usados para ajuste tecnico fino.
+      </p>
+    </div>
+  );
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: typeof Factory; label: string; value: number }) {
