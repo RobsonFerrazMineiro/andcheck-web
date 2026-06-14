@@ -2,7 +2,9 @@ import { auth } from "@/auth";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
+import { DesktopContextSwitcher } from "@/components/layout/context-switcher";
 import { canCurrentUser, requireAnyPermission } from "@/lib/authz";
+import { getContextSwitcherData } from "@/lib/context-switcher";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -17,44 +19,70 @@ export default async function DashboardLayout({
   const user = session?.user;
   await requireAnyPermission(["read.all", "read.own_company"]);
 
-  const canManageUsers =
-    (await canCurrentUser("users.manage_company")) ||
-    (await canCurrentUser("users.create"));
+  const [
+    contextSwitcher,
+    canManageCompanyUsers,
+    canCreateUsers,
+    canViewAuditLog,
+    canViewLogs,
+    canManagePermissions,
+    canViewNonConformities,
+    canCreateNonConformities,
+    canUpdateNonConformities,
+    canCloseNonConformities,
+    canAddNonConformityEvidence,
+  ] = await Promise.all([
+    getContextSwitcherData(),
+    canCurrentUser("users.manage_company"),
+    canCurrentUser("users.create"),
+    canCurrentUser("audit.view"),
+    canCurrentUser("logs.view"),
+    canCurrentUser("permissions.manage"),
+    canCurrentUser("non_conformities.view"),
+    canCurrentUser("non_conformities.create"),
+    canCurrentUser("non_conformities.update"),
+    canCurrentUser("non_conformities.close"),
+    canCurrentUser("non_conformities.add_evidence"),
+  ]);
+
+  const canManageUsers = canManageCompanyUsers || canCreateUsers;
   const canViewAudit =
-    (await canCurrentUser("audit.view")) ||
-    (await canCurrentUser("logs.view")) ||
-    (await canCurrentUser("permissions.manage"));
-  const canViewNonConformities =
-    (await canCurrentUser("non_conformities.view")) ||
-    (await canCurrentUser("non_conformities.create")) ||
-    (await canCurrentUser("non_conformities.update")) ||
-    (await canCurrentUser("non_conformities.close")) ||
-    (await canCurrentUser("non_conformities.add_evidence"));
+    canViewAuditLog || canViewLogs || canManagePermissions;
+  const canAccessNonConformities =
+    canViewNonConformities ||
+    canCreateNonConformities ||
+    canUpdateNonConformities ||
+    canCloseNonConformities ||
+    canAddNonConformityEvidence;
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar
         canManageUsers={canManageUsers}
         canViewAudit={canViewAudit}
-        canViewNonConformities={canViewNonConformities}
+        canViewNonConformities={canAccessNonConformities}
       />
       <MobileHeader
         canManageUsers={canManageUsers}
         canViewAudit={canViewAudit}
-        canViewNonConformities={canViewNonConformities}
+        canViewNonConformities={canAccessNonConformities}
+        context={contextSwitcher}
       />
 
       <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
         {/* Topbar — apenas desktop */}
         <div className="hidden lg:flex items-center justify-between bg-card border-b border-border px-6 py-2.5 shrink-0">
-          <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-green-500" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-              Sistema operacional
-            </span>
-          </div>
+          {contextSwitcher && (
+            <DesktopContextSwitcher context={contextSwitcher} />
+          )}
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-green-500" />
+              <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">
+                Operacional
+              </span>
+            </div>
+            <div className="hidden items-center gap-4 2xl:flex">
               {NORMS.map((n) => (
                 <span
                   key={n}

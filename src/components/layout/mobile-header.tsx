@@ -2,6 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  MobileContextSwitcher,
+  type ContextSwitcherData,
+} from "@/components/layout/context-switcher";
+import {
   ClipboardCheck,
   ClipboardList,
   Construction,
@@ -31,10 +35,12 @@ export function MobileHeader({
   canManageUsers = false,
   canViewAudit = false,
   canViewNonConformities = false,
+  context,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
+  context: ContextSwitcherData | null;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -70,6 +76,8 @@ export function MobileHeader({
             </span>
           </div>
         </Link>
+
+        {context && <MobileContextSwitcher context={context} />}
 
         <Button
           variant="ghost"

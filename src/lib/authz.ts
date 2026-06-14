@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 export class AuthorizationError extends Error {
   constructor(message = "Voce nao tem permissao para executar esta acao.") {
@@ -21,7 +22,7 @@ export async function getCurrentUserAccess() {
   return state.access;
 }
 
-async function getCurrentUserAccessState() {
+const getCurrentUserAccessState = cache(async () => {
   const session = await auth();
   const sessionUser = session?.user as
     | { id?: string; email?: string | null; role?: string | null }
@@ -64,7 +65,7 @@ async function getCurrentUserAccessState() {
       workspaceId: user.workspaceId,
     },
   };
-}
+});
 
 export async function canCurrentUser(permission: PermissionCode) {
   const access = await getCurrentUserAccess();

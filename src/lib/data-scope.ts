@@ -1,6 +1,20 @@
-import { AuthorizationError, getCurrentUserAccess } from "@/lib/authz";
+import "server-only";
 
-const WORKSPACE_WIDE_ROLES = new Set(["HSE_HYDRO", "HSE_GERENCIADORA"]);
+import { AuthorizationError, getCurrentUserAccess } from "@/lib/authz";
+import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
+import { cache } from "react";
+
+const CONTEXT_SWITCHER_ROLES = new Set([
+  "SUPER_ADMIN",
+  "HSE_HYDRO",
+  "HSE_GERENCIADORA",
+]);
+
+const GLOBAL_WORKSPACE_ROLES = new Set(["SUPER_ADMIN"]);
+
+export const COMPANY_CONTEXT_COOKIE = "andcheck_company_context";
+export const WORKSPACE_CONTEXT_COOKIE = "andcheck_workspace_context";
 
 export const COMPANY_SCOPED_ROLE_CODES = [
   "ADMIN_EMPRESA",
@@ -25,33 +39,70 @@ type ScopedRecord = {
   workspaceId: string;
 };
 
-export async function getDataScope(): Promise<DataScope> {
+export const getDataScope = cache(async (): Promise<DataScope> => {
   const access = await getCurrentUserAccess();
   if (!access) throw new AuthorizationError("Usuario nao autenticado.");
 
-  if (access.roleCodes.includes("SUPER_ADMIN")) {
+  const canSwitchContext = access.roleCodes.some((roleCode) =>
+    CONTEXT_SWITCHER_ROLES.has(roleCode),
+  );
+
+  if (canSwitchContext) {
+    const cookieStore = await cookies();
+    const selectedCompanyId = cookieStore.get(COMPANY_CONTEXT_COOKIE)?.value;
+    const selectedWorkspaceId = cookieStore.get(
+      WORKSPACE_CONTEXT_COOKIE,
+    )?.value;
+    const canSwitchAnyWorkspace = access.roleCodes.some((roleCode) =>
+      GLOBAL_WORKSPACE_ROLES.has(roleCode),
+    );
+    const [selectedCompany, selectedWorkspace] = await Promise.all([
+      selectedCompanyId
+        ? prisma.company.findFirst({
+            where: { id: selectedCompanyId, active: true },
+            select: { id: true },
+          })
+        : null,
+      selectedWorkspaceId
+        ? prisma.workspace.findFirst({
+            where: {
+              id: selectedWorkspaceId,
+              active: true,
+              ...(!canSwitchAnyWorkspace
+                ? { id: access.workspaceId }
+                : {}),
+            },
+            select: { id: true },
+          })
+        : null,
+    ]);
+
     return {
-      isGlobal: true,
-      companyIds: null,
-      workspaceIds: null,
+      isGlobal: false,
+      companyIds: [selectedCompany?.id ?? access.companyId],
+      workspaceIds: [selectedWorkspace?.id ?? access.workspaceId],
       userId: access.userId,
       actorCompanyId: access.companyId,
       actorWorkspaceId: access.workspaceId,
     };
   }
 
-  const hasWorkspaceWideAccess = access.roleCodes.some((roleCode) =>
-    WORKSPACE_WIDE_ROLES.has(roleCode),
-  );
-
   return {
     isGlobal: false,
-    companyIds: hasWorkspaceWideAccess ? null : [access.companyId],
+    companyIds: [access.companyId],
     workspaceIds: [access.workspaceId],
     userId: access.userId,
     actorCompanyId: access.companyId,
     actorWorkspaceId: access.workspaceId,
   };
+});
+
+export function canRoleSwitchContext(roleCodes: string[]) {
+  return roleCodes.some((roleCode) => CONTEXT_SWITCHER_ROLES.has(roleCode));
+}
+
+export function canRoleSwitchAnyWorkspace(roleCodes: string[]) {
+  return roleCodes.some((roleCode) => GLOBAL_WORKSPACE_ROLES.has(roleCode));
 }
 
 export function dataScopeWhere(scope: DataScope) {
