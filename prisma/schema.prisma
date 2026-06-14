@@ -65,6 +65,7 @@ enum DocumentType {
 
 enum AuditEntityType {
   COMPANY
+  WORKSPACE
   SCAFFOLD
   INSPECTION
   DOCUMENT
@@ -81,6 +82,10 @@ enum AuditAction {
   COMPANY_UPDATED
   COMPANY_ACTIVATED
   COMPANY_DEACTIVATED
+  WORKSPACE_CREATED
+  WORKSPACE_UPDATED
+  WORKSPACE_ACTIVATED
+  WORKSPACE_DEACTIVATED
   CREATE
   UPDATE
   DELETE
@@ -170,6 +175,7 @@ model Workspace {
   address        String?
   latitude       Float?
   longitude      Float?
+  description    String?
   active         Boolean  @default(true)
   ownerCompany   Company  @relation("WorkspaceOwner", fields: [ownerCompanyId], references: [id], onDelete: Restrict)
   ownerCompanyId String

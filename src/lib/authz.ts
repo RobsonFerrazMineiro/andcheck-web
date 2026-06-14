@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -84,6 +85,7 @@ export async function requirePermission(permission: PermissionCode) {
     )
   ) {
     await assertActiveCompanyForCreation(permission, state.access.companyId);
+    await assertActiveWorkspaceForCreation(permission);
     return;
   }
 
@@ -95,6 +97,11 @@ export async function requirePermission(permission: PermissionCode) {
 
 const COMPANY_ACTIVE_CREATION_PERMISSIONS = new Set<PermissionCode>([
   "users.create",
+  "scaffolds.create",
+  "inspections.create",
+]);
+
+const WORKSPACE_ACTIVE_CREATION_PERMISSIONS = new Set<PermissionCode>([
   "scaffolds.create",
   "inspections.create",
 ]);
@@ -122,6 +129,31 @@ export async function assertActiveCompanyForCreation(
   }
 }
 
+export async function assertActiveWorkspaceForCreation(
+  permission: PermissionCode,
+  workspaceId?: string,
+) {
+  if (!WORKSPACE_ACTIVE_CREATION_PERMISSIONS.has(permission)) return;
+
+  const resolvedWorkspaceId =
+    workspaceId ??
+    (await cookies()).get("andcheck_workspace_context")?.value ??
+    (await getCurrentUserAccess())?.workspaceId;
+  if (!resolvedWorkspaceId) {
+    throw new AuthorizationError("Usuario nao autenticado.");
+  }
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: resolvedWorkspaceId },
+    select: { active: true },
+  });
+  if (!workspace?.active) {
+    throw new AuthorizationError(
+      "Workspace inativo. Novas operacoes nao sao permitidas.",
+    );
+  }
+}
+
 export async function requireAnyPermission(permissions: PermissionCode[]) {
   const state = await getCurrentUserAccessState();
   const access = state.access;
@@ -131,6 +163,12 @@ export async function requireAnyPermission(permissions: PermissionCode[]) {
       access.roleCodes.some((roleCode) => roleHasPermission(roleCode, permission)),
     )
   ) {
+    const creationPermission = permissions.find((permission) =>
+      WORKSPACE_ACTIVE_CREATION_PERMISSIONS.has(permission),
+    );
+    if (creationPermission) {
+      await assertActiveWorkspaceForCreation(creationPermission);
+    }
     return;
   }
 

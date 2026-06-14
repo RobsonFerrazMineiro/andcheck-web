@@ -8,6 +8,7 @@ import {
   FileClock,
   LayoutDashboard,
   Map,
+  MapPinned,
   Shield,
   Building2,
   Users,
@@ -67,6 +68,12 @@ const adminItems = [
     icon: Building2,
     desc: "Cadastro corporativo",
   },
+  {
+    path: "/workspaces",
+    label: "Workspaces",
+    icon: MapPinned,
+    desc: "Plantas operacionais",
+  },
 ];
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
@@ -76,11 +83,13 @@ export function Sidebar({
   canViewAudit = false,
   canViewNonConformities = false,
   canViewCompanies = false,
+  canViewWorkspaces = false,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
   canViewCompanies?: boolean;
+  canViewWorkspaces?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -176,12 +185,15 @@ export function Sidebar({
         })}
       </nav>
 
-      {canViewCompanies && (
+      {(canViewCompanies || canViewWorkspaces) && (
         <div className="px-2 pb-4">
           <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">
             Administracao
           </p>
-          {adminItems.map((item) => {
+          {adminItems
+            .filter((item) => item.path !== "/empresas" || canViewCompanies)
+            .filter((item) => item.path !== "/workspaces" || canViewWorkspaces)
+            .map((item) => {
             const active = isActive(item.path);
             return (
               <Link

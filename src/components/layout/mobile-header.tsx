@@ -12,6 +12,7 @@ import {
   FileClock,
   LayoutDashboard,
   Map,
+  MapPinned,
   Menu,
   Shield,
   Users,
@@ -31,6 +32,7 @@ const navItems = [
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
   { path: "/empresas", label: "Empresas", icon: Building2 },
+  { path: "/workspaces", label: "Workspaces", icon: MapPinned },
 ];
 
 export function MobileHeader({
@@ -38,12 +40,14 @@ export function MobileHeader({
   canViewAudit = false,
   canViewNonConformities = false,
   canViewCompanies = false,
+  canViewWorkspaces = false,
   context,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
   canViewCompanies?: boolean;
+  canViewWorkspaces?: boolean;
   context: ContextSwitcherData | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -99,6 +103,7 @@ export function MobileHeader({
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
             .filter((item) => item.path !== "/auditoria" || canViewAudit)
             .filter((item) => item.path !== "/empresas" || canViewCompanies)
+            .filter((item) => item.path !== "/workspaces" || canViewWorkspaces)
             .filter(
               (item) =>
                 item.path !== "/nao-conformidades" || canViewNonConformities,

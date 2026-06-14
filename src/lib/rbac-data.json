@@ -19,6 +19,7 @@
     { "code": "companies.manage", "name": "Manage companies" },
     { "code": "companies.view", "name": "View companies" },
     { "code": "workspaces.manage", "name": "Manage workspaces" },
+    { "code": "workspaces.view", "name": "View workspaces" },
     { "code": "signature_policies.manage", "name": "Manage signature policies" },
     { "code": "permissions.manage", "name": "Manage permissions" },
     { "code": "scaffolds.create", "name": "Create scaffolds" },
@@ -46,6 +47,7 @@
     "SUPER_ADMIN": ["*"],
     "HSE_HYDRO": [
       "companies.view",
+      "workspaces.view",
       "inspections.create",
       "inspections.finalize",
       "scaffolds.release",

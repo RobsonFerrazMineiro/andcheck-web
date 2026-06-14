@@ -32,6 +32,7 @@ export default async function DashboardLayout({
     canCloseNonConformities,
     canAddNonConformityEvidence,
     canViewCompanies,
+    canViewWorkspaces,
   ] = await Promise.all([
     getContextSwitcherData(),
     canCurrentUser("users.manage_company"),
@@ -45,6 +46,7 @@ export default async function DashboardLayout({
     canCurrentUser("non_conformities.close"),
     canCurrentUser("non_conformities.add_evidence"),
     canCurrentUser("companies.view"),
+    canCurrentUser("workspaces.view"),
   ]);
 
   const canManageUsers = canManageCompanyUsers || canCreateUsers;
@@ -64,12 +66,14 @@ export default async function DashboardLayout({
         canViewAudit={canViewAudit}
         canViewNonConformities={canAccessNonConformities}
         canViewCompanies={canViewCompanies || canManagePermissions}
+        canViewWorkspaces={canViewWorkspaces || canManagePermissions}
       />
       <MobileHeader
         canManageUsers={canManageUsers}
         canViewAudit={canViewAudit}
         canViewNonConformities={canAccessNonConformities}
         canViewCompanies={canViewCompanies || canManagePermissions}
+        canViewWorkspaces={canViewWorkspaces || canManagePermissions}
         context={contextSwitcher}
       />
 
