@@ -17,6 +17,7 @@
     { "code": "users.reset_password", "name": "Reset user password" },
     { "code": "users.manage_company", "name": "Manage company users" },
     { "code": "companies.manage", "name": "Manage companies" },
+    { "code": "companies.view", "name": "View companies" },
     { "code": "workspaces.manage", "name": "Manage workspaces" },
     { "code": "signature_policies.manage", "name": "Manage signature policies" },
     { "code": "permissions.manage", "name": "Manage permissions" },
@@ -44,6 +45,7 @@
   "rolePermissions": {
     "SUPER_ADMIN": ["*"],
     "HSE_HYDRO": [
+      "companies.view",
       "inspections.create",
       "inspections.finalize",
       "scaffolds.release",

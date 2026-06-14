@@ -15,6 +15,7 @@ import {
   Menu,
   Shield,
   Users,
+  Building2,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,17 +30,20 @@ const navItems = [
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
+  { path: "/empresas", label: "Empresas", icon: Building2 },
 ];
 
 export function MobileHeader({
   canManageUsers = false,
   canViewAudit = false,
   canViewNonConformities = false,
+  canViewCompanies = false,
   context,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
+  canViewCompanies?: boolean;
   context: ContextSwitcherData | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -94,6 +98,7 @@ export function MobileHeader({
           {navItems
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
             .filter((item) => item.path !== "/auditoria" || canViewAudit)
+            .filter((item) => item.path !== "/empresas" || canViewCompanies)
             .filter(
               (item) =>
                 item.path !== "/nao-conformidades" || canViewNonConformities,

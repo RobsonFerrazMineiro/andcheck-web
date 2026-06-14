@@ -64,6 +64,7 @@ enum DocumentType {
 }
 
 enum AuditEntityType {
+  COMPANY
   SCAFFOLD
   INSPECTION
   DOCUMENT
@@ -76,6 +77,10 @@ enum AuditEntityType {
 }
 
 enum AuditAction {
+  COMPANY_CREATED
+  COMPANY_UPDATED
+  COMPANY_ACTIVATED
+  COMPANY_DEACTIVATED
   CREATE
   UPDATE
   DELETE
@@ -126,14 +131,19 @@ enum CompanyType {
 }
 
 model Company {
-  id        String      @id @default(cuid())
-  name      String      @unique
-  tradeName String?
-  cnpj      String?     @unique
-  type      CompanyType
-  active    Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  name        String      @unique
+  code        String      @unique
+  tradeName   String?
+  cnpj        String?     @unique
+  type        CompanyType
+  active      Boolean     @default(true)
+  description String?
+  logoUrl     String?
+  workspace   Workspace   @relation("CompanyWorkspace", fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   ownedWorkspaces            Workspace[]                 @relation("WorkspaceOwner")
   users                      User[]
@@ -147,6 +157,7 @@ model Company {
   inspectionSignatures       InspectionSignature[]
 
   @@index([type, active])
+  @@index([workspaceId, active])
   @@map("companies")
 }
 
@@ -174,6 +185,7 @@ model Workspace {
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
+  companies                  Company[]                   @relation("CompanyWorkspace")
 
   @@index([ownerCompanyId, active])
   @@map("workspaces")

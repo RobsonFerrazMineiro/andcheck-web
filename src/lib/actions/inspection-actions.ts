@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { sanitizeForLog } from "@/lib/safe-log";
-import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
+import {
+  assertActiveCompanyForCreation,
+  getCurrentUserAccess,
+  requireAnyPermission,
+} from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
@@ -386,6 +390,7 @@ export async function createInspection(data: {
   }[];
 }) {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  await assertActiveCompanyForCreation("inspections.create");
   const scope = await getDataScope();
   const oldScaffold = await prisma.scaffold.findUnique({
     where: { id: data.scaffold_id },

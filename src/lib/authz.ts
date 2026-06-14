@@ -83,6 +83,7 @@ export async function requirePermission(permission: PermissionCode) {
       roleHasPermission(roleCode, permission),
     )
   ) {
+    await assertActiveCompanyForCreation(permission, state.access.companyId);
     return;
   }
 
@@ -90,6 +91,35 @@ export async function requirePermission(permission: PermissionCode) {
   if (state.status === "unauthenticated") redirect("/login");
 
   throw new AuthorizationError();
+}
+
+const COMPANY_ACTIVE_CREATION_PERMISSIONS = new Set<PermissionCode>([
+  "users.create",
+  "scaffolds.create",
+  "inspections.create",
+]);
+
+export async function assertActiveCompanyForCreation(
+  permission: PermissionCode,
+  companyId?: string,
+) {
+  if (!COMPANY_ACTIVE_CREATION_PERMISSIONS.has(permission)) return;
+
+  const resolvedCompanyId =
+    companyId ?? (await getCurrentUserAccess())?.companyId;
+  if (!resolvedCompanyId) {
+    throw new AuthorizationError("Usuario nao autenticado.");
+  }
+
+  const company = await prisma.company.findUnique({
+    where: { id: resolvedCompanyId },
+    select: { active: true },
+  });
+  if (!company?.active) {
+    throw new AuthorizationError(
+      "Empresa inativa. Novas operacoes nao sao permitidas.",
+    );
+  }
 }
 
 export async function requireAnyPermission(permissions: PermissionCode[]) {

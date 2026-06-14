@@ -18,24 +18,24 @@ const DEFAULT_COMPANY_ID = 'company-hydro-alunorte';
 const DEFAULT_WORKSPACE_ID = 'workspace-hydro-murucupi';
 
 const companies = [
-  { id: DEFAULT_COMPANY_ID, name: 'Hydro Alunorte', type: 'CLIENT' },
-  { id: 'company-tuv-rheinland', name: 'TÜV Rheinland', type: 'HSE_MANAGER' },
-  { id: 'company-arcadis', name: 'Arcadis', type: 'HSE_MANAGER' },
-  { id: 'company-bloson', name: 'Bloson', type: 'HSE_MANAGER' },
-  { id: 'company-araujo', name: 'Araújo', type: 'HSE_MANAGER' },
-  { id: 'company-kw-brasil', name: 'KW Brasil', type: 'SCAFFOLD_COMPANY' },
-  { id: 'company-superus', name: 'Superus', type: 'SCAFFOLD_COMPANY' },
-  { id: 'company-montisol', name: 'Montisol', type: 'SCAFFOLD_COMPANY' },
-  { id: 'company-omega', name: 'Omega', type: 'SCAFFOLD_COMPANY' },
-  { id: 'company-montcalm', name: 'Montcalm', type: 'SCAFFOLD_COMPANY' },
+  { id: DEFAULT_COMPANY_ID, name: 'Hydro Alunorte', code: 'HYD', type: 'CLIENT' },
+  { id: 'company-tuv-rheinland', name: 'TÜV Rheinland', code: 'TUV', type: 'HSE_MANAGER' },
+  { id: 'company-arcadis', name: 'Arcadis', code: 'ARC', type: 'HSE_MANAGER' },
+  { id: 'company-bloson', name: 'Bloson', code: 'BLO', type: 'HSE_MANAGER' },
+  { id: 'company-araujo', name: 'Araújo', code: 'ARA', type: 'HSE_MANAGER' },
+  { id: 'company-kw-brasil', name: 'KW Brasil', code: 'KWB', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-superus', name: 'Superus', code: 'SUP', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-montisol', name: 'Montisol', code: 'MON', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-omega', name: 'Omega', code: 'OME', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-montcalm', name: 'Montcalm', code: 'MTC', type: 'SCAFFOLD_COMPANY' },
 ];
 
 async function seedMultiCompanyFoundation() {
   for (const company of companies) {
     await prisma.company.upsert({
       where: { name: company.name },
-      update: { type: company.type, active: true },
-      create: { ...company, active: true },
+      update: { code: company.code, type: company.type, workspaceId: DEFAULT_WORKSPACE_ID, active: true },
+      create: { ...company, workspaceId: DEFAULT_WORKSPACE_ID, active: true },
     });
   }
 

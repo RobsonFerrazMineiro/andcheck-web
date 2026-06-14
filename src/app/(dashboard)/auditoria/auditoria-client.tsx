@@ -50,6 +50,10 @@ type Filters = {
 };
 
 const ACTION_LABELS: Record<string, string> = {
+  COMPANY_CREATED: "Criou empresa",
+  COMPANY_UPDATED: "Atualizou empresa",
+  COMPANY_ACTIVATED: "Ativou empresa",
+  COMPANY_DEACTIVATED: "Desativou empresa",
   CREATE: "Criou",
   UPDATE: "Atualizou",
   DELETE: "Removeu",
@@ -66,6 +70,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 const ENTITY_LABELS: Record<string, string> = {
+  COMPANY: "Empresa",
   USER: "Usuario",
   SCAFFOLD: "Andaime",
   INSPECTION: "Inspecao",
@@ -78,6 +83,7 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 const ENTITY_ARTICLES: Record<string, string> = {
+  COMPANY: "a empresa",
   USER: "o usuario",
   SCAFFOLD: "o andaime",
   INSPECTION: "a inspecao",
@@ -305,6 +311,14 @@ function friendlyDescription(row: AuditRow) {
   const entity = ENTITY_ARTICLES[row.entityType] ?? "o registro";
 
   switch (row.action) {
+    case "COMPANY_CREATED":
+      return `${actor} criou a empresa ${entityLabel}.`;
+    case "COMPANY_UPDATED":
+      return `${actor} atualizou a empresa ${entityLabel}.`;
+    case "COMPANY_ACTIVATED":
+      return `${actor} ativou a empresa ${entityLabel}.`;
+    case "COMPANY_DEACTIVATED":
+      return `${actor} desativou a empresa ${entityLabel}.`;
     case "CREATE":
       return `${actor} criou ${entity} ${entityLabel}.`;
     case "UPDATE":

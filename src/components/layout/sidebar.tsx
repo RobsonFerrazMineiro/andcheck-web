@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Map,
   Shield,
+  Building2,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -59,16 +60,27 @@ const navItems = [
   },
 ];
 
+const adminItems = [
+  {
+    path: "/empresas",
+    label: "Empresas",
+    icon: Building2,
+    desc: "Cadastro corporativo",
+  },
+];
+
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 
 export function Sidebar({
   canManageUsers = false,
   canViewAudit = false,
   canViewNonConformities = false,
+  canViewCompanies = false,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
+  canViewCompanies?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -163,6 +175,38 @@ export function Sidebar({
           );
         })}
       </nav>
+
+      {canViewCompanies && (
+        <div className="px-2 pb-4">
+          <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">
+            Administracao
+          </p>
+          {adminItems.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`relative flex items-center gap-2.5 px-2.5 py-2.5 text-sm font-medium transition-all ${
+                  active
+                    ? "bg-sidebar-primary/90 text-white"
+                    : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                }`}
+              >
+                {active && <div className="absolute inset-y-0 left-0 w-0.5 bg-sidebar-primary" />}
+                <item.icon className="size-4 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-semibold leading-tight">{item.label}</p>
+                  <p className={`text-[9px] leading-tight tracking-wide ${active ? "text-white/50" : "text-sidebar-foreground/30"}`}>
+                    {item.desc}
+                  </p>
+                </div>
+                {active && <ChevronRight className="size-3 shrink-0 text-white/40" />}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* Normas referenciadas */}
       <div className="mx-3 mb-3 border border-sidebar-border/40 bg-sidebar-accent/30 p-3">
