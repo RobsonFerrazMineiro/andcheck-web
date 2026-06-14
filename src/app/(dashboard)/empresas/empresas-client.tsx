@@ -30,10 +30,17 @@ type CompanyRow = {
 };
 
 const TYPE_LABELS: Record<CompanyType, string> = {
-  CLIENT: "Cliente",
+  CLIENT: "Cliente / Contratante",
   HSE_MANAGER: "Gerenciadora HSE",
   SCAFFOLD_COMPANY: "Empresa de andaimes",
   CONTRACTOR: "Contratada",
+};
+
+const TYPE_BADGE_STYLES: Record<CompanyType, string> = {
+  CLIENT: "border-blue-200 bg-blue-50 text-blue-700",
+  HSE_MANAGER: "border-violet-200 bg-violet-50 text-violet-700",
+  SCAFFOLD_COMPANY: "border-amber-200 bg-amber-50 text-amber-700",
+  CONTRACTOR: "border-slate-200 bg-slate-100 text-slate-600",
 };
 
 const FORM_TYPE_OPTIONS: Array<[string, string]> = [
@@ -72,6 +79,17 @@ export function EmpresasClient({
   const activeCount = initialCompanies.filter((company) => company.active).length;
   const totalUsers = initialCompanies.reduce((sum, company) => sum + company.users, 0);
   const totalScaffolds = initialCompanies.reduce((sum, company) => sum + company.scaffolds, 0);
+  const typeCounts = useMemo(
+    () =>
+      initialCompanies.reduce<Record<CompanyType, number>>(
+        (counts, company) => ({
+          ...counts,
+          [company.type]: counts[company.type] + 1,
+        }),
+        { CLIENT: 0, HSE_MANAGER: 0, SCAFFOLD_COMPANY: 0, CONTRACTOR: 0 },
+      ),
+    [initialCompanies],
+  );
 
   function submit(formData: FormData) {
     startTransition(async () => {
@@ -148,13 +166,31 @@ export function EmpresasClient({
         </Card>
       )}
 
-      <div className="grid gap-3 border border-border bg-card p-3 md:grid-cols-[1fr_190px_190px]">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, codigo ou workspace" className="pl-8" />
+      <div className="space-y-3 border border-border bg-card p-3">
+        <div className="flex flex-wrap gap-2" aria-label="Filtros rapidos por tipo de empresa">
+          <TypeFilterButton
+            active={type === "all"}
+            label="Todas"
+            count={initialCompanies.length}
+            onClick={() => setType("all")}
+          />
+          {FORM_TYPE_OPTIONS.map(([value, label]) => (
+            <TypeFilterButton
+              key={value}
+              active={type === value}
+              label={label}
+              count={typeCounts[value as CompanyType]}
+              onClick={() => setType(value)}
+            />
+          ))}
         </div>
-        <FilterSelect value={type} onValueChange={setType} placeholder="Todos os tipos" options={Object.entries(TYPE_LABELS)} />
-        <FilterSelect value={status} onValueChange={setStatus} placeholder="Todos os status" options={[["active", "Ativas"], ["inactive", "Inativas"]]} />
+        <div className="grid gap-3 md:grid-cols-[1fr_190px]">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, codigo ou workspace" className="pl-8" />
+          </div>
+          <FilterSelect value={status} onValueChange={setStatus} placeholder="Todos os status" options={[["active", "Ativas"], ["inactive", "Inativas"]]} />
+        </div>
       </div>
 
       <div className="overflow-hidden border border-border bg-card">
@@ -169,7 +205,7 @@ export function EmpresasClient({
               <p className="truncate text-xs font-bold">{company.name}</p>
               <p className="font-mono text-[10px] text-muted-foreground">{company.code}</p>
             </div>
-            <Badge variant="outline" className="hidden w-fit rounded-none text-[9px] lg:inline-flex">{TYPE_LABELS[company.type]}</Badge>
+            <Badge variant="outline" className={`hidden w-fit rounded-none text-[9px] lg:inline-flex ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
             <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{company.workspaceName}</p>
             <p className="hidden font-mono text-xs lg:block">{company.users}</p>
             <p className="hidden font-mono text-xs lg:block">{company.scaffolds}</p>
@@ -201,6 +237,26 @@ function SelectField({ label, name, defaultValue, options }: { label: string; na
 
 function FilterSelect({ value, onValueChange, placeholder, options }: { value: string; onValueChange: (value: string) => void; placeholder: string; options: Array<[string, string]> }) {
   return <Select value={value} onValueChange={onValueChange}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{placeholder}</SelectItem>{options.map(([optionValue, label]) => <SelectItem key={optionValue} value={optionValue}>{label}</SelectItem>)}</SelectContent></Select>;
+}
+
+function TypeFilterButton({ active, label, count, onClick }: { active: boolean; label: string; count: number; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+      }`}
+    >
+      {label}
+      <span className={`font-mono text-[9px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+        {count}
+      </span>
+    </button>
+  );
 }
 
 function StatusBadge({ active }: { active: boolean }) {
