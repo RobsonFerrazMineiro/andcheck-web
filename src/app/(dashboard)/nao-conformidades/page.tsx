@@ -11,7 +11,7 @@ export default async function NaoConformidadesPage() {
     description: nc.description,
     classification: nc.classification,
     status: nc.status,
-    companyId: nc.companyId,
+    companyId: nc.tenantCompany.name,
     dueDate: nc.dueDate ? nc.dueDate.toISOString() : null,
     closedAt: nc.closedAt ? nc.closedAt.toISOString() : null,
     createdAt: nc.createdAt.toISOString(),

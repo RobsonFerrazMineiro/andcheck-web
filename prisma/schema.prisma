@@ -118,6 +118,67 @@ enum NonConformityEvidenceType {
   OTHER
 }
 
+enum CompanyType {
+  CONTRACTOR
+  HSE_MANAGER
+  SCAFFOLD_COMPANY
+  CLIENT
+}
+
+model Company {
+  id        String      @id @default(cuid())
+  name      String      @unique
+  tradeName String?
+  cnpj      String?     @unique
+  type      CompanyType
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  ownedWorkspaces            Workspace[]                 @relation("WorkspaceOwner")
+  users                      User[]
+  scaffolds                  Scaffold[]
+  inspections                Inspection[]
+  nonConformities            NonConformity[]
+  auditLogs                  AuditLog[]
+  scaffoldDocuments          ScaffoldDocument[]
+  nonConformityEvidences     NonConformityEvidence[]
+  nonConformityItemEvidences NonConformityItemEvidence[]
+  inspectionSignatures       InspectionSignature[]
+
+  @@index([type, active])
+  @@map("companies")
+}
+
+model Workspace {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  code           String   @unique
+  city           String?
+  state          String?
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  active         Boolean  @default(true)
+  ownerCompany   Company  @relation("WorkspaceOwner", fields: [ownerCompanyId], references: [id], onDelete: Restrict)
+  ownerCompanyId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  users                      User[]
+  scaffolds                  Scaffold[]
+  inspections                Inspection[]
+  nonConformities            NonConformity[]
+  auditLogs                  AuditLog[]
+  scaffoldDocuments          ScaffoldDocument[]
+  nonConformityEvidences     NonConformityEvidence[]
+  nonConformityItemEvidences NonConformityItemEvidence[]
+  inspectionSignatures       InspectionSignature[]
+
+  @@index([ownerCompanyId, active])
+  @@map("workspaces")
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Scaffold
 // ──────────────────────────────────────────────────────────────────────────────
@@ -146,6 +207,11 @@ model Scaffold {
   longitude            Float?
   location_description String?
 
+  tenantCompany Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId     String    @default("company-hydro-alunorte")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId   String    @default("workspace-hydro-murucupi")
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -153,6 +219,9 @@ model Scaffold {
   documents       ScaffoldDocument[]
   nonConformities NonConformity[]
 
+  @@index([companyId])
+  @@index([workspaceId])
+  @@index([workspaceId, companyId])
   @@map("scaffolds")
 }
 
@@ -161,21 +230,27 @@ model Scaffold {
 // ──────────────────────────────────────────────────────────────────────────────
 
 model ScaffoldDocument {
-  id          String       @id @default(cuid())
-  scaffold    Scaffold     @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
-  scaffold_id String
-  type        DocumentType
-  title       String
-  file_url    String // referencia do arquivo no storage
-  file_name   String
-  file_size   Int? // bytes
-  mime_type   String?
-  uploaded_by String // nome do responsável
-  expires_at  DateTime? // data de validade/revisão (opcional)
-  observation String?
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  scaffold      Scaffold     @relation(fields: [scaffold_id], references: [id], onDelete: Cascade)
+  scaffold_id   String
+  type          DocumentType
+  title         String
+  file_url      String // referencia do arquivo no storage
+  file_name     String
+  file_size     Int? // bytes
+  mime_type     String?
+  uploaded_by   String // nome do responsável
+  expires_at    DateTime? // data de validade/revisão (opcional)
+  observation   String?
+  tenantCompany Company      @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId     String       @default("company-hydro-alunorte")
+  workspace     Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId   String       @default("workspace-hydro-murucupi")
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
 
+  @@index([companyId])
+  @@index([workspaceId])
   @@map("scaffold_documents")
 }
 
@@ -197,6 +272,11 @@ model Inspection {
   photos         String[] // referencias das fotos no storage
   signature      String? // referencia da assinatura no storage
 
+  tenantCompany Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId     String    @default("company-hydro-alunorte")
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId   String    @default("workspace-hydro-murucupi")
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -204,6 +284,9 @@ model Inspection {
   signatures      InspectionSignature[]
   nonConformities NonConformity[]
 
+  @@index([companyId])
+  @@index([workspaceId])
+  @@index([workspaceId, companyId])
   @@map("inspections")
 }
 
@@ -246,7 +329,10 @@ model NonConformity {
   scaffold           Scaffold   @relation(fields: [scaffoldId], references: [id], onDelete: Cascade)
   scaffoldId         String
 
-  companyId         String?
+  tenantCompany     Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId         String    @default("company-hydro-alunorte")
+  workspace         Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId       String    @default("workspace-hydro-murucupi")
   responsibleUser   User?     @relation("NonConformityResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
   responsibleUserId String?
   dueDate           DateTime?
@@ -264,6 +350,8 @@ model NonConformity {
   @@index([originInspectionId])
   @@index([scaffoldId])
   @@index([companyId])
+  @@index([workspaceId])
+  @@index([workspaceId, companyId])
   @@index([responsibleUserId])
   @@index([classification])
   @@index([status])
@@ -288,23 +376,29 @@ model NonConformityChecklistItem {
 }
 
 model NonConformityItemEvidence {
-  id                      String                    @id @default(cuid())
-  nonConformityItem       NonConformityChecklistItem @relation(fields: [nonConformityItemId], references: [id], onDelete: Cascade)
-  nonConformityItemId     String
-  type                    NonConformityEvidenceType
-  title                   String
-  fileUrl                 String
-  fileName                String
-  fileSize                Int?
-  mimeType                String?
-  uploadedBy              User?                     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
-  uploadedById            String?
-  observation             String?
-  createdAt               DateTime                  @default(now())
+  id                  String                     @id @default(cuid())
+  nonConformityItem   NonConformityChecklistItem @relation(fields: [nonConformityItemId], references: [id], onDelete: Cascade)
+  nonConformityItemId String
+  type                NonConformityEvidenceType
+  title               String
+  fileUrl             String
+  fileName            String
+  fileSize            Int?
+  mimeType            String?
+  uploadedBy          User?                      @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  uploadedById        String?
+  observation         String?
+  tenantCompany       Company                    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId           String                     @default("company-hydro-alunorte")
+  workspace           Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId         String                     @default("workspace-hydro-murucupi")
+  createdAt           DateTime                   @default(now())
 
   @@index([nonConformityItemId])
   @@index([type])
   @@index([uploadedById])
+  @@index([companyId])
+  @@index([workspaceId])
   @@map("non_conformity_item_evidences")
 }
 
@@ -321,11 +415,17 @@ model NonConformityEvidence {
   uploadedBy      User?                     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
   uploadedById    String?
   observation     String?
+  tenantCompany   Company                   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId       String                    @default("company-hydro-alunorte")
+  workspace       Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId     String                    @default("workspace-hydro-murucupi")
   createdAt       DateTime                  @default(now())
 
   @@index([nonConformityId])
   @@index([type])
   @@index([uploadedById])
+  @@index([companyId])
+  @@index([workspaceId])
   @@map("non_conformity_evidences")
 }
 
@@ -359,18 +459,24 @@ model User {
   department    String?
   position      String?
   is_active     Boolean        @default(true)
+  tenantCompany Company        @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId     String         @default("company-hydro-alunorte")
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId   String         @default("workspace-hydro-murucupi")
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   roles                      UserRole[]
   signatures                 InspectionSignature[]
-  responsibleNonConformities NonConformity[]         @relation("NonConformityResponsible")
-  createdNonConformities     NonConformity[]         @relation("NonConformityCreatedBy")
+  responsibleNonConformities NonConformity[]             @relation("NonConformityResponsible")
+  createdNonConformities     NonConformity[]             @relation("NonConformityCreatedBy")
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   nonConformityHistory       NonConformityHistory[]
 
+  @@index([companyId])
+  @@index([workspaceId])
   @@map("users")
 }
 
@@ -494,37 +600,46 @@ model InspectionSignature {
   signer_position     String?
   signature_image_url String?
   signature_data      String? // referencia da assinatura no storage
+  tenantCompany       Company    @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId           String     @default("company-hydro-alunorte")
+  workspace           Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId         String     @default("workspace-hydro-murucupi")
   signed_at           DateTime   @default(now())
   created_at          DateTime   @default(now())
 
   @@index([inspection_id])
   @@index([user_id])
   @@index([role_code])
+  @@index([companyId])
+  @@index([workspaceId])
   @@map("inspection_signatures")
 }
 
 model AuditLog {
-  id          String          @id @default(cuid())
-  userId      String?
-  userName    String?
-  userRole    String?
-  entityType  AuditEntityType
-  entityId    String?
-  entityLabel String?
-  action      AuditAction
-  description String
-  oldValue    Json?
-  newValue    Json?
-  ipAddress   String?
-  userAgent   String?
-  workspaceId String?
-  companyId   String?
-  createdAt   DateTime        @default(now())
+  id            String          @id @default(cuid())
+  userId        String?
+  userName      String?
+  userRole      String?
+  entityType    AuditEntityType
+  entityId      String?
+  entityLabel   String?
+  action        AuditAction
+  description   String
+  oldValue      Json?
+  newValue      Json?
+  ipAddress     String?
+  userAgent     String?
+  workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId   String          @default("workspace-hydro-murucupi")
+  tenantCompany Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId     String          @default("company-hydro-alunorte")
+  createdAt     DateTime        @default(now())
 
   @@index([createdAt])
   @@index([entityType, entityId])
   @@index([action])
   @@index([userId])
   @@index([companyId])
+  @@index([workspaceId])
   @@map("audit_logs")
 }

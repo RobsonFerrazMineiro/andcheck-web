@@ -57,10 +57,18 @@ export async function addScaffoldDocument(data: {
   await requirePermission("documents.create");
   assertStoredFileReference(data.file_url, "Documento");
 
-  const [doc, scaffold] = await Promise.all([
-    prisma.scaffoldDocument.create({ data }),
-    prisma.scaffold.findUnique({ where: { id: data.scaffold_id } }),
-  ]);
+  const scaffold = await prisma.scaffold.findUnique({
+    where: { id: data.scaffold_id },
+  });
+  if (!scaffold) throw new Error("Andaime nao encontrado.");
+
+  const doc = await prisma.scaffoldDocument.create({
+    data: {
+      ...data,
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
+    },
+  });
   await createAuditLog({
     entityType: AuditEntityType.DOCUMENT,
     entityId: doc.id,

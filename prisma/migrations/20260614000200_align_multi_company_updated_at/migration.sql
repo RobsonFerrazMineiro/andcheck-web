@@ -1,0 +1,2 @@
+ALTER TABLE "companies" ALTER COLUMN "updatedAt" DROP DEFAULT;
+ALTER TABLE "workspaces" ALTER COLUMN "updatedAt" DROP DEFAULT;

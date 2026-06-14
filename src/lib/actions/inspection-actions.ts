@@ -238,6 +238,8 @@ async function createNonConformityFromInspection({
     id: string;
     code: string;
     company: string | null;
+    companyId: string;
+    workspaceId: string;
   };
   failedItems: NonConformingChecklistItem[];
   hasCriticalFail: boolean;
@@ -271,7 +273,7 @@ async function createNonConformityFromInspection({
       status: NonConformityStatus.OPEN,
       scaffoldId: scaffold.id,
       originInspectionId: inspection.id,
-      companyId: scaffold.company,
+      companyId: scaffold.companyId,
       dueDate: dueDate.toISOString(),
       checklistItems: failedItems.map((item) => ({
         id: item.id,
@@ -293,7 +295,8 @@ async function createNonConformityFromInspection({
           status: NonConformityStatus.OPEN,
           originInspectionId: inspection.id,
           scaffoldId: scaffold.id,
-          companyId: scaffold.company,
+          companyId: scaffold.companyId,
+          workspaceId: scaffold.workspaceId,
           dueDate,
           createdById: currentUserId ?? null,
           checklistItems: {
@@ -428,6 +431,8 @@ export async function createInspection(data: {
   const inspection = await prisma.inspection.create({
     data: {
       ...inspectionData,
+      companyId: oldScaffold?.companyId,
+      workspaceId: oldScaffold?.workspaceId,
       result: calculatedResult,
       validity_days:
         calculatedResult === "reprovado" ? 0 : data.validity_days,
@@ -438,6 +443,8 @@ export async function createInspection(data: {
           signer_company: signature.signer_company?.trim() || null,
           signer_position: signature.signer_position?.trim() || null,
           signature_data: signature.signature_data,
+          companyId: oldScaffold?.companyId,
+          workspaceId: oldScaffold?.workspaceId,
         })),
       },
       checklist: { create: checklist },

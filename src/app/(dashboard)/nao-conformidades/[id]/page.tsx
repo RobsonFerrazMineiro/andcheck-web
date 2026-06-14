@@ -159,7 +159,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
   const nc = await getNonConformityById(id);
   if (!nc) notFound();
 
-  const company = nc.companyId ?? nc.scaffold.company ?? "-";
+  const company = nc.tenantCompany.name ?? nc.scaffold.company ?? "-";
   const responsible = nc.responsibleUser?.name ?? "-";
   const [canUpdate, access] = await Promise.all([
     canCurrentUser("non_conformities.update"),

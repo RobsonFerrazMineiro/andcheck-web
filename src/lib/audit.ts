@@ -1,6 +1,11 @@
 import { auth } from "@/auth";
 import { requireAnyPermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import {
+  DEFAULT_COMPANY_ID,
+  DEFAULT_WORKSPACE_ID,
+  resolveTenantContext,
+} from "@/lib/multi-company";
 import { sanitizeForLog } from "@/lib/safe-log";
 import { AuditAction, AuditEntityType, Prisma } from "@prisma/client";
 import { headers } from "next/headers";
@@ -116,7 +121,14 @@ async function resolveAuditUser(user?: AuditUser | null) {
 
 export async function createAuditLog(input: CreateAuditLogInput) {
   try {
-    const [user, hdrs] = await Promise.all([resolveAuditUser(input.user), headers()]);
+    const [user, hdrs, tenantContext] = await Promise.all([
+      resolveAuditUser(input.user),
+      headers(),
+      resolveTenantContext({
+        company: input.companyId,
+        workspace: input.workspaceId,
+      }),
+    ]);
     const ipAddress =
       hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       hdrs.get("x-real-ip") ??
@@ -137,8 +149,8 @@ export async function createAuditLog(input: CreateAuditLogInput) {
         newValue: sanitizeAuditValue(input.newValue) ?? Prisma.JsonNull,
         ipAddress,
         userAgent,
-        workspaceId: input.workspaceId ?? null,
-        companyId: input.companyId ?? null,
+        workspaceId: tenantContext.workspaceId,
+        companyId: tenantContext.companyId,
       },
     });
   } catch (error) {
@@ -205,8 +217,8 @@ export async function logScaffoldStatusConsultation(scaffold: {
           },
           ipAddress,
           userAgent,
-          workspaceId: null,
-          companyId: scaffold.company,
+          workspaceId: DEFAULT_WORKSPACE_ID,
+          companyId: DEFAULT_COMPANY_ID,
         },
       });
     });
@@ -246,7 +258,11 @@ export async function getAuditLogs({
   if (action) where.action = action as AuditAction;
   if (entityType) where.entityType = entityType as AuditEntityType;
   if (user) where.userName = { contains: user, mode: "insensitive" };
-  if (company) where.companyId = { contains: company, mode: "insensitive" };
+  if (company) {
+    where.tenantCompany = {
+      name: { contains: company, mode: "insensitive" },
+    };
+  }
   if (dateFrom || dateTo) {
     where.createdAt = {
       ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
@@ -266,6 +282,10 @@ export async function getAuditLogs({
   const [items, total] = await Promise.all([
     prisma.auditLog.findMany({
       where,
+      include: {
+        tenantCompany: { select: { name: true } },
+        workspace: { select: { name: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: pageSize,
       skip,
@@ -276,6 +296,8 @@ export async function getAuditLogs({
   return {
     items: items.map((item) => ({
       ...item,
+      companyId: item.tenantCompany.name,
+      workspaceId: item.workspace.name,
       oldValue: sanitizeAuditValue(item.oldValue) ?? null,
       newValue: sanitizeAuditValue(item.newValue) ?? null,
     })),

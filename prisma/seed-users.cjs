@@ -1,4 +1,5 @@
 // node prisma/seed-users.cjs
+require("dotenv/config");
 const { PrismaPg } = require("@prisma/adapter-pg");
 const { PrismaClient } = require("@prisma/client");
 const { Pool } = require("pg");
@@ -9,6 +10,8 @@ const signaturePolicyData = require("../src/lib/signature-policy-data.json");
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+const DEFAULT_COMPANY_ID = "company-hydro-alunorte";
+const DEFAULT_WORKSPACE_ID = "workspace-hydro-murucupi";
 
 async function seedRbac() {
   const permissions = new Map();
@@ -123,6 +126,8 @@ async function main() {
       email: "admin@andcheck.com",
       password_hash: hash,
       role: "admin",
+      companyId: DEFAULT_COMPANY_ID,
+      workspaceId: DEFAULT_WORKSPACE_ID,
     },
   });
 
@@ -134,6 +139,8 @@ async function main() {
       email: "inspetor@andcheck.com",
       password_hash: await bcrypt.hash("inspetor@2025", 12),
       role: "inspector",
+      companyId: DEFAULT_COMPANY_ID,
+      workspaceId: DEFAULT_WORKSPACE_ID,
     },
   });
 
@@ -171,5 +178,11 @@ async function main() {
 }
 
 main()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

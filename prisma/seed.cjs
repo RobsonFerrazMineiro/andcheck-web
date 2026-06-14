@@ -4,6 +4,8 @@
  * Coordenadas centrais da planta: -1.5205, -48.6278
  */
 
+require('dotenv/config');
+
 const { PrismaPg } = require('@prisma/adapter-pg');
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');
@@ -11,6 +13,52 @@ const { Pool } = require('pg');
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+
+const DEFAULT_COMPANY_ID = 'company-hydro-alunorte';
+const DEFAULT_WORKSPACE_ID = 'workspace-hydro-murucupi';
+
+const companies = [
+  { id: DEFAULT_COMPANY_ID, name: 'Hydro Alunorte', type: 'CLIENT' },
+  { id: 'company-tuv-rheinland', name: 'TÜV Rheinland', type: 'HSE_MANAGER' },
+  { id: 'company-arcadis', name: 'Arcadis', type: 'HSE_MANAGER' },
+  { id: 'company-bloson', name: 'Bloson', type: 'HSE_MANAGER' },
+  { id: 'company-araujo', name: 'Araújo', type: 'HSE_MANAGER' },
+  { id: 'company-kw-brasil', name: 'KW Brasil', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-superus', name: 'Superus', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-montisol', name: 'Montisol', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-omega', name: 'Omega', type: 'SCAFFOLD_COMPANY' },
+  { id: 'company-montcalm', name: 'Montcalm', type: 'SCAFFOLD_COMPANY' },
+];
+
+async function seedMultiCompanyFoundation() {
+  for (const company of companies) {
+    await prisma.company.upsert({
+      where: { name: company.name },
+      update: { type: company.type, active: true },
+      create: { ...company, active: true },
+    });
+  }
+
+  await prisma.workspace.upsert({
+    where: { name: 'Hydro Alunorte — Murucupi' },
+    update: {
+      code: 'HYD-ALU-001',
+      city: 'Barcarena',
+      state: 'PA',
+      ownerCompanyId: DEFAULT_COMPANY_ID,
+      active: true,
+    },
+    create: {
+      id: DEFAULT_WORKSPACE_ID,
+      name: 'Hydro Alunorte — Murucupi',
+      code: 'HYD-ALU-001',
+      city: 'Barcarena',
+      state: 'PA',
+      ownerCompanyId: DEFAULT_COMPANY_ID,
+      active: true,
+    },
+  });
+}
 
 // ── Andaimes ─────────────────────────────────────────────────────────────────
 const scaffolds = [
@@ -270,22 +318,34 @@ const inspections = [
 ];
 
 async function main() {
-  console.log('Limpando banco...');
-  await prisma.scaffoldDocument.deleteMany();
-  await prisma.checklistEntry.deleteMany();
-  await prisma.inspection.deleteMany();
-  await prisma.scaffold.deleteMany();
+  console.log('Criando base multiempresa...');
+  await seedMultiCompanyFoundation();
 
-  console.log('Inserindo andaimes — Hydro Alunorte (Barcarena-PA)...');
+  console.log('Garantindo andaimes de demonstracao...');
   for (const s of scaffolds) {
-    await prisma.scaffold.create({ data: s });
+    await prisma.scaffold.upsert({
+      where: { id: s.id },
+      update: {},
+      create: {
+        ...s,
+        companyId: DEFAULT_COMPANY_ID,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+      },
+    });
   }
 
-  console.log('Inserindo inspecoes e checklist...');
+  console.log('Garantindo inspecoes e checklist de demonstracao...');
   for (const insp of inspections) {
     const { checklist, ...data } = insp;
-    await prisma.inspection.create({
-      data: { ...data, checklist: { create: checklist } },
+    await prisma.inspection.upsert({
+      where: { id: insp.id },
+      update: {},
+      create: {
+        ...data,
+        companyId: DEFAULT_COMPANY_ID,
+        workspaceId: DEFAULT_WORKSPACE_ID,
+        checklist: { create: checklist },
+      },
     });
   }
 
@@ -298,9 +358,16 @@ async function main() {
   console.log('  ' + sc + ' andaimes');
   console.log('  ' + insp + ' inspecoes');
   console.log('  ' + cl + ' itens de checklist');
+  console.log('  ' + companies.length + ' empresas multiempresa');
   console.log('  Planta: Hydro Alunorte S.A. — Barcarena, Para, Brasil');
 }
 
 main()
-  .catch(console.error)
-  .finally(() => pool.end());
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+    await pool.end();
+  });

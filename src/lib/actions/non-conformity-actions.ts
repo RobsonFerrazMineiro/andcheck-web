@@ -766,6 +766,8 @@ export async function addNonConformityEvidence(formData: FormData) {
       mimeType: mimeType || null,
       observation: observation || null,
       uploadedById: access?.userId ?? null,
+      companyId: nc.companyId,
+      workspaceId: nc.workspaceId,
     },
   });
 
@@ -848,6 +850,8 @@ export async function addNonConformityItemEvidence(formData: FormData) {
       mimeType: mimeType || null,
       observation: observation || null,
       uploadedById: access?.userId ?? null,
+      companyId: nc.companyId,
+      workspaceId: nc.workspaceId,
     },
   });
 
@@ -908,6 +912,7 @@ export async function getNonConformities() {
   return prisma.nonConformity.findMany({
     orderBy: [{ createdAt: "desc" }],
     include: {
+      tenantCompany: { select: { name: true } },
       scaffold: {
         select: {
           id: true,
@@ -949,6 +954,7 @@ export async function getNonConformityById(id: string) {
   const nc = await prisma.nonConformity.findUnique({
     where: { id },
     include: {
+      tenantCompany: { select: { name: true } },
       scaffold: {
         select: {
           id: true,
