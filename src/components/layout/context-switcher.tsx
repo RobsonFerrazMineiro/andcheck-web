@@ -13,7 +13,6 @@ import {
   ChevronDown,
   Loader2,
   MapPin,
-  Shield,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -95,21 +94,6 @@ export function DesktopContextSwitcher({
 
   return (
     <div className="flex min-w-0 items-center gap-4">
-      <div className="flex shrink-0 items-center gap-2.5 border-r border-border pr-4">
-        <div
-          className="flex size-7 items-center justify-center bg-primary"
-          style={{
-            clipPath:
-              "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-          }}
-        >
-          <Shield className="size-3.5 text-primary-foreground" />
-        </div>
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em]">
-          AndCheck
-        </span>
-      </div>
-
       {context.canSwitchCompany && context.companies.length > 1 ? (
         <Select
           value={context.selectedCompanyId}

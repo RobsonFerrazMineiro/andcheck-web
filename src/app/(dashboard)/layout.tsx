@@ -1,10 +1,16 @@
 import { auth } from "@/auth";
+import { AuthenticatedCompanyBrand } from "@/components/layout/authenticated-company-brand";
 import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DesktopContextSwitcher } from "@/components/layout/context-switcher";
-import { canCurrentUser, requireAnyPermission } from "@/lib/authz";
+import {
+  canCurrentUser,
+  getCurrentUserAccess,
+  requireAnyPermission,
+} from "@/lib/authz";
 import { getContextSwitcherData } from "@/lib/context-switcher";
+import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
 
@@ -18,8 +24,10 @@ export default async function DashboardLayout({
   const session = await auth();
   const user = session?.user;
   await requireAnyPermission(["read.all", "read.own_company"]);
+  const access = await getCurrentUserAccess();
 
   const [
+    authenticatedCompany,
     contextSwitcher,
     canManageCompanyUsers,
     canCreateUsers,
@@ -34,6 +42,12 @@ export default async function DashboardLayout({
     canViewCompanies,
     canViewWorkspaces,
   ] = await Promise.all([
+    access?.companyId
+      ? prisma.company.findUnique({
+          where: { id: access.companyId },
+          select: { name: true, logoUrl: true },
+        })
+      : null,
     getContextSwitcherData(),
     canCurrentUser("users.manage_company"),
     canCurrentUser("users.create"),
@@ -80,9 +94,12 @@ export default async function DashboardLayout({
       <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
         {/* Topbar — apenas desktop */}
         <div className="hidden lg:flex items-center justify-between bg-card border-b border-border px-6 py-2.5 shrink-0">
-          {contextSwitcher && (
-            <DesktopContextSwitcher context={contextSwitcher} />
-          )}
+          <div className="flex min-w-0 items-center gap-4">
+            <AuthenticatedCompanyBrand company={authenticatedCompany} />
+            {contextSwitcher && (
+              <DesktopContextSwitcher context={contextSwitcher} />
+            )}
+          </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Activity className="w-3.5 h-3.5 text-green-500" />
