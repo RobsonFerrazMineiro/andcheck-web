@@ -151,6 +151,8 @@ const ROLE_LABELS: Record<string, string> = {
   HSE_HYDRO: "HSE Hydro",
   MONTADOR_LIDER: "Montador Lider",
   PLANEJAMENTO: "Planejamento",
+  SUPERVISOR: "Supervisor",
+  ENCARREGADO: "Encarregado",
   SUPER_ADMIN: "Super Admin",
   SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
 };

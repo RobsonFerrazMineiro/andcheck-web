@@ -24,7 +24,12 @@ import { revalidatePath } from "next/cache";
 
 type NonConformityAuditValue = Prisma.InputJsonObject;
 
-const RESPONSIBLE_ROLE_CODES = ["PLANEJAMENTO", "SUPERVISOR_ENCARREGADO"];
+const RESPONSIBLE_ROLE_CODES = [
+  "PLANEJAMENTO",
+  "SUPERVISOR",
+  "ENCARREGADO",
+  "SUPERVISOR_ENCARREGADO",
+];
 const HSE_ROLE_CODES = ["HSE_HYDRO", "HSE_GERENCIADORA", "HSE_EMPRESA"];
 const FINAL_STATUSES = ["CLOSED", "CANCELLED"];
 const NC_BLOCKED_SCAFFOLD_STATUSES: ScaffoldStatus[] = [
@@ -527,7 +532,7 @@ export async function updateNonConformityStatus(formData: FormData) {
   if (parsedNextStatus === NonConformityStatus.PENDING_VERIFICATION) {
     await requireWorkflowRole(
       RESPONSIBLE_ROLE_CODES,
-      "Somente Planejamento ou Supervisor/Encarregado podem solicitar verificacao.",
+      "Somente Planejamento, Supervisor ou Encarregado podem solicitar verificacao.",
     );
   } else if (
     parsedNextStatus === NonConformityStatus.CLOSED ||
@@ -668,7 +673,7 @@ export async function updateNonConformityResponsible(formData: FormData) {
 
   if (!responsibleWithRole) {
     throw new Error(
-      "Responsavel deve ter perfil Planejamento ou Supervisor/Encarregado.",
+      "Responsavel deve ter perfil Planejamento, Supervisor ou Encarregado.",
     );
   }
 
@@ -814,7 +819,7 @@ export async function addNonConformityEvidence(formData: FormData) {
 export async function addNonConformityItemEvidence(formData: FormData) {
   await requireWorkflowRole(
     RESPONSIBLE_ROLE_CODES,
-    "Somente Planejamento ou Supervisor/Encarregado podem anexar evidencias de correcao.",
+    "Somente Planejamento, Supervisor ou Encarregado podem anexar evidencias de correcao.",
   );
   const scope = await getDataScope();
 

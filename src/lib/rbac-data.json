@@ -6,6 +6,8 @@
     { "code": "ADMIN_EMPRESA", "name": "Admin Empresa" },
     { "code": "HSE_EMPRESA", "name": "HSE Empresa" },
     { "code": "PLANEJAMENTO", "name": "Planejamento" },
+    { "code": "SUPERVISOR", "name": "Supervisor" },
+    { "code": "ENCARREGADO", "name": "Encarregado" },
     { "code": "SUPERVISOR_ENCARREGADO", "name": "Supervisor/Encarregado" },
     { "code": "MONTADOR_LIDER", "name": "Montador Lider" },
     { "code": "AUDITOR", "name": "Auditor" }
@@ -116,6 +118,30 @@
       "read.own_company"
     ],
     "SUPERVISOR_ENCARREGADO": [
+      "scaffolds.create",
+      "scaffolds.update",
+      "scaffolds.complete_assembly",
+      "scaffolds.dismantle",
+      "documents.create",
+      "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.add_evidence",
+      "audit.view",
+      "read.own_company"
+    ],
+    "SUPERVISOR": [
+      "scaffolds.create",
+      "scaffolds.update",
+      "scaffolds.complete_assembly",
+      "scaffolds.dismantle",
+      "documents.create",
+      "pdf.generate",
+      "non_conformities.view",
+      "non_conformities.add_evidence",
+      "audit.view",
+      "read.own_company"
+    ],
+    "ENCARREGADO": [
       "scaffolds.create",
       "scaffolds.update",
       "scaffolds.complete_assembly",

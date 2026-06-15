@@ -278,7 +278,7 @@ export function NonConformityOperations({
               defaultValue={responsibleUserId ?? undefined}
             >
               <SelectTrigger className="w-full rounded-none">
-                <SelectValue placeholder="Planejamento ou Supervisor/Encarregado" />
+                <SelectValue placeholder="Planejamento, Supervisor ou Encarregado" />
               </SelectTrigger>
               <SelectContent>
                 {responsibleOptions.map((user) => (

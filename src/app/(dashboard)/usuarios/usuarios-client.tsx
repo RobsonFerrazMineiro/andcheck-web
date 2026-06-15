@@ -63,6 +63,8 @@ const ROLE_BADGE: Record<string, string> = {
   ADMIN_EMPRESA: "bg-violet-100 text-violet-700 border-violet-200",
   HSE_EMPRESA: "bg-emerald-100 text-emerald-700 border-emerald-200",
   PLANEJAMENTO: "bg-amber-100 text-amber-700 border-amber-200",
+  SUPERVISOR: "bg-sky-100 text-sky-700 border-sky-200",
+  ENCARREGADO: "bg-cyan-100 text-cyan-700 border-cyan-200",
   SUPERVISOR_ENCARREGADO: "bg-sky-100 text-sky-700 border-sky-200",
   MONTADOR_LIDER: "bg-slate-100 text-slate-700 border-slate-200",
   AUDITOR: "bg-zinc-100 text-zinc-700 border-zinc-200",

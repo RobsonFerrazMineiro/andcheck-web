@@ -28,6 +28,8 @@ import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
 
 const NC_RESPONSIBLE_ROLE_CODES = [
   "PLANEJAMENTO",
+  "SUPERVISOR",
+  "ENCARREGADO",
   "SUPERVISOR_ENCARREGADO",
 ];
 
