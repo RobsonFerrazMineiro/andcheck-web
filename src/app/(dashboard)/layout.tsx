@@ -151,6 +151,14 @@ export default async function DashboardLayout({
                 name={user.name ?? "Usuário"}
                 email={user.email ?? ""}
                 roleLabel={userRoleLabel}
+                companyName={authenticatedCompany?.name ?? "AndCheck"}
+                workspaceName={
+                  contextSwitcher?.workspaces.find(
+                    (workspace) =>
+                      workspace.id === contextSwitcher.selectedWorkspaceId,
+                  )?.name ?? "Nao informado"
+                }
+                sessionStatus="Ativa"
               />
             )}
           </div>
