@@ -16,6 +16,31 @@ import { Toaster } from "sonner";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494"];
 
+const ROLE_LABELS: Record<string, string> = {
+  SUPER_ADMIN: "Super Admin",
+  HSE_HYDRO: "HSE Hydro",
+  HSE_GERENCIADORA: "HSE Gerenciadora",
+  ADMIN_EMPRESA: "Admin Empresa",
+  HSE_EMPRESA: "HSE Empresa",
+  PLANEJAMENTO: "Planejamento",
+  SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
+  MONTADOR_LIDER: "Montador Líder",
+  AUDITOR: "Auditor",
+};
+
+const ROLE_PRIORITY = Object.keys(ROLE_LABELS);
+
+function getRoleLabel(roleCodes: string[], legacyRole?: string) {
+  const primaryRole = ROLE_PRIORITY.find((roleCode) =>
+    roleCodes.includes(roleCode),
+  );
+  if (primaryRole) return ROLE_LABELS[primaryRole];
+  if (roleCodes[0]) return roleCodes[0];
+  if (legacyRole === "admin") return "Admin";
+  if (legacyRole === "inspector") return "Inspetor";
+  return "Viewer";
+}
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -72,6 +97,10 @@ export default async function DashboardLayout({
     canUpdateNonConformities ||
     canCloseNonConformities ||
     canAddNonConformityEvidence;
+  const userRoleLabel = getRoleLabel(
+    access?.roleCodes ?? [],
+    (user as { role?: string } | undefined)?.role,
+  );
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -121,7 +150,7 @@ export default async function DashboardLayout({
               <UserMenu
                 name={user.name ?? "Usuário"}
                 email={user.email ?? ""}
-                role={(user as { role?: string }).role ?? "viewer"}
+                roleLabel={userRoleLabel}
               />
             )}
           </div>

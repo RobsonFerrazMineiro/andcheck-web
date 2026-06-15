@@ -6,10 +6,10 @@ import { signOut } from "next-auth/react";
 interface UserMenuProps {
   name: string;
   email: string;
-  role: string;
+  roleLabel: string;
 }
 
-export function UserMenu({ name, email, role }: UserMenuProps) {
+export function UserMenu({ name, email, roleLabel }: UserMenuProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="text-right hidden xl:block">
@@ -23,11 +23,7 @@ export function UserMenu({ name, email, role }: UserMenuProps) {
         className="hidden xl:inline-block text-[9px] font-mono uppercase tracking-wider
                        text-muted-foreground/50 border border-border rounded px-1.5 py-0.5"
       >
-        {role === "admin"
-          ? "Admin"
-          : role === "inspector"
-            ? "Inspetor"
-            : "Viewer"}
+        {roleLabel}
       </span>
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}

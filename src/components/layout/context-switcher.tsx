@@ -94,38 +94,39 @@ export function DesktopContextSwitcher({
 
   return (
     <div className="flex min-w-0 items-center gap-4">
-      {context.canSwitchCompany && context.companies.length > 1 ? (
-        <Select
-          value={context.selectedCompanyId}
-          onValueChange={(companyId) => changeContext({ companyId })}
-          disabled={isPending}
-        >
-          <SelectTrigger className="h-9 w-48 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
-            <Building2 className="size-3.5 text-muted-foreground" />
-            <div className="min-w-0 flex-1 text-left">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                Empresa
-              </p>
-              <SelectValue />
-            </div>
-          </SelectTrigger>
-          <SelectContent position="popper" align="start">
-            {context.companies.map((company) => (
-              <SelectItem key={company.id} value={company.id}>
-                {company.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <div className="w-48 px-2">
-          <ContextField
-            label="Empresa"
-            value={selectedCompany?.name ?? "-"}
-            icon={Building2}
-          />
-        </div>
-      )}
+      {context.canSwitchCompany &&
+        (context.companies.length > 1 ? (
+          <Select
+            value={context.selectedCompanyId}
+            onValueChange={(companyId) => changeContext({ companyId })}
+            disabled={isPending}
+          >
+            <SelectTrigger className="h-9 w-48 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
+              <Building2 className="size-3.5 text-muted-foreground" />
+              <div className="min-w-0 flex-1 text-left">
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  Empresa
+                </p>
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent position="popper" align="start">
+              {context.companies.map((company) => (
+                <SelectItem key={company.id} value={company.id}>
+                  {company.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="w-48 px-2">
+            <ContextField
+              label="Empresa"
+              value={selectedCompany?.name ?? "-"}
+              icon={Building2}
+            />
+          </div>
+        ))}
 
       {context.canSwitchWorkspace && context.workspaces.length > 1 ? (
         <Select
@@ -200,9 +201,6 @@ export function MobileContextSwitcher({
       <div className="min-w-0 flex-1 px-3">
         <div className="min-w-0 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5">
           <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
-            {selectedCompany?.name ?? "-"}
-          </p>
-          <p className="truncate text-[9px] text-sidebar-foreground/45">
             {selectedWorkspace
               ? shortWorkspaceName(selectedWorkspace.name)
               : "-"}
@@ -222,10 +220,14 @@ export function MobileContextSwitcher({
         aria-label="Alterar contexto ativo"
       >
         <div className="min-w-0">
-          <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
-            {selectedCompany?.name ?? "-"}
-          </p>
-          <p className="truncate text-[9px] text-sidebar-foreground/45">
+          {context.canSwitchCompany && (
+            <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
+              {selectedCompany?.name ?? "-"}
+            </p>
+          )}
+          <p
+            className={`truncate text-sidebar-foreground/45 ${context.canSwitchCompany ? "text-[9px]" : "text-[10px] font-semibold"}`}
+          >
             {selectedWorkspace
               ? shortWorkspaceName(selectedWorkspace.name)
               : "-"}
@@ -243,35 +245,37 @@ export function MobileContextSwitcher({
       {open && (
         <div className="fixed inset-x-0 top-14 z-50 border-b border-border bg-background p-4 shadow-lg">
           <div className="mx-auto grid max-w-md gap-4">
-            <div>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Empresa
-              </p>
-              {context.canSwitchCompany && context.companies.length > 1 ? (
-                <Select
-                  value={context.selectedCompanyId}
-                  onValueChange={(companyId) => changeContext({ companyId })}
-                  disabled={isPending}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {context.companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <ContextField
-                  label="Empresa ativa"
-                  value={selectedCompany?.name ?? "-"}
-                  icon={Building2}
-                />
-              )}
-            </div>
+            {context.canSwitchCompany && (
+              <div>
+                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Empresa
+                </p>
+                {context.companies.length > 1 ? (
+                  <Select
+                    value={context.selectedCompanyId}
+                    onValueChange={(companyId) => changeContext({ companyId })}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {context.companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <ContextField
+                    label="Empresa ativa"
+                    value={selectedCompany?.name ?? "-"}
+                    icon={Building2}
+                  />
+                )}
+              </div>
+            )}
             <div>
               <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Workspace
