@@ -9,7 +9,10 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function hasRequiredDelegates(client: PrismaClient) {
   return Boolean(
-    (client as unknown as { nonConformity?: unknown }).nonConformity,
+    (client as unknown as { nonConformity?: unknown; document?: unknown })
+      .nonConformity &&
+      (client as unknown as { nonConformity?: unknown; document?: unknown })
+        .document,
   );
 }
 

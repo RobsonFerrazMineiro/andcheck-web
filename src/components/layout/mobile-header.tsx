@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Construction,
+  FileText,
   FileClock,
   LayoutDashboard,
   Map,
@@ -28,6 +29,7 @@ const navItems = [
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/nao-conformidades", label: "Nao Conformidades", icon: ClipboardList },
+  { path: "/documentos", label: "Documentos", icon: FileText },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
@@ -41,6 +43,7 @@ export function MobileHeader({
   canViewNonConformities = false,
   canViewCompanies = false,
   canViewWorkspaces = false,
+  canViewDocuments = false,
   context,
 }: {
   canManageUsers?: boolean;
@@ -48,6 +51,7 @@ export function MobileHeader({
   canViewNonConformities?: boolean;
   canViewCompanies?: boolean;
   canViewWorkspaces?: boolean;
+  canViewDocuments?: boolean;
   context: ContextSwitcherData | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -108,6 +112,7 @@ export function MobileHeader({
               (item) =>
                 item.path !== "/nao-conformidades" || canViewNonConformities,
             )
+            .filter((item) => item.path !== "/documentos" || canViewDocuments)
             .map((item) => (
             <Link
               key={item.path}

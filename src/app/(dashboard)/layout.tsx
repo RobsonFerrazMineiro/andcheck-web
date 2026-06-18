@@ -68,6 +68,10 @@ export default async function DashboardLayout({
     canAddNonConformityEvidence,
     canViewCompanies,
     canViewWorkspaces,
+    canViewDocuments,
+    canCreateDocuments,
+    canUpdateDocuments,
+    canArchiveDocuments,
   ] = await Promise.all([
     access?.companyId
       ? prisma.company.findUnique({
@@ -88,6 +92,10 @@ export default async function DashboardLayout({
     canCurrentUser("non_conformities.add_evidence"),
     canCurrentUser("companies.view"),
     canCurrentUser("workspaces.view"),
+    canCurrentUser("documents.view"),
+    canCurrentUser("documents.create"),
+    canCurrentUser("documents.update"),
+    canCurrentUser("documents.archive"),
   ]);
 
   const canManageUsers = canManageCompanyUsers || canCreateUsers;
@@ -99,6 +107,11 @@ export default async function DashboardLayout({
     canUpdateNonConformities ||
     canCloseNonConformities ||
     canAddNonConformityEvidence;
+  const canAccessDocuments =
+    canViewDocuments ||
+    canCreateDocuments ||
+    canUpdateDocuments ||
+    canArchiveDocuments;
   const userRoleLabel = getRoleLabel(
     access?.roleCodes ?? [],
     (user as { role?: string } | undefined)?.role,
@@ -112,6 +125,7 @@ export default async function DashboardLayout({
         canViewNonConformities={canAccessNonConformities}
         canViewCompanies={canViewCompanies || canManagePermissions}
         canViewWorkspaces={canViewWorkspaces || canManagePermissions}
+        canViewDocuments={canAccessDocuments}
       />
       <MobileHeader
         canManageUsers={canManageUsers}
@@ -119,6 +133,7 @@ export default async function DashboardLayout({
         canViewNonConformities={canAccessNonConformities}
         canViewCompanies={canViewCompanies || canManagePermissions}
         canViewWorkspaces={canViewWorkspaces || canManagePermissions}
+        canViewDocuments={canAccessDocuments}
         context={contextSwitcher}
       />
 

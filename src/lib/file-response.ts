@@ -20,10 +20,14 @@ function decodeDataUrl(fileUrl: string) {
   return { bytes: new Uint8Array(buffer), mimeType };
 }
 
-function responseHeaders(fileName: string, mimeType: string) {
+function responseHeaders(
+  fileName: string,
+  mimeType: string,
+  disposition: "inline" | "attachment" = "inline",
+) {
   return {
     "Cache-Control": "private, max-age=3600",
-    "Content-Disposition": `inline; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+    "Content-Disposition": `${disposition}; filename*=UTF-8''${encodeURIComponent(fileName)}`,
     "Content-Type": mimeType,
     "X-Content-Type-Options": "nosniff",
   };
@@ -33,6 +37,7 @@ export async function createStoredFileResponse(file: {
   fileUrl: string;
   fileName: string;
   mimeType?: string | null;
+  disposition?: "inline" | "attachment";
 }) {
   if (file.fileUrl.startsWith("vercel-blob:")) {
     const stored = await get(file.fileUrl.slice("vercel-blob:".length), {
@@ -46,6 +51,7 @@ export async function createStoredFileResponse(file: {
       headers: responseHeaders(
         file.fileName,
         file.mimeType || stored.blob.contentType || "application/octet-stream",
+        file.disposition,
       ),
     });
   }
@@ -66,6 +72,7 @@ export async function createStoredFileResponse(file: {
         headers: responseHeaders(
           file.fileName,
           file.mimeType || "application/octet-stream",
+          file.disposition,
         ),
       });
     } catch {
@@ -83,6 +90,10 @@ export async function createStoredFileResponse(file: {
   }
 
   return new Response(decoded.bytes, {
-    headers: responseHeaders(file.fileName, file.mimeType || decoded.mimeType),
+    headers: responseHeaders(
+      file.fileName,
+      file.mimeType || decoded.mimeType,
+      file.disposition,
+    ),
   });
 }

@@ -1,6 +1,8 @@
 type DocumentLike = {
   fileUrl?: string | null;
   file_url?: string | null;
+  downloadUrl?: string | null;
+  download_url?: string | null;
   fileName?: string | null;
   file_name?: string | null;
   mimeType?: string | null;
@@ -31,6 +33,9 @@ export function getDocumentMimeType(document: DocumentLike) {
   if (fileName.endsWith(".doc")) return "application/msword";
   if (fileName.endsWith(".docx")) {
     return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
+  if (fileName.endsWith(".xlsx")) {
+    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   }
   return "";
 }
@@ -96,7 +101,9 @@ export function getSafeOpenUrl(document: DocumentLike) {
 }
 
 export function downloadDocumentFile(document: DocumentLike) {
-  const viewUrl = getDocumentViewUrl(document);
+  const viewUrl =
+    (document.downloadUrl ?? document.download_url ?? "").trim() ||
+    getDocumentViewUrl(document);
   if (!viewUrl) return false;
 
   const anchor = window.document.createElement("a");

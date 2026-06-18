@@ -63,6 +63,26 @@ enum DocumentType {
   OUTRO
 }
 
+enum DocumentCategory {
+  ART
+  RRT
+  PROJETO_ESTRUTURAL
+  MEMORIAL_CALCULO
+  CROQUI
+  PROCEDIMENTO
+  NORMA
+  CERTIFICADO
+  LICENCA
+  TREINAMENTO
+  OUTRO
+}
+
+enum DocumentStatus {
+  ACTIVE
+  EXPIRED
+  ARCHIVED
+}
+
 enum AuditEntityType {
   COMPANY
   WORKSPACE
@@ -101,6 +121,11 @@ enum AuditAction {
   LOGOUT
   ROLE_CHANGE
   USER_PASSWORD_CHANGED
+  DOCUMENT_CREATED
+  DOCUMENT_UPDATED
+  DOCUMENT_VIEWED
+  DOCUMENT_ARCHIVED
+  DOCUMENT_DOWNLOADED
 }
 
 enum NonConformityClassification {
@@ -163,6 +188,7 @@ model Company {
   nonConformities            NonConformity[]
   auditLogs                  AuditLog[]
   scaffoldDocuments          ScaffoldDocument[]
+  documents                  Document[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
@@ -194,6 +220,7 @@ model Workspace {
   nonConformities            NonConformity[]
   auditLogs                  AuditLog[]
   scaffoldDocuments          ScaffoldDocument[]
+  documents                  Document[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
@@ -293,6 +320,36 @@ model ScaffoldDocument {
   @@index([companyId])
   @@index([workspaceId])
   @@map("scaffold_documents")
+}
+
+model Document {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  fileName    String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  category    DocumentCategory
+  status      DocumentStatus   @default(ACTIVE)
+  issueDate   DateTime?
+  expiryDate  DateTime?
+  companyId   String?
+  workspaceId String?
+  createdById String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  company   Company?   @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  createdBy User       @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([companyId])
+  @@index([workspaceId])
+  @@index([category])
+  @@index([status])
+  @@index([expiryDate])
+  @@map("documents")
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -512,6 +569,7 @@ model User {
   signatures                 InspectionSignature[]
   responsibleNonConformities NonConformity[]             @relation("NonConformityResponsible")
   createdNonConformities     NonConformity[]             @relation("NonConformityCreatedBy")
+  createdDocuments           Document[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   nonConformityHistory       NonConformityHistory[]

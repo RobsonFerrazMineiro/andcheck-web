@@ -8,6 +8,7 @@ import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 
 const MAX_FILE_SIZE: Record<UploadCategory, number> = {
   "company-logo": 2 * 1024 * 1024,
+  documents: 25 * 1024 * 1024,
   "scaffold-documents": 5 * 1024 * 1024,
   "inspection-photos": 8 * 1024 * 1024,
   "checklist-photos": 8 * 1024 * 1024,
@@ -17,6 +18,7 @@ const MAX_FILE_SIZE: Record<UploadCategory, number> = {
 
 const CATEGORY_PERMISSIONS: Record<UploadCategory, PermissionCode[]> = {
   "company-logo": ["companies.manage"],
+  documents: ["documents.create"],
   "scaffold-documents": ["documents.create"],
   "inspection-photos": ["inspections.create", "inspections.finalize"],
   "checklist-photos": ["inspections.create", "inspections.finalize"],
@@ -64,6 +66,22 @@ export async function POST(
     if (!allowedTypes.has(file.type)) {
       return Response.json(
         { error: "Formato de logo invalido. Use PNG, JPG ou WEBP." },
+        { status: 415 },
+      );
+    }
+  }
+  if (category === "documents") {
+    const allowedTypes = new Set([
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+    ]);
+    if (!allowedTypes.has(file.type)) {
+      return Response.json(
+        { error: "Formato invalido. Use PDF, DOCX, XLSX, PNG, JPG ou WEBP." },
         { status: 415 },
       );
     }

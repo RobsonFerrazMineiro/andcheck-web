@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Construction,
+  FileText,
   FileClock,
   LayoutDashboard,
   Map,
@@ -40,6 +41,12 @@ const navItems = [
     label: "Nao Conformidades",
     icon: ClipboardList,
     desc: "Controle de tratativas",
+  },
+  {
+    path: "/documentos",
+    label: "Documentos",
+    icon: FileText,
+    desc: "Biblioteca corporativa",
   },
   {
     path: "/mapa",
@@ -84,12 +91,14 @@ export function Sidebar({
   canViewNonConformities = false,
   canViewCompanies = false,
   canViewWorkspaces = false,
+  canViewDocuments = false,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
   canViewNonConformities?: boolean;
   canViewCompanies?: boolean;
   canViewWorkspaces?: boolean;
+  canViewDocuments?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -149,6 +158,7 @@ export function Sidebar({
             (item) =>
               item.path !== "/nao-conformidades" || canViewNonConformities,
           )
+          .filter((item) => item.path !== "/documentos" || canViewDocuments)
           .map((item) => {
           const active = isActive(item.path);
           return (
