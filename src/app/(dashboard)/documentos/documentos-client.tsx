@@ -166,13 +166,15 @@ function CategoryFilterButton({
       }`}
     >
       {label}
-      <span
-        className={`font-mono text-[9px] ${
-          active ? "text-primary-foreground/70" : "text-muted-foreground/60"
-        }`}
-      >
-        {count}
-      </span>
+      {count > 0 && (
+        <span
+          className={`font-mono text-[9px] ${
+            active ? "text-primary-foreground/70" : "text-muted-foreground/60"
+          }`}
+        >
+          {count}
+        </span>
+      )}
     </button>
   );
 }
