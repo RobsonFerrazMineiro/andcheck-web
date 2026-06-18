@@ -148,7 +148,15 @@
   }
 
   .andcheck-leaflet-popup-full .leaflet-popup-content {
-    width: 320px !important;
+    box-sizing: border-box;
+    line-height: 1.25;
+    margin: 0 !important;
+    width: 300px !important;
+  }
+
+  .andcheck-leaflet-popup-full .leaflet-popup-content-wrapper {
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.16);
+    padding: 0;
   }
 
   .andcheck-popup {
@@ -156,8 +164,10 @@
   }
 
   .andcheck-popup-full {
-    min-width: 300px;
-    max-width: 340px;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
   }
 
   .andcheck-popup-compact {
@@ -343,6 +353,22 @@
     stroke-width: 2;
     width: 11px;
   }
+}
+
+.andcheck-leaflet-popup-full .leaflet-popup-content {
+  box-sizing: border-box;
+  line-height: 1.25;
+  margin: 0 !important;
+  padding: 8px !important;
+  width: 300px !important;
+}
+
+.andcheck-leaflet-popup-full .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+}
+
+.andcheck-leaflet-popup-full .leaflet-popup-content p {
+  margin: 0 !important;
 }
 
 .andcheck-leaflet-popup-compact .leaflet-popup-content {

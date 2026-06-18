@@ -320,11 +320,11 @@ export function OperationalMap({
         icon: createPin(color),
       });
       marker.bindPopup(buildPopup(scaffold, showCompanyName, variant), {
-        autoPanPadding: variant === "compact" ? [16, 16] : [40, 40],
+        autoPanPadding: variant === "compact" ? [16, 16] : [28, 28],
         className: `andcheck-leaflet-popup-${variant}`,
         closeButton: true,
-        maxWidth: variant === "compact" ? 220 : 340,
-        minWidth: variant === "compact" ? 204 : 300,
+        maxWidth: variant === "compact" ? 220 : 316,
+        minWidth: variant === "compact" ? 204 : 292,
       });
       marker.addTo(map);
     });
