@@ -4,16 +4,25 @@ import { format, parseISO } from "date-fns";
 import {
   Archive,
   ArrowLeft,
+  Building2,
   Calendar,
   Download,
   ExternalLink,
   FileText,
+  MapPinned,
   User,
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import {
+  DocumentFileIcon,
+  DocumentStatusBadge,
+  formatDocumentFileSize,
+  getDocumentExtensionLabel,
+  type CorporateDocumentStatus,
+} from "@/components/document/document-ui";
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { Button } from "@/components/ui/button";
 import { archiveDocument } from "@/lib/actions/document-actions";
@@ -28,7 +37,7 @@ type DocumentDetail = {
   mimeType: string | null;
   category: string;
   categoryLabel: string;
-  status: "ACTIVE" | "EXPIRED" | "ARCHIVED";
+  status: CorporateDocumentStatus;
   issueDate: string | null;
   expiryDate: string | null;
   createdAt: string;
@@ -45,41 +54,41 @@ type DetailData = {
   canArchive: boolean;
 };
 
-const STATUS_LABELS: Record<DocumentDetail["status"], string> = {
-  ACTIVE: "Ativo",
-  EXPIRED: "Vencido",
-  ARCHIVED: "Arquivado",
-};
-
-const STATUS_STYLE: Record<DocumentDetail["status"], string> = {
-  ACTIVE: "bg-emerald-50 text-emerald-800 border-emerald-400/60",
-  EXPIRED: "bg-red-50 text-red-800 border-red-400/60",
-  ARCHIVED: "bg-slate-100 text-slate-600 border-slate-400/60",
-};
-
 function formatDate(value: string | null) {
   return value ? format(parseISO(value), "dd/MM/yyyy") : "-";
 }
 
-function formatBytes(bytes: number | null) {
-  if (!bytes) return "-";
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-function InfoItem({
-  label,
-  value,
+function DetailCard({
+  icon: Icon,
+  title,
+  children,
 }: {
-  label: string;
-  value: React.ReactNode;
+  icon: typeof FileText;
+  title: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="border border-border bg-background p-3">
-      <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+    <section className="border border-border bg-card p-4 shadow-sm">
+      <div className="mb-3 flex items-center gap-2">
+        <Icon className="size-4 text-muted-foreground/60" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          {title}
+        </p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function InfoLine({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b border-border/60 py-2 last:border-b-0">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
-      <div className="text-[12px] font-semibold text-foreground">{value}</div>
+      <div className="max-w-[65%] text-right text-[12px] font-semibold text-foreground">
+        {value}
+      </div>
     </div>
   );
 }
@@ -122,15 +131,21 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            AndCheck EHS · Gestao Documental
+            AndCheck EHS - Gestao Documental
           </p>
-          <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
-            {document.title}
-          </h1>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {document.categoryLabel} · {document.fileName}
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="max-w-3xl truncate text-[18px] font-bold uppercase tracking-tight text-foreground">
+              {document.title}
+            </h1>
+            <span className="border border-border bg-muted/30 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              {document.categoryLabel}
+            </span>
+            <DocumentStatusBadge status={document.status} />
+          </div>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {document.fileName}
           </p>
         </div>
         <Button asChild variant="outline" className="rounded-none">
@@ -141,88 +156,53 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <div className="flex flex-col gap-4">
-          <div className="border border-border bg-card p-4 shadow-sm">
-            <div className="mb-3 flex items-center gap-2">
-              <FileText className="size-4 text-muted-foreground/60" />
-              <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-                Dados Gerais
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <InfoItem label="Titulo" value={document.title} />
-              <InfoItem label="Categoria" value={document.categoryLabel} />
-              <InfoItem
-                label="Empresa"
-                value={document.company?.name ?? "-"}
-              />
-              <InfoItem
-                label="Workspace"
-                value={document.workspace?.name ?? "-"}
-              />
-              <InfoItem
-                label="Criado por"
-                value={
-                  <span className="inline-flex items-center gap-1.5">
-                    <User className="size-3.5 text-muted-foreground/50" />
-                    {document.createdBy?.name ?? "-"}
-                  </span>
-                }
-              />
-              <InfoItem
-                label="Criado em"
-                value={
-                  <span className="inline-flex items-center gap-1.5">
-                    <Calendar className="size-3.5 text-muted-foreground/50" />
-                    {formatDate(document.createdAt)}
-                  </span>
-                }
-              />
-              <InfoItem label="Emissao" value={formatDate(document.issueDate)} />
-              <InfoItem label="Validade" value={formatDate(document.expiryDate)} />
-              <InfoItem
-                label="Status"
-                value={
-                  <span
-                    className={
-                      "inline-flex items-center border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
-                      STATUS_STYLE[document.status]
-                    }
-                  >
-                    {STATUS_LABELS[document.status]}
-                  </span>
-                }
-              />
-              <InfoItem label="Tamanho" value={formatBytes(document.fileSize)} />
-            </div>
-            {document.description && (
-              <div className="mt-3 border border-border bg-background p-3">
-                <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                  Descricao
-                </p>
-                <p className="text-[12px] text-foreground">
+      <div className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <DetailCard icon={Building2} title="Empresa">
+            <InfoLine label="Empresa" value={document.company?.name ?? "-"} />
+            <InfoLine label="Categoria" value={document.categoryLabel} />
+          </DetailCard>
+
+          <DetailCard icon={MapPinned} title="Workspace">
+            <InfoLine label="Workspace" value={document.workspace?.name ?? "-"} />
+            <InfoLine label="Status" value={<DocumentStatusBadge status={document.status} />} />
+          </DetailCard>
+
+          <DetailCard icon={Calendar} title="Datas">
+            <InfoLine label="Emissao" value={formatDate(document.issueDate)} />
+            <InfoLine label="Validade" value={formatDate(document.expiryDate)} />
+            <InfoLine label="Criado em" value={formatDate(document.createdAt)} />
+          </DetailCard>
+
+          <DetailCard icon={User} title="Criado por">
+            <InfoLine label="Nome" value={document.createdBy?.name ?? "-"} />
+            <InfoLine label="Email" value={document.createdBy?.email ?? "-"} />
+          </DetailCard>
+
+          {document.description && (
+            <div className="sm:col-span-2">
+              <DetailCard icon={FileText} title="Descricao">
+                <p className="text-[12px] leading-relaxed text-foreground">
                   {document.description}
                 </p>
-              </div>
-            )}
-          </div>
+              </DetailCard>
+            </div>
+          )}
         </div>
 
-        <div className="border border-border bg-card p-4 shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <FileText className="size-4 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-              Arquivo
-            </p>
-          </div>
-          <div className="mb-4 flex min-h-36 flex-col items-center justify-center border border-dashed border-border bg-muted/20 p-4 text-center">
-            <FileText className="mb-2 size-9 text-muted-foreground/30" />
+        <DetailCard icon={FileText} title="Arquivo">
+          <div className="mb-4 flex min-h-40 flex-col items-center justify-center border border-dashed border-border bg-muted/20 p-4 text-center">
+            <DocumentFileIcon
+              fileName={document.fileName}
+              mimeType={document.mimeType}
+              className="mb-2 size-9 text-muted-foreground/40"
+            />
             <p className="max-w-full truncate text-[12px] font-semibold text-foreground">
               {document.fileName}
             </p>
             <p className="mt-1 text-[10px] text-muted-foreground">
-              {document.mimeType ?? "tipo nao informado"} · {formatBytes(document.fileSize)}
+              {getDocumentExtensionLabel(document.fileName)} -{" "}
+              {formatDocumentFileSize(document.fileSize)}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -265,7 +245,7 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
               </Button>
             )}
           </div>
-        </div>
+        </DetailCard>
       </div>
 
       {previewOpen && (

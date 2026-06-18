@@ -1,11 +1,16 @@
 "use client";
 
-import { ArrowLeft, FileText, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  DocumentFileIcon,
+  formatDocumentFileSize,
+  getDocumentExtensionLabel,
+} from "@/components/document/document-ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,11 +32,6 @@ type Options = {
 
 const ACCEPT = ".pdf,.docx,.xlsx,.png,.jpg,.jpeg,.webp";
 const MAX_SIZE = 25 * 1024 * 1024;
-
-function formatBytes(bytes: number) {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
 
 export function NovoDocumentoForm({ options }: { options: Options }) {
   const router = useRouter();
@@ -86,7 +86,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            AndCheck EHS · Gestao Documental
+            AndCheck EHS - Gestao Documental
           </p>
           <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
             Novo Documento
@@ -199,13 +199,24 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
             className="flex min-h-24 items-center justify-center border border-dashed border-border bg-muted/20 p-4 text-center transition-colors hover:bg-muted/40"
           >
             {file ? (
-              <span className="flex flex-col items-center gap-1">
-                <FileText className="size-7 text-muted-foreground/50" />
-                <span className="text-[12px] font-semibold text-foreground">
-                  {file.name}
+              <span className="grid w-full max-w-xl grid-cols-[48px_1fr] items-center gap-3 text-left">
+                <span className="flex size-12 items-center justify-center border border-border bg-background">
+                  <DocumentFileIcon
+                    fileName={file.name}
+                    mimeType={file.type}
+                    className="size-6 text-muted-foreground/60"
+                  />
                 </span>
-                <span className="text-[10px] text-muted-foreground">
-                  {file.type || "tipo nao informado"} · {formatBytes(file.size)}
+                <span className="min-w-0">
+                  <span className="block truncate text-[12px] font-semibold text-foreground">
+                    {file.name}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                    <span className="border border-border bg-background px-1.5 py-0.5 font-mono">
+                      {getDocumentExtensionLabel(file.name)}
+                    </span>
+                    <span>{formatDocumentFileSize(file.size)}</span>
+                  </span>
                 </span>
               </span>
             ) : (
@@ -229,7 +240,11 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
             <Link href="/documentos">Cancelar</Link>
           </Button>
           <Button type="submit" disabled={saving} className="rounded-none">
-            {saving ? <Loader2 data-icon="inline-start" className="animate-spin" /> : <Upload data-icon="inline-start" />}
+            {saving ? (
+              <Loader2 data-icon="inline-start" className="animate-spin" />
+            ) : (
+              <Upload data-icon="inline-start" />
+            )}
             {saving ? "Salvando..." : "Salvar Documento"}
           </Button>
         </div>
