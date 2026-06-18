@@ -35,7 +35,7 @@ const STATUS_COLOR: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   liberado: "Liberado",
   em_montagem: "Em montagem",
-  pendente_liberacao: "Pendente liberacao",
+  pendente_liberacao: "Pendente",
   reprovado: "Reprovado",
   interditado: "Interditado",
   vencido: "Vencido",
@@ -88,10 +88,10 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString("pt-BR");
 }
 
-function infoRow(label: string, value: string) {
+function infoRow(label: string, value: string, className = "") {
   if (!value.trim()) return "";
   return `
-    <div class="andcheck-popup-row">
+    <div class="andcheck-popup-row ${className}">
       <span>${label}</span>
       <strong>${escapeHtml(value)}</strong>
     </div>
@@ -107,16 +107,55 @@ function requiredInfoRow(label: string, value: string) {
   `;
 }
 
+const DETAILS_ICON = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M14 3h7v7" />
+    <path d="M10 14 21 3" />
+    <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+  </svg>
+`;
+
+const QR_ICON = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 3h7v7H3z" />
+    <path d="M14 3h7v7h-7z" />
+    <path d="M3 14h7v7H3z" />
+    <path d="M14 14h2v2h-2z" />
+    <path d="M19 14h2v2h-2z" />
+    <path d="M14 19h2v2h-2z" />
+    <path d="M18 18h3v3" />
+  </svg>
+`;
+
+const PDF_ICON = `
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <path d="M8 13h1.5a1.5 1.5 0 0 1 0 3H8v-5" />
+    <path d="M13 11v5h1a2 2 0 0 0 0-4h-1" />
+    <path d="M17 11h3" />
+    <path d="M17 13.5h2" />
+    <path d="M17 16v-5" />
+  </svg>
+`;
+
 function isShortText(value: string | null | undefined) {
   return Boolean(value?.trim() && value.trim().length <= 52);
+}
+
+function truncateText(value: string, maxLength: number) {
+  const normalized = value.trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
   const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
   const statusLabel =
     STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
-  const location =
-    isShortText(scaffold.locationDescription) ? scaffold.locationDescription : "";
+  const location = isShortText(scaffold.locationDescription)
+    ? scaffold.locationDescription
+    : "";
   const validityDate = formatDate(scaffold.validity_date);
   const lastInspection = scaffold.lastInspection
     ? `${formatDate(scaffold.lastInspection.date)} - ${
@@ -140,15 +179,22 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
             : ""
         }
         ${infoRow("Area", scaffold.area)}
-        ${infoRow("Status", statusLabel)}
-        ${location ? infoRow("Localizacao", location) : ""}
+        ${
+          location
+            ? infoRow(
+                "Localizacao",
+                truncateText(location, 34),
+                "compact-location",
+              )
+            : ""
+        }
         ${lastInspection ? infoRow("Ultima inspecao", lastInspection) : ""}
         ${validityDate ? infoRow("Validade", validityDate) : ""}
       </div>
       <div class="andcheck-popup-actions">
-        <a href="/andaimes/${escapeHtml(scaffold.id)}">Detalhes</a>
-        <a href="/qr/${escapeHtml(scaffold.id)}">QR</a>
-        <a class="primary" href="/andaimes/${escapeHtml(scaffold.id)}?pdf=1">PDF</a>
+        <a href="/andaimes/${escapeHtml(scaffold.id)}" title="Detalhes" aria-label="Detalhes">${DETAILS_ICON}</a>
+        <a href="/qr/${escapeHtml(scaffold.id)}" title="QR Code" aria-label="QR Code">${QR_ICON}</a>
+        <a class="primary" href="/andaimes/${escapeHtml(scaffold.id)}?pdf=1" title="PDF" aria-label="PDF">${PDF_ICON}</a>
       </div>
     </div>
   `;
@@ -277,8 +323,8 @@ export function OperationalMap({
         autoPanPadding: variant === "compact" ? [16, 16] : [40, 40],
         className: `andcheck-leaflet-popup-${variant}`,
         closeButton: true,
-        maxWidth: variant === "compact" ? 260 : 340,
-        minWidth: variant === "compact" ? 220 : 300,
+        maxWidth: variant === "compact" ? 220 : 340,
+        minWidth: variant === "compact" ? 204 : 300,
       });
       marker.addTo(map);
     });

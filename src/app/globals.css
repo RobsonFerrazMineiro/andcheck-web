@@ -136,11 +136,15 @@
   }
 
   .andcheck-leaflet-popup-compact .leaflet-popup-content {
-    width: 240px !important;
+    box-sizing: border-box;
+    line-height: 1.2;
+    margin: 0 !important;
+    width: 208px !important;
   }
 
   .andcheck-leaflet-popup-compact .leaflet-popup-content-wrapper {
     box-shadow: 0 8px 20px rgb(15 23 42 / 0.16);
+    padding: 0;
   }
 
   .andcheck-leaflet-popup-full .leaflet-popup-content {
@@ -157,8 +161,10 @@
   }
 
   .andcheck-popup-compact {
-    min-width: 220px;
-    max-width: 260px;
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
   }
 
   .leaflet-popup-close-button {
@@ -267,8 +273,9 @@
 
   .andcheck-popup-compact .andcheck-popup-header {
     align-items: center;
-    gap: 8px;
-    padding: 7px 24px 7px 10px;
+    gap: 10px;
+    justify-content: flex-start;
+    padding: 5px 18px 5px 8px;
   }
 
   .andcheck-popup-compact .andcheck-popup-header strong {
@@ -286,8 +293,8 @@
   }
 
   .andcheck-popup-compact .andcheck-popup-body {
-    gap: 5px;
-    padding: 7px 10px 8px;
+    gap: 3px;
+    padding: 5px 6px 6px;
   }
 
   .andcheck-popup-compact .andcheck-popup-row {
@@ -295,20 +302,27 @@
   }
 
   .andcheck-popup-compact .andcheck-popup-row span {
-    font-size: 7px;
+    font-size: 6.5px;
     letter-spacing: 0.05em;
   }
 
   .andcheck-popup-compact .andcheck-popup-row strong {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 650;
     line-height: 1.2;
   }
 
+  .andcheck-popup-compact .andcheck-popup-row.compact-location strong {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
   .andcheck-popup-compact .andcheck-popup-actions {
-    gap: 4px;
-    grid-template-columns: 1fr 0.6fr 0.55fr;
-    padding: 7px 10px 8px;
+    gap: 3px;
+    grid-template-columns: 1fr 1fr 1fr;
+    padding: 5px 6px 6px;
   }
 
   .andcheck-popup-compact .andcheck-popup-actions a,
@@ -316,7 +330,33 @@
   .andcheck-popup-compact .andcheck-popup-actions a:hover,
   .andcheck-popup-compact .andcheck-popup-actions a:active {
     font-size: 8px;
-    min-height: 22px;
-    padding: 4px 5px;
+    min-height: 20px;
+    padding: 3px 4px;
   }
+
+  .andcheck-popup-compact .andcheck-popup-actions svg {
+    fill: none;
+    height: 11px;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+    width: 11px;
+  }
+}
+
+.andcheck-leaflet-popup-compact .leaflet-popup-content {
+  box-sizing: border-box;
+  line-height: 1.2;
+  margin: 0 !important;
+  padding: 6px !important;
+  width: 208px !important;
+}
+
+.andcheck-leaflet-popup-compact .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+}
+
+.andcheck-leaflet-popup-compact .leaflet-popup-content p {
+  margin: 0 !important;
 }
