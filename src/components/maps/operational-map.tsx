@@ -107,10 +107,23 @@ function requiredInfoRow(label: string, value: string) {
   `;
 }
 
+function isShortText(value: string | null | undefined) {
+  return Boolean(value?.trim() && value.trim().length <= 52);
+}
+
 function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
   const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
   const statusLabel =
     STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
+  const location =
+    isShortText(scaffold.locationDescription) ? scaffold.locationDescription : "";
+  const validityDate = formatDate(scaffold.validity_date);
+  const lastInspection = scaffold.lastInspection
+    ? `${formatDate(scaffold.lastInspection.date)} - ${
+        RESULT_LABEL[scaffold.lastInspection.result] ??
+        scaffold.lastInspection.result
+      }`
+    : "";
 
   return `
     <div class="andcheck-popup andcheck-popup-compact">
@@ -123,19 +136,18 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
       <div class="andcheck-popup-body">
         ${
           showCompanyName
-            ? infoRow("Empresa responsavel", scaffold.companyName)
+            ? infoRow("Empresa", scaffold.companyName)
             : ""
         }
         ${infoRow("Area", scaffold.area)}
-        ${
-          scaffold.locationDescription
-            ? infoRow("Localizacao", scaffold.locationDescription)
-            : ""
-        }
+        ${infoRow("Status", statusLabel)}
+        ${location ? infoRow("Localizacao", location) : ""}
+        ${lastInspection ? infoRow("Ultima inspecao", lastInspection) : ""}
+        ${validityDate ? infoRow("Validade", validityDate) : ""}
       </div>
       <div class="andcheck-popup-actions">
-        <a href="/andaimes/${escapeHtml(scaffold.id)}">Ver detalhes</a>
-        <a href="/qr/${escapeHtml(scaffold.id)}">QR Code</a>
+        <a href="/andaimes/${escapeHtml(scaffold.id)}">Detalhes</a>
+        <a href="/qr/${escapeHtml(scaffold.id)}">QR</a>
         <a class="primary" href="/andaimes/${escapeHtml(scaffold.id)}?pdf=1">PDF</a>
       </div>
     </div>
@@ -262,11 +274,11 @@ export function OperationalMap({
         icon: createPin(color),
       });
       marker.bindPopup(buildPopup(scaffold, showCompanyName, variant), {
-        autoPanPadding: variant === "compact" ? [12, 12] : [40, 40],
+        autoPanPadding: variant === "compact" ? [16, 16] : [40, 40],
         className: `andcheck-leaflet-popup-${variant}`,
         closeButton: true,
-        maxWidth: variant === "compact" ? 320 : 340,
-        minWidth: variant === "compact" ? 280 : 300,
+        maxWidth: variant === "compact" ? 260 : 340,
+        minWidth: variant === "compact" ? 220 : 300,
       });
       marker.addTo(map);
     });

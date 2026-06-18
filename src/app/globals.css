@@ -136,7 +136,11 @@
   }
 
   .andcheck-leaflet-popup-compact .leaflet-popup-content {
-    width: 300px !important;
+    width: 240px !important;
+  }
+
+  .andcheck-leaflet-popup-compact .leaflet-popup-content-wrapper {
+    box-shadow: 0 8px 20px rgb(15 23 42 / 0.16);
   }
 
   .andcheck-leaflet-popup-full .leaflet-popup-content {
@@ -153,8 +157,8 @@
   }
 
   .andcheck-popup-compact {
-    min-width: 280px;
-    max-width: 320px;
+    min-width: 220px;
+    max-width: 260px;
   }
 
   .leaflet-popup-close-button {
@@ -263,40 +267,48 @@
 
   .andcheck-popup-compact .andcheck-popup-header {
     align-items: center;
-    gap: 10px;
-    padding: 10px 28px 8px 12px;
+    gap: 8px;
+    padding: 7px 24px 7px 10px;
   }
 
   .andcheck-popup-compact .andcheck-popup-header strong {
-    font-size: 15px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
     line-height: 1.1;
   }
 
   .andcheck-popup-compact .andcheck-popup-header span {
-    font-size: 8px;
-    letter-spacing: 0.06em;
-    padding: 2px 6px;
+    font-size: 7px;
+    letter-spacing: 0.05em;
+    padding: 2px 5px;
     white-space: nowrap;
   }
 
   .andcheck-popup-compact .andcheck-popup-body {
-    gap: 7px;
-    padding: 8px 12px 10px;
+    gap: 5px;
+    padding: 7px 10px 8px;
+  }
+
+  .andcheck-popup-compact .andcheck-popup-row {
+    gap: 1px;
   }
 
   .andcheck-popup-compact .andcheck-popup-row span {
-    font-size: 8px;
-    letter-spacing: 0.06em;
+    font-size: 7px;
+    letter-spacing: 0.05em;
   }
 
   .andcheck-popup-compact .andcheck-popup-row strong {
     font-size: 10px;
-    line-height: 1.25;
+    font-weight: 650;
+    line-height: 1.2;
   }
 
   .andcheck-popup-compact .andcheck-popup-actions {
-    gap: 5px;
-    padding: 8px 12px 10px;
+    gap: 4px;
+    grid-template-columns: 1fr 0.6fr 0.55fr;
+    padding: 7px 10px 8px;
   }
 
   .andcheck-popup-compact .andcheck-popup-actions a,
@@ -304,7 +316,7 @@
   .andcheck-popup-compact .andcheck-popup-actions a:hover,
   .andcheck-popup-compact .andcheck-popup-actions a:active {
     font-size: 8px;
-    min-height: 26px;
-    padding: 5px 6px;
+    min-height: 22px;
+    padding: 4px 5px;
   }
 }
