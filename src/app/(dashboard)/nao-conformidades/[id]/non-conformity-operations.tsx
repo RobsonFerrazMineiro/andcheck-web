@@ -5,8 +5,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Download,
-  ExternalLink,
   FileText,
   MessageSquare,
   Plus,
@@ -19,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -36,13 +35,10 @@ import {
   updateNonConformityStatus,
 } from "@/lib/actions/non-conformity-actions";
 import {
-  downloadDocumentFile,
   getDocumentExtension,
   getDocumentFileName,
   getDocumentViewUrl,
-  getSafeOpenUrl,
   isImageDocument,
-  isPdfDocument,
 } from "@/lib/document-view";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
@@ -556,9 +552,7 @@ export function NonConformityEvidencePreview({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const document = { fileUrl, fileName, mimeType };
   const viewUrl = getDocumentViewUrl(document);
-  const safeOpenUrl = getSafeOpenUrl(document);
   const isImage = isImageDocument(document);
-  const isPdf = isPdfDocument(document);
   const extension = getDocumentExtension(document);
   const galleryImages =
     galleryItems?.filter((item) =>
@@ -580,20 +574,6 @@ export function NonConformityEvidencePreview({
     observation,
   };
   const hasGalleryNavigation = galleryImages.length > 1;
-
-  function downloadDocument() {
-    if (!downloadDocumentFile(document)) {
-      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
-    }
-  }
-
-  function openDocumentInNewTab() {
-    if (!safeOpenUrl) {
-      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
-      return;
-    }
-    window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
-  }
 
   function openPreview() {
     if (!viewUrl) {
@@ -647,49 +627,11 @@ export function NonConformityEvidencePreview({
         </button>
 
         {open && (
-          <ModalShell title="Documento" onClose={() => setOpen(false)}>
-            <div className="space-y-4">
-              {isPdf && safeOpenUrl && (
-                <iframe
-                  src={safeOpenUrl}
-                  title={getDocumentFileName(document)}
-                  className="h-[60vh] w-full border border-border"
-                />
-              )}
-              <div className="flex items-start gap-3">
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-dashed border-border bg-muted/20">
-                  <FileText className="h-7 w-7 text-muted-foreground" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[12px] font-semibold text-foreground">
-                    {getDocumentFileName(document)}
-                  </p>
-                  {observation && (
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      {observation}
-                    </p>
-                  )}
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={downloadDocument}
-                >
-                  <Download className="w-3.5 h-3.5" /> Baixar
-                </Button>
-                {isPdf && (
-                  <Button
-                    type="button"
-                    onClick={openDocumentInNewTab}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" /> Abrir em nova guia
-                  </Button>
-                )}
-              </div>
-            </div>
-          </ModalShell>
+          <DocumentPreviewModal
+            document={document}
+            title={getDocumentFileName(document)}
+            onClose={() => setOpen(false)}
+          />
         )}
       </>
     );

@@ -6,18 +6,17 @@ import { ptBR } from "date-fns/locale";
 import {
   Download,
   Eye,
-  ExternalLink,
   FileText,
   Loader2,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import {
   addScaffoldDocument,
   deleteScaffoldDocument,
@@ -26,12 +25,7 @@ import { compressImageBlob } from "@/lib/compress-image";
 import {
   downloadDocumentFile,
   getDocumentExtension,
-  getDocumentFileName,
   getDocumentViewUrl,
-  getSafeOpenUrl,
-  isBrowserViewableDocument,
-  isImageDocument,
-  isPdfDocument,
 } from "@/lib/document-view";
 import { uploadFile } from "@/lib/upload-file";
 
@@ -84,107 +78,6 @@ function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
   return "anexado";
 }
 
-function DocumentPreviewModal({
-  doc,
-  onClose,
-}: {
-  doc: ScaffoldDocumentMetadata;
-  onClose: () => void;
-}) {
-  const viewUrl = getDocumentViewUrl(doc);
-  const safeOpenUrl = getSafeOpenUrl(doc);
-  const isImage = isImageDocument(doc);
-  const isPdf = isPdfDocument(doc);
-  const canOpenInTab = isBrowserViewableDocument(doc) && Boolean(safeOpenUrl);
-
-  function handleDownload() {
-    if (!downloadDocumentFile(doc)) {
-      toast.error("Arquivo indisponível ou URL inválida.");
-    }
-  }
-
-  function handleOpenInTab() {
-    if (!safeOpenUrl) {
-      toast.error("Arquivo indisponível ou URL inválida.");
-      return;
-    }
-    window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
-        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
-          <div className="flex items-center gap-2 min-w-0">
-            <FileText className="w-4 h-4 text-muted-foreground/70 shrink-0" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground truncate">
-              {doc.title}
-            </p>
-          </div>
-          <button onClick={onClose} className="p-1 hover:bg-muted transition-colors">
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-4">
-          {isImage && viewUrl && (
-            <Image
-              src={viewUrl}
-              alt={doc.title}
-              width={1200}
-              height={800}
-              unoptimized
-              className="mx-auto max-h-[70vh] w-auto max-w-full object-contain"
-            />
-          )}
-
-          {isPdf && safeOpenUrl && (
-            <iframe
-              src={safeOpenUrl}
-              title={doc.title}
-              className="h-[70vh] w-full border border-border"
-            />
-          )}
-
-          {!isImage && !isPdf && (
-            <div className="flex items-start gap-3 border border-dashed border-border bg-muted/20 p-4">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-border bg-background">
-                <FileText className="h-7 w-7 text-muted-foreground" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-foreground">
-                  {getDocumentFileName(doc)}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Este formato deve ser baixado para visualização.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="h-8 px-3 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted transition-colors inline-flex items-center gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" /> Baixar
-            </button>
-            {canOpenInTab && (
-              <button
-                type="button"
-                onClick={handleOpenInTab}
-                className="h-8 px-3 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors inline-flex items-center gap-1.5"
-              >
-                <ExternalLink className="w-3.5 h-3.5" /> Abrir em nova guia
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Sub-componente: badge de status ──────────────────────────────────────────
 function StatusBadge({
@@ -637,7 +530,8 @@ export function ScaffoldDocumentSection({
       )}
       {previewDoc && (
         <DocumentPreviewModal
-          doc={previewDoc}
+          document={previewDoc}
+          title={previewDoc.title}
           onClose={() => setPreviewDoc(null)}
         />
       )}
