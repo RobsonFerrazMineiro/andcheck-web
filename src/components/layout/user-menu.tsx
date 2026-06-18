@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, LogOut, MapPin, ShieldCheck, User } from "lucide-react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -96,6 +97,14 @@ export function UserMenu({
           </div>
 
           <div className="border-t p-2">
+            <Link
+              href="/perfil"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <User className="size-3.5" />
+              Meu Perfil
+            </Link>
             <button
               type="button"
               onClick={() => signOut({ callbackUrl: "/login" })}

@@ -245,19 +245,22 @@ export async function updateCompany(formData: FormData) {
     }
     return updated;
   });
+  const logoChanged = current.logoUrl !== company.logoUrl;
 
   await createAuditLog({
     entityType: AuditEntityType.COMPANY,
     entityId: company.id,
     entityLabel: company.name,
-    action:
-      current.active === company.active
+    action: logoChanged
+      ? AuditAction.COMPANY_LOGO_UPDATED
+      : current.active === company.active
         ? AuditAction.COMPANY_UPDATED
         : company.active
           ? AuditAction.COMPANY_ACTIVATED
           : AuditAction.COMPANY_DEACTIVATED,
-    description:
-      current.active === company.active
+    description: logoChanged
+      ? `Logo da empresa ${company.name} atualizada`
+      : current.active === company.active
         ? `Empresa ${company.name} atualizada`
         : `Empresa ${company.name} ${company.active ? "ativada" : "desativada"}`,
     oldValue: companySnapshot(current),

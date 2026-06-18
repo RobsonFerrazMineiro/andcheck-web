@@ -2,8 +2,21 @@
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
 import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ClipboardCheck,
+  Construction,
+  MapPin,
+  QrCode,
+  RotateCcw,
+} from "lucide-react";
 import dynamic from "next/dynamic";
-import { ClipboardCheck, Construction, MapPin, QrCode, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -13,9 +26,9 @@ const OperationalMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-muted/30">
-        <p className="text-[11px] text-muted-foreground uppercase tracking-widest animate-pulse">
-          Carregando mapa…
+      <div className="flex h-full w-full items-center justify-center bg-muted/30">
+        <p className="animate-pulse text-[11px] uppercase tracking-widest text-muted-foreground">
+          Carregando mapa...
         </p>
       </div>
     ),
@@ -27,23 +40,24 @@ interface Props {
     latitude: number | null;
     longitude: number | null;
   })[];
+  showCompanyName?: boolean;
 }
 
-export function MapaClient({ scaffolds }: Props) {
-  const pins: ScaffoldPin[] = scaffolds.filter(
-    (s): s is ScaffoldPin & { latitude: number; longitude: number } =>
-      s.latitude !== null && s.longitude !== null,
-  ) as ScaffoldPin[];
+export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
+  const pins = scaffolds.filter(
+    (scaffold): scaffold is ScaffoldPin =>
+      scaffold.latitude !== null && scaffold.longitude !== null,
+  );
 
   if (pins.length === 0) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-muted/20">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20">
         <p className="text-[13px] font-semibold text-muted-foreground">
           Nenhum andaime georreferenciado
         </p>
-        <p className="text-[11px] text-muted-foreground/60 text-center max-w-xs">
-          Cadastre ou edite andaimes informando a localização GPS para
-          visualizá-los no mapa.
+        <p className="max-w-xs text-center text-[11px] text-muted-foreground/60">
+          Cadastre ou edite andaimes informando a localizacao GPS para
+          visualiza-los no mapa.
         </p>
       </div>
     );
@@ -54,6 +68,8 @@ export function MapaClient({ scaffolds }: Props) {
       key={pins.map((pin) => pin.id).join("|")}
       scaffolds={pins}
       height="100%"
+      showCompanyName={showCompanyName}
+      variant="full"
     />
   );
 }
@@ -66,10 +82,10 @@ type LegendFilter = {
 
 const LEGEND_FILTERS: LegendFilter[] = [
   { status: "liberado", label: "Liberado", dot: "bg-emerald-500" },
-  { status: "em_montagem", label: "Em Montagem", dot: "bg-blue-500" },
+  { status: "em_montagem", label: "Em montagem", dot: "bg-blue-500" },
   {
     status: "pendente_liberacao",
-    label: "Pend. Liberacao",
+    label: "Pend. liberacao",
     dot: "bg-amber-400",
   },
   { status: "reprovado", label: "Reprovado", dot: "bg-red-500" },
@@ -91,70 +107,126 @@ const STATUS_DOT: Record<string, string> = {
 
 function filterLabel(activeStatus: string | null) {
   if (!activeStatus) return "Todos os status";
-  return LEGEND_FILTERS.find((item) => item.status === activeStatus)?.label ?? activeStatus;
+  return (
+    LEGEND_FILTERS.find((item) => item.status === activeStatus)?.label ??
+    activeStatus
+  );
 }
 
 export function MapaOperacionalClient({
   scaffolds,
   canInspect,
+  canFilterCompany,
+  showCompanyName = true,
 }: Props & {
   canInspect: boolean;
+  canFilterCompany: boolean;
 }) {
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
+  const [activeCompanyId, setActiveCompanyId] = useState("all");
+
+  const companies = useMemo(
+    () =>
+      Array.from(
+        new Map(
+          scaffolds.map((scaffold) => [
+            scaffold.companyId,
+            scaffold.companyName,
+          ]),
+        ),
+      )
+        .map(([id, name]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+    [scaffolds],
+  );
 
   const filteredScaffolds = useMemo(
     () =>
-      activeStatus
-        ? scaffolds.filter((s) => s.effectiveStatus === activeStatus)
-        : scaffolds,
-    [activeStatus, scaffolds],
+      scaffolds.filter(
+        (scaffold) =>
+          (!activeStatus || scaffold.effectiveStatus === activeStatus) &&
+          (activeCompanyId === "all" ||
+            scaffold.companyId === activeCompanyId),
+      ),
+    [activeCompanyId, activeStatus, scaffolds],
   );
 
   const comCoords = filteredScaffolds.filter(
-    (s) => s.latitude !== null && s.longitude !== null,
+    (scaffold) => scaffold.latitude !== null && scaffold.longitude !== null,
   ).length;
 
   return (
     <>
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="overflow-hidden border border-border bg-card shadow-sm">
+        <div className="flex flex-col justify-between gap-2 border-b border-border px-4 py-3 sm:flex-row sm:items-center">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              Mapa de Satelite - Posicionamento Real
+              Mapa de satelite - posicionamento real
             </p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1">
+            <p className="mt-1 text-[10px] text-muted-foreground/60">
               Filtro ativo: {filterLabel(activeStatus)}
+              {activeCompanyId !== "all" &&
+                ` - ${
+                  companies.find((company) => company.id === activeCompanyId)
+                    ?.name ?? "Empresa"
+                }`}
             </p>
           </div>
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
-            {comCoords} andaimes no mapa · clique no pin para detalhes
+          <p className="text-[9px] uppercase tracking-widest text-muted-foreground/40">
+            {comCoords} andaimes no mapa - clique no pin para detalhes
           </p>
         </div>
         <div style={{ height: 480 }}>
-          <MapaClient scaffolds={filteredScaffolds} />
+          <MapaClient
+            scaffolds={filteredScaffolds}
+            showCompanyName={showCompanyName}
+          />
         </div>
       </div>
 
-      <div className="bg-card border border-border p-4">
-        <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="border border-border bg-card p-4">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Filtros por Status
+            Filtros operacionais
           </p>
-          {activeStatus && (
-            <button
-              type="button"
-              onClick={() => setActiveStatus(null)}
-              className="inline-flex items-center gap-1.5 h-7 px-2.5 border border-border text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Limpar
-            </button>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {canFilterCompany && companies.length > 1 && (
+              <Select value={activeCompanyId} onValueChange={setActiveCompanyId}>
+                <SelectTrigger className="h-8 w-52 rounded-none text-[10px]">
+                  <SelectValue placeholder="Todas as empresas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as empresas</SelectItem>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {(activeStatus || activeCompanyId !== "all") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveStatus(null);
+                  setActiveCompanyId("all");
+                }}
+                className="inline-flex h-7 items-center gap-1.5 border border-border px-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+              >
+                <RotateCcw className="size-3" />
+                Limpar
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {LEGEND_FILTERS.map((item) => {
             const count = scaffolds.filter(
-              (s) => s.effectiveStatus === item.status,
+              (scaffold) =>
+                scaffold.effectiveStatus === item.status &&
+                (activeCompanyId === "all" ||
+                  scaffold.companyId === activeCompanyId),
             ).length;
             const active = activeStatus === item.status;
 
@@ -164,14 +236,14 @@ export function MapaOperacionalClient({
                 type="button"
                 onClick={() => setActiveStatus(active ? null : item.status)}
                 className={
-                  "inline-flex items-center gap-2 h-8 px-3 border text-[10px] font-bold uppercase tracking-wider transition-colors " +
+                  "inline-flex h-8 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
                   (active
                     ? "border-accent bg-accent/10 text-foreground"
                     : "border-border text-muted-foreground hover:bg-muted/60")
                 }
                 aria-pressed={active}
               >
-                <span className={"w-3 h-3 rounded-full " + item.dot} />
+                <span className={"size-3 rounded-full " + item.dot} />
                 <span>{item.label}</span>
                 <span className="font-mono text-[10px] text-muted-foreground/70">
                   {count}
@@ -182,12 +254,12 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+      <div className="overflow-hidden border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Andaimes - Listagem
+            Andaimes - listagem
           </p>
-          <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">
+          <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50">
             {filteredScaffolds.length} de {scaffolds.length} registros
           </p>
         </div>
@@ -199,52 +271,55 @@ export function MapaOperacionalClient({
               </p>
             </div>
           ) : (
-            filteredScaffolds.map((s) => (
+            filteredScaffolds.map((scaffold) => (
               <div
-                key={s.id}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors"
+                key={scaffold.id}
+                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30"
               >
                 <div
                   className={
-                    "w-2 h-2 rounded-full shrink-0 " +
-                    (STATUS_DOT[s.effectiveStatus] ?? "bg-gray-400")
+                    "size-2 shrink-0 rounded-full " +
+                    (STATUS_DOT[scaffold.effectiveStatus] ?? "bg-gray-400")
                   }
                 />
-                <MapPin className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-[12px] font-mono text-foreground">
-                    {s.code}
+                <MapPin className="size-3.5 shrink-0 text-muted-foreground/30" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[12px] font-bold text-foreground">
+                    {scaffold.code}
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate">
-                    {s.location} · {s.area}
-                    {!s.latitude && (
-                      <span className="text-amber-500 ml-1">· sem coords</span>
+                  <p className="truncate text-[10px] text-muted-foreground">
+                    {canFilterCompany ? `${scaffold.companyName} - ` : ""}
+                    {scaffold.location} - {scaffold.area}
+                    {!scaffold.latitude && (
+                      <span className="ml-1 text-amber-500">
+                        - sem coords
+                      </span>
                     )}
                   </p>
                 </div>
-                <StatusBadge status={s.effectiveStatus} />
-                <div className="flex gap-1.5 shrink-0">
+                <StatusBadge status={scaffold.effectiveStatus} />
+                <div className="flex shrink-0 gap-1.5">
                   <Link
-                    href={"/andaimes/" + s.id}
-                    className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
+                    href={`/andaimes/${scaffold.id}`}
+                    className="flex size-6 items-center justify-center rounded hover:bg-muted"
                     title="Detalhe"
                   >
-                    <Construction className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Construction className="size-3.5 text-muted-foreground" />
                   </Link>
                   <Link
-                    href={"/qr/" + s.id}
-                    className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
+                    href={`/qr/${scaffold.id}`}
+                    className="flex size-6 items-center justify-center rounded hover:bg-muted"
                     title="QR Code"
                   >
-                    <QrCode className="w-3.5 h-3.5 text-muted-foreground" />
+                    <QrCode className="size-3.5 text-muted-foreground" />
                   </Link>
                   {canInspect && (
                     <Link
-                      href={"/inspecoes/nova?scaffold_id=" + s.id}
-                      className="w-6 h-6 flex items-center justify-center hover:bg-muted rounded"
+                      href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
+                      className="flex size-6 items-center justify-center rounded hover:bg-muted"
                       title="Inspecionar"
                     >
-                      <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                      <ClipboardCheck className="size-3.5 text-muted-foreground" />
                     </Link>
                   )}
                 </div>

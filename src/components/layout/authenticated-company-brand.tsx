@@ -1,5 +1,6 @@
 "use client";
 
+import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 import { Shield } from "lucide-react";
 import { useState } from "react";
 
@@ -8,6 +9,7 @@ type AuthenticatedCompanyBrandProps = {
     name: string;
     logoUrl: string | null;
   } | null;
+  divided?: boolean;
 };
 
 function getInitials(name: string) {
@@ -22,18 +24,22 @@ function getInitials(name: string) {
 
 export function AuthenticatedCompanyBrand({
   company,
+  divided = true,
 }: AuthenticatedCompanyBrandProps) {
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
   const logoUrl = company?.logoUrl ?? null;
   const logoAvailable = logoUrl && failedLogoUrl !== logoUrl;
+  const previewUrl = logoUrl ? getUploadedFilePreviewUrl(logoUrl) : null;
 
   return (
-    <div className="flex shrink-0 items-center gap-2.5 border-r border-border pr-4">
+    <div
+      className={`flex shrink-0 items-center gap-2.5 ${divided ? "border-r border-border pr-4" : ""}`}
+    >
       {logoAvailable ? (
         // URLs de logo sao administradas por empresa e podem usar dominios distintos.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={logoUrl}
+          src={previewUrl ?? logoUrl}
           alt={`Logo ${company?.name ?? "empresa"}`}
           className="h-8 w-12 shrink-0 border bg-white object-contain p-0.5"
           onError={() => setFailedLogoUrl(logoUrl)}

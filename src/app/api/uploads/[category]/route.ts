@@ -7,6 +7,7 @@ import {
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 
 const MAX_FILE_SIZE: Record<UploadCategory, number> = {
+  "company-logo": 2 * 1024 * 1024,
   "scaffold-documents": 5 * 1024 * 1024,
   "inspection-photos": 8 * 1024 * 1024,
   "checklist-photos": 8 * 1024 * 1024,
@@ -15,6 +16,7 @@ const MAX_FILE_SIZE: Record<UploadCategory, number> = {
 };
 
 const CATEGORY_PERMISSIONS: Record<UploadCategory, PermissionCode[]> = {
+  "company-logo": ["companies.manage"],
   "scaffold-documents": ["documents.create"],
   "inspection-photos": ["inspections.create", "inspections.finalize"],
   "checklist-photos": ["inspections.create", "inspections.finalize"],
@@ -52,6 +54,19 @@ export async function POST(
   }
   if (file.size > MAX_FILE_SIZE[category]) {
     return Response.json({ error: "Arquivo excede o tamanho permitido." }, { status: 413 });
+  }
+  if (category === "company-logo") {
+    const allowedTypes = new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+    ]);
+    if (!allowedTypes.has(file.type)) {
+      return Response.json(
+        { error: "Formato de logo invalido. Use PNG, JPG ou WEBP." },
+        { status: 415 },
+      );
+    }
   }
 
   try {

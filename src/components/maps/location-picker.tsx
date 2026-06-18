@@ -27,6 +27,7 @@ interface Props {
   defaultCenter?: { lat: number; lng: number };
   defaultZoom?: number;
   selectedZoom?: number;
+  showCoordinates?: boolean;
 }
 
 type GeoState = "idle" | "loading" | "success" | "error" | "denied";
@@ -51,6 +52,7 @@ export function LocationPicker({
   defaultCenter = DEFAULT_PLANT,
   defaultZoom = DEFAULT_PLANT.zoom,
   selectedZoom = SAVED_ZOOM,
+  showCoordinates = true,
 }: Props) {
   const [geoState, setGeoState] = useState<GeoState>("idle");
   const [mapGeoState, setMapGeoState] = useState<MapGeoState>("detecting");
@@ -267,7 +269,7 @@ export function LocationPicker({
       </div>
 
       {/* Coordenadas em tempo real */}
-      {hasCoords ? (
+      {showCoordinates && hasCoords ? (
         <div className="flex gap-3">
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
             <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
@@ -286,7 +288,7 @@ export function LocationPicker({
             </p>
           </div>
         </div>
-      ) : geoState === "error" || geoState === "denied" ? (
+      ) : showCoordinates && (geoState === "error" || geoState === "denied") ? (
         <div className="flex items-start gap-2 text-[11px] px-3 py-2 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
           <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>

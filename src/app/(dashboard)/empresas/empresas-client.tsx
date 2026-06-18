@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createCompany, setCompanyActive, updateCompany } from "@/lib/actions/company-actions";
-import { Building2, CheckCircle2, Eye, Factory, Loader2, Pencil, Plus, Power, Search, Users, XCircle } from "lucide-react";
+import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
+import { Building2, CheckCircle2, Eye, Factory, ImageIcon, Loader2, Pencil, Plus, Power, Search, Upload, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type CompanyType = "CLIENT" | "HSE_MANAGER" | "SCAFFOLD_COMPANY" | "CONTRACTOR";
@@ -63,6 +64,7 @@ export function EmpresasClient({
   const [type, setType] = useState("all");
   const [editing, setEditing] = useState<CompanyRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
@@ -151,14 +153,18 @@ export function EmpresasClient({
               <SelectField label="Tipo" name="type" defaultValue={formCompany?.type === "CONTRACTOR" ? "SCAFFOLD_COMPANY" : formCompany?.type ?? "SCAFFOLD_COMPANY"} options={FORM_TYPE_OPTIONS} />
               <OptionalSelectField label="Vincular a workspace" name="workspaceId" options={workspaces.map((workspace) => [workspace.id, workspace.name])} />
               <SelectField label="Status" name="status" defaultValue={formCompany?.active === false ? "INACTIVE" : "ACTIVE"} options={[["ACTIVE", "Ativa"], ["INACTIVE", "Inativa"]]} />
-              <Field label="Logo" name="logoUrl" defaultValue={formCompany?.logoUrl ?? undefined} placeholder="URL da logo (opcional)" />
+              <LogoUploadField
+                key={formCompany?.id ?? "new-company"}
+                initialLogoUrl={formCompany?.logoUrl ?? null}
+                onUploadingChange={setLogoUploading}
+              />
               <div className="space-y-1.5 lg:col-span-2">
                 <Label htmlFor="description">Descricao</Label>
                 <Textarea id="description" name="description" defaultValue={formCompany?.description ?? ""} placeholder="Descricao opcional" />
               </div>
               <div className="flex justify-end gap-2 lg:col-span-2">
                 <Button type="button" variant="outline" onClick={() => { setCreating(false); setEditing(null); }}>Cancelar</Button>
-                <Button type="submit" disabled={isPending}>{isPending && <Loader2 className="animate-spin" />} Salvar empresa</Button>
+                <Button type="submit" disabled={isPending || logoUploading}>{(isPending || logoUploading) && <Loader2 className="animate-spin" />} Salvar empresa</Button>
               </div>
             </form>
           </CardContent>
@@ -201,8 +207,13 @@ export function EmpresasClient({
         ) : filtered.map((company, index) => (
           <div key={company.id} className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] lg:gap-4 ${index % 2 ? "bg-muted/20" : "bg-card"}`}>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-bold">{company.name}</p>
-              <p className="font-mono text-[10px] text-muted-foreground">{company.code}</p>
+              <div className="flex min-w-0 items-center gap-2">
+                <CompanyLogo name={company.name} logoUrl={company.logoUrl} size="sm" />
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold">{company.name}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground">{company.code}</p>
+                </div>
+              </div>
             </div>
             <Badge variant="outline" className={`hidden w-fit rounded-none text-[9px] lg:inline-flex ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
             <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
@@ -228,6 +239,159 @@ function Kpi({ icon: Icon, label, value }: { icon: typeof Building2; label: stri
 
 function Field({ label, name, defaultValue, placeholder, required }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean }) {
   return <div className="space-y-1.5"><Label htmlFor={name}>{label}{required ? " *" : ""}</Label><Input id={name} name={name} defaultValue={defaultValue} placeholder={placeholder} required={required} /></div>;
+}
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function CompanyLogo({
+  name,
+  logoUrl,
+  size = "md",
+}: {
+  name: string;
+  logoUrl: string | null;
+  size?: "sm" | "md";
+}) {
+  const dimensions = size === "sm" ? "size-8" : "size-14";
+  if (logoUrl) {
+    return (
+      // A logo pode apontar para storage privado ou URL externa administrada.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={getUploadedFilePreviewUrl(logoUrl)}
+        alt={`Logo ${name}`}
+        className={`${dimensions} shrink-0 border bg-white object-contain p-1`}
+      />
+    );
+  }
+
+  return (
+    <div className={`${dimensions} flex shrink-0 items-center justify-center bg-primary text-[10px] font-bold tracking-wide text-primary-foreground`}>
+      {getInitials(name) || "AC"}
+    </div>
+  );
+}
+
+function LogoUploadField({
+  initialLogoUrl,
+  onUploadingChange,
+}: {
+  initialLogoUrl: string | null;
+  onUploadingChange: (uploading: boolean) => void;
+}) {
+  const [logoUrl, setLogoUrl] = useState(initialLogoUrl ?? "");
+  const [previewUrl, setPreviewUrl] = useState(initialLogoUrl ? getUploadedFilePreviewUrl(initialLogoUrl) : "");
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    };
+  }, [localPreviewUrl]);
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+    if (!allowedTypes.has(file.type)) {
+      toast.error("Use uma imagem PNG, JPG ou WEBP.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("A logo deve ter no maximo 2 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    setLocalPreviewUrl(objectUrl);
+    setPreviewUrl(objectUrl);
+    setIsUploading(true);
+    onUploadingChange(true);
+
+    try {
+      const uploaded = await uploadFile(file, {
+        category: "company-logo",
+        fileName: file.name,
+      });
+      setLogoUrl(uploaded.reference);
+      setPreviewUrl(getUploadedFilePreviewUrl(uploaded.reference));
+      toast.success("Logo enviada. Salve a empresa para aplicar.");
+    } catch (error) {
+      setLogoUrl(initialLogoUrl ?? "");
+      setPreviewUrl(initialLogoUrl ? getUploadedFilePreviewUrl(initialLogoUrl) : "");
+      toast.error(error instanceof Error ? error.message : "Nao foi possivel enviar a logo.");
+    } finally {
+      setIsUploading(false);
+      onUploadingChange(false);
+      event.target.value = "";
+    }
+  }
+
+  function clearLogo() {
+    if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl);
+    setLocalPreviewUrl(null);
+    setLogoUrl("");
+    setPreviewUrl("");
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="logoFile">Logo</Label>
+      <input type="hidden" name="logoUrl" value={logoUrl} />
+      <div className="flex items-center gap-3 border bg-muted/20 p-3">
+        {previewUrl ? (
+          // Preview local/privado da logo selecionada.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={previewUrl}
+            alt="Preview da logo"
+            className="size-14 shrink-0 border bg-white object-contain p-1"
+          />
+        ) : (
+          <div className="flex size-14 shrink-0 items-center justify-center border bg-background text-muted-foreground">
+            <ImageIcon className="size-5" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <Input
+            id="logoFile"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleFileChange}
+            disabled={isUploading}
+          />
+          <p className="mt-1 text-[10px] text-muted-foreground">
+            PNG, JPG ou WEBP ate 2 MB.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={isUploading} asChild>
+            <label htmlFor="logoFile" className="cursor-pointer">
+              <Upload className="size-3.5" /> Enviar
+            </label>
+          </Button>
+          {logoUrl && (
+            <Button type="button" variant="ghost" size="sm" onClick={clearLogo} disabled={isUploading}>
+              Remover
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function SelectField({ label, name, defaultValue, options }: { label: string; name: string; defaultValue?: string; options: Array<[string, string]> }) {

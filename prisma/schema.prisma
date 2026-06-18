@@ -80,6 +80,7 @@ enum AuditEntityType {
 enum AuditAction {
   COMPANY_CREATED
   COMPANY_UPDATED
+  COMPANY_LOGO_UPDATED
   COMPANY_ACTIVATED
   COMPANY_DEACTIVATED
   WORKSPACE_CREATED
@@ -99,6 +100,7 @@ enum AuditAction {
   LOGIN
   LOGOUT
   ROLE_CHANGE
+  USER_PASSWORD_CHANGED
 }
 
 enum NonConformityClassification {

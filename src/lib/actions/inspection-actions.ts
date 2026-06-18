@@ -108,7 +108,14 @@ export async function getInspections() {
       result: true,
       validity_days: true,
       notes: true,
-      scaffold: { select: { code: true, location: true, area: true } },
+      scaffold: {
+        select: {
+          code: true,
+          location: true,
+          area: true,
+          tenantCompany: { select: { id: true, name: true } },
+        },
+      },
       _count: { select: { checklist: true } },
     },
   });

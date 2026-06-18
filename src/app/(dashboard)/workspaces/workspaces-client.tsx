@@ -407,36 +407,42 @@ function WorkspaceLocationFields({
         defaultCenter={{ lat: -1.536, lng: -48.752 }}
         defaultZoom={14}
         selectedZoom={17}
+        showCoordinates={false}
       />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="latitude">Latitude</Label>
-          <Input
-            id="latitude"
-            type="number"
-            step="any"
-            value={latitudeInput}
-            onChange={(event) => updateLatitude(event.target.value)}
-            placeholder="-1.5205"
-            className="font-mono"
-          />
+      <div className="space-y-2 border border-border bg-muted/20 p-3">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          Coordenadas
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="latitude">Latitude</Label>
+            <Input
+              id="latitude"
+              type="number"
+              step="any"
+              value={latitudeInput}
+              onChange={(event) => updateLatitude(event.target.value)}
+              placeholder="-1.5205"
+              className="font-mono"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="longitude">Longitude</Label>
+            <Input
+              id="longitude"
+              type="number"
+              step="any"
+              value={longitudeInput}
+              onChange={(event) => updateLongitude(event.target.value)}
+              placeholder="-48.6278"
+              className="font-mono"
+            />
+          </div>
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="longitude">Longitude</Label>
-          <Input
-            id="longitude"
-            type="number"
-            step="any"
-            value={longitudeInput}
-            onChange={(event) => updateLongitude(event.target.value)}
-            placeholder="-48.6278"
-            className="font-mono"
-          />
-        </div>
+        <p className="text-[10px] text-muted-foreground">
+          Coordenadas opcionais. Use estes campos apenas para ajuste tecnico fino.
+        </p>
       </div>
-      <p className="text-[10px] text-muted-foreground">
-        Coordenadas opcionais. Os campos acima podem ser usados para ajuste tecnico fino.
-      </p>
     </div>
   );
 }

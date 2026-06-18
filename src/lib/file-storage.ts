@@ -5,6 +5,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export const UPLOAD_CATEGORIES = [
+  "company-logo",
   "scaffold-documents",
   "inspection-photos",
   "checklist-photos",

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyDetail } from "@/lib/actions/company-actions";
+import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 import { ArrowLeft, Building2, ClipboardCheck, ClipboardList, Construction, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -55,7 +56,13 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
         <Card className="rounded-none">
           <CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="size-4" /> Empresa</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div><p className="text-lg font-bold">{company.name}</p><Badge variant="outline" className="mt-1 rounded-none">{company.active ? "Ativa" : "Inativa"}</Badge></div>
+            <div className="flex items-start gap-3">
+              <CompanyLogo name={company.name} logoUrl={company.logoUrl} />
+              <div className="min-w-0">
+                <p className="truncate text-lg font-bold">{company.name}</p>
+                <Badge variant="outline" className="mt-1 rounded-none">{company.active ? "Ativa" : "Inativa"}</Badge>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               {indicators.map((indicator) => <div key={indicator.label} className="border bg-muted/20 p-2"><span className="text-muted-foreground">{indicator.label}:</span> <strong className="font-mono">{indicator.value}</strong></div>)}
             </div>
@@ -72,4 +79,40 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
 
 function Info({ label, value }: { label: string; value: string }) {
   return <div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-1 text-sm font-medium">{value}</p></div>;
+}
+
+function getInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function CompanyLogo({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl: string | null;
+}) {
+  if (logoUrl) {
+    return (
+      // Logos podem vir de storage privado ou URL externa cadastrada.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={getUploadedFilePreviewUrl(logoUrl)}
+        alt={`Logo ${name}`}
+        className="size-14 shrink-0 border bg-white object-contain p-1"
+      />
+    );
+  }
+
+  return (
+    <div className="flex size-14 shrink-0 items-center justify-center bg-primary text-xs font-bold tracking-wide text-primary-foreground">
+      {getInitials(name) || "AC"}
+    </div>
+  );
 }

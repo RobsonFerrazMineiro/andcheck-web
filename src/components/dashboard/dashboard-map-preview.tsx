@@ -28,6 +28,9 @@ interface RawScaffold {
   location: string;
   area: string;
   responsible: string;
+  companyId: string;
+  tenantCompany: { name: string };
+  location_description?: string | null;
   validity_date?: Date | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -36,9 +39,13 @@ interface RawScaffold {
 
 interface Props {
   scaffolds: RawScaffold[];
+  showCompanyName?: boolean;
 }
 
-export function DashboardMapPreview({ scaffolds }: Props) {
+export function DashboardMapPreview({
+  scaffolds,
+  showCompanyName = true,
+}: Props) {
   const pins: ScaffoldPin[] = scaffolds
     .filter((s) => s.latitude != null && s.longitude != null)
     .map((s) => ({
@@ -48,6 +55,9 @@ export function DashboardMapPreview({ scaffolds }: Props) {
       area: s.area ?? "",
       status: s.status,
       responsible: s.responsible,
+      companyId: s.companyId,
+      companyName: s.tenantCompany.name,
+      locationDescription: s.location_description,
       validity_date: s.validity_date ? s.validity_date.toISOString() : null,
       latitude: s.latitude as number,
       longitude: s.longitude as number,
@@ -93,7 +103,13 @@ export function DashboardMapPreview({ scaffolds }: Props) {
         style={{ minHeight: 220 }}
       >
         {hasMap ? (
-          <OperationalMap scaffolds={pins} height="100%" interactive={false} />
+          <OperationalMap
+            scaffolds={pins}
+            height="100%"
+            interactive
+            showCompanyName={showCompanyName}
+            variant="compact"
+          />
         ) : (
           <div
             className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted/20"

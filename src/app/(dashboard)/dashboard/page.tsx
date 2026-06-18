@@ -19,7 +19,8 @@ import { InspectionPerformanceChart } from "@/components/dashboard/inspection-pe
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getInspections } from "@/lib/actions/inspection-actions";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
-import { canCurrentUser } from "@/lib/authz";
+import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { getContextCapabilities } from "@/lib/data-scope";
 
 const NORMS = [
   "NR-18 / 2022",
@@ -30,6 +31,7 @@ const NORMS = [
 ];
 
 export default async function DashboardPage() {
+  const access = await getCurrentUserAccess();
   const [
     scaffolds,
     inspections,
@@ -41,6 +43,13 @@ export default async function DashboardPage() {
     canCurrentUser("scaffolds.create"),
     canCurrentUser("inspections.create"),
   ]);
+  const capabilities = access ? await getContextCapabilities(access) : null;
+  const showResponsibleCompany = Boolean(
+    capabilities?.canSwitchCompany &&
+      access?.roleCodes.some((roleCode) =>
+        ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(roleCode),
+      ),
+  );
 
   const liberados = scaffolds.filter((s) => s.status === "liberado").length;
   const emMontagem = scaffolds.filter((s) => s.status === "em_montagem").length;
@@ -141,7 +150,10 @@ export default async function DashboardPage() {
       {/* ── Gráfico + Mapa ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 min-h-96">
         <InspectionPerformanceChart inspections={inspections} />
-        <DashboardMapPreview scaffolds={scaffolds} />
+        <DashboardMapPreview
+          scaffolds={scaffolds}
+          showCompanyName={showResponsibleCompany}
+        />
       </div>
 
       {/* ── Listas ── */}
@@ -174,6 +186,11 @@ export default async function DashboardPage() {
                     <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
                       {s.location} · {s.area}
                     </p>
+                    {showResponsibleCompany && (
+                      <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
+                        Empresa: {s.tenantCompany.name}
+                      </p>
+                    )}
                   </div>
                   <StatusBadge status={s.status} />
                 </Link>
@@ -210,6 +227,11 @@ export default async function DashboardPage() {
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       {format(insp.date, "dd/MM/yyyy")} · {insp.inspector_name}
                     </p>
+                    {showResponsibleCompany && (
+                      <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
+                        Empresa: {insp.scaffold.tenantCompany.name}
+                      </p>
+                    )}
                   </div>
                   <StatusBadge status={insp.result} />
                 </Link>

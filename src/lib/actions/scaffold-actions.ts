@@ -30,6 +30,7 @@ export async function getScaffolds() {
     where: dataScopeWhere(scope),
     orderBy: { code: "asc" },
     include: {
+      tenantCompany: { select: { id: true, name: true } },
       _count: { select: { inspections: true } },
       inspections: {
         orderBy: { date: "desc" },

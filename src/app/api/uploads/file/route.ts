@@ -3,6 +3,10 @@ import { createStoredFileResponse } from "@/lib/file-response";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 
 const FILE_PERMISSIONS: PermissionCode[] = [
+  "read.all",
+  "read.own_company",
+  "companies.view",
+  "companies.manage",
   "documents.view",
   "documents.create",
   "inspections.create",

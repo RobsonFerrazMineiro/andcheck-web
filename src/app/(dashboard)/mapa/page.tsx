@@ -3,10 +3,12 @@ import { Construction } from "lucide-react";
 import Link from "next/link";
 
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
-import { canCurrentUser } from "@/lib/authz";
+import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { getContextCapabilities } from "@/lib/data-scope";
 import { MapaOperacionalClient } from "./mapa-client";
 
 export default async function MapaPage() {
+  const access = await getCurrentUserAccess();
   const [raw, canCreateScaffold, canCreateInspection, canFinalizeInspection] =
     await Promise.all([
       getScaffolds(),
@@ -14,6 +16,13 @@ export default async function MapaPage() {
       canCurrentUser("inspections.create"),
       canCurrentUser("inspections.finalize"),
     ]);
+  const capabilities = access ? await getContextCapabilities(access) : null;
+  const canFilterCompany = Boolean(
+    capabilities?.canSwitchCompany &&
+      access?.roleCodes.some((roleCode) =>
+        ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(roleCode),
+      ),
+  );
 
   const canInspect = canCreateInspection || canFinalizeInspection;
   const scaffolds = raw.map((s) => ({
@@ -23,6 +32,9 @@ export default async function MapaPage() {
     area: s.area,
     status: s.status as string,
     responsible: s.responsible,
+    companyId: s.companyId,
+    companyName: s.tenantCompany.name,
+    locationDescription: s.location_description,
     validity_date: s.validity_date ? s.validity_date.toISOString() : null,
     latitude: (s as { latitude?: number | null }).latitude ?? null,
     longitude: (s as { longitude?: number | null }).longitude ?? null,
@@ -145,7 +157,12 @@ export default async function MapaPage() {
         ))}
       </div>
 
-      <MapaOperacionalClient scaffolds={scaffolds} canInspect={canInspect} />
+      <MapaOperacionalClient
+        scaffolds={scaffolds}
+        canInspect={canInspect}
+        canFilterCompany={canFilterCompany}
+        showCompanyName={canFilterCompany}
+      />
     </div>
   );
 }
