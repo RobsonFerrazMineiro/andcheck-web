@@ -34,11 +34,8 @@ const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
   PROJETO_ESTRUTURAL: "Projeto Estrutural",
   MEMORIAL_CALCULO: "Memorial de Calculo",
   CROQUI: "Croqui",
-  PROCEDIMENTO: "Procedimento",
-  NORMA: "Norma",
-  CERTIFICADO: "Certificado",
-  LICENCA: "Licenca",
-  TREINAMENTO: "Treinamento",
+  PLANO_MONTAGEM: "Plano de Montagem",
+  CERTIFICADO_TECNICO: "Certificado Tecnico",
   OUTRO: "Outro",
 };
 

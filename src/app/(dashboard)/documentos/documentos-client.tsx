@@ -86,20 +86,14 @@ const CATEGORY_FILTERS = [
   },
   { value: "CROQUIS", label: "Croquis", categories: ["CROQUI"] },
   {
-    value: "PROCEDIMENTOS",
-    label: "Procedimentos",
-    categories: ["PROCEDIMENTO"],
+    value: "PLANO_MONTAGEM",
+    label: "Plano Montagem",
+    categories: ["PLANO_MONTAGEM"],
   },
   {
-    value: "CERTIFICADOS",
-    label: "Certificados",
-    categories: ["CERTIFICADO"],
-  },
-  { value: "LICENCAS", label: "Licencas", categories: ["LICENCA"] },
-  {
-    value: "TREINAMENTOS",
-    label: "Treinamentos",
-    categories: ["TREINAMENTO"],
+    value: "CERTIFICADO_TECNICO",
+    label: "Certificado Tecnico",
+    categories: ["CERTIFICADO_TECNICO"],
   },
   { value: "OUTROS", label: "Outros", categories: ["OUTRO"] },
 ] as const;
