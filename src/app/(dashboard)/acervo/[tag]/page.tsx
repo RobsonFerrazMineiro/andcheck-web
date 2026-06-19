@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
+  CheckCircle2,
   ClipboardCheck,
   Clock,
   Construction,
@@ -19,6 +20,14 @@ import { notFound } from "next/navigation";
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
+
+const TYPE_LABELS: Record<string, string> = {
+  tubular: "Tubular",
+  fachadeiro: "Fachadeiro",
+  multidirecional: "Multidirecional",
+  suspenso: "Suspenso",
+  torre: "Torre",
+};
 
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   ART: "ART",
@@ -58,6 +67,42 @@ function formatBytes(value: number | null) {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getDaysInOperation({
+  firstReleaseDate,
+  dismantledDate,
+}: {
+  firstReleaseDate: Date | null | undefined;
+  dismantledDate: Date | null | undefined;
+}) {
+  if (!firstReleaseDate || !dismantledDate) {
+    return { diasOperacao: null, classificacao: null };
+  }
+
+  const start = new Date(firstReleaseDate);
+  const end = new Date(dismantledDate);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const diasOperacao = Math.floor(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diasOperacao < 0) {
+    return { diasOperacao: null, classificacao: null };
+  }
+
+  const classificacao =
+    diasOperacao <= 30
+      ? "Normal"
+      : diasOperacao <= 60
+        ? "Atencao"
+        : diasOperacao <= 90
+          ? "Elevado"
+          : "Critico";
+
+  return { diasOperacao, classificacao };
+}
+
 type Props = { params: Promise<{ tag: string }> };
 
 export default async function AcervoDetalhePage({ params }: Props) {
@@ -67,6 +112,10 @@ export default async function AcervoDetalhePage({ params }: Props) {
 
   const { scaffold, auditLogs } = data;
   const lastInspection = scaffold.inspections[0];
+  const { diasOperacao } = getDaysInOperation({
+    firstReleaseDate: scaffold.released_at,
+    dismantledDate: scaffold.dismantled_at,
+  });
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
   const proto = hdrs.get("x-forwarded-proto") ?? "http";
@@ -94,7 +143,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="mb-1 text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40">
-              Historico operacional e documentacao tecnica
+              ACERVO HISTORICO DO ANDAIME
             </p>
             <h1 className="font-mono text-[22px] font-bold tracking-tight text-primary-foreground">
               {scaffold.code}
@@ -110,6 +159,11 @@ export default async function AcervoDetalhePage({ params }: Props) {
       <div className="grid gap-4 lg:grid-cols-3">
         <ArchiveCard title="Dados do Andaime" icon={Construction}>
           <ArchiveRow icon={MapPin} label="Area" value={scaffold.area} />
+          <ArchiveRow
+            icon={Construction}
+            label="Tipo do Andaime"
+            value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
+          />
           <ArchiveRow
             icon={Building2}
             label="Empresa"
@@ -132,6 +186,11 @@ export default async function AcervoDetalhePage({ params }: Props) {
             icon={Calendar}
             label="Montagem"
             value={formatDate(scaffold.assembly_completed_at)}
+          />
+          <ArchiveRow
+            icon={CheckCircle2}
+            label="Primeira Liberacao"
+            value={formatDate(scaffold.released_at)}
           />
           <ArchiveRow
             icon={ClipboardCheck}
@@ -160,6 +219,11 @@ export default async function AcervoDetalhePage({ params }: Props) {
             icon={FileText}
             label="Documentos"
             value={String(scaffold.documents.length)}
+          />
+          <ArchiveRow
+            icon={Clock}
+            label="Dias em Operacao"
+            value={diasOperacao === null ? "-" : String(diasOperacao)}
           />
         </ArchiveCard>
       </div>
