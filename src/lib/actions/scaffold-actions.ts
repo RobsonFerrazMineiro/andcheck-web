@@ -111,7 +111,6 @@ export async function getArchivedScaffoldByTag(tag: string) {
 
   const scaffold = await prisma.scaffold.findFirst({
     where: {
-      status: "desmontado",
       OR: [{ tag }, { code: tag }, { id: tag }],
       ...dataScopeWhere(scope),
     },
@@ -171,6 +170,8 @@ export async function getArchivedScaffoldByTag(tag: string) {
       action: true,
       description: true,
       userName: true,
+      oldValue: true,
+      newValue: true,
       createdAt: true,
     },
   });
@@ -344,8 +345,30 @@ export async function completeAssembly(id: string) {
 }
 
 // ── Desmontar → DESMONTADO ────────────────────────────────────────────────────
-export async function dismantleScaffold(id: string) {
+const DISMANTLE_REASONS = new Set([
+  "Finalizacao da atividade",
+  "Encerramento de parada",
+  "Solicitacao da operacao",
+  "Substituicao do andaime",
+  "Readequacao de projeto",
+  "Condicao insegura",
+  "Outros",
+]);
+
+export async function dismantleScaffold(
+  id: string,
+  input?: { reason?: string; reasonDescription?: string },
+) {
   await requirePermission("scaffolds.dismantle");
+  const reason = input?.reason?.trim();
+  const reasonDescription = input?.reasonDescription?.trim();
+  if (!reason || !DISMANTLE_REASONS.has(reason)) {
+    throw new Error("Motivo da desmontagem obrigatorio.");
+  }
+  if (reason === "Outros" && !reasonDescription) {
+    throw new Error("Descricao do motivo obrigatoria.");
+  }
+
   const scope = await getDataScope();
   const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
   assertRecordInDataScope(scope, oldScaffold);
@@ -366,6 +389,8 @@ export async function dismantleScaffold(id: string) {
     newValue: {
       status: scaffold.status,
       dismantled_at: scaffold.dismantled_at?.toISOString(),
+      dismantleReason: reason,
+      dismantleReasonDescription: reason === "Outros" ? reasonDescription : null,
     },
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,

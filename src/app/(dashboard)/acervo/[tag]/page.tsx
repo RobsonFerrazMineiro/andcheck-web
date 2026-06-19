@@ -12,10 +12,11 @@ import {
   FileText,
   MapPin,
   User,
+  Wrench,
 } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -27,6 +28,21 @@ const TYPE_LABELS: Record<string, string> = {
   multidirecional: "Multidirecional",
   suspenso: "Suspenso",
   torre: "Torre",
+};
+
+const SCAFFOLD_STATUS_LABELS: Record<string, string> = {
+  em_montagem: "EM MONTAGEM",
+  pendente_liberacao: "PENDENTE LIBERACAO",
+  liberado: "LIBERADO",
+  reprovado: "REPROVADO",
+  interditado: "INTERDITADO",
+  vencido: "VENCIDO",
+};
+
+const INSPECTION_RESULT_LABELS: Record<string, string> = {
+  aprovado: "Aprovado",
+  aprovado_com_ressalvas: "Aprovado com ressalvas",
+  reprovado: "Reprovado",
 };
 
 const DOCUMENT_TYPE_LABELS: Record<string, string> = {
@@ -67,6 +83,24 @@ function formatBytes(value: number | null) {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function getLifecycleDays({
+  assemblyDate,
+  dismantledDate,
+}: {
+  assemblyDate: Date | null | undefined;
+  dismantledDate: Date | null | undefined;
+}) {
+  if (!assemblyDate || !dismantledDate) return null;
+  const start = new Date(assemblyDate);
+  const end = new Date(dismantledDate);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  const days = Math.floor(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  return days < 0 ? null : days;
+}
+
 function getDaysInOperation({
   firstReleaseDate,
   dismantledDate,
@@ -103,6 +137,16 @@ function getDaysInOperation({
   return { diasOperacao, classificacao };
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getStringField(value: unknown, field: string) {
+  if (!isRecord(value)) return null;
+  const item = value[field];
+  return typeof item === "string" && item.trim() ? item : null;
+}
+
 type Props = { params: Promise<{ tag: string }> };
 
 export default async function AcervoDetalhePage({ params }: Props) {
@@ -111,11 +155,35 @@ export default async function AcervoDetalhePage({ params }: Props) {
   if (!data) notFound();
 
   const { scaffold, auditLogs } = data;
+  if (scaffold.status !== "desmontado") {
+    redirect(`/andaimes/${scaffold.id}`);
+  }
+
   const lastInspection = scaffold.inspections[0];
-  const { diasOperacao } = getDaysInOperation({
+  getDaysInOperation({
     firstReleaseDate: scaffold.released_at,
     dismantledDate: scaffold.dismantled_at,
   });
+  const lifecycleDays = getLifecycleDays({
+    assemblyDate: scaffold.assembly_completed_at,
+    dismantledDate: scaffold.dismantled_at,
+  });
+  const dismantleLog = auditLogs.find(
+    (log) =>
+      log.action === "STATUS_CHANGE" &&
+      getStringField(log.newValue, "status") === "desmontado",
+  );
+  const previousStatus = getStringField(dismantleLog?.oldValue, "status");
+  const lastOperationalStatus =
+    previousStatus && previousStatus !== "desmontado"
+      ? (SCAFFOLD_STATUS_LABELS[previousStatus] ?? previousStatus.toUpperCase())
+      : "-";
+  const dismantleReason =
+    getStringField(dismantleLog?.newValue, "dismantleReason") ?? "-";
+  const dismantleObservation =
+    getStringField(dismantleLog?.newValue, "dismantleReasonDescription") ??
+    "-";
+  const dismantleResponsible = dismantleLog?.userName ?? "-";
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
   const proto = hdrs.get("x-forwarded-proto") ?? "http";
@@ -156,7 +224,14 @@ export default async function AcervoDetalhePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <LifecycleStrip
+        assemblyDate={scaffold.assembly_completed_at}
+        releaseDate={scaffold.released_at}
+        lastInspectionDate={lastInspection?.date}
+        dismantledDate={scaffold.dismantled_at}
+      />
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <ArchiveCard title="Dados do Andaime" icon={Construction}>
           <ArchiveRow icon={MapPin} label="Area" value={scaffold.area} />
           <ArchiveRow
@@ -173,6 +248,11 @@ export default async function AcervoDetalhePage({ params }: Props) {
             icon={Building2}
             label="Workspace"
             value={scaffold.workspace?.name ?? "-"}
+          />
+          <ArchiveRow
+            icon={FileClock}
+            label="Ultimo Status Operacional"
+            value={lastOperationalStatus}
           />
           <ArchiveRow
             icon={User}
@@ -204,6 +284,25 @@ export default async function AcervoDetalhePage({ params }: Props) {
           />
         </ArchiveCard>
 
+        <ArchiveCard title="Desmontagem" icon={Wrench}>
+          <ArchiveRow
+            icon={Calendar}
+            label="Data"
+            value={formatDate(scaffold.dismantled_at)}
+          />
+          <ArchiveRow
+            icon={User}
+            label="Responsavel"
+            value={dismantleResponsible}
+          />
+          <ArchiveRow icon={Wrench} label="Motivo" value={dismantleReason} />
+          <ArchiveRow
+            icon={FileText}
+            label="Observacoes"
+            value={dismantleObservation}
+          />
+        </ArchiveCard>
+
         <ArchiveCard title="Resumo Historico" icon={FileClock}>
           <ArchiveRow
             icon={ClipboardCheck}
@@ -222,11 +321,38 @@ export default async function AcervoDetalhePage({ params }: Props) {
           />
           <ArchiveRow
             icon={Clock}
-            label="Dias em Operacao"
-            value={diasOperacao === null ? "-" : String(diasOperacao)}
+            label="Tempo de Vida"
+            value={lifecycleDays === null ? "-" : `${lifecycleDays} dias`}
           />
         </ArchiveCard>
       </div>
+
+      <ArchiveCard title="Ultima Inspecao" icon={ClipboardCheck}>
+        {!lastInspection ? (
+          <EmptyLine icon={ClipboardCheck} text="Nenhuma inspecao registrada." />
+        ) : (
+          <>
+            <ArchiveRow
+              icon={Calendar}
+              label="Data"
+              value={formatDate(lastInspection.date)}
+            />
+            <ArchiveRow
+              icon={CheckCircle2}
+              label="Resultado"
+              value={
+                INSPECTION_RESULT_LABELS[lastInspection.result] ??
+                lastInspection.result
+              }
+            />
+            <ArchiveRow
+              icon={User}
+              label="Inspetor"
+              value={lastInspection.inspector_name}
+            />
+          </>
+        )}
+      </ArchiveCard>
 
       <ArchiveCard
         title="Historico de Inspecoes"
@@ -440,5 +566,47 @@ function EmptyLine({
       <Icon className="mx-auto mb-2 size-8 text-muted-foreground/20" />
       <p className="text-[11px] text-muted-foreground">{text}</p>
     </div>
+  );
+}
+
+function LifecycleStrip({
+  assemblyDate,
+  releaseDate,
+  lastInspectionDate,
+  dismantledDate,
+}: {
+  assemblyDate: Date | null | undefined;
+  releaseDate: Date | null | undefined;
+  lastInspectionDate: Date | null | undefined;
+  dismantledDate: Date | null | undefined;
+}) {
+  const items = [
+    { label: "Montagem", value: formatDate(assemblyDate) },
+    { label: "Liberacao", value: formatDate(releaseDate) },
+    { label: "Ultima Inspecao", value: formatDate(lastInspectionDate) },
+    { label: "Desmontagem", value: formatDate(dismantledDate) },
+  ];
+
+  return (
+    <section className="border border-border bg-card px-4 py-4 shadow-sm">
+      <div className="grid gap-4 md:grid-cols-4">
+        {items.map((item, index) => (
+          <div key={item.label} className="relative flex gap-3 md:block">
+            {index < items.length - 1 && (
+              <div className="absolute left-[5px] top-4 h-[calc(100%+1rem)] w-px bg-border md:left-[calc(50%+0.375rem)] md:top-2 md:h-px md:w-[calc(100%-0.75rem)]" />
+            )}
+            <div className="relative z-10 mt-1 size-3 shrink-0 rounded-full border-2 border-sidebar-primary bg-card md:mx-auto md:mt-0" />
+            <div className="md:mt-3 md:text-center">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                {item.label}
+              </p>
+              <p className="mt-1 font-mono text-[11px] font-semibold text-foreground">
+                {item.value}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
