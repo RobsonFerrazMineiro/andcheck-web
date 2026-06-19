@@ -2,10 +2,10 @@
 
 import { format, parseISO } from "date-fns";
 import {
+  AlertTriangle,
   Archive,
   CheckCircle2,
-  ChevronRight,
-  ClipboardList,
+  Eye,
   FileText,
   Filter,
   Search,
@@ -13,6 +13,8 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { StatusBadge } from "@/components/shared/status-badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -154,7 +156,7 @@ export function AcervoClient({
             Acervo de Andaimes
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Historico operacional e documentacao tecnica.
+            Consulta historica de andaimes desmontados.
           </p>
         </div>
       </div>
@@ -173,8 +175,8 @@ export function AcervoClient({
           className="border-green-200 border-l-green-500 bg-green-50"
         />
         <Kpi
-          icon={ClipboardList}
-          label="Com NC"
+          icon={AlertTriangle}
+          label="Com Tratativas"
           value={withNc}
           className="border-red-200 border-l-red-500 bg-red-50"
         />
@@ -273,15 +275,16 @@ export function AcervoClient({
       </div>
 
       <div className="overflow-hidden border border-border bg-card shadow-sm">
-        <div className="hidden grid-cols-12 gap-4 border-b bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground xl:grid">
-          <span className="col-span-2">TAG</span>
-          <span className="col-span-1">Area</span>
-          <span className="col-span-2">Empresa</span>
-          <span className="col-span-2">Workspace</span>
-          <span className="col-span-2">Data Desmontagem</span>
-          <span className="col-span-1">Documentos</span>
-          <span className="col-span-1">NCs</span>
-          <span className="col-span-1 text-right">Acoes</span>
+        <div className="hidden grid-cols-[minmax(130px,1fr)_100px_minmax(150px,1fr)_minmax(150px,1fr)_120px_140px_80px_70px_70px] gap-4 border-b bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground xl:grid">
+          <span>TAG</span>
+          <span>Area</span>
+          <span>Empresa</span>
+          <span>Workspace</span>
+          <span>Status</span>
+          <span>Data Desmontagem</span>
+          <span>Docs</span>
+          <span>NCs</span>
+          <span className="text-right">Acoes</span>
         </div>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-14 text-center">
@@ -289,57 +292,69 @@ export function AcervoClient({
               <Archive className="size-6 text-muted-foreground/40" />
             </div>
             <p className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-foreground">
-              Nenhum andaime desmontado encontrado.
+              Nenhum andaime desmontado encontrado
             </p>
             <p className="max-w-sm text-[11px] leading-relaxed text-muted-foreground">
-              Os andaimes removidos da operacao serao armazenados aqui para
-              consulta, auditoria e rastreabilidade historica.
+              Os andaimes desmontados serao armazenados automaticamente neste
+              acervo para consulta historica.
             </p>
+            <Button asChild variant="outline" className="mt-4 rounded-none">
+              <Link href="/andaimes">Voltar para Andaimes</Link>
+            </Button>
           </div>
         ) : (
           <div className="divide-y divide-border">
             {filtered.map((row, index) => (
-              <Link
+              <div
                 key={row.id}
-                href={`/acervo/${encodeURIComponent(row.code)}`}
-                className={`grid gap-3 px-4 py-3 transition-colors hover:bg-muted/40 xl:grid-cols-12 xl:items-center xl:gap-4 ${
+                className={`grid gap-3 px-4 py-3 transition-colors hover:bg-muted/40 xl:grid-cols-[minmax(130px,1fr)_100px_minmax(150px,1fr)_minmax(150px,1fr)_120px_140px_80px_70px_70px] xl:items-center xl:gap-4 ${
                   index % 2 ? "bg-muted/20" : "bg-card"
                 }`}
               >
-                <p className="font-mono text-[12px] font-bold text-foreground xl:col-span-2">
+                <p className="font-mono text-[12px] font-bold text-foreground">
                   {row.code}
                 </p>
-                <p className="text-[11px] text-muted-foreground xl:col-span-1">
+                <p className="text-[11px] text-muted-foreground">
                   {row.area || "-"}
                 </p>
-                <p className="truncate text-[11px] text-muted-foreground xl:col-span-2">
+                <p className="truncate text-[11px] text-muted-foreground">
                   {row.companyName || "-"}
                 </p>
-                <p className="truncate text-[11px] text-muted-foreground xl:col-span-2">
+                <p className="truncate text-[11px] text-muted-foreground">
                   {row.workspaceName || "-"}
                 </p>
-                <p className="font-mono text-[11px] text-muted-foreground xl:col-span-2">
+                <div>
+                  <StatusBadge status="desmontado" />
+                </div>
+                <p className="font-mono text-[11px] text-muted-foreground">
                   {formatDate(row.dismantledAt)}
                 </p>
-                <p className="font-mono text-[11px] text-muted-foreground xl:col-span-1">
-                  {row.documentsCount}
-                </p>
-                <p className="font-mono text-[11px] text-muted-foreground xl:col-span-1">
-                  {row.nonConformitiesCount}
-                </p>
-                <div className="flex items-center justify-end xl:col-span-1">
-                  <Button
-                    type="button"
-                    size="sm"
+                <div>
+                  <Badge
                     variant="outline"
-                    className="h-7 rounded-none text-[10px]"
-                    tabIndex={-1}
+                    className="inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-700"
                   >
-                    Visualizar
-                    <ChevronRight className="size-3.5" />
+                    <FileText className="size-2.5" />
+                    {row.documentsCount} DOCS
+                  </Badge>
+                </div>
+                <div>
+                  <Badge
+                    variant="outline"
+                    className="inline-flex w-fit items-center gap-1 rounded-none border-amber-300 bg-amber-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-800"
+                  >
+                    <AlertTriangle className="size-2.5" />
+                    {row.nonConformitiesCount} NC
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-end">
+                  <Button asChild type="button" size="icon-sm" variant="outline" title="Visualizar historico">
+                    <Link href={`/acervo/${encodeURIComponent(row.code)}`}>
+                      <Eye />
+                    </Link>
                   </Button>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
