@@ -5,7 +5,7 @@ import {
   AlertTriangle,
   Archive,
   CheckCircle2,
-  Eye,
+  ChevronRight,
   FileText,
   Filter,
   Search,
@@ -66,6 +66,28 @@ function Kpi({
         <Icon className="size-5 text-muted-foreground" />
       </div>
     </div>
+  );
+}
+
+function CountBadge({
+  icon: Icon,
+  value,
+  label,
+  className,
+}: {
+  icon: typeof FileText;
+  value: number;
+  label: string;
+  className: string;
+}) {
+  return (
+    <Badge
+      variant="outline"
+      className={`inline-flex w-fit items-center gap-1 rounded-none px-1.5 py-0.5 font-mono text-[9px] font-bold ${className}`}
+    >
+      <Icon className="size-2.5" />
+      {value} {label}
+    </Badge>
   );
 }
 
@@ -275,16 +297,44 @@ export function AcervoClient({
       </div>
 
       <div className="overflow-hidden border border-border bg-card shadow-sm">
-        <div className="hidden grid-cols-[minmax(130px,1fr)_100px_minmax(150px,1fr)_minmax(150px,1fr)_120px_140px_80px_70px_70px] gap-4 border-b bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground xl:grid">
-          <span>TAG</span>
-          <span>Area</span>
-          <span>Empresa</span>
-          <span>Workspace</span>
-          <span>Status</span>
-          <span>Data Desmontagem</span>
-          <span>Docs</span>
-          <span>NCs</span>
-          <span className="text-right">Acoes</span>
+        <div className="hidden grid-cols-12 gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
+          {[
+            "TAG",
+            "Area",
+            "Empresa",
+            "Workspace",
+            "Status",
+            "Desmontagem",
+            "Docs",
+            "NCs",
+            "",
+          ].map((header, index) => (
+            <p
+              key={header || "actions"}
+              className={
+                "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                (index === 0
+                  ? "col-span-2"
+                  : index === 1
+                    ? "col-span-1"
+                    : index === 2
+                      ? "col-span-2"
+                      : index === 3
+                        ? "col-span-2"
+                        : index === 4
+                          ? "col-span-1"
+                          : index === 5
+                            ? "col-span-1"
+                            : index === 6
+                              ? "col-span-1"
+                              : index === 7
+                                ? "col-span-1"
+                                : "col-span-1")
+              }
+            >
+              {header}
+            </p>
+          ))}
         </div>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-14 text-center">
@@ -305,56 +355,61 @@ export function AcervoClient({
         ) : (
           <div className="divide-y divide-border">
             {filtered.map((row, index) => (
-              <div
+              <Link
                 key={row.id}
-                className={`grid gap-3 px-4 py-3 transition-colors hover:bg-muted/40 xl:grid-cols-[minmax(130px,1fr)_100px_minmax(150px,1fr)_minmax(150px,1fr)_120px_140px_80px_70px_70px] xl:items-center xl:gap-4 ${
+                href={`/acervo/${encodeURIComponent(row.code)}`}
+                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-12 xl:gap-4 ${
                   index % 2 ? "bg-muted/20" : "bg-card"
                 }`}
               >
-                <p className="font-mono text-[12px] font-bold text-foreground">
-                  {row.code}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {row.area || "-"}
-                </p>
-                <p className="truncate text-[11px] text-muted-foreground">
-                  {row.companyName || "-"}
-                </p>
-                <p className="truncate text-[11px] text-muted-foreground">
-                  {row.workspaceName || "-"}
-                </p>
-                <div>
-                  <StatusBadge status="desmontado" />
+                <div className="flex flex-1 items-center gap-3 xl:contents">
+                  <div className="flex size-7 shrink-0 items-center justify-center bg-primary/8 xl:hidden">
+                    <Archive className="size-3.5 text-primary/40" />
+                  </div>
+                  <div className="min-w-0 flex-1 xl:contents">
+                    <p className="font-mono text-[12px] font-bold text-foreground xl:col-span-2">
+                      {row.code}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground xl:col-span-1">
+                      {row.area || "-"}
+                    </p>
+                    <p className="hidden truncate text-[11px] text-muted-foreground xl:col-span-2 xl:block">
+                      {row.companyName || "-"}
+                    </p>
+                    <p className="hidden truncate text-[11px] text-muted-foreground xl:col-span-2 xl:block">
+                      {row.workspaceName || "-"}
+                    </p>
+                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                      <StatusBadge status="desmontado" />
+                    </div>
+                    <p className="hidden font-mono text-[11px] text-muted-foreground xl:col-span-1 xl:block">
+                      {formatDate(row.dismantledAt)}
+                    </p>
+                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                      <CountBadge
+                        icon={FileText}
+                        value={row.documentsCount}
+                        label="DOCS"
+                        className="border-slate-300 bg-slate-50 text-slate-700"
+                      />
+                    </div>
+                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                      <CountBadge
+                        icon={AlertTriangle}
+                        value={row.nonConformitiesCount}
+                        label="NC"
+                        className="border-amber-300 bg-amber-50 text-amber-800"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2 xl:col-span-1 xl:justify-end">
+                    <div className="xl:hidden">
+                      <StatusBadge status="desmontado" />
+                    </div>
+                    <ChevronRight className="size-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
+                  </div>
                 </div>
-                <p className="font-mono text-[11px] text-muted-foreground">
-                  {formatDate(row.dismantledAt)}
-                </p>
-                <div>
-                  <Badge
-                    variant="outline"
-                    className="inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-slate-700"
-                  >
-                    <FileText className="size-2.5" />
-                    {row.documentsCount} DOCS
-                  </Badge>
-                </div>
-                <div>
-                  <Badge
-                    variant="outline"
-                    className="inline-flex w-fit items-center gap-1 rounded-none border-amber-300 bg-amber-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-800"
-                  >
-                    <AlertTriangle className="size-2.5" />
-                    {row.nonConformitiesCount} NC
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-end">
-                  <Button asChild type="button" size="icon-sm" variant="outline" title="Visualizar historico">
-                    <Link href={`/acervo/${encodeURIComponent(row.code)}`}>
-                      <Eye />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
