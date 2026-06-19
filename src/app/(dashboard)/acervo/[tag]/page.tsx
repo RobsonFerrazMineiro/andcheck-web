@@ -159,6 +159,40 @@ function getStringField(value: unknown, field: string) {
   return typeof item === "string" && item.trim() ? item : null;
 }
 
+function operationalTimelineLabel(log: {
+  action: string;
+  entityType: string;
+  description: string;
+  newValue: unknown;
+}) {
+  const status = getStringField(log.newValue, "status");
+  if (log.action === "CREATE" && log.entityType === "SCAFFOLD") {
+    return "Andaime criado";
+  }
+  if (log.action === "COMPLETE" && log.entityType === "SCAFFOLD") {
+    return "Montagem concluida";
+  }
+  if (log.action === "STATUS_CHANGE" && status === "liberado") {
+    return "Primeira liberacao";
+  }
+  if (log.action === "STATUS_CHANGE" && status === "desmontado") {
+    return "Andaime desmontado";
+  }
+  if (log.entityType === "INSPECTION" && status === "aprovado") {
+    return "Inspecao aprovada";
+  }
+  if (log.entityType === "INSPECTION" && status === "reprovado") {
+    return "Inspecao reprovada";
+  }
+  if (log.entityType === "NON_CONFORMITY" && log.action === "CREATE") {
+    return "NC aberta";
+  }
+  if (log.entityType === "NON_CONFORMITY" && status === "CLOSED") {
+    return "NC encerrada";
+  }
+  return log.description.endsWith(".") ? log.description.slice(0, -1) : log.description;
+}
+
 type Props = { params: Promise<{ tag: string }> };
 
 export default async function AcervoDetalhePage({ params }: Props) {
@@ -197,6 +231,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
     getStringField(dismantleLog?.newValue, "dismantleReasonDescription") ??
     "-";
   const dismantleResponsible = dismantleLog?.userName ?? "-";
+  const operationalTimeline = [...auditLogs].reverse();
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
   const proto = hdrs.get("x-forwarded-proto") ?? "http";
@@ -250,6 +285,38 @@ export default async function AcervoDetalhePage({ params }: Props) {
         lastInspectionDate={lastInspection?.date}
         dismantledDate={scaffold.dismantled_at}
       />
+
+      <ArchiveCard
+        title="Linha do Tempo Operacional"
+        icon={FileClock}
+        extra={`${operationalTimeline.length} evento(s)`}
+      >
+        {operationalTimeline.length === 0 ? (
+          <EmptyLine icon={FileClock} text="Nenhum evento operacional registrado." />
+        ) : (
+          <div className="px-4 py-2">
+            {operationalTimeline.map((log, index) => (
+              <div key={log.id} className="relative flex gap-3 pb-4 last:pb-2">
+                {index < operationalTimeline.length - 1 && (
+                  <div className="absolute left-[5px] top-4 h-full w-px bg-border" />
+                )}
+                <div className="relative z-10 mt-1 size-3 shrink-0 rounded-full border-2 border-sidebar-primary bg-card" />
+                <div className="min-w-0">
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    {formatDate(log.createdAt)}
+                  </p>
+                  <p className="text-[11px] font-semibold text-foreground">
+                    {operationalTimelineLabel(log)}
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">
+                    {log.userName ?? "Sistema"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </ArchiveCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ArchiveCard title="Dados do Andaime" icon={Construction}>

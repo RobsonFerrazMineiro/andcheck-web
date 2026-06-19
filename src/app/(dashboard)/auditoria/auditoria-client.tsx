@@ -2,16 +2,25 @@
 
 import { format } from "date-fns";
 import {
+  AlertTriangle,
+  Building2,
   ChevronLeft,
   ChevronRight,
+  ClipboardCheck,
+  Construction,
+  Download,
   FileClock,
+  FileText,
   Filter,
+  MapPinned,
   Search,
   ShieldCheck,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -49,29 +58,10 @@ type Filters = {
   dateTo: string;
 };
 
-const ACTION_LABELS: Record<string, string> = {
-  COMPANY_CREATED: "Criou empresa",
-  COMPANY_UPDATED: "Atualizou empresa",
-  COMPANY_ACTIVATED: "Ativou empresa",
-  COMPANY_DEACTIVATED: "Desativou empresa",
-  CREATE: "Criou",
-  UPDATE: "Atualizou",
-  DELETE: "Removeu",
-  STATUS_CHANGE: "Alterou status",
-  SIGN: "Assinou",
-  COMPLETE: "Concluiu",
-  UPLOAD: "Anexou documento",
-  DOWNLOAD: "Baixou",
-  GENERATE_PDF: "Gerou PDF",
-  VIEW_QR: "Consultou status do andaime",
-  LOGIN: "Entrou no sistema",
-  LOGOUT: "Saiu do sistema",
-  ROLE_CHANGE: "Alterou perfil",
-};
-
 const ENTITY_LABELS: Record<string, string> = {
   COMPANY: "Empresa",
   USER: "Usuario",
+  WORKSPACE: "Workspace",
   SCAFFOLD: "Andaime",
   INSPECTION: "Inspecao",
   DOCUMENT: "Documento tecnico",
@@ -82,9 +72,59 @@ const ENTITY_LABELS: Record<string, string> = {
   NON_CONFORMITY: "Nao conformidade",
 };
 
+const ENTITY_BADGE_LABELS: Record<string, string> = {
+  COMPANY: "EMPRESA",
+  USER: "USUARIO",
+  WORKSPACE: "WORKSPACE",
+  SCAFFOLD: "ANDAIME",
+  INSPECTION: "INSPECAO",
+  DOCUMENT: "DOCUMENTACAO",
+  SIGNATURE: "ASSINATURA",
+  PDF: "PDF",
+  QR_CODE: "CONSULTA",
+  SETTINGS: "CONFIGURACAO",
+  NON_CONFORMITY: "NAO CONFORMIDADE",
+};
+
+const ENTITY_ICONS: Record<string, React.ElementType> = {
+  COMPANY: Building2,
+  USER: User,
+  SCAFFOLD: Construction,
+  INSPECTION: ClipboardCheck,
+  DOCUMENT: FileText,
+  SIGNATURE: FileText,
+  PDF: FileText,
+  QR_CODE: Construction,
+  SETTINGS: ShieldCheck,
+  NON_CONFORMITY: AlertTriangle,
+  WORKSPACE: MapPinned,
+};
+
+type EventTone = "green" | "amber" | "red" | "slate";
+
+const TONE_STYLES: Record<EventTone, string> = {
+  green: "border-emerald-300 bg-emerald-50 text-emerald-800",
+  amber: "border-amber-300 bg-amber-50 text-amber-800",
+  red: "border-red-300 bg-red-50 text-red-800",
+  slate: "border-slate-300 bg-slate-50 text-slate-700",
+};
+
+const AUDIT_GROUPS = [
+  { value: "all", label: "Todos" },
+  { value: "USER", label: "Usuarios" },
+  { value: "COMPANY", label: "Empresas" },
+  { value: "WORKSPACE", label: "Workspaces" },
+  { value: "SCAFFOLD", label: "Andaimes" },
+  { value: "INSPECTION", label: "Inspecoes" },
+  { value: "NON_CONFORMITY", label: "Nao Conformidades" },
+  { value: "DOCUMENT", label: "Documentacao" },
+  { value: "QR_CODE", label: "Consultas" },
+];
+
 const ENTITY_ARTICLES: Record<string, string> = {
   COMPANY: "a empresa",
   USER: "o usuario",
+  WORKSPACE: "o workspace",
   SCAFFOLD: "o andaime",
   INSPECTION: "a inspecao",
   DOCUMENT: "o documento tecnico",
@@ -102,11 +142,15 @@ const FIELD_LABELS: Record<string, string> = {
   classification: "Classificacao",
   code: "Codigo",
   company: "Empresa",
+  companyLogo: "Logo da empresa",
   companyId: "Empresa",
   closedAt: "Encerrada em",
   createdById: "Criado por",
+  createdAt: "Data de criacao",
   department: "Departamento",
   dismantled_at: "Desmontado em",
+  dismantleReason: "Motivo da desmontagem",
+  dismantleReasonDescription: "Descricao do motivo",
   dueDate: "Prazo",
   email: "E-mail",
   evidenceType: "Tipo de evidencia",
@@ -138,9 +182,11 @@ const FIELD_LABELS: Record<string, string> = {
   tag: "Tag",
   title: "Titulo",
   type: "Tipo",
+  updatedAt: "Ultima atualizacao",
   validity_date: "Validade",
   validity_days: "Validade em dias",
   warning_items: "Itens com ressalva",
+  workspaceId: "Workspace",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -183,8 +229,21 @@ const STATUS_LABELS: Record<string, string> = {
   high: "Alta",
 };
 
-const ACTIONS = Object.keys(ACTION_LABELS);
-const ENTITIES = Object.keys(ENTITY_LABELS);
+const ACTION_FILTERS = [
+  ["CREATE", "Criacao"],
+  ["UPDATE", "Atualizacao"],
+  ["STATUS_CHANGE", "Alteracao de status"],
+  ["ROLE_CHANGE", "Alteracao de perfil"],
+  ["COMPLETE", "Conclusao"],
+  ["UPLOAD", "Upload"],
+  ["DOWNLOAD", "Download"],
+  ["GENERATE_PDF", "Geracao de PDF"],
+  ["VIEW_QR", "Consulta"],
+  ["DELETE", "Remocao"],
+] as const;
+
+const AUDIT_TABLE_GRID =
+  "grid-cols-[112px_130px_100px_165px_220px_minmax(280px,1fr)_175px]";
 
 function buildHref(filters: Filters, page: number) {
   const params = new URLSearchParams();
@@ -205,12 +264,90 @@ function formatJson(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-function labelAction(action: string) {
-  return ACTION_LABELS[action] ?? action;
-}
-
 function labelEntity(entityType: string) {
   return ENTITY_LABELS[entityType] ?? entityType;
+}
+
+function getRecordString(value: unknown, key: string) {
+  if (!isPlainObject(value)) return null;
+  const item = value[key];
+  return typeof item === "string" ? item : null;
+}
+
+function getEventMeta(row: AuditRow): {
+  label: string;
+  shortLabel: string;
+  tone: EventTone;
+} {
+  const newStatus = getRecordString(row.newValue, "status");
+  const oldStatus = getRecordString(row.oldValue, "status");
+
+  if (row.action === "VIEW_QR") {
+    return { label: "Consultou status", shortLabel: "CONSULTA", tone: "slate" };
+  }
+  if (row.action === "ROLE_CHANGE") {
+    return { label: "Alterou perfil", shortLabel: "ALTERACAO DE PERFIL", tone: "amber" };
+  }
+  if (row.action === "STATUS_CHANGE") {
+    if (newStatus === "desmontado") {
+      return { label: "Desmontou andaime", shortLabel: "DESMONTAGEM", tone: "red" };
+    }
+    return {
+      label:
+        row.entityType === "SCAFFOLD"
+          ? "Alterou status do andaime"
+          : "Alterou status",
+      shortLabel: "ALTERACAO DE STATUS",
+      tone: ["reprovado", "interditado", "cancelled", "CANCELLED"].includes(newStatus ?? "")
+        ? "red"
+        : "amber",
+    };
+  }
+  if (row.action === "CREATE" || row.action.endsWith("_CREATED")) {
+    if (row.entityType === "USER") return { label: "Criou usuario", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "COMPANY") return { label: "Criou empresa", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "INSPECTION") return { label: "Criou inspecao", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Criou nao conformidade", shortLabel: "CRIACAO", tone: "green" };
+    return { label: "Criou registro", shortLabel: "CRIACAO", tone: "green" };
+  }
+  if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
+    if (row.action === "COMPANY_LOGO_UPDATED") {
+      return { label: "Atualizou logo", shortLabel: "ATUALIZACAO", tone: "amber" };
+    }
+    if (row.entityType === "USER") return { label: "Atualizou usuario", shortLabel: "ATUALIZACAO", tone: "amber" };
+    if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZACAO", tone: "amber" };
+    if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZACAO", tone: "amber" };
+    if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZACAO", tone: "amber" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou nao conformidade", shortLabel: "ATUALIZACAO", tone: "amber" };
+    return { label: "Atualizou registro", shortLabel: "ATUALIZACAO", tone: "amber" };
+  }
+  if (row.entityType === "INSPECTION" && newStatus === "aprovado") {
+    return { label: "Aprovou inspecao", shortLabel: "APROVACAO", tone: "green" };
+  }
+  if (row.entityType === "INSPECTION" && (newStatus === "reprovado" || oldStatus === "aprovado")) {
+    return { label: "Reprovou inspecao", shortLabel: "REPROVACAO", tone: "red" };
+  }
+  if (row.entityType === "NON_CONFORMITY" && ["CLOSED", "closed"].includes(newStatus ?? "")) {
+    return { label: "Encerrou nao conformidade", shortLabel: "ENCERRAMENTO", tone: "green" };
+  }
+  if (["DELETE", "CANCELLED", "CANCEL"].includes(row.action)) {
+    return { label: "Removeu registro", shortLabel: "REMOCAO", tone: "red" };
+  }
+  if (row.action === "COMPLETE") {
+    return { label: "Concluiu etapa", shortLabel: "CONCLUSAO", tone: "green" };
+  }
+  return {
+    label: row.action.replaceAll("_", " ").toLowerCase(),
+    shortLabel: row.action.replaceAll("_", " "),
+    tone: "slate",
+  };
+}
+
+function labelAction(rowOrAction: AuditRow | string) {
+  if (typeof rowOrAction === "string") return rowOrAction.replaceAll("_", " ");
+  return getEventMeta(rowOrAction).label;
 }
 
 function entityDisplay(row: AuditRow) {
@@ -328,6 +465,12 @@ function friendlyDescription(row: AuditRow) {
     case "DELETE":
       return `${actor} removeu ${entity} ${entityLabel}.`;
     case "STATUS_CHANGE":
+      if (
+        row.entityType === "SCAFFOLD" &&
+        getRecordString(row.newValue, "status") === "desmontado"
+      ) {
+        return `${actor} desmontou o andaime ${entityLabel}.`;
+      }
       return `${actor} alterou o status de ${entity} ${entityLabel}.`;
     case "ROLE_CHANGE":
       return `${actor} alterou o perfil de ${entity} ${entityLabel}.`;
@@ -352,14 +495,86 @@ function friendlyDescription(row: AuditRow) {
   }
 }
 
+function ActionBadge({ row }: { row: AuditRow }) {
+  const meta = getEventMeta(row);
+  return (
+    <Badge
+      variant="outline"
+      title={meta.label}
+      className={`max-w-full rounded-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${TONE_STYLES[meta.tone]}`}
+    >
+      <span className="block truncate">{meta.label}</span>
+    </Badge>
+  );
+}
+
+function EntityBadge({ row }: { row: AuditRow }) {
+  const Icon = ENTITY_ICONS[row.entityType] ?? FileClock;
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge
+        variant="outline"
+        className="inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-700"
+      >
+        <Icon className="size-3" />
+        {ENTITY_BADGE_LABELS[row.entityType] ?? labelEntity(row.entityType).toUpperCase()}
+      </Badge>
+      <span className="font-mono text-[11px] font-semibold text-foreground">
+        {row.entityLabel ?? row.entityId ?? "-"}
+      </span>
+    </div>
+  );
+}
+
+function csvEscape(value: string) {
+  return `"${value.replaceAll('"', '""')}"`;
+}
+
+function exportRowsToCsv(rows: AuditRow[]) {
+  const headers = [
+    "Data/Hora",
+    "Usuario",
+    "Perfil",
+    "Acao",
+    "Entidade",
+    "Descricao",
+    "Empresa",
+    "Workspace",
+  ];
+  const lines = rows.map((row) =>
+    [
+      format(new Date(row.createdAt), "dd/MM/yyyy HH:mm"),
+      row.userName ?? "Sistema",
+      row.userRole ?? "-",
+      labelAction(row),
+      entityDisplay(row),
+      friendlyDescription(row),
+      row.companyId ?? "-",
+      row.workspaceId ?? "-",
+    ]
+      .map(csvEscape)
+      .join(","),
+  );
+  const csv = [headers.map(csvEscape).join(","), ...lines].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `auditoria-${format(new Date(), "yyyyMMdd-HHmm")}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export function AuditoriaClient({
   rows,
+  exportRows,
   total,
   page,
   pageSize,
   filters,
 }: {
   rows: AuditRow[];
+  exportRows: AuditRow[];
   total: number;
   page: number;
   pageSize: number;
@@ -383,11 +598,21 @@ export function AuditoriaClient({
             {total} evento(s) registrados
           </p>
         </div>
-        <div className="flex items-center gap-2 h-8 px-3 border border-border bg-card">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Log Imutavel
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => exportRowsToCsv(exportRows)}
+            className="inline-flex h-8 items-center gap-2 border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Exportar CSV
+          </button>
+          <div className="flex h-8 items-center gap-2 border border-border bg-card px-3">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Log Imutavel
+            </span>
+          </div>
         </div>
       </div>
 
@@ -411,9 +636,9 @@ export function AuditoriaClient({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas acoes</SelectItem>
-            {ACTIONS.map((action) => (
-              <SelectItem key={action} value={action}>
-                {labelAction(action)}
+            {ACTION_FILTERS.map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -423,10 +648,9 @@ export function AuditoriaClient({
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas entidades</SelectItem>
-            {ENTITIES.map((entity) => (
-              <SelectItem key={entity} value={entity}>
-                {labelEntity(entity)}
+            {AUDIT_GROUPS.map((entity) => (
+              <SelectItem key={entity.value} value={entity.value}>
+                {entity.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -461,69 +685,73 @@ export function AuditoriaClient({
       </form>
 
       <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
-        <div className="grid grid-cols-[130px_minmax(120px,0.9fr)_minmax(95px,0.75fr)_minmax(120px,0.9fr)_minmax(150px,1fr)_minmax(180px,1.6fr)_minmax(120px,0.9fr)] gap-4 px-4 py-2.5 bg-primary border-b border-border">
-          {[
-            "Data/Hora",
-            "Usuario",
-            "Perfil",
-            "Acao",
-            "Entidade",
-            "Descricao",
-            "Empresa/Planta",
-          ].map((header) => (
-            <p
-              key={header}
-              className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
-            >
-              {header}
-            </p>
-          ))}
-        </div>
+        <div className="overflow-x-auto">
+          <div className="min-w-[1180px]">
+            <div className={`grid ${AUDIT_TABLE_GRID} gap-3 px-4 py-2.5 bg-primary border-b border-border`}>
+              {[
+                "Data/Hora",
+                "Usuario",
+                "Perfil",
+                "Acao",
+                "Entidade",
+                "Descricao",
+                "Empresa/Planta",
+              ].map((header) => (
+                <p
+                  key={header}
+                  className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
+                >
+                  {header}
+                </p>
+              ))}
+            </div>
 
-        {rows.length === 0 ? (
-          <div className="text-center py-12">
-            <FileClock className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
-            <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
-              Nenhum evento encontrado
-            </p>
+            {rows.length === 0 ? (
+              <div className="text-center py-12">
+                <FileClock className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
+                <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+                  Nenhum evento encontrado
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {rows.map((row, index) => (
+                  <button
+                    key={row.id}
+                    type="button"
+                    onClick={() => setSelected(row)}
+                    className={
+                      `w-full grid ${AUDIT_TABLE_GRID} gap-3 items-center overflow-hidden px-4 py-3 text-left hover:bg-muted/40 ` +
+                      (index % 2 === 1 ? "bg-muted/20" : "bg-card")
+                    }
+                  >
+                    <p className="min-w-0 text-[11px] font-mono text-muted-foreground">
+                      {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
+                    </p>
+                    <p className="min-w-0 truncate text-[11px] font-semibold text-foreground">
+                      {row.userName ?? "Sistema"}
+                    </p>
+                    <p className="min-w-0 truncate text-[10px] text-muted-foreground font-mono">
+                      {row.userRole ?? "-"}
+                    </p>
+                    <div className="min-w-0">
+                      <ActionBadge row={row} />
+                    </div>
+                    <p className="min-w-0 truncate text-[10px] text-muted-foreground font-mono">
+                      {entityDisplay(row)}
+                    </p>
+                    <p className="min-w-0 truncate text-[11px] text-foreground">
+                      {friendlyDescription(row)}
+                    </p>
+                    <p className="min-w-0 truncate text-[10px] text-muted-foreground">
+                      {companyDisplay(row)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {rows.map((row, index) => (
-              <button
-                key={row.id}
-                type="button"
-                onClick={() => setSelected(row)}
-                className={
-                  "w-full grid grid-cols-[130px_minmax(120px,0.9fr)_minmax(95px,0.75fr)_minmax(120px,0.9fr)_minmax(150px,1fr)_minmax(180px,1.6fr)_minmax(120px,0.9fr)] gap-4 items-center px-4 py-3 text-left hover:bg-muted/40 " +
-                  (index % 2 === 1 ? "bg-muted/20" : "bg-card")
-                }
-              >
-                <p className="text-[11px] font-mono text-muted-foreground">
-                  {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
-                </p>
-                <p className="text-[11px] font-semibold text-foreground truncate">
-                  {row.userName ?? "Sistema"}
-                </p>
-                <p className="text-[10px] text-muted-foreground font-mono truncate">
-                  {row.userRole ?? "-"}
-                </p>
-                <p className="text-[10px] font-bold text-sidebar-primary uppercase tracking-wide">
-                  {labelAction(row.action)}
-                </p>
-                <p className="text-[10px] text-muted-foreground font-mono truncate">
-                  {entityDisplay(row)}
-                </p>
-                <p className="text-[11px] text-foreground truncate">
-                  {friendlyDescription(row)}
-                </p>
-                <p className="text-[10px] text-muted-foreground truncate">
-                  {companyDisplay(row)}
-                </p>
-              </button>
-            ))}
-          </div>
-        )}
+        </div>
 
         <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-t border-border">
           <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">
@@ -573,6 +801,10 @@ export function AuditoriaClient({
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
                 Resumo
               </p>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <EntityBadge row={selected} />
+                <ActionBadge row={selected} />
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Detail label="Evento" value={friendlyDescription(selected)} />
                 <Detail label="Usuario" value={selected.userName ?? "Sistema"} />
@@ -587,7 +819,7 @@ export function AuditoriaClient({
                   label="Dispositivo/Navegador"
                   value={selected.userAgent ?? "-"}
                 />
-                <Detail label="Acao" value={labelAction(selected.action)} />
+                <Detail label="Acao" value={labelAction(selected)} />
                 <Detail
                   label="Entidade"
                   value={`${labelEntity(selected.entityType)} · ${

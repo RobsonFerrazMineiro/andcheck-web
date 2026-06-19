@@ -157,16 +157,33 @@ export async function getArchivedScaffoldByTag(tag: string) {
 
   if (!scaffold) return null;
 
+  const relatedAuditTargets = [
+    { entityType: "SCAFFOLD" as const, entityId: scaffold.id },
+    { entityType: "QR_CODE" as const, entityId: scaffold.id },
+    ...scaffold.inspections.map((inspection) => ({
+      entityType: "INSPECTION" as const,
+      entityId: inspection.id,
+    })),
+    ...scaffold.nonConformities.map((nonConformity) => ({
+      entityType: "NON_CONFORMITY" as const,
+      entityId: nonConformity.id,
+    })),
+    ...scaffold.documents.map((document) => ({
+      entityType: "DOCUMENT" as const,
+      entityId: document.id,
+    })),
+  ];
+
   const auditLogs = await prisma.auditLog.findMany({
     where: {
-      entityType: "SCAFFOLD",
-      entityId: scaffold.id,
+      OR: relatedAuditTargets,
       ...dataScopeWhere(scope),
     },
     orderBy: { createdAt: "desc" },
-    take: 20,
+    take: 100,
     select: {
       id: true,
+      entityType: true,
       action: true,
       description: true,
       userName: true,
