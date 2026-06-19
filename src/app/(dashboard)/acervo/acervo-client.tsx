@@ -297,7 +297,7 @@ export function AcervoClient({
       </div>
 
       <div className="overflow-hidden border border-border bg-card shadow-sm">
-        <div className="hidden grid-cols-12 gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
+        <div className="hidden grid-cols-[180px_110px_minmax(130px,1fr)_minmax(210px,1.2fr)_150px_120px_90px_80px_24px] gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
           {[
             "TAG",
             "Area",
@@ -310,27 +310,8 @@ export function AcervoClient({
             "",
           ].map((header, index) => (
             <p
-              key={header || "actions"}
-              className={
-                "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
-                (index === 0
-                  ? "col-span-2"
-                  : index === 1
-                    ? "col-span-1"
-                    : index === 2
-                      ? "col-span-2"
-                      : index === 3
-                        ? "col-span-2"
-                        : index === 4
-                          ? "col-span-1"
-                          : index === 5
-                            ? "col-span-1"
-                            : index === 6
-                              ? "col-span-1"
-                              : index === 7
-                                ? "col-span-1"
-                                : "col-span-1")
-              }
+              key={header || `actions-${index}`}
+              className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
             >
               {header}
             </p>
@@ -358,7 +339,7 @@ export function AcervoClient({
               <Link
                 key={row.id}
                 href={`/acervo/${encodeURIComponent(row.code)}`}
-                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-12 xl:gap-4 ${
+                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-[180px_110px_minmax(130px,1fr)_minmax(210px,1.2fr)_150px_120px_90px_80px_24px] xl:gap-4 ${
                   index % 2 ? "bg-muted/20" : "bg-card"
                 }`}
               >
@@ -367,25 +348,25 @@ export function AcervoClient({
                     <Archive className="size-3.5 text-primary/40" />
                   </div>
                   <div className="min-w-0 flex-1 xl:contents">
-                    <p className="font-mono text-[12px] font-bold text-foreground xl:col-span-2">
+                    <p className="font-mono text-[12px] font-bold text-foreground">
                       {row.code}
                     </p>
-                    <p className="text-[11px] text-muted-foreground xl:col-span-1">
+                    <p className="text-[11px] text-muted-foreground">
                       {row.area || "-"}
                     </p>
-                    <p className="hidden truncate text-[11px] text-muted-foreground xl:col-span-2 xl:block">
+                    <p className="hidden truncate text-[11px] text-muted-foreground xl:block">
                       {row.companyName || "-"}
                     </p>
-                    <p className="hidden truncate text-[11px] text-muted-foreground xl:col-span-2 xl:block">
+                    <p className="hidden truncate text-[11px] text-muted-foreground xl:block">
                       {row.workspaceName || "-"}
                     </p>
-                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                    <div className="hidden xl:flex xl:items-center">
                       <StatusBadge status="desmontado" />
                     </div>
-                    <p className="hidden font-mono text-[11px] text-muted-foreground xl:col-span-1 xl:block">
+                    <p className="hidden font-mono text-[11px] text-muted-foreground xl:block">
                       {formatDate(row.dismantledAt)}
                     </p>
-                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                    <div className="hidden xl:flex xl:items-center">
                       <CountBadge
                         icon={FileText}
                         value={row.documentsCount}
@@ -393,7 +374,7 @@ export function AcervoClient({
                         className="border-slate-300 bg-slate-50 text-slate-700"
                       />
                     </div>
-                    <div className="hidden xl:col-span-1 xl:flex xl:items-center">
+                    <div className="hidden xl:flex xl:items-center">
                       <CountBadge
                         icon={AlertTriangle}
                         value={row.nonConformitiesCount}
@@ -402,7 +383,7 @@ export function AcervoClient({
                       />
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2 xl:col-span-1 xl:justify-end">
+                  <div className="flex shrink-0 items-center gap-2 xl:justify-end">
                     <div className="xl:hidden">
                       <StatusBadge status="desmontado" />
                     </div>
