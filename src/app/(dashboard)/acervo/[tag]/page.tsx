@@ -73,6 +73,10 @@ function formatDate(value: Date | null | undefined) {
   return value ? format(value, "dd/MM/yyyy") : "-";
 }
 
+function formatDateOr(value: Date | null | undefined, fallback: string) {
+  return value ? format(value, "dd/MM/yyyy") : fallback;
+}
+
 function formatDateTime(value: Date | null | undefined) {
   return value ? format(value, "dd/MM/yyyy HH:mm") : "-";
 }
@@ -84,21 +88,29 @@ function formatBytes(value: number | null) {
 }
 
 function getLifecycleDays({
+  firstReleaseDate,
   assemblyDate,
   dismantledDate,
 }: {
+  firstReleaseDate: Date | null | undefined;
   assemblyDate: Date | null | undefined;
   dismantledDate: Date | null | undefined;
 }) {
-  if (!assemblyDate || !dismantledDate) return null;
-  const start = new Date(assemblyDate);
+  const initialDate = firstReleaseDate ?? assemblyDate;
+  if (!initialDate || !dismantledDate) return null;
+  const start = new Date(initialDate);
   const end = new Date(dismantledDate);
   start.setHours(0, 0, 0, 0);
   end.setHours(0, 0, 0, 0);
-  const days = Math.floor(
-    (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const days = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   return days < 0 ? null : days;
+}
+
+function formatLifecycleDays(days: number | null) {
+  if (days === null) return "Nao calculado";
+  if (days === 0) return "Menos de 1 dia";
+  if (days === 1) return "1 dia";
+  return `${days} dias`;
 }
 
 function getDaysInOperation({
@@ -165,6 +177,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
     dismantledDate: scaffold.dismantled_at,
   });
   const lifecycleDays = getLifecycleDays({
+    firstReleaseDate: scaffold.released_at,
     assemblyDate: scaffold.assembly_completed_at,
     dismantledDate: scaffold.dismantled_at,
   });
@@ -220,7 +233,14 @@ export default async function AcervoDetalhePage({ params }: Props) {
               {scaffold.location}
             </p>
           </div>
-          <StatusBadge status={scaffold.status} size="xl" />
+          <div className="shrink-0 space-y-1 text-left sm:text-right">
+            <StatusBadge status={scaffold.status} size="xl" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/45">
+              {scaffold.dismantled_at
+                ? `Arquivado em ${formatDate(scaffold.dismantled_at)}`
+                : "Registro arquivado"}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -265,22 +285,22 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Calendar}
             label="Montagem"
-            value={formatDate(scaffold.assembly_completed_at)}
+            value={formatDateOr(scaffold.assembly_completed_at, "Data nao registrada")}
           />
           <ArchiveRow
             icon={CheckCircle2}
             label="Primeira Liberacao"
-            value={formatDate(scaffold.released_at)}
+            value={formatDateOr(scaffold.released_at, "Sem liberacao registrada")}
           />
           <ArchiveRow
             icon={ClipboardCheck}
             label="Ultima Inspecao"
-            value={formatDate(lastInspection?.date)}
+            value={formatDateOr(lastInspection?.date, "Sem inspecao registrada")}
           />
           <ArchiveRow
             icon={Clock}
             label="Desmontagem"
-            value={formatDate(scaffold.dismantled_at)}
+            value={formatDateOr(scaffold.dismantled_at, "Data nao registrada")}
           />
         </ArchiveCard>
 
@@ -288,7 +308,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Calendar}
             label="Data"
-            value={formatDate(scaffold.dismantled_at)}
+            value={formatDateOr(scaffold.dismantled_at, "Data nao registrada")}
           />
           <ArchiveRow
             icon={User}
@@ -322,7 +342,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Clock}
             label="Tempo de Vida"
-            value={lifecycleDays === null ? "-" : `${lifecycleDays} dias`}
+            value={formatLifecycleDays(lifecycleDays)}
           />
         </ArchiveCard>
       </div>
@@ -426,7 +446,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
       <ArchiveCard
         title="Documentacao Tecnica"
         icon={FileText}
-        extra={`${scaffold.documents.length} arquivo(s)`}
+        extra={`${scaffold.documents.length} documento(s)`}
       >
         {scaffold.documents.length === 0 ? (
           <EmptyLine icon={FileText} text="Nenhum documento tecnico vinculado." />
@@ -493,7 +513,8 @@ export default async function AcervoDetalhePage({ params }: Props) {
         scaffoldCode={scaffold.code}
         tag={scaffold.tag}
         origin={origin}
-        title="QR Historico"
+        title="CONSULTA PUBLICA"
+        helperText="Ao escanear, sera exibido o registro historico do andaime desmontado, incluindo status, validade final, inspecoes e documentacao disponivel."
       />
     </div>
   );
@@ -581,10 +602,13 @@ function LifecycleStrip({
   dismantledDate: Date | null | undefined;
 }) {
   const items = [
-    { label: "Montagem", value: formatDate(assemblyDate) },
-    { label: "Liberacao", value: formatDate(releaseDate) },
-    { label: "Ultima Inspecao", value: formatDate(lastInspectionDate) },
-    { label: "Desmontagem", value: formatDate(dismantledDate) },
+    { label: "Montagem", value: formatDateOr(assemblyDate, "Nao registrada") },
+    { label: "Liberacao", value: formatDateOr(releaseDate, "Nao registrada") },
+    {
+      label: "Ultima Inspecao",
+      value: formatDateOr(lastInspectionDate, "Nao registrada"),
+    },
+    { label: "Desmontagem", value: formatDateOr(dismantledDate, "Nao registrada") },
   ];
 
   return (

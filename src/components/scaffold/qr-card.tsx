@@ -9,6 +9,7 @@ interface ScaffoldQRCardProps {
   tag: string;
   origin: string;
   title?: string;
+  helperText?: string;
 }
 
 export function ScaffoldQRCard({
@@ -16,6 +17,7 @@ export function ScaffoldQRCard({
   tag,
   origin,
   title = "QR Code do Andaime",
+  helperText = "Ao escanear, o inspetor vera o status atual, validade, responsavel e ultima inspecao do andaime.",
 }: ScaffoldQRCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -48,46 +50,40 @@ export function ScaffoldQRCard({
   };
 
   return (
-    <div className="bg-card border border-border shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b border-border">
-        <QrCode className="w-3.5 h-3.5 text-muted-foreground/60" />
+    <div className="overflow-hidden border border-border bg-card shadow-sm">
+      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+        <QrCode className="h-3.5 w-3.5 text-muted-foreground/60" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
           {title}
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 px-6 py-5">
-        {/* QR com cantos decorativos laranja */}
+      <div className="flex flex-col items-center gap-6 px-6 py-5 sm:flex-row sm:items-start">
         <div className="relative shrink-0">
-          {/* cantos */}
-          <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-accent" />
-          <span className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-accent" />
-          <span className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-accent" />
-          <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-accent" />
-          <div className="p-3 bg-white">
+          <span className="absolute left-0 top-0 h-5 w-5 border-l-2 border-t-2 border-accent" />
+          <span className="absolute right-0 top-0 h-5 w-5 border-r-2 border-t-2 border-accent" />
+          <span className="absolute bottom-0 left-0 h-5 w-5 border-b-2 border-l-2 border-accent" />
+          <span className="absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 border-accent" />
+          <div className="bg-white p-3">
             <canvas ref={canvasRef} className="block" />
           </div>
-          {/* código abaixo do QR */}
-          <p className="text-center text-[11px] font-bold font-mono text-accent tracking-widest mt-1.5">
+          <p className="mt-1.5 text-center font-mono text-[11px] font-bold tracking-widest text-accent">
             {scaffoldCode}
           </p>
         </div>
 
-        {/* Info + botões */}
-        <div className="flex-1 space-y-4 w-full">
+        <div className="w-full flex-1 space-y-4">
           <div className="space-y-1">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              URL pública de escaneamento
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              URL publica de escaneamento
             </p>
-            <div className="bg-muted/50 border border-border px-3 py-2 rounded-sm">
-              <p className="text-[11px] font-mono text-foreground/70 break-all">
+            <div className="rounded-sm border border-border bg-muted/50 px-3 py-2">
+              <p className="break-all font-mono text-[11px] text-foreground/70">
                 {url}
               </p>
             </div>
-            <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
-              Ao escanear, o inspetor verá o status atual, validade, responsável
-              e última inspeção do andaime.
+            <p className="text-[10px] leading-relaxed text-muted-foreground/60">
+              {helperText}
             </p>
           </div>
 
@@ -95,16 +91,16 @@ export function ScaffoldQRCard({
             <button
               onClick={handleDownload}
               disabled={!dataUrl}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-9 px-3 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:opacity-40"
+              className="inline-flex h-9 flex-1 items-center justify-center gap-2 border border-border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-muted disabled:opacity-40"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="h-3.5 w-3.5" />
               Download PNG
             </button>
             <button
               onClick={() => window.print()}
-              className="flex-1 inline-flex items-center justify-center gap-2 h-9 px-3 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted transition-colors"
+              className="inline-flex h-9 flex-1 items-center justify-center gap-2 border border-border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-muted"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="h-3.5 w-3.5" />
               Imprimir
             </button>
           </div>
