@@ -370,7 +370,7 @@ export function AuditoriaClient({
   const currentFilters = useMemo(() => filters, [filters]);
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
@@ -393,7 +393,7 @@ export function AuditoriaClient({
 
       <form
         action="/auditoria"
-        className="bg-card border border-border shadow-sm p-3 grid grid-cols-1 lg:grid-cols-[1.3fr_180px_180px_160px_160px_140px_140px_auto] gap-2"
+        className="grid min-w-0 grid-cols-1 gap-2 border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.3fr_170px_170px_150px_150px_130px_130px_auto]"
       >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
@@ -460,8 +460,8 @@ export function AuditoriaClient({
         </button>
       </form>
 
-      <div className="bg-card border border-border shadow-sm overflow-x-auto">
-        <div className="min-w-[1280px] grid grid-cols-[145px_160px_135px_140px_210px_1fr_150px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
+      <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
+        <div className="grid grid-cols-[130px_minmax(120px,0.9fr)_minmax(95px,0.75fr)_minmax(120px,0.9fr)_minmax(150px,1fr)_minmax(180px,1.6fr)_minmax(120px,0.9fr)] gap-4 px-4 py-2.5 bg-primary border-b border-border">
           {[
             "Data/Hora",
             "Usuario",
@@ -488,14 +488,14 @@ export function AuditoriaClient({
             </p>
           </div>
         ) : (
-          <div className="min-w-[1280px] divide-y divide-border">
+          <div className="divide-y divide-border">
             {rows.map((row, index) => (
               <button
                 key={row.id}
                 type="button"
                 onClick={() => setSelected(row)}
                 className={
-                  "w-full grid grid-cols-[145px_160px_135px_140px_210px_1fr_150px] gap-4 items-center px-4 py-3 text-left hover:bg-muted/40 " +
+                  "w-full grid grid-cols-[130px_minmax(120px,0.9fr)_minmax(95px,0.75fr)_minmax(120px,0.9fr)_minmax(150px,1fr)_minmax(180px,1.6fr)_minmax(120px,0.9fr)] gap-4 items-center px-4 py-3 text-left hover:bg-muted/40 " +
                   (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                 }
               >

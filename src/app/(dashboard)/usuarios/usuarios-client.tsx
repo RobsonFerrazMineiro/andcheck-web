@@ -218,7 +218,7 @@ export function UsuariosClient({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
@@ -244,7 +244,7 @@ export function UsuariosClient({
         </button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-4">
         {[
           { label: "Total", value: users.length, tone: "text-foreground" },
           { label: "Ativos", value: activeCount, tone: "text-emerald-600" },
@@ -408,8 +408,8 @@ export function UsuariosClient({
         </Select>
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-x-auto">
-        <div className="hidden lg:grid min-w-[1180px] grid-cols-[40px_minmax(200px,1.5fr)_minmax(130px,1fr)_90px_minmax(190px,1.2fr)_minmax(150px,1fr)_100px_132px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
+      <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
+        <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
           {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Acoes"].map(
             (header) => (
               <p
@@ -430,7 +430,7 @@ export function UsuariosClient({
             </p>
           </div>
         ) : (
-          <div className="min-w-[1180px] divide-y divide-border">
+          <div className="divide-y divide-border">
             {filtered.map((user, index) => {
               const primaryRole = user.roles[0];
               const isCurrentUser = user.id === currentUserId;
@@ -443,7 +443,7 @@ export function UsuariosClient({
                 <div
                   key={user.id}
                   className={
-                    "flex lg:grid lg:grid-cols-[40px_minmax(200px,1.5fr)_minmax(130px,1fr)_90px_minmax(190px,1.2fr)_minmax(150px,1fr)_100px_132px] lg:gap-4 items-center px-4 py-3 " +
+                    "flex lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 items-center px-4 py-3 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
