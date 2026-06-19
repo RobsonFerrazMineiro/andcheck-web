@@ -8,12 +8,14 @@ interface ScaffoldQRCardProps {
   scaffoldCode: string;
   tag: string;
   origin: string;
+  title?: string;
 }
 
 export function ScaffoldQRCard({
   scaffoldCode,
   tag,
   origin,
+  title = "QR Code do Andaime",
 }: ScaffoldQRCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function ScaffoldQRCard({
       <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b border-border">
         <QrCode className="w-3.5 h-3.5 text-muted-foreground/60" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-          QR Code do Andaime
+          {title}
         </p>
       </div>
 

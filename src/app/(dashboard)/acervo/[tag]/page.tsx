@@ -10,7 +10,6 @@ import {
   FileClock,
   FileText,
   MapPin,
-  QrCode,
   User,
 } from "lucide-react";
 import { headers } from "next/headers";
@@ -269,48 +268,43 @@ export default async function AcervoDetalhePage({ params }: Props) {
         )}
       </ArchiveCard>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-        <ArchiveCard
-          title="Auditoria"
-          icon={FileClock}
-          extra={`${auditLogs.length} evento(s)`}
-        >
-          {auditLogs.length === 0 ? (
-            <EmptyLine icon={FileClock} text="Nenhum evento de auditoria encontrado." />
-          ) : (
-            <div className="divide-y divide-border">
-              {auditLogs.map((log) => (
-                <div key={log.id} className="px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
-                      {log.action}
-                    </p>
-                    <p className="font-mono text-[10px] text-muted-foreground">
-                      {formatDateTime(log.createdAt)}
-                    </p>
-                  </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    {log.description}
+      <ArchiveCard
+        title="Auditoria"
+        icon={FileClock}
+        extra={`${auditLogs.length} evento(s)`}
+      >
+        {auditLogs.length === 0 ? (
+          <EmptyLine icon={FileClock} text="Nenhum evento de auditoria encontrado." />
+        ) : (
+          <div className="divide-y divide-border">
+            {auditLogs.map((log) => (
+              <div key={log.id} className="px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
+                    {log.action}
                   </p>
-                  <p className="mt-1 text-[9px] uppercase tracking-widest text-muted-foreground/60">
-                    {log.userName ?? "Sistema"}
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    {formatDateTime(log.createdAt)}
                   </p>
                 </div>
-              ))}
-            </div>
-          )}
-        </ArchiveCard>
-
-        <ArchiveCard title="QR Historico" icon={QrCode}>
-          <div className="p-4">
-            <ScaffoldQRCard
-              scaffoldCode={scaffold.code}
-              tag={scaffold.tag}
-              origin={origin}
-            />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {log.description}
+                </p>
+                <p className="mt-1 text-[9px] uppercase tracking-widest text-muted-foreground/60">
+                  {log.userName ?? "Sistema"}
+                </p>
+              </div>
+            ))}
           </div>
-        </ArchiveCard>
-      </div>
+        )}
+      </ArchiveCard>
+
+      <ScaffoldQRCard
+        scaffoldCode={scaffold.code}
+        tag={scaffold.tag}
+        origin={origin}
+        title="QR Historico"
+      />
     </div>
   );
 }
