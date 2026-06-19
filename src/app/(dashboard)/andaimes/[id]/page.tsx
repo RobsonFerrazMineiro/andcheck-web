@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ScaffoldActionsBar } from "@/components/scaffold/actions-bar";
 import { ScaffoldDocumentSection } from "@/components/scaffold/document-section";
@@ -87,6 +87,9 @@ export default async function AndaimeDetailPage({ params }: Props) {
   const { id } = await params;
   const scaffold = await getScaffoldById(id);
   if (!scaffold) notFound();
+  if (scaffold.status === "desmontado") {
+    redirect(`/acervo/${encodeURIComponent(scaffold.code)}`);
+  }
 
   const inspections = scaffold.inspections;
   const activeNonConformity = scaffold.nonConformities.find((nc) =>

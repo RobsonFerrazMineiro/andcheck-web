@@ -91,7 +91,6 @@ const LEGEND_FILTERS: LegendFilter[] = [
   { status: "reprovado", label: "Reprovado", dot: "bg-red-500" },
   { status: "interditado", label: "Interditado", dot: "bg-red-900" },
   { status: "vencido", label: "Vencido", dot: "bg-gray-600" },
-  { status: "desmontado", label: "Desmontado", dot: "bg-gray-400" },
 ];
 
 const STATUS_DOT: Record<string, string> = {
@@ -101,7 +100,6 @@ const STATUS_DOT: Record<string, string> = {
   reprovado: "bg-red-500",
   interditado: "bg-red-900",
   vencido: "bg-gray-600",
-  desmontado: "bg-gray-400",
   pendente: "bg-amber-400",
 };
 

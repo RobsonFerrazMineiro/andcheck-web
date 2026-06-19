@@ -27,7 +27,10 @@ export async function getScaffolds() {
   const scope = await getDataScope();
 
   return prisma.scaffold.findMany({
-    where: dataScopeWhere(scope),
+    where: {
+      ...dataScopeWhere(scope),
+      status: { not: "desmontado" },
+    },
     orderBy: { code: "asc" },
     include: {
       tenantCompany: { select: { id: true, name: true } },
