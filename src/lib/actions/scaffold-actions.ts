@@ -41,6 +41,33 @@ export async function getScaffolds() {
   });
 }
 
+export async function getScaffoldArchive() {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
+
+  // FUTURO:
+  //
+  // Quando Scaffold.status === DESMONTADO
+  // exibir automaticamente no Acervo de Andaimes.
+  //
+  // Nesta sprint a tela permanece preparada
+  // aguardando integração.
+  return prisma.scaffold.findMany({
+    where: { status: "desmontado", ...dataScopeWhere(scope) },
+    orderBy: [{ dismantled_at: "desc" }, { code: "asc" }],
+    include: {
+      tenantCompany: { select: { id: true, name: true } },
+      workspace: { select: { id: true, name: true } },
+      inspections: {
+        orderBy: { date: "desc" },
+        take: 1,
+        select: { date: true, result: true },
+      },
+      _count: { select: { documents: true, nonConformities: true } },
+    },
+  });
+}
+
 // ── Buscar por ID ─────────────────────────────────────────────────────────────
 export async function getScaffoldById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
@@ -73,6 +100,79 @@ export async function getScaffoldById(id: string) {
       },
     },
   });
+}
+
+export async function getArchivedScaffoldByTag(tag: string) {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
+
+  const scaffold = await prisma.scaffold.findFirst({
+    where: {
+      status: "desmontado",
+      OR: [{ tag }, { code: tag }, { id: tag }],
+      ...dataScopeWhere(scope),
+    },
+    include: {
+      tenantCompany: { select: { id: true, name: true } },
+      workspace: { select: { id: true, name: true } },
+      documents: {
+        orderBy: { created_at: "desc" },
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          file_name: true,
+          file_size: true,
+          mime_type: true,
+          uploaded_by: true,
+          expires_at: true,
+          observation: true,
+          created_at: true,
+        },
+      },
+      inspections: {
+        orderBy: { date: "desc" },
+        select: {
+          id: true,
+          date: true,
+          inspector_name: true,
+          result: true,
+          validity_days: true,
+          notes: true,
+        },
+      },
+      nonConformities: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          responsibleUser: {
+            select: { id: true, name: true, company: true },
+          },
+          _count: { select: { evidences: true, history: true } },
+        },
+      },
+    },
+  });
+
+  if (!scaffold) return null;
+
+  const auditLogs = await prisma.auditLog.findMany({
+    where: {
+      entityType: "SCAFFOLD",
+      entityId: scaffold.id,
+      ...dataScopeWhere(scope),
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      action: true,
+      description: true,
+      userName: true,
+      createdAt: true,
+    },
+  });
+
+  return { scaffold, auditLogs };
 }
 
 // ── Buscar por tag (QR) ───────────────────────────────────────────────────────

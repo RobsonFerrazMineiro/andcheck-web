@@ -1,7 +1,5 @@
-import { getDocumentFormOptions } from "@/lib/actions/document-actions";
-import { NovoDocumentoForm } from "./novo-documento-form";
+import { redirect } from "next/navigation";
 
-export default async function NovoDocumentoPage() {
-  const options = await getDocumentFormOptions();
-  return <NovoDocumentoForm options={options} />;
+export default function NovoDocumentoPage() {
+  redirect("/acervo");
 }

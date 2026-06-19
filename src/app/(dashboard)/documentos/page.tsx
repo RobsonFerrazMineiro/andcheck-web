@@ -1,7 +1,5 @@
-import { getDocumentManagementData } from "@/lib/actions/document-actions";
-import { DocumentosClient } from "./documentos-client";
+import { redirect } from "next/navigation";
 
-export default async function DocumentosPage() {
-  const data = await getDocumentManagementData();
-  return <DocumentosClient initialData={data} />;
+export default function DocumentosPage() {
+  redirect("/acervo");
 }

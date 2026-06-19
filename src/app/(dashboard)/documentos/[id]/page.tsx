@@ -1,11 +1,5 @@
-import { getDocumentDetail } from "@/lib/actions/document-actions";
-import { notFound } from "next/navigation";
-import { DocumentoDetalheClient } from "./documento-detalhe-client";
+import { redirect } from "next/navigation";
 
-export default async function DocumentoDetalhePage(props: PageProps<"/documentos/[id]">) {
-  const { id } = await props.params;
-  const data = await getDocumentDetail(id);
-  if (!data) notFound();
-
-  return <DocumentoDetalheClient data={data} />;
+export default function DocumentoDetalhePage() {
+  redirect("/acervo");
 }

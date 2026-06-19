@@ -1,11 +1,11 @@
 "use client";
 
 import {
+  Archive,
   ChevronRight,
   ClipboardCheck,
   ClipboardList,
   Construction,
-  FileText,
   FileClock,
   LayoutDashboard,
   Map,
@@ -43,10 +43,10 @@ const navItems = [
     desc: "Controle de tratativas",
   },
   {
-    path: "/documentos",
-    label: "Documentacao Tecnica",
-    icon: FileText,
-    desc: "Arquivos de andaimes",
+    path: "/acervo",
+    label: "Acervo de Andaimes",
+    icon: Archive,
+    desc: "Historico operacional",
   },
   {
     path: "/mapa",
@@ -158,7 +158,7 @@ export function Sidebar({
             (item) =>
               item.path !== "/nao-conformidades" || canViewNonConformities,
           )
-          .filter((item) => item.path !== "/documentos" || canViewDocuments)
+          .filter((item) => item.path !== "/acervo" || canViewDocuments)
           .map((item) => {
           const active = isActive(item.path);
           return (

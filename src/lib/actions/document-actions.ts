@@ -359,7 +359,7 @@ export async function createDocument(formData: FormData) {
     workspaceId: document.workspaceId,
   });
 
-  revalidatePath("/documentos");
+  revalidatePath("/acervo");
   return { id: document.id };
 }
 
@@ -431,8 +431,7 @@ export async function archiveDocument(id: string) {
     workspaceId: document.workspaceId,
   });
 
-  revalidatePath("/documentos");
-  revalidatePath(`/documentos/${id}`);
+  revalidatePath("/acervo");
 }
 
 export async function assertCanReadDocumentFile(id: string) {

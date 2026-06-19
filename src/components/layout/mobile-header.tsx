@@ -6,10 +6,10 @@ import {
   type ContextSwitcherData,
 } from "@/components/layout/context-switcher";
 import {
+  Archive,
   ClipboardCheck,
   ClipboardList,
   Construction,
-  FileText,
   FileClock,
   LayoutDashboard,
   Map,
@@ -29,7 +29,7 @@ const navItems = [
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/nao-conformidades", label: "Nao Conformidades", icon: ClipboardList },
-  { path: "/documentos", label: "Documentacao Tecnica", icon: FileText },
+  { path: "/acervo", label: "Acervo de Andaimes", icon: Archive },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
@@ -112,7 +112,7 @@ export function MobileHeader({
               (item) =>
                 item.path !== "/nao-conformidades" || canViewNonConformities,
             )
-            .filter((item) => item.path !== "/documentos" || canViewDocuments)
+            .filter((item) => item.path !== "/acervo" || canViewDocuments)
             .map((item) => (
             <Link
               key={item.path}
