@@ -168,7 +168,7 @@ export function AcervoClient({
   ).length;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex min-w-0 flex-col gap-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -183,7 +183,7 @@ export function AcervoClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-4">
         <Kpi
           icon={Archive}
           label="Total de Andaimes"
@@ -210,7 +210,7 @@ export function AcervoClient({
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-2 border border-border bg-card p-3 shadow-sm lg:grid-cols-[1.4fr_170px_170px_150px_130px_130px_150px_170px]">
+      <div className="grid min-w-0 grid-cols-1 gap-2 border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
           <Input
@@ -296,8 +296,8 @@ export function AcervoClient({
         </Select>
       </div>
 
-      <div className="overflow-hidden border border-border bg-card shadow-sm">
-        <div className="hidden grid-cols-[180px_110px_minmax(130px,1fr)_minmax(210px,1.2fr)_150px_120px_90px_80px_24px] gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
+      <div className="min-w-0 overflow-hidden border border-border bg-card shadow-sm">
+        <div className="hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
           {[
             "TAG",
             "Area",
@@ -339,7 +339,7 @@ export function AcervoClient({
               <Link
                 key={row.id}
                 href={`/acervo/${encodeURIComponent(row.code)}`}
-                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-[180px_110px_minmax(130px,1fr)_minmax(210px,1.2fr)_150px_120px_90px_80px_24px] xl:gap-4 ${
+                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] xl:gap-4 ${
                   index % 2 ? "bg-muted/20" : "bg-card"
                 }`}
               >
