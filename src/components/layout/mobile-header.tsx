@@ -29,7 +29,7 @@ const navItems = [
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/nao-conformidades", label: "Nao Conformidades", icon: ClipboardList },
-  { path: "/documentos", label: "Documentos", icon: FileText },
+  { path: "/documentos", label: "Documentacao Tecnica", icon: FileText },
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuarios", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },

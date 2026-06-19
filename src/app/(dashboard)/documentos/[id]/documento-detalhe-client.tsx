@@ -101,7 +101,7 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
   function handleOpen() {
     const safeOpenUrl = getSafeOpenUrl(document);
     if (!safeOpenUrl) {
-      toast.error("Arquivo indisponivel ou URL invalida.");
+      toast.error("Arquivo tecnico indisponivel ou URL invalida.");
       return;
     }
     window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
@@ -109,7 +109,7 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
 
   function handleDownload() {
     if (!downloadDocumentFile(document)) {
-      toast.error("Arquivo indisponivel ou URL invalida.");
+      toast.error("Arquivo tecnico indisponivel ou URL invalida.");
     }
   }
 
@@ -133,7 +133,7 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            AndCheck EHS - Gestao Documental
+            AndCheck EHS - Documentacao Tecnica
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="max-w-3xl truncate text-[18px] font-bold uppercase tracking-tight text-foreground">
@@ -190,7 +190,7 @@ export function DocumentoDetalheClient({ data }: { data: DetailData }) {
           )}
         </div>
 
-        <DetailCard icon={FileText} title="Arquivo">
+        <DetailCard icon={FileText} title="Arquivo Tecnico">
           <div className="mb-4 flex min-h-40 flex-col items-center justify-center border border-dashed border-border bg-muted/20 p-4 text-center">
             <DocumentFileIcon
               fileName={document.fileName}

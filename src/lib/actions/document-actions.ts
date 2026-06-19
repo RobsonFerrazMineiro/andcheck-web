@@ -36,7 +36,7 @@ const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
   CROQUI: "Croqui",
   PLANO_MONTAGEM: "Plano de Montagem",
   CERTIFICADO_TECNICO: "Certificado Tecnico",
-  OUTRO: "Outro",
+  OUTRO: "Outros",
 };
 
 function hasAccessPermission(
@@ -117,10 +117,10 @@ function parseDocumentForm(formData: FormData) {
     throw new Error("Titulo, categoria, empresa e workspace sao obrigatorios.");
   }
   if (!Object.values(DocumentCategory).includes(category)) {
-    throw new Error("Categoria documental invalida.");
+    throw new Error("Categoria tecnica invalida.");
   }
   if (!fileUrl || !fileName) {
-    throw new Error("Arquivo obrigatorio.");
+    throw new Error("Arquivo tecnico obrigatorio.");
   }
   if (fileSize !== null && (!Number.isFinite(fileSize) || fileSize < 0)) {
     throw new Error("Tamanho do arquivo invalido.");
@@ -476,7 +476,7 @@ export async function logDocumentFileAccess(
     description:
       action === "download"
         ? `Documento ${document.title} baixado`
-        : `Arquivo do documento ${document.title} visualizado`,
+        : `Arquivo tecnico do documento ${document.title} visualizado`,
     newValue: { fileName: document.fileName },
     companyId: document.companyId,
     workspaceId: document.workspaceId,

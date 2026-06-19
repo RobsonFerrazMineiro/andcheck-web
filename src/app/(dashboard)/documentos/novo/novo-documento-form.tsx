@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Link2, Loader2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -39,6 +39,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
   const [category, setCategory] = useState(options.categories[0]?.value ?? "ART");
   const [companyId, setCompanyId] = useState(options.companies[0]?.id ?? "");
   const [workspaceId, setWorkspaceId] = useState(options.workspaces[0]?.id ?? "");
+  const [linkedTo, setLinkedTo] = useState("andaime");
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -49,7 +50,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
       return;
     }
     if (file.size > MAX_SIZE) {
-      toast.error("Arquivo muito grande. Maximo 25 MB.");
+      toast.error("Arquivo tecnico muito grande. Maximo 25 MB.");
       return;
     }
 
@@ -69,7 +70,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
       form.set("mimeType", uploaded.contentType);
 
       const created = await createDocument(form);
-      toast.success("Documento criado com sucesso.");
+      toast.success("Documento tecnico criado com sucesso.");
       router.push(`/documentos/${created.id}`);
       router.refresh();
     } catch (error) {
@@ -86,13 +87,13 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            AndCheck EHS - Gestao Documental
+            AndCheck EHS - Documentacao Tecnica
           </p>
           <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
-            Novo Documento
+            Novo Documento Tecnico
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Cadastro de documento corporativo.
+            Cadastro de documento tecnico relacionado a andaimes, inspecoes ou evidencias.
           </p>
         </div>
         <Button asChild variant="outline" className="rounded-none">
@@ -137,6 +138,26 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
             Descricao
           </label>
           <Textarea name="description" rows={3} className="rounded-none" />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            Vinculado a
+          </label>
+          <Select value={linkedTo} onValueChange={setLinkedTo}>
+            <SelectTrigger className="rounded-none">
+              <Link2 className="mr-1.5 size-3.5 text-muted-foreground/50" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="andaime">Andaime</SelectItem>
+              <SelectItem value="inspecao">Inspecao</SelectItem>
+              <SelectItem value="nao-conformidade">Nao Conformidade</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground">
+            Vinculo visual preparado para a proxima sprint.
+          </p>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -191,7 +212,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
 
         <div className="flex flex-col gap-2 lg:col-span-2">
           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Arquivo *
+            Arquivo Tecnico *
           </label>
           <button
             type="button"
@@ -222,7 +243,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
             ) : (
               <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
                 <Upload className="size-4" />
-                Selecionar PDF, DOCX, XLSX, PNG, JPG ou WEBP ate 25 MB
+                Selecionar arquivo tecnico em PDF, DOCX, XLSX, PNG, JPG ou WEBP ate 25 MB
               </span>
             )}
           </button>
@@ -245,7 +266,7 @@ export function NovoDocumentoForm({ options }: { options: Options }) {
             ) : (
               <Upload data-icon="inline-start" />
             )}
-            {saving ? "Salvando..." : "Salvar Documento"}
+            {saving ? "Salvando..." : "Salvar Documento Tecnico"}
           </Button>
         </div>
       </form>

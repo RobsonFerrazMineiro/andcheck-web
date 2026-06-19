@@ -76,15 +76,15 @@ const CATEGORY_FILTERS = [
   { value: "RRT", label: "RRT", categories: ["RRT"] },
   {
     value: "PROJETOS",
-    label: "Projetos",
+    label: "Projeto Estrutural",
     categories: ["PROJETO_ESTRUTURAL"],
   },
   {
     value: "MEMORIAIS",
-    label: "Memoriais",
+    label: "Memorial Calculo",
     categories: ["MEMORIAL_CALCULO"],
   },
-  { value: "CROQUIS", label: "Croquis", categories: ["CROQUI"] },
+  { value: "CROQUIS", label: "Croqui", categories: ["CROQUI"] },
   {
     value: "PLANO_MONTAGEM",
     label: "Plano Montagem",
@@ -240,14 +240,14 @@ export function DocumentosClient({
 
   function handleDownload(document: DocumentRow) {
     if (!downloadDocumentFile(document)) {
-      toast.error("Arquivo indisponivel ou URL invalida.");
+      toast.error("Arquivo tecnico indisponivel ou URL invalida.");
     }
   }
 
   function handleOpen(document: DocumentRow) {
     const safeOpenUrl = getSafeOpenUrl(document);
     if (!safeOpenUrl) {
-      toast.error("Arquivo indisponivel ou URL invalida.");
+      toast.error("Arquivo tecnico indisponivel ou URL invalida.");
       return;
     }
     window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
@@ -291,20 +291,20 @@ export function DocumentosClient({
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            AndCheck EHS - Biblioteca Corporativa
+            AndCheck EHS - Biblioteca Tecnica de Andaimes
           </p>
           <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
-            Gestao Documental
+            Documentacao Tecnica
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Biblioteca corporativa de documentos.
+            Biblioteca tecnica de andaimes.
           </p>
         </div>
         {initialData.canCreate && (
           <Button asChild className="rounded-none">
             <Link href="/documentos/novo">
               <Plus data-icon="inline-start" />
-              Novo Documento
+              Novo Documento Tecnico
             </Link>
           </Button>
         )}
@@ -313,7 +313,7 @@ export function DocumentosClient({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi
           icon={FileText}
-          label="Total Documentos"
+          label="Total de Documentos Tecnicos"
           value={total}
           className="border-slate-200 border-l-slate-500"
         />
@@ -364,7 +364,7 @@ export function DocumentosClient({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
             <Input
-              placeholder="Buscar por titulo, arquivo, empresa ou workspace..."
+              placeholder="Buscar por titulo, arquivo tecnico, empresa ou workspace..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="h-8 rounded-none border-border pl-9 text-[11px]"
@@ -442,11 +442,11 @@ export function DocumentosClient({
               <FileText className="size-6 text-muted-foreground/40" />
             </div>
             <p className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-foreground">
-              Nenhum documento cadastrado
+              Nenhum documento tecnico cadastrado
             </p>
             <p className="max-w-xs text-[11px] leading-relaxed text-muted-foreground">
-              Clique em &quot;Novo Documento&quot; para iniciar sua biblioteca
-              documental.
+              Cadastre ARTs, projetos estruturais, memoriais de calculo,
+              croquis e demais documentos tecnicos relacionados aos andaimes.
             </p>
           </div>
         ) : (
@@ -548,7 +548,7 @@ export function DocumentosClient({
           </div>
         )}
         <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">
-          {filtered.length} registro(s) - Gestao documental
+          {filtered.length} registro(s) - Documentacao tecnica de andaimes
         </div>
       </div>
 

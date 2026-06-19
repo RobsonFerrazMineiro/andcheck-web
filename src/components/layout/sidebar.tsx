@@ -44,9 +44,9 @@ const navItems = [
   },
   {
     path: "/documentos",
-    label: "Documentos",
+    label: "Documentacao Tecnica",
     icon: FileText,
-    desc: "Biblioteca corporativa",
+    desc: "Arquivos de andaimes",
   },
   {
     path: "/mapa",
