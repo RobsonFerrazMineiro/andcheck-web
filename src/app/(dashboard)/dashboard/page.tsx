@@ -288,20 +288,18 @@ export default async function DashboardPage() {
                 {operationalMovements.map((movement) => (
                   <div
                     key={movement.id}
-                    className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4 py-3"
+                    className="grid grid-cols-[112px_minmax(0,1fr)_68px] items-start gap-3 px-4 py-3 sm:grid-cols-[132px_minmax(0,1fr)_74px]"
                   >
-                    <div className="flex min-w-0 items-start gap-3">
-                      <MovementBadge label={movement.badge} tone={movement.tone} />
-                      <div className="min-w-0">
-                        <p className="truncate font-mono text-[12px] font-bold text-foreground">
-                          {movement.title}
-                        </p>
-                        <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                          {movement.subtitle}
-                        </p>
-                      </div>
+                    <MovementBadge label={movement.badge} tone={movement.tone} />
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-[12px] font-bold text-foreground">
+                        {movement.title}
+                      </p>
+                      <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                        {movement.subtitle}
+                      </p>
                     </div>
-                    <p className="shrink-0 pt-0.5 font-mono text-[10px] text-muted-foreground">
+                    <p className="pt-0.5 text-right font-mono text-[10px] text-muted-foreground">
                       {format(movement.createdAt, "dd/MM HH:mm")}
                     </p>
                   </div>
@@ -512,7 +510,7 @@ function MovementBadge({
   return (
     <span
       className={
-        "inline-flex w-fit max-w-full items-center gap-1.5 border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
+        "inline-flex w-full max-w-full items-center gap-1.5 border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
         styles.badge
       }
       title={label}
