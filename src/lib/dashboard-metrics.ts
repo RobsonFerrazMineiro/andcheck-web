@@ -1,6 +1,6 @@
 import "server-only";
 
-import { differenceInMilliseconds } from "date-fns";
+import { differenceInMilliseconds, endOfDay } from "date-fns";
 import {
   AuditAction,
   AuditEntityType,
@@ -42,9 +42,11 @@ function getOperationalMovement(log: {
   createdAt: Date;
 }) {
   const label = log.entityLabel ?? "registro";
+  const actor = log.userName ?? "Sistema";
   const status = getJsonString(log.newValue, "status");
   const result = getJsonString(log.newValue, "result");
   const inspectionResult = getJsonString(log.newValue, "inspection_result");
+  const scaffoldCode = getJsonString(log.newValue, "scaffold_code") ?? label;
 
   if (log.entityType === AuditEntityType.SCAFFOLD) {
     if (log.action === AuditAction.CREATE) {
@@ -52,17 +54,19 @@ function getOperationalMovement(log: {
         badge: "ANDAIME CRIADO",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:created`,
         groupable: false,
-        title: `Andaime ${label} criado`,
+        subtitle: `Criado por ${actor}`,
+        title: label,
         tone: "green" as const,
       };
     }
     if (log.action === AuditAction.STATUS_CHANGE) {
       if (status === "liberado") {
         return {
-          badge: "LIBERADO",
+          badge: "LIBERACAO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
           groupable: false,
-          title: `Andaime ${label} liberado`,
+          subtitle: `Liberado por ${actor}`,
+          title: label,
           tone: "green" as const,
         };
       }
@@ -71,7 +75,8 @@ function getOperationalMovement(log: {
           badge: "INTERDITADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:interditado`,
           groupable: false,
-          title: `Andaime ${label} interditado`,
+          subtitle: actor,
+          title: label,
           tone: "red" as const,
         };
       }
@@ -80,16 +85,18 @@ function getOperationalMovement(log: {
           badge: "DESMONTADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:desmontado`,
           groupable: false,
-          title: `Andaime ${label} desmontado`,
+          subtitle: actor,
+          title: label,
           tone: "red" as const,
         };
       }
       if (inspectionResult === "aprovado" || inspectionResult === "aprovado_com_ressalvas") {
         return {
-          badge: "LIBERADO",
+          badge: "LIBERACAO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
           groupable: false,
-          title: `Andaime ${label} liberado`,
+          subtitle: `Liberado por ${actor}`,
+          title: label,
           tone: "green" as const,
         };
       }
@@ -98,7 +105,8 @@ function getOperationalMovement(log: {
           badge: "REPROVADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:reprovado`,
           groupable: false,
-          title: `Andaime ${label} reprovado`,
+          subtitle: actor,
+          title: label,
           tone: "red" as const,
         };
       }
@@ -111,7 +119,8 @@ function getOperationalMovement(log: {
         badge: "INSPECAO REPROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:reprovada`,
         groupable: false,
-        title: `Inspecao ${label} reprovada`,
+        subtitle: actor,
+        title: scaffoldCode,
         tone: "red" as const,
       };
     }
@@ -120,7 +129,8 @@ function getOperationalMovement(log: {
         badge: "COM RESSALVAS",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:ressalvas`,
         groupable: false,
-        title: `Inspecao ${label} aprovada com ressalvas`,
+        subtitle: actor,
+        title: scaffoldCode,
         tone: "amber" as const,
       };
     }
@@ -129,7 +139,8 @@ function getOperationalMovement(log: {
         badge: "INSPECAO APROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:aprovada`,
         groupable: false,
-        title: `Inspecao ${label} aprovada`,
+        subtitle: actor,
+        title: scaffoldCode,
         tone: "green" as const,
       };
     }
@@ -142,7 +153,8 @@ function getOperationalMovement(log: {
         badge: "NC ABERTA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:aberta`,
         groupable: false,
-        title: `Nao conformidade ${label} aberta`,
+        subtitle: `Aberta por ${actor}`,
+        title: label,
         tone: "red" as const,
       };
     }
@@ -151,7 +163,8 @@ function getOperationalMovement(log: {
         badge: "NC ENCERRADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:encerrada`,
         groupable: false,
-        title: `Nao conformidade ${label} encerrada`,
+        subtitle: `Encerrada por ${actor}`,
+        title: label,
         tone: "green" as const,
       };
     }
@@ -164,6 +177,7 @@ function getOperationalMovement(log: {
         badge: "NC ATUALIZADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:atualizada`,
         groupable: true,
+        subtitle: `Atualizada por ${actor}`,
         title: label,
         tone: "amber" as const,
       };
@@ -179,7 +193,8 @@ function getOperationalMovement(log: {
       badge: "DOCUMENTO VENCIDO",
       dedupeKey: `${log.entityType}:${log.entityId ?? label}:vencido`,
       groupable: false,
-      title: `Documento tecnico ${label} vencido`,
+      subtitle: "Documento tecnico vencido",
+      title: label,
       tone: "red" as const,
     };
   }
@@ -189,10 +204,11 @@ function getOperationalMovement(log: {
     (log.action === AuditAction.DOCUMENT_CREATED || log.action === AuditAction.UPLOAD)
   ) {
     return {
-      badge: "DOCUMENTO",
+      badge: "DOCUMENTO ANEXADO",
       dedupeKey: `${log.entityType}:${log.entityId ?? label}:anexado`,
       groupable: false,
-      title: `Documento tecnico anexado em ${label}`,
+      subtitle: `Anexado por ${actor}`,
+      title: label,
       tone: "blue" as const,
     };
   }
@@ -278,6 +294,7 @@ export async function getDashboardMetrics() {
         id: true,
         createdAt: true,
         closedAt: true,
+        dueDate: true,
       },
     }),
     prisma.scaffold.groupBy({
@@ -285,7 +302,6 @@ export async function getDashboardMetrics() {
       where: workspaceRankingWhere,
       _count: { _all: true },
       orderBy: { _count: { companyId: "desc" } },
-      take: 4,
     }),
     prisma.scaffold.groupBy({
       by: ["area"],
@@ -345,6 +361,13 @@ export async function getDashboardMetrics() {
   ).length;
   const approvalRate =
     inspections.length > 0 ? Math.round((approvedInspections / inspections.length) * 100) : 0;
+  const onTimeClosedNonConformities = closedNonConformities.filter(
+    (nc) => nc.closedAt && nc.dueDate && nc.closedAt <= endOfDay(nc.dueDate),
+  ).length;
+  const onTimeClosureRate =
+    closedNonConformities.length > 0
+      ? Math.round((onTimeClosedNonConformities / closedNonConformities.length) * 100)
+      : 0;
   const averageOperationDays = average(operationDays);
   const averageCorrectionDays = average(correctionDays);
 
@@ -357,7 +380,7 @@ export async function getDashboardMetrics() {
       averageOperationDays:
         averageOperationDays === null ? null : Math.max(1, Math.round(averageOperationDays)),
       approvalRate,
-      closedNonConformities: closedNonConformities.length,
+      onTimeClosureRate,
       averageCorrectionDays:
         averageCorrectionDays === null ? null : roundOneDecimal(averageCorrectionDays),
     },
@@ -379,9 +402,9 @@ export async function getDashboardMetrics() {
         count: number;
         dedupeKey: string;
         groupable: boolean;
+        subtitle: string;
         title: string;
         tone: "green" | "blue" | "amber" | "red";
-        userName: string;
         createdAt: Date;
       }>>((movements, log) => {
         const movement = getOperationalMovement(log);
@@ -407,9 +430,9 @@ export async function getDashboardMetrics() {
           count: 1,
           dedupeKey: movement.dedupeKey,
           groupable: movement.groupable,
+          subtitle: movement.subtitle,
           title: movement.title,
           tone: movement.tone,
-          userName: log.userName ?? "Sistema",
           createdAt: log.createdAt,
         });
         return movements;
@@ -418,12 +441,12 @@ export async function getDashboardMetrics() {
       .map((movement) => ({
         id: movement.id,
         badge: movement.badge,
-        title: movement.title,
-        tone: movement.tone,
-        userName:
+        subtitle:
           movement.groupable && movement.count > 1
             ? `${movement.count} alteracoes registradas`
-            : movement.userName,
+            : movement.subtitle,
+        title: movement.title,
+        tone: movement.tone,
         createdAt: movement.createdAt,
       })),
   };

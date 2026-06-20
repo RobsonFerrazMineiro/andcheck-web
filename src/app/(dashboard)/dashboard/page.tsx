@@ -178,9 +178,9 @@ export default async function DashboardPage() {
             theme="green"
           />
           <ExecutiveKpiCard
-            label="NCs Encerradas"
-            value={historical.closedNonConformities}
-            description="Nao conformidades encerradas no escopo atual."
+            label="NCs em Dia"
+            value={`${historical.onTimeClosureRate}%`}
+            description="Percentual de NCs encerradas dentro do prazo definido."
             icon={CheckCircle2}
             theme="blue"
           />
@@ -208,7 +208,6 @@ export default async function DashboardPage() {
             description="Comparativo entre empresas do workspace"
             icon={Building2}
             items={rankings.companies}
-            suffix="andaimes"
           />
         )}
         <RankingPanel
@@ -295,7 +294,7 @@ export default async function DashboardPage() {
                         {movement.title}
                       </p>
                       <p className="mt-0.5 truncate text-[9px] uppercase tracking-wider text-muted-foreground/60">
-                        {movement.userName}
+                        {movement.subtitle}
                       </p>
                     </div>
                     <p className="shrink-0 font-mono text-[10px] text-muted-foreground">
@@ -417,15 +416,15 @@ function RankingPanel({
   description,
   icon,
   items,
-  suffix,
 }: {
   title: string;
   subtitle: string;
   description?: string;
   icon: React.ElementType;
   items: { id?: string; name: string; total: number }[];
-  suffix?: string;
 }) {
+  const maxTotal = Math.max(1, ...items.map((item) => item.total));
+
   return (
     <PanelBlock title={title} subtitle={subtitle} icon={icon}>
       {description && (
@@ -443,20 +442,30 @@ function RankingPanel({
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="space-y-3 px-4 py-4">
           {items.map((item, index) => (
             <div
               key={item.id ?? item.name}
-              className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3"
+              className="grid grid-cols-[minmax(120px,1fr)_minmax(96px,42%)_42px] items-center gap-3"
             >
-              <span className="font-mono text-[11px] font-bold text-muted-foreground/60">
-                {index + 1}.
-              </span>
-              <p className="truncate text-[11px] font-semibold text-foreground">
-                {item.name}
-              </p>
-              <p className="text-right font-mono text-[10px] font-semibold text-muted-foreground">
-                {item.total} {suffix ?? ""}
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="w-5 shrink-0 font-mono text-[10px] font-bold text-muted-foreground/60">
+                  {index + 1}.
+                </span>
+                <p className="truncate text-[11px] font-semibold text-foreground">
+                  {item.name}
+                </p>
+              </div>
+              <div className="h-2 border border-border/70 bg-muted/40">
+                <div
+                  className="h-full bg-slate-600"
+                  style={{
+                    width: `${Math.max(8, Math.round((item.total / maxTotal) * 100))}%`,
+                  }}
+                />
+              </div>
+              <p className="text-right font-mono text-[11px] font-bold text-foreground">
+                {item.total}
               </p>
             </div>
           ))}
