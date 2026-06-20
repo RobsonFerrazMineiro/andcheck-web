@@ -17,7 +17,7 @@ export function ScaffoldQRCard({
   tag,
   origin,
   title = "QR Code do Andaime",
-  helperText = "Ao escanear, o inspetor vera o status atual, validade, responsável e última inspeção do andaime.",
+  helperText = "Ao escanear, o inspetor ver? o status atual, validade, responsável e última inspeção do andaime.",
 }: ScaffoldQRCardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);

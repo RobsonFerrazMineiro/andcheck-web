@@ -61,9 +61,9 @@ export type NonConformityRow = {
 
 const CLASSIFICATION_LABELS: Record<string, string> = {
   LOW: "Baixa",
-  MEDIUM: "Media",
+  MEDIUM: "Média",
   HIGH: "Alta",
-  CRITICAL: "Critica",
+  CRITICAL: "Crítica",
 };
 
 const CLASSIFICATION_STYLE: Record<string, string> = {
@@ -75,9 +75,9 @@ const CLASSIFICATION_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
-  ASSIGNED: "Em Correcao",
+  ASSIGNED: "Em Correção",
   IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificacao",
+  PENDING_VERIFICATION: "Aguardando Verificação",
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
@@ -110,7 +110,7 @@ function Badge({
   return (
     <span
       className={
-        `inline-flex items-center border px-2 py-0.5 ${typography.badge} ` +
+        `inline-flex items-center rounded-md border px-2 py-0.5 ${typography.badge} ` +
         (styles[value] ?? "bg-slate-50 text-slate-600 border-slate-300")
       }
     >
@@ -249,7 +249,7 @@ export function NaoConformidadesClient({
             bar: "border-l-amber-500",
           },
           {
-            label: "Criticas",
+            label: "Críticas",
             value: criticas,
             color: "text-red-700",
             bg: "bg-red-50 border-red-200",
@@ -321,7 +321,7 @@ export function NaoConformidadesClient({
           onValueChange={setClassificationFilter}
         >
           <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Classificacao" />
+            <SelectValue placeholder="Classificação" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas classes</SelectItem>
@@ -381,7 +381,7 @@ export function NaoConformidadesClient({
               "Data",
               "Andaime",
               "Empresa",
-              "Classificacao",
+              "Classificação",
               "Responsável",
               "Prazo",
               "Status",

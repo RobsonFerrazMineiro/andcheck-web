@@ -73,9 +73,9 @@ export default async function WorkspaceDetailPage({
           <Info label="Empresa proprietaria" value={workspace.ownerCompany.name} />
           <Info label="Status" value={workspace.active ? "Ativo" : "Inativo"} />
           <Info label="Cidade / Estado" value={[workspace.city, workspace.state].filter(Boolean).join(" / ") || "Não informado"} />
-          <Info label="Endereco" value={workspace.address ?? "Não informado"} />
+          <Info label="Endereço" value={workspace.address ?? "Não informado"} />
           <Info label="Coordenadas" value={workspace.latitude === null || workspace.longitude === null ? "Não informadas" : `${workspace.latitude.toFixed(6)}, ${workspace.longitude.toFixed(6)}`} mono />
-          <Info label="Data de criacao" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(workspace.createdAt)} />
+          <Info label="Data de criação" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(workspace.createdAt)} />
           <div className="sm:col-span-2 lg:col-span-4"><Info label="Descrição" value={workspace.description ?? "Não informada"} /></div>
         </CardContent>
       </Card>

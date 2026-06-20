@@ -67,16 +67,16 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NC_CLASSIFICATION_LABELS: Record<string, string> = {
   LOW: "Baixa",
-  MEDIUM: "Media",
+  MEDIUM: "Média",
   HIGH: "Alta",
-  CRITICAL: "Critica",
+  CRITICAL: "Crítica",
 };
 
 const NC_STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
-  ASSIGNED: "Em Correcao",
+  ASSIGNED: "Em Correção",
   IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificacao",
+  PENDING_VERIFICATION: "Aguardando Verificação",
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
@@ -96,7 +96,7 @@ function NcBadge({ value }: { value: string }) {
   return (
     <span
       className={
-        "inline-flex items-center border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
         (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
       }
     >
@@ -257,12 +257,12 @@ export default async function InspectionDetailPage({ params }: Props) {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider">
-              Inspeção reprovada com item critico
+              Inspeção reprovada com item crítico
             </p>
             <p className="mt-1 text-[11px] leading-relaxed">
-              O resultado deste relatorio e Reprovado. Como houve falha em item
-              critico, o status operacional atual do andaime e Interditado e o
-              uso permanece proibido ate correcao e nova inspeção.
+              O resultado deste relatório é Reprovado. Como houve falha em item
+              crítico, o status operacional atual do andaime é Interditado e o
+              uso permanece proibido até correção e nova inspeção.
             </p>
           </div>
         </div>
@@ -573,7 +573,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-4 gap-3 px-4 py-2 bg-muted/40">
-              {["Código", "Status", "Classificacao", "Prazo"].map((h) => (
+              {["Código", "Status", "Classificação", "Prazo"].map((h) => (
                 <p
                   key={h}
                   className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"

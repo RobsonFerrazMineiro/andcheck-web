@@ -33,9 +33,9 @@ type Props = {
 
 const CLASSIFICATION_LABELS: Record<string, string> = {
   LOW: "Baixa",
-  MEDIUM: "Media",
+  MEDIUM: "Média",
   HIGH: "Alta",
-  CRITICAL: "Critica",
+  CRITICAL: "Crítica",
 };
 
 const CLASSIFICATION_STYLE: Record<string, string> = {
@@ -47,9 +47,9 @@ const CLASSIFICATION_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
-  ASSIGNED: "Em Correcao",
+  ASSIGNED: "Em Correção",
   IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificacao",
+  PENDING_VERIFICATION: "Aguardando Verificação",
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
@@ -106,7 +106,7 @@ function Badge({
   return (
     <span
       className={
-        "inline-flex items-center border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest " +
+        "inline-flex items-center rounded-md border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest " +
         (styles[value] ?? "bg-slate-50 text-slate-600 border-slate-300")
       }
     >
@@ -342,7 +342,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                       {item.checklistEntry.category} - {item.checklistEntry.value}
-                      {item.checklistEntry.critical ? " - Critico" : ""}
+                      {item.checklistEntry.critical ? " - Crítico" : ""}
                     </p>
                     {item.checklistEntry.observation && (
                       <p className="text-[11px] text-muted-foreground mt-2">
@@ -385,7 +385,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
       </Section>
 
       {nc.evidences.length > 0 && (
-        <Section title="Evidencias Gerais Legadas" icon={Paperclip}>
+        <Section title="Evidências Gerais Legadas" icon={Paperclip}>
           <div className="divide-y divide-border">
             {nc.evidences.map((evidence) => (
               <div

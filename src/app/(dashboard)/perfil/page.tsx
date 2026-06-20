@@ -41,7 +41,7 @@ export default async function PerfilPage() {
           </p>
         </div>
         <Badge variant="outline" className="w-fit rounded-md border-emerald-300 bg-emerald-50 text-emerald-700">
-          <CheckCircle2 className="size-3" /> Sessao ativa
+          <CheckCircle2 className="size-3" /> Sessão ativa
         </Badge>
       </div>
 
@@ -58,7 +58,7 @@ export default async function PerfilPage() {
             <Info icon={Building2} label="Empresa do usuário" value={profile.companyName} />
             <Info icon={ShieldCheck} label="Perfil/RBAC" value={roleLabels.join(", ") || "Sem perfil"} />
             <Info icon={MapPin} label="Workspace atual" value={profile.workspaceName} />
-            <Info icon={CheckCircle2} label="Status da sessao" value={profile.isActive ? "Ativa" : "Inativa"} />
+            <Info icon={CheckCircle2} label="Status da sessão" value={profile.isActive ? "Ativa" : "Inativa"} />
             <Info icon={CalendarClock} label="Criado em" value={DATE_FORMATTER.format(profile.createdAt)} />
             <Info
               icon={CalendarClock}

@@ -151,7 +151,7 @@ export function NonConformityOperations({
         setModal(null);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Não foi possível executar a acao.");
+        setError(err instanceof Error ? err.message : "Não foi possível executar a ação.");
       }
     });
   }
@@ -202,7 +202,7 @@ export function NonConformityOperations({
             disabled={isPending}
             onClick={() => setModal("comment")}
           >
-            <MessageSquare className="w-3.5 h-3.5" /> Comentario
+            <MessageSquare className="w-3.5 h-3.5" /> Comentário
           </Button>
         )}
         {canChangeDueDate && (
@@ -223,7 +223,7 @@ export function NonConformityOperations({
             disabled={isPending}
             onClick={() => submitStatus("PENDING_VERIFICATION")}
           >
-            <Send className="w-3.5 h-3.5" /> Solicitar Verificacao
+            <Send className="w-3.5 h-3.5" /> Solicitar Verificação
           </Button>
         )}
         {canReview && (
@@ -234,7 +234,7 @@ export function NonConformityOperations({
               disabled={isPending}
               onClick={() => setModal("accept")}
             >
-              <CheckCircle2 className="w-3.5 h-3.5" /> Aceitar Correcao
+              <CheckCircle2 className="w-3.5 h-3.5" /> Aceitar Correção
             </Button>
             <Button
               type="button"
@@ -243,7 +243,7 @@ export function NonConformityOperations({
               disabled={isPending}
               onClick={() => setModal("reject")}
             >
-              <XCircle className="w-3.5 h-3.5" /> Rejeitar Correcao
+              <XCircle className="w-3.5 h-3.5" /> Rejeitar Correção
             </Button>
           </>
         )}
@@ -312,7 +312,7 @@ export function NonConformityOperations({
             />
             <Textarea
               name="reason"
-              placeholder="Motivo da alteracao"
+              placeholder="Motivo da alteração"
               className="rounded-md text-[12px]"
               required
             />
@@ -327,7 +327,7 @@ export function NonConformityOperations({
       )}
 
       {modal === "comment" && (
-        <ModalShell title="Adicionar Comentario" onClose={() => setModal(null)}>
+        <ModalShell title="Adicionar Comentário" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
               formData.set("id", id);
@@ -337,7 +337,7 @@ export function NonConformityOperations({
           >
             <Textarea
               name="comment"
-              placeholder="Comentario operacional"
+              placeholder="Comentário operacional"
               className="rounded-md text-[12px]"
               required
             />
@@ -352,7 +352,7 @@ export function NonConformityOperations({
       )}
 
       {modal === "accept" && (
-        <ModalShell title="Aceitar Correcao" onClose={() => setModal(null)}>
+        <ModalShell title="Aceitar Correção" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
               submitStatus("CLOSED", String(formData.get("comment") ?? ""));
@@ -361,7 +361,7 @@ export function NonConformityOperations({
           >
             <Textarea
               name="comment"
-              placeholder="Comentario de encerramento"
+              placeholder="Comentário de encerramento"
               className="rounded-md text-[12px]"
               required
             />
@@ -376,7 +376,7 @@ export function NonConformityOperations({
       )}
 
       {modal === "reject" && (
-        <ModalShell title="Rejeitar Correcao" onClose={() => setModal(null)}>
+        <ModalShell title="Rejeitar Correção" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
               submitStatus("REJECTED", String(formData.get("comment") ?? ""));
@@ -447,7 +447,7 @@ export function NonConformityItemEvidenceButton({
   async function submitEvidence(formData: FormData) {
     const file = formData.get("file");
     if (!(file instanceof File) || !file.name) {
-      setError("Selecione um arquivo de evidencia.");
+      setError("Selecione um arquivo de evidência.");
       return;
     }
 
@@ -474,7 +474,7 @@ export function NonConformityItemEvidenceButton({
         setError(
           err instanceof Error
             ? err.message
-            : "Não foi possível anexar a evidencia.",
+            : "Não foi possível anexar a evidência.",
         );
       }
     });
@@ -489,15 +489,15 @@ export function NonConformityItemEvidenceButton({
         variant="outline"
         disabled={isPending}
         onClick={() => setOpen(true)}
-        aria-label="Anexar evidencia"
-        title="Anexar evidencia"
+        aria-label="Anexar evidência"
+        title="Anexar evidência"
         className="h-16 w-16 border-dashed bg-transparent p-0 hover:bg-muted/20"
       >
         <Plus className="w-5 h-5" />
       </Button>
 
       {open && (
-        <ModalShell title="Anexar Evidencia" onClose={() => setOpen(false)}>
+        <ModalShell title="Anexar Evidência" onClose={() => setOpen(false)}>
           <form action={submitEvidence} className="space-y-3">
             {error && (
               <p className="text-[11px] font-medium text-red-700">{error}</p>
@@ -511,7 +511,7 @@ export function NonConformityItemEvidenceButton({
             />
             <Textarea
               name="observation"
-              placeholder="Comentario opcional"
+              placeholder="Comentário opcional"
               className="rounded-md text-[12px]"
             />
             <div className="flex justify-end gap-2">
@@ -646,7 +646,7 @@ export function NonConformityEvidencePreview({
       >
         <Image
           src={fileUrl}
-          alt="Evidencia anexada"
+          alt="Evidência anexada"
           width={64}
           height={64}
           unoptimized
@@ -664,7 +664,7 @@ export function NonConformityEvidencePreview({
           <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
             <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
               <p className="text-[10px] font-bold uppercase tracking-widest">
-                Evidencia
+                Evidência
               </p>
               <button
                 type="button"
@@ -697,7 +697,7 @@ export function NonConformityEvidencePreview({
               )}
               <Image
                 src={activeImage.fileUrl}
-                alt={activeImage.fileName || "Evidencia anexada"}
+                alt={activeImage.fileName || "Evidência anexada"}
                 width={1200}
                 height={800}
                 unoptimized

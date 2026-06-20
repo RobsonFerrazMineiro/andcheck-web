@@ -87,7 +87,7 @@ export function DashboardMapPreview({
             Mapa Operacional
           </span>
           <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
-            · {pins.length}/{scaffolds.length} georreferenciados
+            · {pins.length}/{scaffolds.length} georreferênciados
           </span>
         </div>
         <Link
@@ -119,7 +119,7 @@ export function DashboardMapPreview({
           >
             <MapPin className="w-6 h-6 text-muted-foreground/30" />
             <p className={`${typography.sectionDescription} text-center text-muted-foreground`}>
-              Nenhum andaime georreferenciado
+              Nenhum andaime georreferênciado
             </p>
             <p className={`${typography.panelSubtitle} max-w-45 text-center text-muted-foreground/50`}>
               Cadastre andaimes com localização GPS para visualizá-los aqui.

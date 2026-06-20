@@ -82,7 +82,7 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
       (blob) =>
         blob
           ? resolve(blob)
-          : reject(new Error("Nao foi possivel processar a assinatura.")),
+          : reject(new Error("Não foi possível processar a assinatura.")),
       "image/png",
     );
   });
@@ -192,7 +192,7 @@ export function NovaInspecaoForm({
         toast.error(
           error instanceof Error
             ? error.message
-            : "Nao foi possivel enviar a foto.",
+            : "Não foi possível enviar a foto.",
         );
       } finally {
         e.target.value = "";
@@ -364,7 +364,7 @@ export function NovaInspecaoForm({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Nao foi possivel enviar a assinatura.",
+          : "Não foi possível enviar a assinatura.",
       );
     } finally {
       setRegisteringSignature(false);
@@ -724,7 +724,7 @@ export function NovaInspecaoForm({
           <p className="text-[11px] text-muted-foreground">
             Politica:{" "}
             <span className="font-semibold text-foreground">
-              {selectedPolicy?.name ?? "Nenhuma politica ativa"}
+              {selectedPolicy?.name ?? "Nenhuma política ativa"}
             </span>
           </p>
           <div className="grid gap-2">

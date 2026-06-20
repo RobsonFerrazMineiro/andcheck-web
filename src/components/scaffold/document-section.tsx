@@ -92,7 +92,7 @@ function StatusBadge({
   }[status];
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${cfg}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${cfg}`}
     >
       {status}
     </span>
@@ -133,7 +133,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
     setSaving(true);
     try {
-      // Comprime imagens antes de enviar; o banco recebe apenas a referencia.
+      // Comprime imagens antes de enviar; o banco recebe apenas a referência.
       const uploadBody = file.type.startsWith("image/")
         ? await compressImageBlob(file)
         : file;

@@ -32,7 +32,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const SCAFFOLD_STATUS_LABELS: Record<string, string> = {
   em_montagem: "EM MONTAGEM",
-  pendente_liberacao: "PENDENTE LIBERACAO",
+  pendente_liberacao: "PENDENTE LIBERAÇÃO",
   liberado: "LIBERADO",
   reprovado: "REPROVADO",
   interditado: "INTERDITADO",
@@ -52,18 +52,18 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   PROJETO_ESTRUTURAL: "Projeto Estrutural",
   MEMORIAL_CALCULO: "Memorial de Calculo",
   CROQUI: "Croqui",
-  CERTIFICADO: "Certificado Tecnico",
+  CERTIFICADO: "Certificado Técnico",
   PLANO_MONTAGEM: "Plano de Montagem",
-  CERTIFICADO_TECNICO: "Certificado Tecnico",
+  CERTIFICADO_TECNICO: "Certificado Técnico",
   PROCEDIMENTO: "Outros",
   OUTRO: "Outros",
 };
 
 const NC_STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
-  ASSIGNED: "Em Correcao",
+  ASSIGNED: "Em Correção",
   IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificacao",
+  PENDING_VERIFICATION: "Aguardando Verificação",
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
@@ -141,10 +141,10 @@ function getDaysInOperation({
     diasOperacao <= 30
       ? "Normal"
       : diasOperacao <= 60
-        ? "Atencao"
+        ? "Atenção"
         : diasOperacao <= 90
           ? "Elevado"
-          : "Critico";
+          : "Crítico";
 
   return { diasOperacao, classificacao };
 }
@@ -173,7 +173,7 @@ function operationalTimelineLabel(log: {
     return "Montagem concluida";
   }
   if (log.action === "STATUS_CHANGE" && status === "liberado") {
-    return "Primeira liberacao";
+    return "Primeira liberação";
   }
   if (log.action === "STATUS_CHANGE" && status === "desmontado") {
     return "Andaime desmontado";
@@ -357,7 +357,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={CheckCircle2}
             label="Primeira Liberação"
-            value={formatDateOr(scaffold.released_at, "Sem liberacao registrada")}
+            value={formatDateOr(scaffold.released_at, "Sem liberação registrada")}
           />
           <ArchiveRow
             icon={ClipboardCheck}
@@ -511,12 +511,12 @@ export default async function AcervoDetalhePage({ params }: Props) {
       </ArchiveCard>
 
       <ArchiveCard
-        title="Documentacao Tecnica"
+        title="Documentação Técnica"
         icon={FileText}
         extra={`${scaffold.documents.length} documento(s)`}
       >
         {scaffold.documents.length === 0 ? (
-          <EmptyLine icon={FileText} text="Nenhum documento tecnico vinculado." />
+          <EmptyLine icon={FileText} text="Nenhum documento técnico vinculado." />
         ) : (
           <div className="divide-y divide-border">
             {scaffold.documents.map((document) => (
@@ -581,7 +581,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         tag={scaffold.tag}
         origin={origin}
         title="CONSULTA PUBLICA"
-        helperText="Ao escanear, será exibido o registro histórico do andaime desmontado, incluindo status, validade final, inspecoes e documentação disponível."
+        helperText="Ao escanear, será exibido o registro histórico do andaime desmontado, incluindo status, validade final, inspeções e documentação disponível."
       />
     </div>
   );

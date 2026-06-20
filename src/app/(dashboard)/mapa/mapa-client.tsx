@@ -53,7 +53,7 @@ export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20">
         <p className="text-[13px] font-semibold text-muted-foreground">
-          Nenhum andaime georreferenciado
+          Nenhum andaime georreferênciado
         </p>
         <p className="max-w-xs text-center text-[11px] text-muted-foreground/60">
           Cadastre ou edite andaimes informando a localização GPS para
@@ -85,7 +85,7 @@ const LEGEND_FILTERS: LegendFilter[] = [
   { status: "em_montagem", label: "Em montagem", dot: "bg-blue-500" },
   {
     status: "pendente_liberacao",
-    label: "Pend. liberacao",
+    label: "Pend. liberação",
     dot: "bg-amber-400",
   },
   { status: "reprovado", label: "Reprovado", dot: "bg-red-500" },

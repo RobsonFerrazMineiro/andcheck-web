@@ -198,7 +198,7 @@ export function Sidebar({
       {(canViewCompanies || canViewWorkspaces) && (
         <div className="px-2 pb-4">
           <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">
-            Administracao
+            Administração
           </p>
           {adminItems
             .filter((item) => item.path !== "/empresas" || canViewCompanies)
@@ -230,7 +230,7 @@ export function Sidebar({
         </div>
       )}
 
-      {/* Normas referenciadas */}
+      {/* Normas referênciadas */}
       <div className="mx-3 mb-3 border border-sidebar-border/40 bg-sidebar-accent/30 p-3">
         <p className="text-[8px] font-bold uppercase tracking-widest text-sidebar-foreground/25 mb-2">
           Referências Normativas

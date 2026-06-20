@@ -43,16 +43,16 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NC_CLASSIFICATION_LABELS: Record<string, string> = {
   LOW: "Baixa",
-  MEDIUM: "Media",
+  MEDIUM: "Média",
   HIGH: "Alta",
-  CRITICAL: "Critica",
+  CRITICAL: "Crítica",
 };
 
 const NC_STATUS_LABELS: Record<string, string> = {
   OPEN: "Aberta",
-  ASSIGNED: "Em Correcao",
+  ASSIGNED: "Em Correção",
   IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificacao",
+  PENDING_VERIFICATION: "Aguardando Verificação",
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
@@ -72,7 +72,7 @@ function NcBadge({ value }: { value: string }) {
   return (
     <span
       className={
-        "inline-flex items-center border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
         (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
       }
     >
@@ -295,7 +295,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-5 gap-3 px-4 py-2 bg-muted/40">
-              {["Código", "Status", "Classificacao", "Prazo", "Responsável"].map(
+              {["Código", "Status", "Classificação", "Prazo", "Responsável"].map(
                 (h) => (
                   <p
                     key={h}

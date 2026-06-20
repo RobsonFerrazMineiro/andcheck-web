@@ -87,7 +87,7 @@ export function DesktopContextSwitcher({
         });
         router.refresh();
       } catch {
-        toast.error("Nao foi possivel alterar o contexto.");
+        toast.error("Não foi possível alterar o contexto.");
       }
     });
   }
@@ -191,7 +191,7 @@ export function MobileContextSwitcher({
         setOpen(false);
         router.refresh();
       } catch {
-        toast.error("Nao foi possivel alterar o contexto.");
+        toast.error("Não foi possível alterar o contexto.");
       }
     });
   }

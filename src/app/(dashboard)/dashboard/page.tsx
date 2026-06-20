@@ -165,16 +165,16 @@ export default async function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           <ExecutiveKpiCard
-            label="Tempo Medio em Operacao"
+            label="Tempo Médio em Operação"
             value={formatDays(historical.averageOperationDays)}
             description="Tempo medio que os andaimes permaneceram ativos."
             icon={TimerReset}
             theme="slate"
           />
           <ExecutiveKpiCard
-            label="Taxa de Aprovacao"
+            label="Taxa de Aprovação"
             value={`${historical.approvalRate}%`}
-            description="Inspeções aprovadas sobre o total de inspecoes."
+            description="Inspeções aprovadas sobre o total de inspeções."
             icon={TrendingUp}
             theme="green"
           />
@@ -186,7 +186,7 @@ export default async function DashboardPage() {
             theme="blue"
           />
           <ExecutiveKpiCard
-            label="Tempo Medio de Correcao"
+            label="Tempo Médio de Correção"
             value={formatDecimalDays(historical.averageCorrectionDays)}
             description="Tempo medio entre abertura e encerramento de NC."
             icon={Clock}
@@ -214,7 +214,7 @@ export default async function DashboardPage() {
         <RankingPanel
           title="Áreas com Mais Andaimes"
           subtitle="Andaimes criados"
-          description="Comparativo entre areas do workspace"
+          description="Comparativo entre Áreas do workspace"
           icon={MapPinned}
           items={rankings.areas}
         />

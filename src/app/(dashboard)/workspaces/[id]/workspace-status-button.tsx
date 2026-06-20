@@ -22,7 +22,7 @@ export function WorkspaceStatusButton({ id, active }: { id: string; active: bool
             toast.success(`Workspace ${active ? "desativado" : "ativado"}.`);
             router.refresh();
           } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Nao foi possivel alterar o status.");
+            toast.error(error instanceof Error ? error.message : "Não foi possível alterar o status.");
           }
         });
       }}

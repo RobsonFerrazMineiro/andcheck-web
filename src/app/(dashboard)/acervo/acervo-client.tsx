@@ -205,7 +205,7 @@ export function AcervoClient({
         />
         <Kpi
           icon={FileText}
-          label="Com Documentacao"
+          label="Com Documentação"
           value={withDocuments}
           className="border-slate-200 border-l-slate-500 bg-slate-50"
         />
@@ -253,7 +253,7 @@ export function AcervoClient({
             <SelectValue placeholder="Área" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todas areas</SelectItem>
+            <SelectItem value="all">Todas Áreas</SelectItem>
             {areas.map((area) => (
               <SelectItem key={area} value={area}>
                 {area}

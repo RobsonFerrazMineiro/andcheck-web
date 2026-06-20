@@ -122,7 +122,7 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 border ${cfg.cls} ${
+      className={`inline-flex items-center gap-1.5 rounded-md border ${cfg.cls} ${
         isXl
           ? `${typography.badgeXl} px-4 py-2`
           : isLg

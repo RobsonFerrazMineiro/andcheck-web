@@ -11,11 +11,11 @@ import {
 } from "@/lib/actions/scaffold-actions";
 
 const DISMANTLE_REASONS = [
-  "Finalizacao da atividade",
+  "Finalização da atividade",
   "Encerramento de parada",
-  "Solicitacao da operacao",
+  "Solicitação da operação",
   "Substituicao do andaime",
-  "Readequacao de projeto",
+  "Readequação de projeto",
   "Condicao insegura",
   "Outros",
 ];

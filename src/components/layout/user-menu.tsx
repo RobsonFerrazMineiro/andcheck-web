@@ -83,7 +83,7 @@ export function UserMenu({
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {email}
                 </p>
-                <span className="mt-2 inline-flex border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="mt-2 inline-flex rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                   {roleLabel}
                 </span>
               </div>
@@ -93,7 +93,7 @@ export function UserMenu({
           <div className="space-y-3 p-4">
             <ProfileRow icon={Building2} label="Empresa" value={companyName} />
             <ProfileRow icon={MapPin} label="Workspace atual" value={workspaceName} />
-            <ProfileRow icon={ShieldCheck} label="Sessao" value={sessionStatus} status />
+            <ProfileRow icon={ShieldCheck} label="Sessão" value={sessionStatus} status />
           </div>
 
           <div className="border-t p-2">

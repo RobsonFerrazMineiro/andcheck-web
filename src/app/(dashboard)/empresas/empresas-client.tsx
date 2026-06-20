@@ -126,9 +126,9 @@ export function EmpresasClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className={`${typography.pageEyebrow} text-muted-foreground`}>Administracao</p>
-          <h1 className={`${typography.pageTitle} text-foreground`}>Gestao de Empresas</h1>
-          <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>Cadastro, vinculo operacional e status das empresas.</p>
+          <p className={`${typography.pageEyebrow} text-muted-foreground`}>Administração</p>
+          <h1 className={`${typography.pageTitle} text-foreground`}>Gestão de Empresas</h1>
+          <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>Cadastro, vínculo operacional e status das empresas.</p>
         </div>
         {canManage && (
           <Button onClick={() => { setEditing(null); setCreating((value) => !value); }} disabled={isPending}>
@@ -193,7 +193,7 @@ export function EmpresasClient({
         <div className="grid gap-3 md:grid-cols-[1fr_190px]">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, codigo ou workspace" className="pl-8" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, código ou workspace" className="pl-8" />
           </div>
           <FilterSelect value={status} onValueChange={setStatus} placeholder="Todos os status" options={[["active", "Ativas"], ["inactive", "Inativas"]]} />
         </div>
@@ -217,7 +217,7 @@ export function EmpresasClient({
               </div>
             </div>
             <Badge variant="outline" className={`hidden w-fit rounded-md lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
-            <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
+            <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{company.workspaceNames.join(", ") || "Sem vínculo"}</p>
             <p className={`hidden lg:block ${typography.code}`}>{company.users}</p>
             <p className={`hidden lg:block ${typography.code}`}>{company.scaffolds}</p>
             <StatusBadge active={company.active} />
@@ -375,7 +375,7 @@ function LogoUploadField({
             disabled={isUploading}
           />
           <p className={`mt-1 text-muted-foreground ${typography.bodyMuted}`}>
-            PNG, JPG ou WEBP ate 2 MB.
+            PNG, JPG ou WEBP até 2 MB.
           </p>
         </div>
         <div className="flex flex-col gap-2">
@@ -428,5 +428,5 @@ function TypeFilterButton({ active, label, count, onClick }: { active: boolean; 
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativa" : "Inativa"}</span>;
+  return <span className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativa" : "Inativa"}</span>;
 }

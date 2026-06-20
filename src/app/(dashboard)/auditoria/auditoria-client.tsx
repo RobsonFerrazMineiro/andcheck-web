@@ -65,25 +65,25 @@ const ENTITY_LABELS: Record<string, string> = {
   WORKSPACE: "Workspace",
   SCAFFOLD: "Andaime",
   INSPECTION: "Inspeção",
-  DOCUMENT: "Documento tecnico",
+  DOCUMENT: "Documento técnico",
   SIGNATURE: "Assinatura",
   PDF: "PDF",
   QR_CODE: "Status do andaime",
-  SETTINGS: "Configuracao",
+  SETTINGS: "Configuração",
   NON_CONFORMITY: "Nao conformidade",
 };
 
 const ENTITY_BADGE_LABELS: Record<string, string> = {
   COMPANY: "EMPRESA",
-  USER: "USUARIO",
+  USER: "USUÁRIO",
   WORKSPACE: "WORKSPACE",
   SCAFFOLD: "ANDAIME",
-  INSPECTION: "INSPECAO",
-  DOCUMENT: "DOCUMENTACAO",
+  INSPECTION: "INSPEÇÃO",
+  DOCUMENT: "DOCUMENTAÇÃO",
   SIGNATURE: "ASSINATURA",
   PDF: "PDF",
   QR_CODE: "CONSULTA",
-  SETTINGS: "CONFIGURACAO",
+  SETTINGS: "CONFIGURAÇÃO",
   NON_CONFORMITY: "NAO CONFORMIDADE",
 };
 
@@ -118,7 +118,7 @@ const AUDIT_GROUPS = [
   { value: "SCAFFOLD", label: "Andaimes" },
   { value: "INSPECTION", label: "Inspeções" },
   { value: "NON_CONFORMITY", label: "Não Conformidades" },
-  { value: "DOCUMENT", label: "Documentacao" },
+  { value: "DOCUMENT", label: "Documentação" },
   { value: "QR_CODE", label: "Consultas" },
 ];
 
@@ -128,11 +128,11 @@ const ENTITY_ARTICLES: Record<string, string> = {
   WORKSPACE: "o workspace",
   SCAFFOLD: "o andaime",
   INSPECTION: "a inspeção",
-  DOCUMENT: "o documento tecnico",
+  DOCUMENT: "o documento técnico",
   SIGNATURE: "a assinatura",
   PDF: "o PDF",
   QR_CODE: "o status do andaime",
-  SETTINGS: "a configuracao",
+  SETTINGS: "a configuração",
   NON_CONFORMITY: "a não conformidade",
 };
 
@@ -140,21 +140,21 @@ const FIELD_LABELS: Record<string, string> = {
   area: "Área",
   assembly_completed_at: "Montagem concluida em",
   checklist_items: "Itens do checklist",
-  classification: "Classificacao",
+  classification: "Classificação",
   code: "Código",
   company: "Empresa",
   companyLogo: "Logo da empresa",
   companyId: "Empresa",
   closedAt: "Encerrada em",
   createdById: "Criado por",
-  createdAt: "Data de criacao",
+  createdAt: "Data de criação",
   department: "Departamento",
   dismantled_at: "Desmontado em",
   dismantleReason: "Motivo da desmontagem",
   dismantleReasonDescription: "Descrição do motivo",
   dueDate: "Prazo",
   email: "E-mail",
-  evidenceType: "Tipo de evidencia",
+  evidenceType: "Tipo de evidência",
   failed_items: "Itens reprovados",
   fileName: "Arquivo",
   file_name: "Arquivo",
@@ -168,7 +168,7 @@ const FIELD_LABELS: Record<string, string> = {
   name: "Nome",
   originInspectionId: "Inspeção de origem",
   position: "Cargo",
-  registration: "Matricula",
+  registration: "Matrícula",
   released_at: "Liberado em",
   responsibleUserId: "Responsável",
   result: "Resultado",
@@ -183,7 +183,7 @@ const FIELD_LABELS: Record<string, string> = {
   tag: "Tag",
   title: "Titulo",
   type: "Tipo",
-  updatedAt: "Ultima atualizacao",
+  updatedAt: "Última atualização",
   validity_date: "Validade",
   validity_days: "Validade em dias",
   warning_items: "Itens com ressalva",
@@ -208,7 +208,7 @@ const STATUS_LABELS: Record<string, string> = {
   active: "Ativo",
   cancelled: "Cancelada",
   closed: "Encerrada",
-  critical: "Critica",
+  critical: "Crítica",
   aprovado: "Aprovado",
   aprovado_com_ressalvas: "Aprovado com ressalvas",
   cl_fail: "Reprovado",
@@ -222,23 +222,23 @@ const STATUS_LABELS: Record<string, string> = {
   interditado: "Interditado",
   liberado: "Liberado",
   low: "Baixa",
-  medium: "Media",
+  medium: "Média",
   open: "Aberta",
-  pendente_liberacao: "Pendente de liberacao",
-  pending_verification: "Aguardando verificacao",
+  pendente_liberacao: "Pendente de liberação",
+  pending_verification: "Aguardando verificação",
   reprovado: "Reprovado",
   high: "Alta",
 };
 
 const ACTION_FILTERS = [
-  ["CREATE", "Criacao"],
-  ["UPDATE", "Atualizacao"],
-  ["STATUS_CHANGE", "Alteracao de status"],
-  ["ROLE_CHANGE", "Alteracao de perfil"],
+  ["CREATE", "Criação"],
+  ["UPDATE", "Atualização"],
+  ["STATUS_CHANGE", "Alteração de status"],
+  ["ROLE_CHANGE", "Alteração de perfil"],
   ["COMPLETE", "Conclusao"],
   ["UPLOAD", "Upload"],
   ["DOWNLOAD", "Download"],
-  ["GENERATE_PDF", "Geracao de PDF"],
+  ["GENERATE_PDF", "Geração de PDF"],
   ["VIEW_QR", "Consulta"],
   ["DELETE", "Remocao"],
 ] as const;
@@ -287,7 +287,7 @@ function getEventMeta(row: AuditRow): {
     return { label: "Consultou status", shortLabel: "CONSULTA", tone: "slate" };
   }
   if (row.action === "ROLE_CHANGE") {
-    return { label: "Alterou perfil", shortLabel: "ALTERACAO DE PERFIL", tone: "amber" };
+    return { label: "Alterou perfil", shortLabel: "ALTERAÇÃO DE PERFIL", tone: "amber" };
   }
   if (row.action === "STATUS_CHANGE") {
     if (newStatus === "desmontado") {
@@ -298,37 +298,37 @@ function getEventMeta(row: AuditRow): {
         row.entityType === "SCAFFOLD"
           ? "Alterou status do andaime"
           : "Alterou status",
-      shortLabel: "ALTERACAO DE STATUS",
+      shortLabel: "ALTERAÇÃO DE STATUS",
       tone: ["reprovado", "interditado", "cancelled", "CANCELLED"].includes(newStatus ?? "")
         ? "red"
         : "amber",
     };
   }
   if (row.action === "CREATE" || row.action.endsWith("_CREATED")) {
-    if (row.entityType === "USER") return { label: "Criou usuário", shortLabel: "CRIACAO", tone: "green" };
-    if (row.entityType === "COMPANY") return { label: "Criou empresa", shortLabel: "CRIACAO", tone: "green" };
-    if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIACAO", tone: "green" };
-    if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIACAO", tone: "green" };
-    if (row.entityType === "INSPECTION") return { label: "Criou inspeção", shortLabel: "CRIACAO", tone: "green" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Criou não conformidade", shortLabel: "CRIACAO", tone: "green" };
-    return { label: "Criou registro", shortLabel: "CRIACAO", tone: "green" };
+    if (row.entityType === "USER") return { label: "Criou usuário", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "COMPANY") return { label: "Criou empresa", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "INSPECTION") return { label: "Criou inspeção", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Criou não conformidade", shortLabel: "CRIAÇÃO", tone: "green" };
+    return { label: "Criou registro", shortLabel: "CRIAÇÃO", tone: "green" };
   }
   if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
     if (row.action === "COMPANY_LOGO_UPDATED") {
-      return { label: "Atualizou logo", shortLabel: "ATUALIZACAO", tone: "amber" };
+      return { label: "Atualizou logo", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
     }
-    if (row.entityType === "USER") return { label: "Atualizou usuário", shortLabel: "ATUALIZACAO", tone: "amber" };
-    if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZACAO", tone: "amber" };
-    if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZACAO", tone: "amber" };
-    if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZACAO", tone: "amber" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou não conformidade", shortLabel: "ATUALIZACAO", tone: "amber" };
-    return { label: "Atualizou registro", shortLabel: "ATUALIZACAO", tone: "amber" };
+    if (row.entityType === "USER") return { label: "Atualizou usuário", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou não conformidade", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    return { label: "Atualizou registro", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
   }
   if (row.entityType === "INSPECTION" && newStatus === "aprovado") {
-    return { label: "Aprovou inspeção", shortLabel: "APROVACAO", tone: "green" };
+    return { label: "Aprovou inspeção", shortLabel: "APROVAÇÃO", tone: "green" };
   }
   if (row.entityType === "INSPECTION" && (newStatus === "reprovado" || oldStatus === "aprovado")) {
-    return { label: "Reprovou inspeção", shortLabel: "REPROVACAO", tone: "red" };
+    return { label: "Reprovou inspeção", shortLabel: "REPROVAÇÃO", tone: "red" };
   }
   if (row.entityType === "NON_CONFORMITY" && ["CLOSED", "closed"].includes(newStatus ?? "")) {
     return { label: "Encerrou não conformidade", shortLabel: "ENCERRAMENTO", tone: "green" };
@@ -362,7 +362,7 @@ function entityDisplay(row: AuditRow) {
     case "INSPECTION":
       return `Inspeção ${label}`;
     case "DOCUMENT":
-      return `Documento tecnico ${label}`;
+      return `Documento técnico ${label}`;
     case "SIGNATURE":
       return `Assinatura ${label}`;
     case "PDF":
@@ -372,7 +372,7 @@ function entityDisplay(row: AuditRow) {
     case "NON_CONFORMITY":
       return `Nao conformidade ${label}`;
     case "SETTINGS":
-      return `Configuracao ${label}`;
+      return `Configuração ${label}`;
     default:
       return `${labelEntity(row.entityType)} ${label}`;
   }
@@ -536,7 +536,7 @@ function exportRowsToCsv(rows: AuditRow[]) {
     "Data/Hora",
     "Usuário",
     "Perfil",
-    "Acao",
+    "Ação",
     "Entidade",
     "Descrição",
     "Empresa",
@@ -626,14 +626,14 @@ export function AuditoriaClient({
           <Input
             name="search"
             defaultValue={filters.search}
-            placeholder="Buscar descricao, usuário ou entidade..."
+            placeholder="Buscar descrição, usuário ou entidade..."
             className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select name="action" defaultValue={filters.action || "all"}>
           <SelectTrigger className="h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Acao" />
+            <SelectValue placeholder="Ação" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas ações</SelectItem>
@@ -693,7 +693,7 @@ export function AuditoriaClient({
                 "Data/Hora",
                 "Usuário",
                 "Perfil",
-                "Acao",
+                "Ação",
                 "Entidade",
                 "Descrição",
                 "Empresa/Planta",
@@ -820,7 +820,7 @@ export function AuditoriaClient({
                   label="Dispositivo/Navegador"
                   value={selected.userAgent ?? "-"}
                 />
-                <Detail label="Acao" value={labelAction(selected)} />
+                <Detail label="Ação" value={labelAction(selected)} />
                 <Detail
                   label="Entidade"
                   value={`${labelEntity(selected.entityType)} · ${

@@ -45,10 +45,10 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
         <Card className="rounded-lg">
           <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Info label="Workspaces vinculados" value={company.workspaceLinks.filter((link) => link.active).map((link) => link.workspace.name).join(", ") || "Sem vinculo operacional"} />
+            <Info label="Workspaces vinculados" value={company.workspaceLinks.filter((link) => link.active).map((link) => link.workspace.name).join(", ") || "Sem vínculo operacional"} />
             <Info label="Tipo" value={TYPE_LABELS[company.type]} />
             <Info label="Status" value={company.active ? "Ativa" : "Inativa"} />
-            <Info label="Data de criacao" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />
+            <Info label="Data de criação" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />
             <div className="sm:col-span-2"><Info label="Descrição" value={company.description ?? "Não informada"} /></div>
           </CardContent>
         </Card>
@@ -69,7 +69,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
             <div className="grid grid-cols-2 gap-2">
               {indicators.map((indicator) => <Button key={indicator.label} variant="outline" disabled className="justify-start"><indicator.icon /> {indicator.label === "NCs" ? "Não Conformidades" : indicator.label}</Button>)}
             </div>
-            <p className="text-[10px] text-muted-foreground">Atalhos preparados para integracao administrativa futura.</p>
+            <p className="text-[10px] text-muted-foreground">Atalhos preparados para integração administrativa futura.</p>
           </CardContent>
         </Card>
       </div>

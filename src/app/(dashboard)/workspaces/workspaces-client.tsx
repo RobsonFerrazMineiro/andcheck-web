@@ -169,7 +169,7 @@ export function WorkspacesClient({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className={`${typography.pageEyebrow} text-muted-foreground`}>
-            Administracao
+            Administração
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Gestao de Workspaces
@@ -227,13 +227,13 @@ export function WorkspacesClient({
               <Field label="Cidade" name="city" defaultValue={editing?.city ?? undefined} />
               <Field label="Estado" name="state" defaultValue={editing?.state ?? undefined} placeholder="PA" maxLength={2} />
               <div className="lg:col-span-2">
-                <Field label="Endereco" name="address" defaultValue={editing?.address ?? undefined} />
+                <Field label="Endereço" name="address" defaultValue={editing?.address ?? undefined} />
               </div>
               <div className="space-y-3 lg:col-span-2">
                 <div>
                   <Label>Localização da planta</Label>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    Selecione no mapa a localizacao aproximada da planta operacional.
+                    Selecione no mapa a localização aproximada da planta operacional.
                   </p>
                 </div>
                 <WorkspaceLocationFields
@@ -402,8 +402,8 @@ function WorkspaceLocationFields({
         latitude={latitude}
         longitude={longitude}
         onChange={updateCoordinates}
-        instruction="Clique no mapa ou arraste o pin para ajustar a localizacao aproximada da planta operacional."
-        currentLocationLabel="Usar localizacao atual"
+        instruction="Clique no mapa ou arraste o pin para ajustar a localização aproximada da planta operacional."
+        currentLocationLabel="Usar localização atual"
         height={380}
         defaultCenter={{ lat: -1.536, lng: -48.752 }}
         defaultZoom={14}

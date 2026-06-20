@@ -222,7 +222,7 @@ export function UsuariosClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Administracao
+            AndCheck EHS · Administração
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Usuários
@@ -298,7 +298,7 @@ export function UsuariosClient({
               defaultValue={editingUser?.company ?? undefined}
             />
             <Field
-              label="Matricula"
+              label="Matrícula"
               name="registration"
               placeholder="SUP-0001"
               defaultValue={editingUser?.registration ?? undefined}
@@ -384,7 +384,7 @@ export function UsuariosClient({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
-            placeholder="Buscar por nome, e-mail, matricula ou empresa..."
+            placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="pl-9 h-8 text-[11px] rounded-md border-border"
@@ -410,7 +410,7 @@ export function UsuariosClient({
 
       <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
-          {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Ações"].map(
+          {["", "Nome", "Empresa", "Matrícula", "Perfil", "Departamento", "Status", "Ações"].map(
             (header) => (
               <p
                 key={header}
@@ -506,7 +506,7 @@ export function UsuariosClient({
                       }
                       title={
                         isCurrentUser
-                          ? "Não é permitido desativar o proprio usuário."
+                          ? "Não é permitido desativar o próprio usuário."
                           : user.is_active
                             ? "Desativar usuário"
                             : "Ativar usuário"
@@ -522,7 +522,7 @@ export function UsuariosClient({
                       aria-label={`Excluir usuário ${user.name}`}
                       title={
                         isCurrentUser
-                          ? "Não é permitido excluir o proprio usuário."
+                          ? "Não é permitido excluir o próprio usuário."
                           : isProtectedAdmin
                             ? "Não é permitido excluir administradores."
                             : !canDeleteUsers

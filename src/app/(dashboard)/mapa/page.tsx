@@ -83,7 +83,7 @@ export default async function MapaPage() {
             Mapa Operacional
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {total} andaimes cadastrados · {comCoords} georreferenciados
+            {total} andaimes cadastrados · {comCoords} georreferênciados
             {semCoords > 0 && (
               <span className="text-amber-600">
                 {" "}
@@ -120,7 +120,7 @@ export default async function MapaPage() {
             bar: "border-l-blue-600",
           },
           {
-            label: "Pend. Liberacao",
+            label: "Pend. Liberação",
             value: pendenteLiberacao,
             color: "text-amber-600",
             bg: "bg-amber-50 border-amber-200",
