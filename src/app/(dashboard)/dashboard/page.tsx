@@ -213,6 +213,7 @@ export default async function DashboardPage() {
         <RankingPanel
           title="Areas com Mais Andaimes"
           subtitle="Andaimes criados"
+          description="Comparativo entre areas do workspace"
           icon={MapPinned}
           items={rankings.areas}
         />
@@ -456,7 +457,7 @@ function RankingPanel({
               <p className="w-36 shrink-0 truncate text-[11px] font-semibold text-foreground sm:w-44">
                 {item.name}
               </p>
-              <div className="h-1.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-44">
+              <div className="h-1.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-64">
                 <div
                   className="h-full bg-accent"
                   style={{
