@@ -8,6 +8,8 @@ import {
   XCircle,
 } from "lucide-react";
 
+import { typography } from "@/lib/design-system";
+
 type StatusKey =
   | "em_montagem"
   | "pendente_liberacao"
@@ -120,12 +122,12 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 border font-bold uppercase tracking-widest ${cfg.cls} ${
+      className={`inline-flex items-center gap-1.5 border ${cfg.cls} ${
         isXl
-          ? "text-[13px] px-4 py-2"
+          ? `${typography.badgeXl} px-4 py-2`
           : isLg
-            ? "text-[10px] px-2.5 py-1"
-            : "text-[9px] px-1.5 py-0.5"
+            ? `${typography.badgeLg} px-2.5 py-1`
+            : `${typography.badge} px-1.5 py-0.5`
       }`}
     >
       <Icon

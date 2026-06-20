@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { typography } from "@/lib/design-system";
 
 export type CorporateDocumentStatus = "ACTIVE" | "EXPIRED" | "ARCHIVED";
 
@@ -40,7 +41,7 @@ export function DocumentStatusBadge({
   return (
     <Badge
       variant="outline"
-      className={`text-[9px] font-bold uppercase tracking-widest ${STATUS_STYLES[status]}`}
+      className={`${typography.badge} ${STATUS_STYLES[status]}`}
     >
       <Icon data-icon="inline-start" />
       {STATUS_LABELS[status]}

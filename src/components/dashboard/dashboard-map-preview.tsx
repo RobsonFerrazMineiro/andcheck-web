@@ -6,6 +6,8 @@ import { ExternalLink, MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 
+import { surface, typography } from "@/lib/design-system";
+
 const OperationalMap = dynamic(
   () =>
     import("@/components/maps/operational-map").then((m) => m.OperationalMap),
@@ -13,7 +15,7 @@ const OperationalMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full h-full flex items-center justify-center bg-muted/20">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest animate-pulse">
+        <p className={`${typography.action} animate-pulse text-muted-foreground`}>
           Carregando mapa…
         </p>
       </div>
@@ -78,19 +80,19 @@ export function DashboardMapPreview({
   return (
     <div className="bg-card border border-border shadow-sm flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
         <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <MapPin className={surface.panelHeaderIcon} />
+          <span className={surface.panelHeaderTitle}>
             Mapa Operacional
           </span>
-          <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider hidden sm:inline">
+          <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
             · {pins.length}/{scaffolds.length} georreferenciados
           </span>
         </div>
         <Link
           href="/mapa"
-          className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          className={`flex items-center gap-1 text-slate-300 transition-colors hover:text-white ${typography.linkAction}`}
         >
           Abrir mapa
           <ExternalLink className="w-2.5 h-2.5" />
@@ -116,10 +118,10 @@ export function DashboardMapPreview({
             style={{ minHeight: 220 }}
           >
             <MapPin className="w-6 h-6 text-muted-foreground/30" />
-            <p className="text-[11px] text-muted-foreground text-center">
+            <p className={`${typography.sectionDescription} text-center text-muted-foreground`}>
               Nenhum andaime georreferenciado
             </p>
-            <p className="text-[9px] text-muted-foreground/50 text-center max-w-45">
+            <p className={`${typography.panelSubtitle} max-w-45 text-center text-muted-foreground/50`}>
               Cadastre andaimes com localização GPS para visualizá-los aqui.
             </p>
           </div>
@@ -138,7 +140,7 @@ export function DashboardMapPreview({
         ].map((v) => (
           <div key={v.label} className="flex items-center gap-1.5">
             <div className={"w-2 h-2 rounded-full " + v.dot} />
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
+            <p className={`${typography.panelSubtitle} text-muted-foreground`}>
               {v.label}
             </p>
           </div>

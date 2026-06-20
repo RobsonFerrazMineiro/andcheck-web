@@ -25,6 +25,7 @@ import { StatusBadge } from "@/components/shared/status-badge";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getDashboardMetrics } from "@/lib/dashboard-metrics";
 import { getContextCapabilities } from "@/lib/data-scope";
+import { surface, typography } from "@/lib/design-system";
 
 const NORMS = [
   "NR-18 / 2022",
@@ -77,13 +78,13 @@ export default async function DashboardPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
             AndCheck EHS · Painel Operacional
           </p>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5 capitalize">
+          <p className={`mt-0.5 ${typography.sectionDescription} capitalize text-muted-foreground`}>
             {today}
           </p>
         </div>
@@ -91,7 +92,7 @@ export default async function DashboardPage() {
           {canCreateScaffold && (
             <Link
               href="/andaimes/novo"
-              className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold tracking-widest uppercase h-8 px-3"
+              className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
             >
               <Plus className="w-3.5 h-3.5" />
               Novo Andaime
@@ -100,7 +101,7 @@ export default async function DashboardPage() {
           {canCreateInspection && (
             <Link
               href="/inspecoes/nova"
-              className="inline-flex items-center gap-1.5 border border-border text-foreground hover:bg-muted text-[10px] font-bold tracking-widest uppercase h-8 px-3"
+              className={`inline-flex h-8 items-center gap-1.5 border border-border px-3 text-foreground hover:bg-muted ${typography.action}`}
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
               Nova Inspeção
@@ -155,10 +156,10 @@ export default async function DashboardPage() {
       {/* Indicadores historicos */}
       <section className="space-y-3">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`${typography.sectionLabel} text-muted-foreground`}>
             Indicadores Historicos
           </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             Visao gerencial baseada em andaimes desmontados, inspecoes e tratativas.
           </p>
         </div>
@@ -236,7 +237,7 @@ export default async function DashboardPage() {
             action={
               <Link
                 href="/andaimes"
-                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-slate-300 hover:text-white"
+                className={`flex items-center gap-1 text-slate-300 hover:text-white ${typography.linkAction}`}
               >
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Link>
@@ -250,15 +251,15 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">
+                    <p className={`${typography.code} uppercase text-foreground`}>
                       {s.code}
                     </p>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className={`${typography.bodyMuted} truncate text-muted-foreground`}>
                         {s.location} · {s.area}
                       </p>
                       {showResponsibleCompany && (
-                        <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
+                        <p className={`mt-0.5 truncate text-muted-foreground/70 ${typography.metaStrong}`}>
                           Empresa: {s.tenantCompany.name}
                         </p>
                       )}
@@ -280,7 +281,7 @@ export default async function DashboardPage() {
             {operationalMovements.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <FileText className="mx-auto h-8 w-8 text-muted-foreground/25" />
-                <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className={`mt-2 text-muted-foreground ${typography.emptyState}`}>
                   Nenhuma movimentacao operacional
                 </p>
               </div>
@@ -293,14 +294,14 @@ export default async function DashboardPage() {
                   >
                     <MovementBadge label={movement.badge} tone={movement.tone} />
                     <div className="min-w-0">
-                      <p className="truncate font-mono text-[12px] font-bold text-foreground">
+                      <p className={`truncate text-foreground ${typography.code}`}>
                         {movement.title}
                       </p>
-                      <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                      <p className={`mt-0.5 truncate text-muted-foreground/60 ${typography.panelSubtitle}`}>
                         {movement.subtitle}
                       </p>
                     </div>
-                    <p className="pt-0.5 text-right font-mono text-[10px] text-muted-foreground">
+                    <p className={`pt-0.5 text-right text-muted-foreground ${typography.codeMuted}`}>
                       {format(movement.createdAt, "dd/MM HH:mm")}
                     </p>
                   </div>
@@ -312,13 +313,13 @@ export default async function DashboardPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border">
-        <span className="text-[9px] text-muted-foreground/40 uppercase tracking-widest font-semibold">
+        <span className={`${typography.sectionLabel} text-muted-foreground/40`}>
           Conformidade:
         </span>
         {NORMS.map((n) => (
           <span
             key={n}
-            className="text-[9px] font-mono px-2 py-0.5 border border-border/60 text-muted-foreground/50 uppercase tracking-wider bg-muted/30"
+            className={`${typography.codeMuted} border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground/50`}
           >
             {n}
           </span>
@@ -398,15 +399,15 @@ function ExecutiveKpiCard({
   return (
     <div className={"bg-card border border-border p-4 shadow-sm " + t.border}>
       <div className="mb-3 flex items-start justify-between gap-3">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-tight">
+        <p className={`${typography.sectionLabel} leading-tight text-muted-foreground`}>
           {label}
         </p>
         <Icon className={"h-4 w-4 shrink-0 " + t.icon} />
       </div>
-      <p className={"text-[24px] font-bold leading-none tracking-tight " + t.value}>
+      <p className={`${typography.kpiValue} leading-none ${t.value}`}>
         {value}
       </p>
-      <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">
+      <p className={`mt-3 leading-relaxed text-muted-foreground ${typography.bodyMuted}`}>
         {description}
       </p>
     </div>
@@ -432,7 +433,7 @@ function RankingPanel({
     <PanelBlock title={title} subtitle={subtitle} icon={icon}>
       {description && (
         <div className="border-b border-border px-4 py-2">
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+          <p className={`${typography.metaStrong} text-muted-foreground/60`}>
             {description}
           </p>
         </div>
@@ -440,7 +441,7 @@ function RankingPanel({
       {items.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground/25" />
-          <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <p className={`mt-2 text-muted-foreground ${typography.emptyState}`}>
             Sem dados historicos
           </p>
         </div>
@@ -451,10 +452,10 @@ function RankingPanel({
               key={item.id ?? item.name}
               className="flex items-center gap-2 px-4 py-2.5"
             >
-              <span className="w-5 shrink-0 font-mono text-[10px] font-bold text-muted-foreground/60">
+              <span className={`w-5 shrink-0 text-muted-foreground/60 ${typography.rankingIndex}`}>
                 {index + 1}.
               </span>
-              <p className="w-36 shrink-0 truncate text-[11px] font-semibold text-foreground sm:w-44">
+              <p className={`w-36 shrink-0 truncate text-foreground sm:w-44 ${typography.bodyStrong}`}>
                 {item.name}
               </p>
               <div className="h-2.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-64">
@@ -465,7 +466,7 @@ function RankingPanel({
                   }}
                 />
               </div>
-              <p className="w-8 shrink-0 text-right font-mono text-[11px] font-bold text-foreground">
+              <p className={`w-8 shrink-0 text-right text-foreground ${typography.code}`}>
                 {item.total}
               </p>
             </div>
@@ -511,7 +512,8 @@ function MovementBadge({
   return (
     <span
       className={
-        "inline-flex w-full max-w-full items-center gap-1.5 border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
+        "inline-flex w-full max-w-full items-center gap-1.5 border px-2 py-0.5 " +
+        typography.badge + " " +
         styles.badge
       }
       title={label}
@@ -564,14 +566,14 @@ function KpiCard({
       className={"bg-card " + t.border + " border border-border p-4 shadow-sm"}
     >
       <div className="flex items-start justify-between mb-2">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-tight pr-2">
+        <p className={`${typography.sectionLabel} pr-2 leading-tight text-muted-foreground`}>
           {label}
         </p>
         <Icon className="w-4 h-4 shrink-0 text-muted-foreground/40" />
       </div>
       <p
         className={
-          "text-[28px] font-bold " + t.val + " leading-none tracking-tight"
+          typography.operationalValue + " " + t.val + " leading-none"
         }
       >
         {value}
@@ -583,7 +585,7 @@ function KpiCard({
             style={{ width: pct + "%" }}
           />
         </div>
-        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">
+        <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
           {hint}
         </p>
       </div>
@@ -606,14 +608,14 @@ function PanelBlock({
 }: PanelBlockProps) {
   return (
     <div className="bg-card border border-border shadow-sm h-full flex flex-col">
-      <div className="flex items-center justify-between bg-slate-800 px-4 py-3 text-slate-100">
+      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
         <div className="flex items-center gap-2">
-          <Icon className="w-3.5 h-3.5 text-slate-300" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-50">
+          <Icon className={surface.panelHeaderIcon} />
+          <span className={surface.panelHeaderTitle}>
             {title}
           </span>
           {subtitle && (
-            <span className="hidden text-[9px] uppercase tracking-wider text-slate-400 sm:inline">
+            <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
               · {subtitle}
             </span>
           )}

@@ -14,6 +14,8 @@ import {
   YAxis,
 } from "recharts";
 
+import { surface, typography } from "@/lib/design-system";
+
 interface Inspection {
   date: Date;
   result: string;
@@ -60,17 +62,17 @@ export function InspectionPerformanceChart({ inspections }: Props) {
   return (
     <div className="bg-card border border-border shadow-sm flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
         <div className="flex items-center gap-2">
-          <Activity className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <Activity className={surface.panelHeaderIcon} />
+          <span className={surface.panelHeaderTitle}>
             Desempenho de Inspeções
           </span>
-          <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider hidden sm:inline">
+          <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
             · Últimos 7 dias
           </span>
         </div>
-        <span className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-wider">
+        <span className={`${typography.codeMuted} text-slate-400`}>
           {total} total
         </span>
       </div>
@@ -79,13 +81,13 @@ export function InspectionPerformanceChart({ inspections }: Props) {
       <div className="flex items-center gap-4 px-4 pt-3">
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-sm bg-green-500" />
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+          <span className={`${typography.metaStrong} text-muted-foreground`}>
             Aprovados
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2.5 h-2.5 rounded-sm bg-red-500" />
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+          <span className={`${typography.metaStrong} text-muted-foreground`}>
             Reprovados
           </span>
         </div>
