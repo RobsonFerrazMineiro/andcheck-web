@@ -1,6 +1,5 @@
 import "server-only";
 
-import { differenceInMilliseconds, endOfDay } from "date-fns";
 import {
   AuditAction,
   AuditEntityType,
@@ -8,6 +7,7 @@ import {
   NonConformityStatus,
   Prisma,
 } from "@prisma/client";
+import { differenceInMilliseconds, endOfDay } from "date-fns";
 
 import { requireAnyPermission } from "@/lib/authz";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
@@ -62,7 +62,7 @@ function getOperationalMovement(log: {
     if (log.action === AuditAction.STATUS_CHANGE) {
       if (status === "liberado") {
         return {
-          badge: "LIBERACAO",
+          badge: "LIBERADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
           groupable: false,
           subtitle: `Liberado por ${actor}`,
@@ -87,12 +87,15 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: actor,
           title: label,
-          tone: "red" as const,
+          tone: "slate" as const,
         };
       }
-      if (inspectionResult === "aprovado" || inspectionResult === "aprovado_com_ressalvas") {
+      if (
+        inspectionResult === "aprovado" ||
+        inspectionResult === "aprovado_com_ressalvas"
+      ) {
         return {
-          badge: "LIBERACAO",
+          badge: "LIBERADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
           groupable: false,
           subtitle: `Liberado por ${actor}`,
@@ -113,10 +116,13 @@ function getOperationalMovement(log: {
     }
   }
 
-  if (log.entityType === AuditEntityType.INSPECTION && log.action === AuditAction.CREATE) {
+  if (
+    log.entityType === AuditEntityType.INSPECTION &&
+    log.action === AuditAction.CREATE
+  ) {
     if (result === "reprovado") {
       return {
-        badge: "INSPECAO REPROVADA",
+        badge: "INSP. REPROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:reprovada`,
         groupable: false,
         subtitle: actor,
@@ -126,7 +132,7 @@ function getOperationalMovement(log: {
     }
     if (result === "aprovado_com_ressalvas") {
       return {
-        badge: "COM RESSALVAS",
+        badge: "C/ RESSALVAS",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:ressalvas`,
         groupable: false,
         subtitle: actor,
@@ -136,7 +142,7 @@ function getOperationalMovement(log: {
     }
     if (result === "aprovado") {
       return {
-        badge: "INSPECAO APROVADA",
+        badge: "INSP. APROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:aprovada`,
         groupable: false,
         subtitle: actor,
@@ -190,7 +196,7 @@ function getOperationalMovement(log: {
     status === "EXPIRED"
   ) {
     return {
-      badge: "DOCUMENTO VENCIDO",
+      badge: "DOC. VENCIDO",
       dedupeKey: `${log.entityType}:${log.entityId ?? label}:vencido`,
       groupable: false,
       subtitle: "Documento tecnico vencido",
@@ -201,7 +207,8 @@ function getOperationalMovement(log: {
 
   if (
     log.entityType === AuditEntityType.DOCUMENT &&
-    (log.action === AuditAction.DOCUMENT_CREATED || log.action === AuditAction.UPLOAD)
+    (log.action === AuditAction.DOCUMENT_CREATED ||
+      log.action === AuditAction.UPLOAD)
   ) {
     return {
       badge: "DOCUMENTO ANEXADO",
@@ -243,7 +250,7 @@ export async function getDashboardMetrics() {
   ] = await Promise.all([
     prisma.scaffold.findMany({
       where: activeScaffoldWhere,
-      orderBy: { code: "asc" },
+      orderBy: { created_at: "desc" },
       include: {
         tenantCompany: { select: { id: true, name: true } },
         _count: { select: { inspections: true } },
@@ -314,10 +321,36 @@ export async function getDashboardMetrics() {
       where: {
         ...scopedWhere,
         OR: [
-          { entityType: AuditEntityType.SCAFFOLD, action: { in: [AuditAction.CREATE, AuditAction.STATUS_CHANGE] } },
-          { entityType: AuditEntityType.INSPECTION, action: AuditAction.CREATE },
-          { entityType: AuditEntityType.NON_CONFORMITY, action: { in: [AuditAction.CREATE, AuditAction.UPDATE, AuditAction.STATUS_CHANGE, AuditAction.COMPLETE, AuditAction.UPLOAD] } },
-          { entityType: AuditEntityType.DOCUMENT, action: { in: [AuditAction.DOCUMENT_CREATED, AuditAction.DOCUMENT_UPDATED, AuditAction.UPLOAD] } },
+          {
+            entityType: AuditEntityType.SCAFFOLD,
+            action: { in: [AuditAction.CREATE, AuditAction.STATUS_CHANGE] },
+          },
+          {
+            entityType: AuditEntityType.INSPECTION,
+            action: AuditAction.CREATE,
+          },
+          {
+            entityType: AuditEntityType.NON_CONFORMITY,
+            action: {
+              in: [
+                AuditAction.CREATE,
+                AuditAction.UPDATE,
+                AuditAction.STATUS_CHANGE,
+                AuditAction.COMPLETE,
+                AuditAction.UPLOAD,
+              ],
+            },
+          },
+          {
+            entityType: AuditEntityType.DOCUMENT,
+            action: {
+              in: [
+                AuditAction.DOCUMENT_CREATED,
+                AuditAction.DOCUMENT_UPDATED,
+                AuditAction.UPLOAD,
+              ],
+            },
+          },
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -343,30 +376,40 @@ export async function getDashboardMetrics() {
         select: { id: true, name: true },
       })
     : [];
-  const companyNames = new Map(companies.map((company) => [company.id, company.name]));
+  const companyNames = new Map(
+    companies.map((company) => [company.id, company.name]),
+  );
 
   const operationDays = dismantledScaffolds.flatMap((scaffold) => {
     if (!scaffold.released_at || !scaffold.dismantled_at) return [];
-    const days = differenceInMilliseconds(scaffold.dismantled_at, scaffold.released_at) / DAY_IN_MS;
+    const days =
+      differenceInMilliseconds(scaffold.dismantled_at, scaffold.released_at) /
+      DAY_IN_MS;
     return days >= 0 ? [days] : [];
   });
   const correctionDays = closedNonConformities.flatMap((nc) => {
     if (!nc.closedAt) return [];
-    const days = differenceInMilliseconds(nc.closedAt, nc.createdAt) / DAY_IN_MS;
+    const days =
+      differenceInMilliseconds(nc.closedAt, nc.createdAt) / DAY_IN_MS;
     return days >= 0 ? [days] : [];
   });
-  const approvedInspections = inspections.filter((inspection) =>
-    inspection.result === InspectionResult.aprovado ||
-    inspection.result === InspectionResult.aprovado_com_ressalvas,
+  const approvedInspections = inspections.filter(
+    (inspection) =>
+      inspection.result === InspectionResult.aprovado ||
+      inspection.result === InspectionResult.aprovado_com_ressalvas,
   ).length;
   const approvalRate =
-    inspections.length > 0 ? Math.round((approvedInspections / inspections.length) * 100) : 0;
+    inspections.length > 0
+      ? Math.round((approvedInspections / inspections.length) * 100)
+      : 0;
   const onTimeClosedNonConformities = closedNonConformities.filter(
     (nc) => nc.closedAt && nc.dueDate && nc.closedAt <= endOfDay(nc.dueDate),
   ).length;
   const onTimeClosureRate =
     closedNonConformities.length > 0
-      ? Math.round((onTimeClosedNonConformities / closedNonConformities.length) * 100)
+      ? Math.round(
+          (onTimeClosedNonConformities / closedNonConformities.length) * 100,
+        )
       : 0;
   const averageOperationDays = average(operationDays);
   const averageCorrectionDays = average(correctionDays);
@@ -378,11 +421,15 @@ export async function getDashboardMetrics() {
     },
     historical: {
       averageOperationDays:
-        averageOperationDays === null ? null : Math.max(1, Math.round(averageOperationDays)),
+        averageOperationDays === null
+          ? null
+          : Math.max(1, Math.round(averageOperationDays)),
       approvalRate,
       onTimeClosureRate,
       averageCorrectionDays:
-        averageCorrectionDays === null ? null : roundOneDecimal(averageCorrectionDays),
+        averageCorrectionDays === null
+          ? null
+          : roundOneDecimal(averageCorrectionDays),
     },
     rankings: {
       companies: companyRanking.map((item) => ({
@@ -396,17 +443,19 @@ export async function getDashboardMetrics() {
       })),
     },
     operationalMovements: auditLogs
-      .reduce<Array<{
-        id: string;
-        badge: string;
-        count: number;
-        dedupeKey: string;
-        groupable: boolean;
-        subtitle: string;
-        title: string;
-        tone: "green" | "blue" | "amber" | "red" | "slate";
-        createdAt: Date;
-      }>>((movements, log) => {
+      .reduce<
+        Array<{
+          id: string;
+          badge: string;
+          count: number;
+          dedupeKey: string;
+          groupable: boolean;
+          subtitle: string;
+          title: string;
+          tone: "green" | "blue" | "amber" | "red" | "slate";
+          createdAt: Date;
+        }>
+      >((movements, log) => {
         const movement = getOperationalMovement(log);
         if (!movement) return movements;
 

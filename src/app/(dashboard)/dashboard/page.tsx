@@ -10,12 +10,14 @@ import {
   Clock,
   Construction,
   FileText,
+  HardHat,
   MapPinned,
   Plus,
   ShieldOff,
   TimerReset,
   TrendingUp,
   Wrench,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -37,23 +39,22 @@ const NORMS = [
 
 export default async function DashboardPage() {
   const access = await getCurrentUserAccess();
-  const [
-    dashboardMetrics,
-    canCreateScaffold,
-    canCreateInspection,
-  ] = await Promise.all([
-    getDashboardMetrics(),
-    canCurrentUser("scaffolds.create"),
-    canCurrentUser("inspections.create"),
-  ]);
+  const [dashboardMetrics, canCreateScaffold, canCreateInspection] =
+    await Promise.all([
+      getDashboardMetrics(),
+      canCurrentUser("scaffolds.create"),
+      canCurrentUser("inspections.create"),
+    ]);
   const { scaffolds, inspections } = dashboardMetrics.operational;
   const { historical, operationalMovements, rankings } = dashboardMetrics;
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&
-      access?.roleCodes.some((roleCode) =>
-        ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(roleCode),
+    access?.roleCodes.some((roleCode) =>
+      ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(
+        roleCode,
       ),
+    ),
   );
   const showCompanyRanking = rankings.companies.length >= 2;
 
@@ -84,7 +85,9 @@ export default async function DashboardPage() {
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
           </h1>
-          <p className={`mt-0.5 ${typography.sectionDescription} capitalize text-muted-foreground`}>
+          <p
+            className={`mt-0.5 ${typography.sectionDescription} capitalize text-muted-foreground`}
+          >
             {today}
           </p>
         </div>
@@ -159,8 +162,11 @@ export default async function DashboardPage() {
           <p className={`${typography.sectionLabel} text-muted-foreground`}>
             Indicadores Históricos
           </p>
-          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
-            Visão gerencial baseada em andaimes desmontados, inspeções e tratativas.
+          <p
+            className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
+          >
+            Visão gerencial baseada em andaimes desmontados, inspeções e
+            tratativas.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -244,26 +250,28 @@ export default async function DashboardPage() {
             }
           >
             <div className="divide-y divide-border">
-              {scaffolds.slice(0, 6).map((s) => (
+              {scaffolds.slice(0, 10).map((s) => (
                 <Link
                   key={s.id}
                   href={"/andaimes/" + s.id}
-                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
+                  className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
                 >
-                  <div className="flex min-w-0 items-center gap-3">
-                    <p className={`${typography.code} uppercase text-foreground`}>
-                      {s.code}
-                    </p>
-                    <div className="min-w-0">
-                      <p className={`${typography.bodyMuted} truncate text-muted-foreground`}>
-                        {s.location} · {s.area}
+                  <p className={`${typography.code} uppercase text-foreground`}>
+                    {s.code}
+                  </p>
+                  <div className="min-w-0">
+                    {showResponsibleCompany && (
+                      <p
+                        className={`truncate text-muted-foreground/60 ${typography.metaStrong}`}
+                      >
+                        Empresa: {s.tenantCompany.name}
                       </p>
-                      {showResponsibleCompany && (
-                        <p className={`mt-0.5 truncate text-muted-foreground/70 ${typography.metaStrong}`}>
-                          Empresa: {s.tenantCompany.name}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                    <p
+                      className={`${showResponsibleCompany ? "mt-0.5" : ""} ${typography.bodyMuted} truncate text-muted-foreground`}
+                    >
+                      {s.location} · {s.area}
+                    </p>
                   </div>
                   <StatusBadge status={s.status} />
                 </Link>
@@ -281,7 +289,9 @@ export default async function DashboardPage() {
             {operationalMovements.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <FileText className="mx-auto h-8 w-8 text-muted-foreground/25" />
-                <p className={`mt-2 text-muted-foreground ${typography.emptyState}`}>
+                <p
+                  className={`mt-2 text-muted-foreground ${typography.emptyState}`}
+                >
                   Nenhuma movimentacao operacional
                 </p>
               </div>
@@ -290,18 +300,27 @@ export default async function DashboardPage() {
                 {operationalMovements.map((movement) => (
                   <div
                     key={movement.id}
-                    className="grid grid-cols-[112px_minmax(0,1fr)_68px] items-start gap-3 px-4 py-3 sm:grid-cols-[132px_minmax(0,1fr)_74px]"
+                    className="grid grid-cols-[132px_minmax(0,1fr)_68px] items-start gap-3 px-4 py-3"
                   >
-                    <MovementBadge label={movement.badge} tone={movement.tone} />
+                    <MovementBadge
+                      label={movement.badge}
+                      tone={movement.tone}
+                    />
                     <div className="min-w-0">
-                      <p className={`truncate text-foreground ${typography.code}`}>
+                      <p
+                        className={`truncate text-foreground ${typography.code}`}
+                      >
                         {movement.title}
                       </p>
-                      <p className={`mt-0.5 truncate text-muted-foreground/60 ${typography.panelSubtitle}`}>
+                      <p
+                        className={`mt-0.5 truncate text-muted-foreground/60 ${typography.panelSubtitle}`}
+                      >
                         {movement.subtitle}
                       </p>
                     </div>
-                    <p className={`pt-0.5 text-right text-muted-foreground ${typography.codeMuted}`}>
+                    <p
+                      className={`pt-0.5 text-right text-muted-foreground ${typography.codeMuted}`}
+                    >
                       {format(movement.createdAt, "dd/MM HH:mm")}
                     </p>
                   </div>
@@ -397,9 +416,15 @@ function ExecutiveKpiCard({
   const t = EXECUTIVE_THEMES[theme];
 
   return (
-    <div className={"bg-card border border-border rounded-lg p-4 shadow-sm " + t.border}>
+    <div
+      className={
+        "bg-card border border-border rounded-lg p-4 shadow-sm " + t.border
+      }
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
-        <p className={`${typography.sectionLabel} leading-tight text-muted-foreground`}>
+        <p
+          className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+        >
           {label}
         </p>
         <Icon className={"h-4 w-4 shrink-0 " + t.icon} />
@@ -407,7 +432,9 @@ function ExecutiveKpiCard({
       <p className={`${typography.kpiValue} leading-none ${t.value}`}>
         {value}
       </p>
-      <p className={`mt-3 leading-relaxed text-muted-foreground ${typography.bodyMuted}`}>
+      <p
+        className={`mt-3 leading-relaxed text-muted-foreground ${typography.bodyMuted}`}
+      >
         {description}
       </p>
     </div>
@@ -446,16 +473,20 @@ function RankingPanel({
           </p>
         </div>
       ) : (
-        <div className="max-h-[186px] overflow-y-auto divide-y divide-border">
+        <div className="max-h-46.5 overflow-y-auto divide-y divide-border">
           {items.map((item, index) => (
             <div
               key={item.id ?? item.name}
               className="flex items-center gap-2 px-4 py-2.5"
             >
-              <span className={`w-5 shrink-0 text-muted-foreground/60 ${typography.rankingIndex}`}>
+              <span
+                className={`w-5 shrink-0 text-muted-foreground/60 ${typography.rankingIndex}`}
+              >
                 {index + 1}.
               </span>
-              <p className={`w-36 shrink-0 truncate text-foreground sm:w-44 ${typography.bodyStrong}`}>
+              <p
+                className={`w-36 shrink-0 truncate text-foreground sm:w-44 ${typography.bodyStrong}`}
+              >
                 {item.name}
               </p>
               <div className="h-2.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-64">
@@ -466,7 +497,9 @@ function RankingPanel({
                   }}
                 />
               </div>
-              <p className={`w-8 shrink-0 text-right text-foreground ${typography.code}`}>
+              <p
+                className={`w-8 shrink-0 text-right text-foreground ${typography.code}`}
+              >
                 {item.total}
               </p>
             </div>
@@ -477,49 +510,54 @@ function RankingPanel({
   );
 }
 
-const MOVEMENT_BADGE_STYLES: Record<MovementTone, { badge: string; dot: string }> = {
+const MOVEMENT_BADGE_STYLES: Record<MovementTone, { badge: string }> = {
   green: {
-    badge: "border-emerald-300 bg-emerald-50 text-emerald-800",
-    dot: "bg-emerald-500",
+    badge: "border-green-400/60 bg-green-50 text-green-800",
   },
   blue: {
-    badge: "border-blue-300 bg-blue-50 text-blue-800",
-    dot: "bg-blue-500",
+    badge: "border-blue-400/60 bg-blue-50 text-blue-800",
   },
   amber: {
-    badge: "border-amber-300 bg-amber-50 text-amber-800",
-    dot: "bg-amber-500",
+    badge: "border-amber-400/60 bg-amber-50 text-amber-800",
   },
   red: {
-    badge: "border-red-300 bg-red-50 text-red-800",
-    dot: "bg-red-500",
+    badge: "border-red-400/60 bg-red-50 text-red-800",
   },
   slate: {
-    badge: "border-slate-300 bg-slate-100 text-slate-800",
-    dot: "bg-slate-700",
+    badge: "border-slate-400/60 bg-slate-100 text-slate-600",
   },
 };
 
-function MovementBadge({
-  label,
-  tone,
-}: {
-  label: string;
-  tone: MovementTone;
-}) {
+const MOVEMENT_BADGE_ICONS: Record<string, React.ElementType> = {
+  "ANDAIME CRIADO": Construction,
+  LIBERADO: CheckCircle2,
+  INTERDITADO: ShieldOff,
+  DESMONTADO: HardHat,
+  REPROVADO: XCircle,
+  "INSP. APROVADA": ClipboardCheck,
+  "INSP. REPROVADA": XCircle,
+  "C/ RESSALVAS": AlertTriangle,
+  "NC ABERTA": AlertTriangle,
+  "NC ENCERRADA": CheckCircle2,
+  "NC ATUALIZADA": Clock,
+  "DOC. VENCIDO": FileText,
+};
+
+function MovementBadge({ label, tone }: { label: string; tone: MovementTone }) {
   const styles = MOVEMENT_BADGE_STYLES[tone];
+  const Icon = MOVEMENT_BADGE_ICONS[label] ?? Clock;
 
   return (
     <span
       className={
-        "inline-flex w-full max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 " +
-        typography.badge + " " +
+        "inline-flex justify-self-start items-center gap-1.5 rounded-md border px-1.5 py-0.5 " +
+        typography.badge +
+        " " +
         styles.badge
       }
-      title={label}
     >
-      <span className={"h-1.5 w-1.5 shrink-0 rounded-full " + styles.dot} />
-      <span className="truncate">{label}</span>
+      <Icon className="h-2.5 w-2.5 shrink-0" />
+      {label}
     </span>
   );
 }
@@ -563,18 +601,20 @@ function KpiCard({
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <div
-      className={"bg-card " + t.border + " border border-border rounded-lg p-4 shadow-sm"}
+      className={
+        "bg-card " + t.border + " border border-border rounded-lg p-4 shadow-sm"
+      }
     >
       <div className="flex items-start justify-between mb-2">
-        <p className={`${typography.sectionLabel} pr-2 leading-tight text-muted-foreground`}>
+        <p
+          className={`${typography.sectionLabel} pr-2 leading-tight text-muted-foreground`}
+        >
           {label}
         </p>
         <Icon className="w-4 h-4 shrink-0 text-muted-foreground/40" />
       </div>
       <p
-        className={
-          typography.operationalValue + " " + t.val + " leading-none"
-        }
+        className={typography.operationalValue + " " + t.val + " leading-none"}
       >
         {value}
       </p>
@@ -608,12 +648,12 @@ function PanelBlock({
 }: PanelBlockProps) {
   return (
     <div className="bg-card border border-border rounded-lg shadow-sm h-full flex flex-col overflow-hidden">
-      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
+      <div
+        className={`flex items-center justify-between ${surface.panelHeader}`}
+      >
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
-          <span className={surface.panelHeaderTitle}>
-            {title}
-          </span>
+          <span className={surface.panelHeaderTitle}>{title}</span>
           {subtitle && (
             <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
               · {subtitle}
