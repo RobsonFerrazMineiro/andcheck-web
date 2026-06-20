@@ -2,8 +2,6 @@ import "server-only";
 
 import { differenceInMilliseconds } from "date-fns";
 import {
-  AuditAction,
-  AuditEntityType,
   InspectionResult,
   NonConformityStatus,
   Prisma,
@@ -24,45 +22,6 @@ function roundOneDecimal(value: number) {
   return Math.round(value * 10) / 10;
 }
 
-function formatActivity(log: {
-  action: AuditAction;
-  entityType: AuditEntityType;
-  entityLabel: string | null;
-  description: string;
-  userName: string | null;
-  newValue: Prisma.JsonValue | null;
-}) {
-  const label = log.entityLabel ?? "registro";
-  const actor = log.userName ?? "Sistema";
-  const status =
-    log.newValue &&
-    typeof log.newValue === "object" &&
-    !Array.isArray(log.newValue) &&
-    typeof log.newValue.status === "string"
-      ? log.newValue.status
-      : null;
-
-  if (log.entityType === "SCAFFOLD" && log.action === "STATUS_CHANGE") {
-    if (status === "liberado") return `${actor} liberou ${label}`;
-    if (status === "desmontado") return `Andaime ${label} desmontado`;
-    return `${actor} alterou o status de ${label}`;
-  }
-  if (log.entityType === "NON_CONFORMITY" && log.action === "COMPLETE") {
-    return `${label} foi encerrada`;
-  }
-  if (log.entityType === "NON_CONFORMITY" && log.action === "CREATE") {
-    return `${label} foi aberta`;
-  }
-  if (log.entityType === "INSPECTION" && log.action === "CREATE") {
-    return `Nova inspecao registrada em ${label}`;
-  }
-  if (log.entityType === "DOCUMENT" && log.action === "DOCUMENT_CREATED") {
-    return `Documento tecnico anexado em ${label}`;
-  }
-
-  return log.description.endsWith(".") ? log.description.slice(0, -1) : log.description;
-}
-
 export async function getDashboardMetrics() {
   await requireAnyPermission(["read.all", "read.own_company"]);
   const scope = await getDataScope();
@@ -75,6 +34,9 @@ export async function getDashboardMetrics() {
     ...scopedWhere,
     status: "desmontado",
   } satisfies Prisma.ScaffoldWhereInput;
+  const workspaceRankingWhere = {
+    ...(scope.workspaceIds ? { workspaceId: { in: scope.workspaceIds } } : {}),
+  } satisfies Prisma.ScaffoldWhereInput;
 
   const [
     scaffolds,
@@ -83,7 +45,6 @@ export async function getDashboardMetrics() {
     closedNonConformities,
     companyRanking,
     areaRanking,
-    recentAuditLogs,
   ] = await Promise.all([
     prisma.scaffold.findMany({
       where: activeScaffoldWhere,
@@ -142,7 +103,7 @@ export async function getDashboardMetrics() {
     }),
     prisma.scaffold.groupBy({
       by: ["companyId"],
-      where: scopedWhere,
+      where: workspaceRankingWhere,
       _count: { _all: true },
       orderBy: { _count: { companyId: "desc" } },
       take: 4,
@@ -153,21 +114,6 @@ export async function getDashboardMetrics() {
       _count: { _all: true },
       orderBy: { _count: { area: "desc" } },
       take: 4,
-    }),
-    prisma.auditLog.findMany({
-      where: scopedWhere,
-      orderBy: { createdAt: "desc" },
-      take: 10,
-      select: {
-        id: true,
-        action: true,
-        entityType: true,
-        entityLabel: true,
-        description: true,
-        userName: true,
-        newValue: true,
-        createdAt: true,
-      },
     }),
   ]);
 
@@ -223,11 +169,5 @@ export async function getDashboardMetrics() {
         total: item._count._all,
       })),
     },
-    recentActivities: recentAuditLogs.map((log) => ({
-      id: log.id,
-      description: formatActivity(log),
-      createdAt: log.createdAt,
-      actor: log.userName ?? "Sistema",
-    })),
   };
 }

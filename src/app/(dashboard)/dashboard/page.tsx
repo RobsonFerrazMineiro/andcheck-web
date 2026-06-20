@@ -1,7 +1,6 @@
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   BarChart3,
@@ -11,7 +10,6 @@ import {
   Clock,
   Construction,
   FileText,
-  History,
   MapPinned,
   Plus,
   ShieldOff,
@@ -48,7 +46,7 @@ export default async function DashboardPage() {
     canCurrentUser("inspections.create"),
   ]);
   const { scaffolds, inspections } = dashboardMetrics.operational;
-  const { historical, rankings, recentActivities } = dashboardMetrics;
+  const { historical, rankings } = dashboardMetrics;
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&
@@ -56,6 +54,7 @@ export default async function DashboardPage() {
         ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(roleCode),
       ),
   );
+  const showCompanyRanking = rankings.companies.length >= 2;
 
   const liberados = scaffolds.filter((s) => s.status === "liberado").length;
   const emMontagem = scaffolds.filter((s) => s.status === "em_montagem").length;
@@ -195,14 +194,23 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <RankingPanel
-          title="Empresas Mais Ativas"
-          subtitle="Total de andaimes"
-          icon={Building2}
-          items={rankings.companies}
-          suffix="andaimes"
-        />
+      <div
+        className={
+          showCompanyRanking
+            ? "grid grid-cols-1 lg:grid-cols-2 gap-4"
+            : "grid grid-cols-1 gap-4"
+        }
+      >
+        {showCompanyRanking && (
+          <RankingPanel
+            title="Empresas Mais Ativas"
+            subtitle="Total de andaimes"
+            description="Comparativo entre empresas do workspace"
+            icon={Building2}
+            items={rankings.companies}
+            suffix="andaimes"
+          />
+        )}
         <RankingPanel
           title="Areas com Mais Andaimes"
           subtitle="Andaimes criados"
@@ -218,43 +226,6 @@ export default async function DashboardPage() {
           showCompanyName={showResponsibleCompany}
         />
       </div>
-
-      {/* Ultimas atividades */}
-      <PanelBlock
-        title="Ultimas Atividades"
-        subtitle={recentActivities.length + " registros"}
-        icon={History}
-      >
-        {recentActivities.length === 0 ? (
-          <div className="px-4 py-8 text-center">
-            <Activity className="mx-auto h-8 w-8 text-muted-foreground/25" />
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Nenhuma atividade registrada
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center justify-between gap-4 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[11px] font-semibold text-foreground">
-                    {activity.description}
-                  </p>
-                  <p className="mt-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/60">
-                    {activity.actor}
-                  </p>
-                </div>
-                <p className="shrink-0 font-mono text-[10px] text-muted-foreground">
-                  {format(activity.createdAt, "dd/MM HH:mm")}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </PanelBlock>
 
       <div className="grid lg:grid-cols-[3fr_2fr] gap-4">
         <div>
@@ -300,7 +271,7 @@ export default async function DashboardPage() {
 
         <div>
           <PanelBlock
-            title="Últimos Registros"
+            title="Ultimas Movimentacoes Operacionais"
             subtitle={inspections.length + " total"}
             icon={FileText}
             action={
@@ -444,18 +415,27 @@ function ExecutiveKpiCard({
 function RankingPanel({
   title,
   subtitle,
+  description,
   icon,
   items,
   suffix,
 }: {
   title: string;
   subtitle: string;
+  description?: string;
   icon: React.ElementType;
   items: { id?: string; name: string; total: number }[];
   suffix?: string;
 }) {
   return (
     <PanelBlock title={title} subtitle={subtitle} icon={icon}>
+      {description && (
+        <div className="border-b border-border px-4 py-2">
+          <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+            {description}
+          </p>
+        </div>
+      )}
       {items.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground/25" />
