@@ -235,7 +235,7 @@ export default async function DashboardPage() {
             action={
               <Link
                 href="/andaimes"
-                className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1"
+                className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-slate-300 hover:text-white"
               >
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Link>
@@ -246,20 +246,22 @@ export default async function DashboardPage() {
                 <Link
                   key={s.id}
                   href={"/andaimes/" + s.id}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
+                  className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
                 >
-                  <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-3">
                     <p className="font-bold text-[11px] text-foreground font-mono uppercase">
                       {s.code}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-                      {s.location} · {s.area}
-                    </p>
-                    {showResponsibleCompany && (
-                      <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
-                        Empresa: {s.tenantCompany.name}
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {s.location} · {s.area}
                       </p>
-                    )}
+                      {showResponsibleCompany && (
+                        <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
+                          Empresa: {s.tenantCompany.name}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <StatusBadge status={s.status} />
                 </Link>
@@ -288,14 +290,16 @@ export default async function DashboardPage() {
                     key={movement.id}
                     className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4 py-3"
                   >
-                    <div className="min-w-0 space-y-1">
+                    <div className="flex min-w-0 items-start gap-3">
                       <MovementBadge label={movement.badge} tone={movement.tone} />
-                      <p className="truncate pt-0.5 font-mono text-[12px] font-bold text-foreground">
-                        {movement.title}
-                      </p>
-                      <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                        {movement.subtitle}
-                      </p>
+                      <div className="min-w-0">
+                        <p className="truncate font-mono text-[12px] font-bold text-foreground">
+                          {movement.title}
+                        </p>
+                        <p className="mt-0.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                          {movement.subtitle}
+                        </p>
+                      </div>
                     </div>
                     <p className="shrink-0 pt-0.5 font-mono text-[10px] text-muted-foreground">
                       {format(movement.createdAt, "dd/MM HH:mm")}
@@ -442,7 +446,7 @@ function RankingPanel({
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="max-h-[186px] overflow-y-auto divide-y divide-border">
           {items.map((item, index) => (
             <div
               key={item.id ?? item.name}
@@ -603,14 +607,14 @@ function PanelBlock({
 }: PanelBlockProps) {
   return (
     <div className="bg-card border border-border shadow-sm h-full flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className="flex items-center justify-between bg-slate-800 px-4 py-3 text-slate-100">
         <div className="flex items-center gap-2">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <Icon className="w-3.5 h-3.5 text-slate-300" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-50">
             {title}
           </span>
           {subtitle && (
-            <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider hidden sm:inline">
+            <span className="hidden text-[9px] uppercase tracking-wider text-slate-400 sm:inline">
               · {subtitle}
             </span>
           )}
