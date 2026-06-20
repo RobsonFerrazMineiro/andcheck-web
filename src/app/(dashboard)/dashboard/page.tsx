@@ -1,15 +1,22 @@
 import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
+  Activity,
   AlertTriangle,
   ArrowRight,
+  BarChart3,
+  Building2,
   CheckCircle2,
   ClipboardCheck,
   Clock,
   Construction,
   FileText,
+  History,
+  MapPinned,
   Plus,
   ShieldOff,
+  TimerReset,
+  TrendingUp,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
@@ -17,9 +24,8 @@ import Link from "next/link";
 import { DashboardMapPreview } from "@/components/dashboard/dashboard-map-preview";
 import { InspectionPerformanceChart } from "@/components/dashboard/inspection-performance-chart";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { getInspections } from "@/lib/actions/inspection-actions";
-import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { getDashboardMetrics } from "@/lib/dashboard-metrics";
 import { getContextCapabilities } from "@/lib/data-scope";
 
 const NORMS = [
@@ -33,16 +39,16 @@ const NORMS = [
 export default async function DashboardPage() {
   const access = await getCurrentUserAccess();
   const [
-    scaffolds,
-    inspections,
+    dashboardMetrics,
     canCreateScaffold,
     canCreateInspection,
   ] = await Promise.all([
-    getScaffolds(),
-    getInspections(),
+    getDashboardMetrics(),
     canCurrentUser("scaffolds.create"),
     canCurrentUser("inspections.create"),
   ]);
+  const { scaffolds, inspections } = dashboardMetrics.operational;
+  const { historical, rankings, recentActivities } = dashboardMetrics;
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&
@@ -147,7 +153,64 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* ── Gráfico + Mapa ── */}
+      {/* Indicadores historicos */}
+      <section className="space-y-3">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            Indicadores Historicos
+          </p>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">
+            Visao gerencial baseada em andaimes desmontados, inspecoes e tratativas.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+          <ExecutiveKpiCard
+            label="Tempo Medio em Operacao"
+            value={formatDays(historical.averageOperationDays)}
+            description="Tempo medio que os andaimes permaneceram ativos."
+            icon={TimerReset}
+            theme="slate"
+          />
+          <ExecutiveKpiCard
+            label="Taxa de Aprovacao"
+            value={`${historical.approvalRate}%`}
+            description="Inspecoes aprovadas sobre o total de inspecoes."
+            icon={TrendingUp}
+            theme="green"
+          />
+          <ExecutiveKpiCard
+            label="NCs Encerradas"
+            value={historical.closedNonConformities}
+            description="Nao conformidades encerradas no escopo atual."
+            icon={CheckCircle2}
+            theme="blue"
+          />
+          <ExecutiveKpiCard
+            label="Tempo Medio de Correcao"
+            value={formatDecimalDays(historical.averageCorrectionDays)}
+            description="Tempo medio entre abertura e encerramento de NC."
+            icon={Clock}
+            theme="amber"
+          />
+        </div>
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <RankingPanel
+          title="Empresas Mais Ativas"
+          subtitle="Total de andaimes"
+          icon={Building2}
+          items={rankings.companies}
+          suffix="andaimes"
+        />
+        <RankingPanel
+          title="Areas com Mais Andaimes"
+          subtitle="Andaimes criados"
+          icon={MapPinned}
+          items={rankings.areas}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 min-h-96">
         <InspectionPerformanceChart inspections={inspections} />
         <DashboardMapPreview
@@ -156,7 +219,43 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* ── Listas ── */}
+      {/* Ultimas atividades */}
+      <PanelBlock
+        title="Ultimas Atividades"
+        subtitle={recentActivities.length + " registros"}
+        icon={History}
+      >
+        {recentActivities.length === 0 ? (
+          <div className="px-4 py-8 text-center">
+            <Activity className="mx-auto h-8 w-8 text-muted-foreground/25" />
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Nenhuma atividade registrada
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {recentActivities.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-center justify-between gap-4 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-[11px] font-semibold text-foreground">
+                    {activity.description}
+                  </p>
+                  <p className="mt-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/60">
+                    {activity.actor}
+                  </p>
+                </div>
+                <p className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                  {format(activity.createdAt, "dd/MM HH:mm")}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </PanelBlock>
+
       <div className="grid lg:grid-cols-[3fr_2fr] gap-4">
         <div>
           <PanelBlock
@@ -266,6 +365,128 @@ interface KpiCardProps {
   theme: "green" | "blue" | "amber" | "red" | "orange";
   hint: string;
 }
+
+function formatDays(value: number | null) {
+  if (value === null) return "Nao calculado";
+  return value === 1 ? "1 dia" : `${value} dias`;
+}
+
+function formatDecimalDays(value: number | null) {
+  if (value === null) return "Nao calculado";
+  const formatted = value.toLocaleString("pt-BR", {
+    maximumFractionDigits: 1,
+    minimumFractionDigits: value % 1 === 0 ? 0 : 1,
+  });
+  return value === 1 ? "1 dia" : `${formatted} dias`;
+}
+
+type ExecutiveTheme = "slate" | "green" | "blue" | "amber";
+
+const EXECUTIVE_THEMES: Record<
+  ExecutiveTheme,
+  { border: string; value: string; icon: string }
+> = {
+  slate: {
+    border: "border-l-4 border-l-slate-500",
+    value: "text-slate-800",
+    icon: "text-slate-500",
+  },
+  green: {
+    border: "border-l-4 border-l-green-500",
+    value: "text-green-700",
+    icon: "text-green-600",
+  },
+  blue: {
+    border: "border-l-4 border-l-blue-500",
+    value: "text-blue-700",
+    icon: "text-blue-600",
+  },
+  amber: {
+    border: "border-l-4 border-l-amber-500",
+    value: "text-amber-700",
+    icon: "text-amber-600",
+  },
+};
+
+function ExecutiveKpiCard({
+  label,
+  value,
+  description,
+  icon: Icon,
+  theme,
+}: {
+  label: string;
+  value: number | string;
+  description: string;
+  icon: React.ElementType;
+  theme: ExecutiveTheme;
+}) {
+  const t = EXECUTIVE_THEMES[theme];
+
+  return (
+    <div className={"bg-card border border-border p-4 shadow-sm " + t.border}>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground leading-tight">
+          {label}
+        </p>
+        <Icon className={"h-4 w-4 shrink-0 " + t.icon} />
+      </div>
+      <p className={"text-[24px] font-bold leading-none tracking-tight " + t.value}>
+        {value}
+      </p>
+      <p className="mt-3 text-[10px] leading-relaxed text-muted-foreground">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function RankingPanel({
+  title,
+  subtitle,
+  icon,
+  items,
+  suffix,
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ElementType;
+  items: { id?: string; name: string; total: number }[];
+  suffix?: string;
+}) {
+  return (
+    <PanelBlock title={title} subtitle={subtitle} icon={icon}>
+      {items.length === 0 ? (
+        <div className="px-4 py-8 text-center">
+          <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground/25" />
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Sem dados historicos
+          </p>
+        </div>
+      ) : (
+        <div className="divide-y divide-border">
+          {items.map((item, index) => (
+            <div
+              key={item.id ?? item.name}
+              className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3"
+            >
+              <span className="font-mono text-[11px] font-bold text-muted-foreground/60">
+                {index + 1}.
+              </span>
+              <p className="truncate text-[11px] font-semibold text-foreground">
+                {item.name}
+              </p>
+              <p className="text-right font-mono text-[10px] font-semibold text-muted-foreground">
+                {item.total} {suffix ?? ""}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </PanelBlock>
+  );
+}
+
 const THEMES = {
   green: {
     border: "border-l-4 border-l-green-600",
