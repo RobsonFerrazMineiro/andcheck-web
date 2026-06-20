@@ -286,18 +286,18 @@ export default async function DashboardPage() {
                 {operationalMovements.map((movement) => (
                   <div
                     key={movement.id}
-                    className="grid grid-cols-[minmax(120px,auto)_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4 py-3"
                   >
-                    <MovementBadge label={movement.badge} tone={movement.tone} />
-                    <div className="min-w-0">
-                      <p className="truncate text-[11px] font-semibold text-foreground">
+                    <div className="min-w-0 space-y-1">
+                      <MovementBadge label={movement.badge} tone={movement.tone} />
+                      <p className="truncate pt-0.5 font-mono text-[12px] font-bold text-foreground">
                         {movement.title}
                       </p>
-                      <p className="mt-0.5 truncate text-[9px] uppercase tracking-wider text-muted-foreground/60">
+                      <p className="truncate text-[10px] uppercase tracking-wider text-muted-foreground/60">
                         {movement.subtitle}
                       </p>
                     </div>
-                    <p className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                    <p className="shrink-0 pt-0.5 font-mono text-[10px] text-muted-foreground">
                       {format(movement.createdAt, "dd/MM HH:mm")}
                     </p>
                   </div>
@@ -349,7 +349,7 @@ function formatDecimalDays(value: number | null) {
 }
 
 type ExecutiveTheme = "slate" | "green" | "blue" | "amber";
-type MovementTone = "green" | "blue" | "amber" | "red";
+type MovementTone = "green" | "blue" | "amber" | "red" | "slate";
 
 const EXECUTIVE_THEMES: Record<
   ExecutiveTheme,
@@ -442,29 +442,27 @@ function RankingPanel({
           </p>
         </div>
       ) : (
-        <div className="space-y-3 px-4 py-4">
+        <div className="divide-y divide-border">
           {items.map((item, index) => (
             <div
               key={item.id ?? item.name}
-              className="grid grid-cols-[minmax(120px,1fr)_minmax(96px,42%)_42px] items-center gap-3"
+              className="flex items-center gap-2 px-4 py-2.5"
             >
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="w-5 shrink-0 font-mono text-[10px] font-bold text-muted-foreground/60">
-                  {index + 1}.
-                </span>
-                <p className="truncate text-[11px] font-semibold text-foreground">
-                  {item.name}
-                </p>
-              </div>
-              <div className="h-2 border border-border/70 bg-muted/40">
+              <span className="w-5 shrink-0 font-mono text-[10px] font-bold text-muted-foreground/60">
+                {index + 1}.
+              </span>
+              <p className="w-36 shrink-0 truncate text-[11px] font-semibold text-foreground sm:w-44">
+                {item.name}
+              </p>
+              <div className="h-1.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-44">
                 <div
-                  className="h-full bg-slate-600"
+                  className="h-full bg-accent"
                   style={{
                     width: `${Math.max(8, Math.round((item.total / maxTotal) * 100))}%`,
                   }}
                 />
               </div>
-              <p className="text-right font-mono text-[11px] font-bold text-foreground">
+              <p className="w-8 shrink-0 text-right font-mono text-[11px] font-bold text-foreground">
                 {item.total}
               </p>
             </div>
@@ -475,11 +473,27 @@ function RankingPanel({
   );
 }
 
-const MOVEMENT_BADGE_STYLES: Record<MovementTone, string> = {
-  green: "border-emerald-300 bg-emerald-50 text-emerald-800",
-  blue: "border-blue-300 bg-blue-50 text-blue-800",
-  amber: "border-amber-300 bg-amber-50 text-amber-800",
-  red: "border-red-300 bg-red-50 text-red-800",
+const MOVEMENT_BADGE_STYLES: Record<MovementTone, { badge: string; dot: string }> = {
+  green: {
+    badge: "border-emerald-300 bg-emerald-50 text-emerald-800",
+    dot: "bg-emerald-500",
+  },
+  blue: {
+    badge: "border-blue-300 bg-blue-50 text-blue-800",
+    dot: "bg-blue-500",
+  },
+  amber: {
+    badge: "border-amber-300 bg-amber-50 text-amber-800",
+    dot: "bg-amber-500",
+  },
+  red: {
+    badge: "border-red-300 bg-red-50 text-red-800",
+    dot: "bg-red-500",
+  },
+  slate: {
+    badge: "border-slate-300 bg-slate-100 text-slate-800",
+    dot: "bg-slate-700",
+  },
 };
 
 function MovementBadge({
@@ -489,14 +503,17 @@ function MovementBadge({
   label: string;
   tone: MovementTone;
 }) {
+  const styles = MOVEMENT_BADGE_STYLES[tone];
+
   return (
     <span
       className={
-        "inline-flex w-fit max-w-full items-center border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
-        MOVEMENT_BADGE_STYLES[tone]
+        "inline-flex w-fit max-w-full items-center gap-1.5 border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
+        styles.badge
       }
       title={label}
     >
+      <span className={"h-1.5 w-1.5 shrink-0 rounded-full " + styles.dot} />
       <span className="truncate">{label}</span>
     </span>
   );

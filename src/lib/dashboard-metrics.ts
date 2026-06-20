@@ -77,7 +77,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: actor,
           title: label,
-          tone: "red" as const,
+          tone: "slate" as const,
         };
       }
       if (status === "desmontado") {
@@ -141,7 +141,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: actor,
         title: scaffoldCode,
-        tone: "green" as const,
+        tone: "blue" as const,
       };
     }
     return null;
@@ -404,7 +404,7 @@ export async function getDashboardMetrics() {
         groupable: boolean;
         subtitle: string;
         title: string;
-        tone: "green" | "blue" | "amber" | "red";
+        tone: "green" | "blue" | "amber" | "red" | "slate";
         createdAt: Date;
       }>>((movements, log) => {
         const movement = getOperationalMovement(log);
