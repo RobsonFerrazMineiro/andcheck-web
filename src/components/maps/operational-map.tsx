@@ -178,17 +178,17 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
             ? infoRow("Empresa", scaffold.companyName)
             : ""
         }
-        ${infoRow("Area", scaffold.area)}
+        ${infoRow("Área", scaffold.area)}
         ${
           location
             ? infoRow(
-                "Localizacao",
+                "Localização",
                 truncateText(location, 34),
                 "compact-location",
               )
             : ""
         }
-        ${lastInspection ? infoRow("Ultima inspecao", lastInspection) : ""}
+        ${lastInspection ? infoRow("Última inspeção", lastInspection) : ""}
         ${validityDate ? infoRow("Validade", validityDate) : ""}
       </div>
       <div class="andcheck-popup-actions">
@@ -210,7 +210,7 @@ function buildFullPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
         RESULT_LABEL[scaffold.lastInspection.result] ??
         scaffold.lastInspection.result
       }`
-    : "Sem inspecao registrada";
+    : "Sem inspeção registrada";
 
   return `
     <div class="andcheck-popup andcheck-popup-full">
@@ -223,16 +223,16 @@ function buildFullPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
       <div class="andcheck-popup-body">
         ${
           showCompanyName
-            ? infoRow("Empresa responsavel", scaffold.companyName)
+            ? infoRow("Empresa responsável", scaffold.companyName)
             : ""
         }
-        ${infoRow("Area", scaffold.area)}
+        ${infoRow("Área", scaffold.area)}
         ${
           scaffold.locationDescription
-            ? infoRow("Localizacao", scaffold.locationDescription)
+            ? infoRow("Localização", scaffold.locationDescription)
             : ""
         }
-        ${requiredInfoRow("Ultima inspecao", lastInspection)}
+        ${requiredInfoRow("Última inspeção", lastInspection)}
         ${requiredInfoRow("Validade", validityDate || "-")}
       </div>
       <div class="andcheck-popup-actions">

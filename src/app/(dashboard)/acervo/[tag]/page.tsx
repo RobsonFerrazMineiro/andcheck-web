@@ -107,7 +107,7 @@ function getLifecycleDays({
 }
 
 function formatLifecycleDays(days: number | null) {
-  if (days === null) return "Nao calculado";
+  if (days === null) return "Não calculado";
   if (days === 0) return "Menos de 1 dia";
   if (days === 1) return "1 dia";
   return `${days} dias`;
@@ -179,10 +179,10 @@ function operationalTimelineLabel(log: {
     return "Andaime desmontado";
   }
   if (log.entityType === "INSPECTION" && status === "aprovado") {
-    return "Inspecao aprovada";
+    return "Inspeção aprovada";
   }
   if (log.entityType === "INSPECTION" && status === "reprovado") {
-    return "Inspecao reprovada";
+    return "Inspeção reprovada";
   }
   if (log.entityType === "NON_CONFORMITY" && log.action === "CREATE") {
     return "NC aberta";
@@ -320,7 +320,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ArchiveCard title="Dados do Andaime" icon={Construction}>
-          <ArchiveRow icon={MapPin} label="Area" value={scaffold.area} />
+          <ArchiveRow icon={MapPin} label="Área" value={scaffold.area} />
           <ArchiveRow
             icon={Construction}
             label="Tipo do Andaime"
@@ -343,7 +343,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           />
           <ArchiveRow
             icon={User}
-            label="Responsavel"
+            label="Responsável"
             value={scaffold.responsible}
           />
         </ArchiveCard>
@@ -352,22 +352,22 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Calendar}
             label="Montagem"
-            value={formatDateOr(scaffold.assembly_completed_at, "Data nao registrada")}
+            value={formatDateOr(scaffold.assembly_completed_at, "Data não registrada")}
           />
           <ArchiveRow
             icon={CheckCircle2}
-            label="Primeira Liberacao"
+            label="Primeira Liberação"
             value={formatDateOr(scaffold.released_at, "Sem liberacao registrada")}
           />
           <ArchiveRow
             icon={ClipboardCheck}
-            label="Ultima Inspecao"
-            value={formatDateOr(lastInspection?.date, "Sem inspecao registrada")}
+            label="Última Inspeção"
+            value={formatDateOr(lastInspection?.date, "Sem inspeção registrada")}
           />
           <ArchiveRow
             icon={Clock}
             label="Desmontagem"
-            value={formatDateOr(scaffold.dismantled_at, "Data nao registrada")}
+            value={formatDateOr(scaffold.dismantled_at, "Data não registrada")}
           />
         </ArchiveCard>
 
@@ -375,25 +375,25 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Calendar}
             label="Data"
-            value={formatDateOr(scaffold.dismantled_at, "Data nao registrada")}
+            value={formatDateOr(scaffold.dismantled_at, "Data não registrada")}
           />
           <ArchiveRow
             icon={User}
-            label="Responsavel"
+            label="Responsável"
             value={dismantleResponsible}
           />
           <ArchiveRow icon={Wrench} label="Motivo" value={dismantleReason} />
           <ArchiveRow
             icon={FileText}
-            label="Observacoes"
+            label="Observações"
             value={dismantleObservation}
           />
         </ArchiveCard>
 
-        <ArchiveCard title="Resumo Historico" icon={FileClock}>
+        <ArchiveCard title="Resumo Histórico" icon={FileClock}>
           <ArchiveRow
             icon={ClipboardCheck}
-            label="Inspecoes"
+            label="Inspeções"
             value={String(scaffold.inspections.length)}
           />
           <ArchiveRow
@@ -414,9 +414,9 @@ export default async function AcervoDetalhePage({ params }: Props) {
         </ArchiveCard>
       </div>
 
-      <ArchiveCard title="Ultima Inspecao" icon={ClipboardCheck}>
+      <ArchiveCard title="Última Inspeção" icon={ClipboardCheck}>
         {!lastInspection ? (
-          <EmptyLine icon={ClipboardCheck} text="Nenhuma inspecao registrada." />
+          <EmptyLine icon={ClipboardCheck} text="Nenhuma inspeção registrada." />
         ) : (
           <>
             <ArchiveRow
@@ -442,12 +442,12 @@ export default async function AcervoDetalhePage({ params }: Props) {
       </ArchiveCard>
 
       <ArchiveCard
-        title="Historico de Inspecoes"
+        title="Histórico de Inspeções"
         icon={ClipboardCheck}
         extra={`${scaffold.inspections.length} registro(s)`}
       >
         {scaffold.inspections.length === 0 ? (
-          <EmptyLine icon={ClipboardCheck} text="Nenhuma inspecao registrada." />
+          <EmptyLine icon={ClipboardCheck} text="Nenhuma inspeção registrada." />
         ) : (
           <div className="divide-y divide-border">
             {scaffold.inspections.map((inspection) => (
@@ -475,12 +475,12 @@ export default async function AcervoDetalhePage({ params }: Props) {
       </ArchiveCard>
 
       <ArchiveCard
-        title="Nao Conformidades"
+        title="Não Conformidades"
         icon={AlertTriangle}
         extra={`${scaffold.nonConformities.length} registro(s)`}
       >
         {scaffold.nonConformities.length === 0 ? (
-          <EmptyLine icon={AlertTriangle} text="Nenhuma nao conformidade vinculada." />
+          <EmptyLine icon={AlertTriangle} text="Nenhuma não conformidade vinculada." />
         ) : (
           <div className="divide-y divide-border">
             {scaffold.nonConformities.map((nc) => (
@@ -581,7 +581,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         tag={scaffold.tag}
         origin={origin}
         title="CONSULTA PUBLICA"
-        helperText="Ao escanear, sera exibido o registro historico do andaime desmontado, incluindo status, validade final, inspecoes e documentacao disponivel."
+        helperText="Ao escanear, será exibido o registro histórico do andaime desmontado, incluindo status, validade final, inspecoes e documentação disponível."
       />
     </div>
   );
@@ -669,13 +669,13 @@ function LifecycleStrip({
   dismantledDate: Date | null | undefined;
 }) {
   const items = [
-    { label: "Montagem", value: formatDateOr(assemblyDate, "Nao registrada") },
-    { label: "Liberacao", value: formatDateOr(releaseDate, "Nao registrada") },
+    { label: "Montagem", value: formatDateOr(assemblyDate, "Não registrada") },
+    { label: "Liberação", value: formatDateOr(releaseDate, "Não registrada") },
     {
-      label: "Ultima Inspecao",
-      value: formatDateOr(lastInspectionDate, "Nao registrada"),
+      label: "Última Inspeção",
+      value: formatDateOr(lastInspectionDate, "Não registrada"),
     },
-    { label: "Desmontagem", value: formatDateOr(dismantledDate, "Nao registrada") },
+    { label: "Desmontagem", value: formatDateOr(dismantledDate, "Não registrada") },
   ];
 
   return (

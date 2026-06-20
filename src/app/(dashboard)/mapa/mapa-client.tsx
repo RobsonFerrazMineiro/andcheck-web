@@ -56,7 +56,7 @@ export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
           Nenhum andaime georreferenciado
         </p>
         <p className="max-w-xs text-center text-[11px] text-muted-foreground/60">
-          Cadastre ou edite andaimes informando a localizacao GPS para
+          Cadastre ou edite andaimes informando a localização GPS para
           visualiza-los no mapa.
         </p>
       </div>

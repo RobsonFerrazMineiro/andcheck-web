@@ -122,7 +122,7 @@ export function NovaInspecaoForm({
   const [signerCompany, setSignerCompany] = useState("");
   const [signerPosition, setSignerPosition] = useState("");
 
-  // Registro fotogrÃ¡fico
+  // Registro fotográfico
   const [photos, setPhotos] = useState<string[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -373,12 +373,12 @@ export function NovaInspecaoForm({
 
   const handleSubmit = async () => {
     if (!canSubmit || !selectedScaffold) return;
-    // Previne duplo clique via ref (guard extra alÃ©m do state)
+    // Previne duplo clique via ref (guard extra além do state)
     if (submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
 
-    const toastId = toast.loading("Salvando inspeÃ§Ã£o...");
+    const toastId = toast.loading("Salvando inspeção...");
     try {
       const checklist = checklistTemplate.flatMap((cat, ci) =>
         cat.items.map((item, ii) => ({
@@ -412,13 +412,13 @@ export function NovaInspecaoForm({
         })),
         checklist,
       });
-      toast.success("InspeÃ§Ã£o registrada com sucesso!", { id: toastId });
+      toast.success("Inspeção registrada com sucesso!", { id: toastId });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {
       toast.error(
         err instanceof Error
           ? err.message
-          : "NÃ£o foi possÃ­vel salvar a inspeÃ§Ã£o. Tente novamente.",
+          : "Não foi possível salvar a inspeção. Tente novamente.",
         { id: toastId },
       );
       submittingRef.current = false;
@@ -437,30 +437,30 @@ export function NovaInspecaoForm({
         </Link>
         <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
           <Link href="/inspecoes" className="hover:text-foreground">
-            InspeÃ§Ãµes
+            Inspeções
           </Link>
           <span className="mx-1.5">/</span>
-          <span className="text-foreground font-semibold">Nova InspeÃ§Ã£o</span>
+          <span className="text-foreground font-semibold">Nova Inspeção</span>
         </div>
       </div>
 
       <div className="pb-4 border-b-2 border-border">
         <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-          AndCheck EHS Â· NR-18 / NR-35 / ABNT NBR 6494
+          AndCheck EHS · NR-18 / NR-35 / ABNT NBR 6494
         </p>
         <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
-          Nova InspeÃ§Ã£o
+          Nova Inspeção
         </h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           Checklist de{" "}
-          {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens Â·
+          {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens ·
           Resultado calculado automaticamente
         </p>
       </div>
 
       <div className="bg-card border border-border shadow-sm p-5 space-y-4">
         <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
-          InformaÃ§Ãµes Gerais
+          Informações Gerais
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -477,7 +477,7 @@ export function NovaInspecaoForm({
               <SelectContent>
                 {scaffolds.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.code} â€” {s.location}
+                    {s.code} — {s.location}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -497,7 +497,7 @@ export function NovaInspecaoForm({
         </div>
         <div className="space-y-1.5">
           <Label className="text-[10px] uppercase tracking-wider font-bold">
-            Validade da liberaÃ§Ã£o
+            Validade da liberação
           </Label>
           <Select value={validityDays} onValueChange={setValidityDays}>
             <SelectTrigger className="w-40 h-8 text-[11px] rounded-md">
@@ -532,8 +532,8 @@ export function NovaInspecaoForm({
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
             <p className="text-[11px] font-bold text-red-700 uppercase tracking-wider">
-              LiberaÃ§Ã£o bloqueada â€” {criticalIssues.length} item(ns) crÃ­tico(s)
-              nÃ£o conforme(s)
+              Liberação bloqueada — {criticalIssues.length} item(ns) crítico(s)
+              não conforme(s)
             </p>
           </div>
           <ul className="space-y-1 pl-6">
@@ -579,7 +579,7 @@ export function NovaInspecaoForm({
           {autoResult !== "reprovado" && (
             <div className="ml-auto text-right">
               <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
-                VÃ¡lido atÃ©
+                Válido até
               </p>
               <p className="text-[13px] font-bold font-mono text-foreground">
                 {format(
@@ -594,7 +594,7 @@ export function NovaInspecaoForm({
 
       <div className="bg-card border border-border shadow-sm p-5 space-y-3">
         <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
-          Registro FotogrÃ¡fico
+          Registro Fotográfico
         </h3>
 
         {/* Input de arquivo oculto */}
@@ -608,7 +608,7 @@ export function NovaInspecaoForm({
           onChange={handlePhotoAdd}
         />
 
-        {/* Grid: fotos gerais + fotos de itens nÃ£o conformes */}
+        {/* Grid: fotos gerais + fotos de itens não conformes */}
         {(photos.length > 0 ||
           checklistValues.some((cat) => cat.some((v) => v.photo))) && (
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -637,7 +637,7 @@ export function NovaInspecaoForm({
               </div>
             ))}
 
-            {/* Fotos de itens nÃ£o conformes */}
+            {/* Fotos de itens não conformes */}
             {checklistTemplate.flatMap((cat, ci) =>
               cat.items.map((item, ii) => {
                 const photo = checklistValues[ci]?.[ii]?.photo;
@@ -659,7 +659,7 @@ export function NovaInspecaoForm({
                         {item.item}
                       </p>
                     </div>
-                    {/* BotÃ£o remover */}
+                    {/* Botão remover */}
                     <button
                       type="button"
                       title="Remover foto"
@@ -695,10 +695,10 @@ export function NovaInspecaoForm({
       {/* Assinatura Digital */}
       <div className="bg-card border border-border shadow-sm p-5 space-y-3">
         <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
-          ObservaÃ§Ãµes Gerais
+          Observações Gerais
         </h3>
         <Textarea
-          placeholder="Registre observaÃ§Ãµes gerais sobre a inspeÃ§Ã£o..."
+          placeholder="Registre observações gerais sobre a inspeção..."
           value={observations}
           onChange={(e) => setObservations(e.target.value)}
           className="text-[11px] rounded-md min-h-20"
@@ -937,7 +937,7 @@ export function NovaInspecaoForm({
                 ? "Preencha todos os itens"
                 : !signaturesReady
                   ? "Colete as assinaturas"
-                  : "Registrar InspeÃ§Ã£o"}
+                  : "Registrar Inspeção"}
             </>
           )}
         </button>

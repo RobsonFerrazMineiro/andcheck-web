@@ -151,7 +151,7 @@ export function NonConformityOperations({
         setModal(null);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Nao foi possivel executar a acao.");
+        setError(err instanceof Error ? err.message : "Não foi possível executar a acao.");
       }
     });
   }
@@ -191,7 +191,7 @@ export function NonConformityOperations({
             disabled={isPending}
             onClick={() => setModal("responsible")}
           >
-            <UserRound className="w-3.5 h-3.5" /> Atribuir Responsavel
+            <UserRound className="w-3.5 h-3.5" /> Atribuir Responsável
           </Button>
         )}
         {canComment && (
@@ -261,7 +261,7 @@ export function NonConformityOperations({
       </div>
 
       {modal === "responsible" && (
-        <ModalShell title="Atribuir Responsavel" onClose={() => setModal(null)}>
+        <ModalShell title="Atribuir Responsável" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
               formData.set("id", id);
@@ -474,7 +474,7 @@ export function NonConformityItemEvidenceButton({
         setError(
           err instanceof Error
             ? err.message
-            : "Nao foi possivel anexar a evidencia.",
+            : "Não foi possível anexar a evidencia.",
         );
       }
     });

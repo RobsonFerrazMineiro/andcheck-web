@@ -208,7 +208,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
           </Link>
           <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
             <Link href="/nao-conformidades" className="hover:text-foreground">
-              Nao Conformidades
+              Não Conformidades
             </Link>
             <span className="mx-1.5">/</span>
             <span className="text-foreground font-semibold font-mono">
@@ -281,7 +281,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
           />
           <DetailRow
             icon={ClipboardCheck}
-            label="Inspecao origem"
+            label="Inspeção origem"
             value={
               <Link
                 href={"/inspecoes/" + nc.originInspection.id}
@@ -306,7 +306,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         </Section>
 
         <Section title="Operacional" icon={AlertTriangle}>
-          <DetailRow icon={User} label="Responsavel" value={responsible} />
+          <DetailRow icon={User} label="Responsável" value={responsible} />
           <DetailRow
             icon={Clock}
             label="Prazo"
@@ -316,7 +316,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         </Section>
       </div>
 
-      <Section title="Descricao" icon={FileText}>
+      <Section title="Descrição" icon={FileText}>
         <div className="px-4 py-4">
           <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-wrap">
             {nc.description}
@@ -413,11 +413,11 @@ export default async function NonConformityDetailPage({ params }: Props) {
         </Section>
       )}
 
-      <Section title="Historico" icon={History}>
+      <Section title="Histórico" icon={History}>
         {nc.history.length === 0 ? (
           <div className="px-4 py-5">
             <p className="text-[11px] text-muted-foreground">
-              Nenhum historico registrado para esta NC.
+              Nenhum histórico registrado para esta NC.
             </p>
           </div>
         ) : (

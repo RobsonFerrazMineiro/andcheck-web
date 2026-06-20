@@ -65,7 +65,7 @@ export function ScaffoldActionsBar({
       return;
     }
     if (dismantleReason === "Outros" && !dismantleReasonDescription.trim()) {
-      setDismantleError("Informe a descricao do motivo.");
+      setDismantleError("Informe a descrição do motivo.");
       return;
     }
 
@@ -79,7 +79,7 @@ export function ScaffoldActionsBar({
         router.refresh();
       } catch (error) {
         setDismantleError(
-          error instanceof Error ? error.message : "Nao foi possivel desmontar.",
+          error instanceof Error ? error.message : "Não foi possível desmontar.",
         );
       }
     });
@@ -192,7 +192,7 @@ function ActionRow({
           className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-8 px-4"
         >
           <ClipboardCheck className="w-4 h-4" />
-          Nova Inspecao
+          Nova Inspeção
         </Link>
       )}
       {showDismantle && (
@@ -262,7 +262,7 @@ function DismantleDialog({
           {reason === "Outros" && (
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Descricao do motivo *
+                Descrição do motivo *
               </label>
               <textarea
                 value={reasonDescription}

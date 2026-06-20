@@ -54,7 +54,7 @@ export function UserMenu({
         className="flex items-center gap-2.5 rounded px-2 py-1 text-left transition-colors hover:bg-muted"
         aria-expanded={open}
         aria-haspopup="dialog"
-        aria-label="Abrir perfil do usuario"
+        aria-label="Abrir perfil do usuário"
       >
         <div className="hidden min-w-0 max-w-44 text-right xl:block">
           <p className="truncate text-xs font-medium leading-none">{name}</p>

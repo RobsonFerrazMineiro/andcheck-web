@@ -277,7 +277,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
       />
 
       <TechCard
-        title="Nao Conformidades Vinculadas"
+        title="Não Conformidades Vinculadas"
         icon={AlertTriangle}
         extra={
           <span className="text-[9px] text-muted-foreground font-mono">
@@ -289,13 +289,13 @@ export default async function AndaimeDetailPage({ params }: Props) {
           <div className="text-center py-8">
             <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
             <p className="text-[11px] text-muted-foreground">
-              Nenhuma nao conformidade vinculada a este andaime
+              Nenhuma não conformidade vinculada a este andaime
             </p>
           </div>
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-5 gap-3 px-4 py-2 bg-muted/40">
-              {["Codigo", "Status", "Classificacao", "Prazo", "Responsavel"].map(
+              {["Código", "Status", "Classificacao", "Prazo", "Responsável"].map(
                 (h) => (
                   <p
                     key={h}

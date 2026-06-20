@@ -39,10 +39,10 @@ export default async function WorkspaceDetailPage({
 
   const indicators = [
     { label: "Empresas", value: workspace._count.companyLinks, icon: Building2 },
-    { label: "Usuarios", value: workspace._count.users, icon: Users },
+    { label: "Usuários", value: workspace._count.users, icon: Users },
     { label: "Andaimes", value: workspace._count.scaffolds, icon: Construction },
-    { label: "Inspecoes", value: workspace._count.inspections, icon: ClipboardCheck },
-    { label: "Nao Conformidades", value: workspace._count.nonConformities, icon: ClipboardList },
+    { label: "Inspeções", value: workspace._count.inspections, icon: ClipboardCheck },
+    { label: "Não Conformidades", value: workspace._count.nonConformities, icon: ClipboardList },
     { label: "Documentos", value: workspace._count.scaffoldDocuments, icon: FileText },
   ];
 
@@ -69,14 +69,14 @@ export default async function WorkspaceDetailPage({
         <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Info label="Nome" value={workspace.name} />
-          <Info label="Codigo" value={workspace.code} mono />
+          <Info label="Código" value={workspace.code} mono />
           <Info label="Empresa proprietaria" value={workspace.ownerCompany.name} />
           <Info label="Status" value={workspace.active ? "Ativo" : "Inativo"} />
-          <Info label="Cidade / Estado" value={[workspace.city, workspace.state].filter(Boolean).join(" / ") || "Nao informado"} />
-          <Info label="Endereco" value={workspace.address ?? "Nao informado"} />
-          <Info label="Coordenadas" value={workspace.latitude === null || workspace.longitude === null ? "Nao informadas" : `${workspace.latitude.toFixed(6)}, ${workspace.longitude.toFixed(6)}`} mono />
+          <Info label="Cidade / Estado" value={[workspace.city, workspace.state].filter(Boolean).join(" / ") || "Não informado"} />
+          <Info label="Endereco" value={workspace.address ?? "Não informado"} />
+          <Info label="Coordenadas" value={workspace.latitude === null || workspace.longitude === null ? "Não informadas" : `${workspace.latitude.toFixed(6)}, ${workspace.longitude.toFixed(6)}`} mono />
           <Info label="Data de criacao" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(workspace.createdAt)} />
-          <div className="sm:col-span-2 lg:col-span-4"><Info label="Descricao" value={workspace.description ?? "Nao informada"} /></div>
+          <div className="sm:col-span-2 lg:col-span-4"><Info label="Descrição" value={workspace.description ?? "Não informada"} /></div>
         </CardContent>
       </Card>
 

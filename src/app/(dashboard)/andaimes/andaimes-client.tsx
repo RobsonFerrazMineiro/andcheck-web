@@ -70,7 +70,7 @@ export function AndaimesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS Â· GestÃ£o de Ativos
+            AndCheck EHS · Gestão de Ativos
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes
@@ -94,7 +94,7 @@ export function AndaimesClient({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
-            placeholder="Buscar por TAG, localizaÃ§Ã£o ou Ã¡rea..."
+            placeholder="Buscar por TAG, localização ou área..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-8 text-[11px] rounded-md border-border"
@@ -145,9 +145,9 @@ export function AndaimesClient({
         <div className="bg-card border border-border shadow-sm rounded-lg overflow-hidden">
           <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
             {[
-              "TAG / CÃ³digo",
+              "TAG / Código",
               "Tipo",
-              "LocalizaÃ§Ã£o",
+              "Localização",
               "Validade",
               "Status",
               "",
@@ -195,7 +195,7 @@ export function AndaimesClient({
                       {TYPE_LABELS[scaffold.type] ?? scaffold.type}
                       {scaffold.height && (
                         <span className="text-muted-foreground/40 ml-1">
-                          Â· {scaffold.height}m
+                          · {scaffold.height}m
                         </span>
                       )}
                     </p>
@@ -208,7 +208,7 @@ export function AndaimesClient({
                     <p className={`hidden md:block md:col-span-2 text-muted-foreground ${typography.code}`}>
                       {scaffold.validity_date
                         ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
-                        : "â€”"}
+                        : "—"}
                     </p>
                     <div className="hidden md:flex md:col-span-2 items-center">
                       <StatusBadge status={scaffold.status} />
@@ -226,7 +226,7 @@ export function AndaimesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) Â· Documento Controlado Â· AndCheck
+              {filtered.length} registro(s) · Documento Controlado · AndCheck
               EHS
             </p>
           </div>

@@ -221,10 +221,10 @@ export function NaoConformidadesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS Â· Controle de Tratativas
+            AndCheck EHS · Controle de Tratativas
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
-            Nao Conformidades
+            Não Conformidades
           </h1>
           <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {initialData.length} registro(s) de NC no sistema
@@ -283,7 +283,7 @@ export function NaoConformidadesClient({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
-            placeholder="Buscar por codigo, andaime, empresa ou responsavel..."
+            placeholder="Buscar por código, andaime, empresa ou responsável..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9 h-8 text-[11px] rounded-md border-border"
@@ -334,7 +334,7 @@ export function NaoConformidadesClient({
         </Select>
         <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
           <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Responsavel" />
+            <SelectValue placeholder="Responsável" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos responsaveis</SelectItem>
@@ -367,22 +367,22 @@ export function NaoConformidadesClient({
         <div className="bg-card border border-border rounded-lg p-14 text-center">
           <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
-            Nenhuma nao conformidade encontrada
+            Nenhuma não conformidade encontrada
           </p>
           <p className={`${typography.bodyMuted} text-muted-foreground/60`}>
-            As NCs geradas por inspecoes reprovadas aparecerao nesta listagem.
+            As NCs geradas por inspeções reprovadas aparecerao nesta listagem.
           </p>
         </div>
       ) : (
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <div className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
             {[
-              "Codigo",
+              "Código",
               "Data",
               "Andaime",
               "Empresa",
               "Classificacao",
-              "Responsavel",
+              "Responsável",
               "Prazo",
               "Status",
               "",
@@ -502,7 +502,7 @@ export function NaoConformidadesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) Â· Controle de tratativas Â· AndCheck
+              {filtered.length} registro(s) · Controle de tratativas · AndCheck
               EHS
             </p>
           </div>

@@ -257,12 +257,12 @@ export default async function InspectionDetailPage({ params }: Props) {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider">
-              Inspecao reprovada com item critico
+              Inspeção reprovada com item critico
             </p>
             <p className="mt-1 text-[11px] leading-relaxed">
               O resultado deste relatorio e Reprovado. Como houve falha em item
               critico, o status operacional atual do andaime e Interditado e o
-              uso permanece proibido ate correcao e nova inspecao.
+              uso permanece proibido ate correcao e nova inspeção.
             </p>
           </div>
         </div>
@@ -446,7 +446,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         {inspection.signatures.length === 0 ? (
           <div className="px-4 py-5">
             <p className="text-[11px] text-muted-foreground">
-              Nenhuma assinatura obrigatoria registrada nesta inspecao.
+              Nenhuma assinatura obrigatoria registrada nesta inspeção.
             </p>
           </div>
         ) : (
@@ -556,7 +556,7 @@ export default async function InspectionDetailPage({ params }: Props) {
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-              Nao Conformidades Geradas
+              Não Conformidades Geradas
             </p>
           </div>
           <span className="text-[9px] text-muted-foreground font-mono">
@@ -567,13 +567,13 @@ export default async function InspectionDetailPage({ params }: Props) {
           <div className="px-4 py-6 text-center">
             <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
             <p className="text-[11px] text-muted-foreground">
-              Nenhuma nao conformidade gerada por esta inspecao.
+              Nenhuma não conformidade gerada por esta inspeção.
             </p>
           </div>
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-4 gap-3 px-4 py-2 bg-muted/40">
-              {["Codigo", "Status", "Classificacao", "Prazo"].map((h) => (
+              {["Código", "Status", "Classificacao", "Prazo"].map((h) => (
                 <p
                   key={h}
                   className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"

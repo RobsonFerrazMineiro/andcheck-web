@@ -37,7 +37,7 @@ export default async function PerfilPage() {
             Meu Perfil
           </h1>
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Dados da sessao autenticada e credenciais do usuario atual.
+            Dados da sessão autenticada e credenciais do usuário atual.
           </p>
         </div>
         <Badge variant="outline" className="w-fit rounded-md border-emerald-300 bg-emerald-50 text-emerald-700">
@@ -55,7 +55,7 @@ export default async function PerfilPage() {
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <Info icon={User} label="Nome" value={profile.name} />
             <Info icon={Mail} label="E-mail" value={profile.email} />
-            <Info icon={Building2} label="Empresa do usuario" value={profile.companyName} />
+            <Info icon={Building2} label="Empresa do usuário" value={profile.companyName} />
             <Info icon={ShieldCheck} label="Perfil/RBAC" value={roleLabels.join(", ") || "Sem perfil"} />
             <Info icon={MapPin} label="Workspace atual" value={profile.workspaceName} />
             <Info icon={CheckCircle2} label="Status da sessao" value={profile.isActive ? "Ativa" : "Inativa"} />

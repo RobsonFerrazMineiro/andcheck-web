@@ -60,10 +60,10 @@ export function InspecoesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS Â· Registros TÃ©cnicos
+            AndCheck EHS · Registros Técnicos
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
-            HistÃ³rico de InspeÃ§Ãµes
+            Histórico de Inspeções
           </h1>
           <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {inspections.length} registros no sistema
@@ -75,7 +75,7 @@ export function InspecoesClient({
           className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
         >
           <Plus className="w-3.5 h-3.5" />
-          Nova InspeÃ§Ã£o
+          Nova Inspeção
           </Link>
         )}
       </div>
@@ -116,10 +116,10 @@ export function InspecoesClient({
         <div className="bg-card border border-border rounded-lg p-14 text-center">
           <ClipboardCheck className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
-            Nenhuma inspeÃ§Ã£o encontrada
+            Nenhuma inspeção encontrada
           </p>
           <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
-            Registre a primeira vistoria para iniciar o histÃ³rico
+            Registre a primeira vistoria para iniciar o histórico
           </p>
           {canCreateInspection && (
             <Link
@@ -127,7 +127,7 @@ export function InspecoesClient({
             className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
           >
             <Plus className="w-3.5 h-3.5" />
-            Nova InspeÃ§Ã£o
+            Nova Inspeção
             </Link>
           )}
         </div>
@@ -192,7 +192,7 @@ export function InspecoesClient({
                       <p className={`hidden md:block md:col-span-1 text-muted-foreground ${typography.code}`}>
                         {insp.validity_days > 0
                           ? insp.validity_days + "d"
-                          : "â€”"}
+                          : "—"}
                       </p>
                       <div className="hidden md:flex md:col-span-2 items-center">
                         <StatusBadge status={insp.result} />
@@ -211,7 +211,7 @@ export function InspecoesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) Â· Documento Controlado Â· AndCheck
+              {filtered.length} registro(s) · Documento Controlado · AndCheck
               EHS
             </p>
           </div>

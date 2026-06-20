@@ -42,7 +42,7 @@ const STATUSES: {
   },
   {
     value: "nao_conforme",
-    label: "NÃ£o Conforme",
+    label: "Não Conforme",
     icon: <XCircle className="w-3.5 h-3.5" />,
     activeClass: "bg-red-100 text-red-700 border-red-300",
     hoverClass: "hover:border-red-300",
@@ -94,7 +94,7 @@ export default function ChecklistSection({
       onChange(updated);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Nao foi possivel enviar a foto.",
+        error instanceof Error ? error.message : "Não foi possível enviar a foto.",
       );
     } finally {
       e.target.value = "";
@@ -126,7 +126,7 @@ export default function ChecklistSection({
                     className="bg-red-50 text-red-600 border-red-200 text-[9px] shrink-0 uppercase tracking-wider"
                   >
                     <AlertTriangle className="w-3 h-3 mr-1" />
-                    CrÃ­tico
+                    Crítico
                   </Badge>
                 )}
               </div>
@@ -151,11 +151,11 @@ export default function ChecklistSection({
                 ))}
               </div>
 
-              {/* Observation input â€” sÃ³ aparece se nÃ£o for "conforme" */}
+              {/* Observation input — só aparece se não for "conforme" */}
               {val.status !== "" && val.status !== "conforme" && (
                 <div className="flex items-center gap-2">
                   <Input
-                    placeholder="ObservaÃ§Ã£o sobre este item..."
+                    placeholder="Observação sobre este item..."
                     value={val.observation}
                     onChange={(e) =>
                       handleChange(idx, "observation", e.target.value)

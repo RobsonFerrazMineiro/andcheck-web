@@ -62,7 +62,7 @@ export function AuthenticatedCompanyBrand({
 
       <div className="min-w-0 max-w-36">
         <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-          Empresa do usuario
+          Empresa do usuário
         </p>
         <p className="truncate text-[11px] font-bold text-foreground">
           {company?.name ?? "AndCheck"}

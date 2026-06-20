@@ -38,7 +38,7 @@ const navItems = [
   },
   {
     path: "/nao-conformidades",
-    label: "Nao Conformidades",
+    label: "Não Conformidades",
     icon: ClipboardList,
     desc: "Controle de tratativas",
   },
@@ -46,7 +46,7 @@ const navItems = [
     path: "/acervo",
     label: "Acervo de Andaimes",
     icon: Archive,
-    desc: "Historico operacional",
+    desc: "Histórico operacional",
   },
   {
     path: "/mapa",
@@ -56,7 +56,7 @@ const navItems = [
   },
   {
     path: "/usuarios",
-    label: "Usuarios",
+    label: "Usuários",
     icon: Users,
     desc: "Acessos e perfis",
   },

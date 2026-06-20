@@ -45,13 +45,13 @@ export function DocumentPreviewModal({
 
   function handleDownload() {
     if (!downloadDocumentFile(document)) {
-      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
+      toast.error("Arquivo indisponível ou URL inválida.");
     }
   }
 
   function handleOpenInTab() {
     if (!safeOpenUrl) {
-      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
+      toast.error("Arquivo indisponível ou URL inválida.");
       return;
     }
     window.open(safeOpenUrl, "_blank", "noopener,noreferrer");
@@ -107,7 +107,7 @@ export function DocumentPreviewModal({
                   {getDocumentFileName(document)}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Este formato deve ser baixado para visualizaÃ§Ã£o.
+                  Este formato deve ser baixado para visualização.
                 </p>
               </div>
             </div>

@@ -178,7 +178,7 @@ export default async function DashboardLayout({
                   contextSwitcher?.workspaces.find(
                     (workspace) =>
                       workspace.id === contextSwitcher.selectedWorkspaceId,
-                  )?.name ?? "Nao informado"
+                  )?.name ?? "Não informado"
                 }
                 sessionStatus="Ativa"
               />

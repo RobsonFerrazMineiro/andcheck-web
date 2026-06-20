@@ -77,17 +77,17 @@ export default async function MapaPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS Â· Visualizacao Espacial
+            AndCheck EHS · Visualizacao Espacial
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {total} andaimes cadastrados Â· {comCoords} georreferenciados
+            {total} andaimes cadastrados · {comCoords} georreferenciados
             {semCoords > 0 && (
               <span className="text-amber-600">
                 {" "}
-                Â· {semCoords} sem coordenadas
+                · {semCoords} sem coordenadas
               </span>
             )}
           </p>

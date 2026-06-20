@@ -103,7 +103,7 @@ export function EmpresasClient({
         setCreating(false);
         router.refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Nao foi possivel salvar a empresa.");
+        toast.error(error instanceof Error ? error.message : "Não foi possível salvar a empresa.");
       }
     });
   }
@@ -115,7 +115,7 @@ export function EmpresasClient({
         toast.success(`Empresa ${company.active ? "desativada" : "ativada"}.`);
         router.refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Nao foi possivel alterar o status.");
+        toast.error(error instanceof Error ? error.message : "Não foi possível alterar o status.");
       }
     });
   }
@@ -140,7 +140,7 @@ export function EmpresasClient({
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi icon={Building2} label="Empresas" value={initialCompanies.length} />
         <Kpi icon={CheckCircle2} label="Ativas" value={activeCount} />
-        <Kpi icon={Users} label="Usuarios" value={totalUsers} />
+        <Kpi icon={Users} label="Usuários" value={totalUsers} />
         <Kpi icon={Factory} label="Andaimes" value={totalScaffolds} />
       </div>
 
@@ -150,7 +150,7 @@ export function EmpresasClient({
             <form action={submit} className="grid gap-4 lg:grid-cols-2">
               {formCompany && <input type="hidden" name="companyId" value={formCompany.id} />}
               <Field label="Nome" name="name" defaultValue={formCompany?.name} required />
-              <Field label="Codigo" name="code" defaultValue={formCompany?.code} placeholder="Gerado automaticamente" />
+              <Field label="Código" name="code" defaultValue={formCompany?.code} placeholder="Gerado automaticamente" />
               <SelectField label="Tipo" name="type" defaultValue={formCompany?.type === "CONTRACTOR" ? "SCAFFOLD_COMPANY" : formCompany?.type ?? "SCAFFOLD_COMPANY"} options={FORM_TYPE_OPTIONS} />
               <OptionalSelectField label="Vincular a workspace" name="workspaceId" options={workspaces.map((workspace) => [workspace.id, workspace.name])} />
               <SelectField label="Status" name="status" defaultValue={formCompany?.active === false ? "INACTIVE" : "ACTIVE"} options={[["ACTIVE", "Ativa"], ["INACTIVE", "Inativa"]]} />
@@ -160,8 +160,8 @@ export function EmpresasClient({
                 onUploadingChange={setLogoUploading}
               />
               <div className="space-y-1.5 lg:col-span-2">
-                <Label htmlFor="description">Descricao</Label>
-                <Textarea id="description" name="description" defaultValue={formCompany?.description ?? ""} placeholder="Descricao opcional" />
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea id="description" name="description" defaultValue={formCompany?.description ?? ""} placeholder="Descrição opcional" />
               </div>
               <div className="flex justify-end gap-2 lg:col-span-2">
                 <Button type="button" variant="outline" onClick={() => { setCreating(false); setEditing(null); }}>Cancelar</Button>
@@ -201,7 +201,7 @@ export function EmpresasClient({
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className={`hidden grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
-          <span>Nome</span><span>Tipo</span><span>Workspace</span><span>Usuarios</span><span>Andaimes</span><span>Status</span><span className="text-right">Acoes</span>
+          <span>Nome</span><span>Tipo</span><span>Workspace</span><span>Usuários</span><span>Andaimes</span><span>Status</span><span className="text-right">Ações</span>
         </div>
         {filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Nenhuma empresa encontrada.</div>
@@ -228,7 +228,7 @@ export function EmpresasClient({
             </div>
           </div>
         ))}
-        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">{filtered.length} registro(s) Â· Modulo administrativo</div>
+        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">{filtered.length} registro(s) · Módulo administrativo</div>
       </div>
     </div>
   );
@@ -333,7 +333,7 @@ function LogoUploadField({
     } catch (error) {
       setLogoUrl(initialLogoUrl ?? "");
       setPreviewUrl(initialLogoUrl ? getUploadedFilePreviewUrl(initialLogoUrl) : "");
-      toast.error(error instanceof Error ? error.message : "Nao foi possivel enviar a logo.");
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar a logo.");
     } finally {
       setIsUploading(false);
       onUploadingChange(false);
@@ -400,7 +400,7 @@ function SelectField({ label, name, defaultValue, options }: { label: string; na
 }
 
 function OptionalSelectField({ label, name, options }: { label: string; name: string; options: Array<[string, string]> }) {
-  return <div className="space-y-1.5"><Label>{label}</Label><Select name={name} defaultValue="none"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Nao vincular agora</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select><p className={`${typography.bodyMuted} text-muted-foreground`}>Opcional. Novos vinculos nao substituem os existentes.</p></div>;
+  return <div className="space-y-1.5"><Label>{label}</Label><Select name={name} defaultValue="none"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Não vincular agora</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select><p className={`${typography.bodyMuted} text-muted-foreground`}>Opcional. Novos vínculos não substituem os existentes.</p></div>;
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: { value: string; onValueChange: (value: string) => void; placeholder: string; options: Array<[string, string]> }) {

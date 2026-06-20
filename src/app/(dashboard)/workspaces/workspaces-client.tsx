@@ -140,7 +140,7 @@ export function WorkspacesClient({
         toast.error(
           error instanceof Error
             ? error.message
-            : "Nao foi possivel salvar o workspace.",
+            : "Não foi possível salvar o workspace.",
         );
       }
     });
@@ -158,7 +158,7 @@ export function WorkspacesClient({
         toast.error(
           error instanceof Error
             ? error.message
-            : "Nao foi possivel alterar o status.",
+            : "Não foi possível alterar o status.",
         );
       }
     });
@@ -207,7 +207,7 @@ export function WorkspacesClient({
               )}
               <Field label="Nome" name="name" defaultValue={editing?.name} required />
               <Field
-                label="Codigo"
+                label="Código"
                 name="code"
                 defaultValue={editing?.code}
                 placeholder="Gerado automaticamente"
@@ -231,7 +231,7 @@ export function WorkspacesClient({
               </div>
               <div className="space-y-3 lg:col-span-2">
                 <div>
-                  <Label>Localizacao da planta</Label>
+                  <Label>Localização da planta</Label>
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     Selecione no mapa a localizacao aproximada da planta operacional.
                   </p>
@@ -243,8 +243,8 @@ export function WorkspacesClient({
                 />
               </div>
               <div className="space-y-1.5 lg:col-span-2">
-                <Label htmlFor="description">Descricao</Label>
-                <Textarea id="description" name="description" defaultValue={editing?.description ?? ""} placeholder="Descricao opcional da planta" />
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea id="description" name="description" defaultValue={editing?.description ?? ""} placeholder="Descrição opcional da planta" />
               </div>
               <div className="flex justify-end gap-2 lg:col-span-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
@@ -266,7 +266,7 @@ export function WorkspacesClient({
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nome, codigo, cidade ou estado"
+            placeholder="Buscar por nome, código, cidade ou estado"
             className="pl-8"
           />
         </div>
@@ -286,7 +286,7 @@ export function WorkspacesClient({
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
-          <span>Nome</span><span>Codigo</span><span>Proprietaria</span><span>Cidade/Estado</span><span>Coordenadas</span><span>Status</span><span className="text-right">Acoes</span>
+          <span>Nome</span><span>Código</span><span>Proprietaria</span><span>Cidade/Estado</span><span>Coordenadas</span><span>Status</span><span className="text-right">Ações</span>
         </div>
         {filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
@@ -326,7 +326,7 @@ export function WorkspacesClient({
           ))
         )}
         <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
-          {filtered.length} registro(s) Â· Modulo administrativo
+          {filtered.length} registro(s) · Módulo administrativo
         </div>
       </div>
     </div>
@@ -339,7 +339,7 @@ function locationLabel(city: string | null, state: string | null) {
 
 function coordinatesLabel(latitude: number | null, longitude: number | null) {
   return latitude === null || longitude === null
-    ? "Nao informadas"
+    ? "Não informadas"
     : `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
 }
 

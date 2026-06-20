@@ -100,7 +100,7 @@ export function AcervoClient({
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("all");
   const [workspaceFilter, setWorkspaceFilter] = useState("all");
-  const [areaFilter, setAreaFilter] = useState("all");
+  const [areaFilter, setÁreaFilter] = useState("all");
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [hasNcFilter, setHasNcFilter] = useState("all");
@@ -173,7 +173,7 @@ export function AcervoClient({
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className={`mb-1 text-muted-foreground ${typography.pageEyebrow}`}>
-            AndCheck EHS - Historico operacional
+            AndCheck EHS - Histórico operacional
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Acervo de Andaimes
@@ -215,7 +215,7 @@ export function AcervoClient({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
           <Input
-            placeholder="Buscar por TAG, area, empresa ou workspace..."
+            placeholder="Buscar por TAG, área, empresa ou workspace..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="h-8 rounded-md border-border pl-9 text-[11px]"
@@ -248,9 +248,9 @@ export function AcervoClient({
             ))}
           </SelectContent>
         </Select>
-        <Select value={areaFilter} onValueChange={setAreaFilter}>
+        <Select value={areaFilter} onValueChange={setÁreaFilter}>
           <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <SelectValue placeholder="Area" />
+            <SelectValue placeholder="Área" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas areas</SelectItem>
@@ -301,7 +301,7 @@ export function AcervoClient({
         <div className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
           {[
             "TAG",
-            "Area",
+            "Área",
             "Empresa",
             "Workspace",
             "Status",

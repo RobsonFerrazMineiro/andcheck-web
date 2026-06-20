@@ -95,7 +95,7 @@ export default function NovoAndaimePage() {
         err instanceof Error ? err.message : "Erro ao salvar andaime.";
       setError(
         msg.includes("Unique constraint")
-          ? "JÃ¡ existe um andaime com este cÃ³digo."
+          ? "Já existe um andaime com este código."
           : msg,
       );
       setSaving(false);
@@ -104,7 +104,7 @@ export default function NovoAndaimePage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
         <Button variant="ghost" size="icon" className="w-7 h-7" asChild>
           <Link href="/andaimes">
@@ -113,7 +113,7 @@ export default function NovoAndaimePage() {
         </Button>
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-            AndCheck EHS Â· GestÃ£o de Ativos
+            AndCheck EHS · Gestão de Ativos
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Cadastro de Andaime
@@ -121,13 +121,13 @@ export default function NovoAndaimePage() {
         </div>
       </div>
 
-      {/* â”€â”€ FormulÃ¡rio â”€â”€ */}
+      {/* ── Formulário ── */}
       <div className="bg-card border border-border shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* TAG e Tipo */}
-          <FormSection title="IdentificaÃ§Ã£o">
+          <FormSection title="Identificação">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="CÃ³digo / TAG">
+              <Field label="Código / TAG">
                 <div className="flex items-center h-9 px-3 border border-border bg-muted/40">
                   <span className="text-[11px] text-muted-foreground italic">
                     Gerado automaticamente ao salvar
@@ -156,28 +156,28 @@ export default function NovoAndaimePage() {
             </div>
           </FormSection>
 
-          {/* LocalizaÃ§Ã£o */}
-          <FormSection title="LocalizaÃ§Ã£o">
+          {/* Localização */}
+          <FormSection title="Localização">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="LocalizaÃ§Ã£o *">
+              <Field label="Localização *">
                 <Input
-                  placeholder="Ex: Ãrea 5 â€“ Plataforma B"
+                  placeholder="Ex: Área 5 – Plataforma B"
                   value={form.location}
                   onChange={set("location")}
                   required
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Ãrea / Setor">
+              <Field label="Área / Setor">
                 <Input
-                  placeholder="Ex: ManutenÃ§Ã£o Industrial"
+                  placeholder="Ex: Manutenção Industrial"
                   value={form.area}
                   onChange={set("area")}
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>
             </div>
-            <Field label="GeolocalizaÃ§Ã£o (opcional)">
+            <Field label="Geolocalização (opcional)">
               <LocationPicker
                 latitude={latitude}
                 longitude={longitude}
@@ -189,8 +189,8 @@ export default function NovoAndaimePage() {
             </Field>
           </FormSection>
 
-          {/* Dados TÃ©cnicos */}
-          <FormSection title="Dados TÃ©cnicos">
+          {/* Dados Técnicos */}
+          <FormSection title="Dados Técnicos">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Field label="Altura (m) *">
                 <Input
@@ -226,7 +226,7 @@ export default function NovoAndaimePage() {
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Carga MÃ¡x. (kg)">
+              <Field label="Carga Máx. (kg)">
                 <Input
                   type="number"
                   min="0"
@@ -240,11 +240,11 @@ export default function NovoAndaimePage() {
           </FormSection>
 
           {/* Responsabilidade */}
-          <FormSection title="Responsabilidade TÃ©cnica">
+          <FormSection title="Responsabilidade Técnica">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="ResponsÃ¡vel TÃ©cnico">
+              <Field label="Responsável Técnico">
                 <Input
-                  placeholder="Nome do responsÃ¡vel"
+                  placeholder="Nome do responsável"
                   value={form.responsible}
                   onChange={set("responsible")}
                   className="rounded-md h-9 text-[12px]"
@@ -261,11 +261,11 @@ export default function NovoAndaimePage() {
             </div>
           </FormSection>
 
-          {/* ObservaÃ§Ãµes */}
-          <FormSection title="ObservaÃ§Ãµes">
-            <Field label="ObservaÃ§Ãµes gerais">
+          {/* Observações */}
+          <FormSection title="Observações">
+            <Field label="Observações gerais">
               <Textarea
-                placeholder="InformaÃ§Ãµes adicionais sobre o andaime..."
+                placeholder="Informações adicionais sobre o andaime..."
                 value={form.notes}
                 onChange={set("notes")}
                 rows={3}
@@ -278,8 +278,8 @@ export default function NovoAndaimePage() {
           <div className="bg-muted/30 border border-border px-4 py-3">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
               Status inicial:{" "}
-              <span className="font-bold text-blue-700">EM MONTAGEM</span> â€” o
-              andaime ficarÃ¡ em montagem atÃ© ser liberado apÃ³s inspeÃ§Ã£o.
+              <span className="font-bold text-blue-700">EM MONTAGEM</span> — o
+              andaime ficará em montagem até ser liberado após inspeção.
             </p>
           </div>
 
@@ -312,15 +312,15 @@ export default function NovoAndaimePage() {
         </form>
       </div>
 
-      {/* RodapÃ© normativo */}
+      {/* Rodapé normativo */}
       <p className="text-[8px] text-muted-foreground/30 uppercase tracking-widest text-right">
-        Conforme NR-18 Â· NBR 6494 Â· AndCheck EHS Â· Documento Controlado
+        Conforme NR-18 · NBR 6494 · AndCheck EHS · Documento Controlado
       </p>
     </div>
   );
 }
 
-// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Sub-components ─────────────────────────────────────────
 
 function FormSection({
   title,

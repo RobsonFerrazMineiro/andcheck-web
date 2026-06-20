@@ -59,7 +59,7 @@ export default async function DashboardPage() {
 
   const liberados = scaffolds.filter((s) => s.status === "liberado").length;
   const emMontagem = scaffolds.filter((s) => s.status === "em_montagem").length;
-  const pendenteLiberacao = scaffolds.filter(
+  const pendenteLiberação = scaffolds.filter(
     (s) => s.status === "pendente_liberacao",
   ).length;
   const reprovados = scaffolds.filter((s) =>
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS Â· Painel Operacional
+            AndCheck EHS · Painel Operacional
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
               className={`inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-foreground hover:bg-muted ${typography.action}`}
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
-              Nova InspeÃ§Ã£o
+              Nova Inspeção
             </Link>
           )}
         </div>
@@ -125,15 +125,15 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={Wrench}
           theme="blue"
-          hint="Aguardando conclusÃ£o"
+          hint="Aguardando conclusão"
         />
         <KpiCard
-          label="Pend. LiberaÃ§Ã£o"
-          value={pendenteLiberacao}
+          label="Pend. Liberação"
+          value={pendenteLiberação}
           total={scaffolds.length}
           icon={Clock}
           theme="amber"
-          hint="Aguardando inspeÃ§Ã£o"
+          hint="Aguardando inspeção"
         />
         <KpiCard
           label="Reprov. / Interdit."
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={ShieldOff}
           theme="red"
-          hint="AÃ§Ã£o corretiva"
+          hint="Ação corretiva"
         />
         <KpiCard
           label="Vence em 3 dias"
@@ -149,18 +149,18 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={AlertTriangle}
           theme="orange"
-          hint="Requer renovaÃ§Ã£o"
+          hint="Requer renovação"
         />
       </div>
 
-      {/* Indicadores historicos */}
+      {/* Indicadores históricos */}
       <section className="space-y-3">
         <div>
           <p className={`${typography.sectionLabel} text-muted-foreground`}>
-            Indicadores Historicos
+            Indicadores Históricos
           </p>
           <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
-            Visao gerencial baseada em andaimes desmontados, inspecoes e tratativas.
+            Visão gerencial baseada em andaimes desmontados, inspeções e tratativas.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
           <ExecutiveKpiCard
             label="Taxa de Aprovacao"
             value={`${historical.approvalRate}%`}
-            description="Inspecoes aprovadas sobre o total de inspecoes."
+            description="Inspeções aprovadas sobre o total de inspecoes."
             icon={TrendingUp}
             theme="green"
           />
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
           />
         )}
         <RankingPanel
-          title="Areas com Mais Andaimes"
+          title="Áreas com Mais Andaimes"
           subtitle="Andaimes criados"
           description="Comparativo entre areas do workspace"
           icon={MapPinned}
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
                     </p>
                     <div className="min-w-0">
                       <p className={`${typography.bodyMuted} truncate text-muted-foreground`}>
-                        {s.location} Â· {s.area}
+                        {s.location} · {s.area}
                       </p>
                       {showResponsibleCompany && (
                         <p className={`mt-0.5 truncate text-muted-foreground/70 ${typography.metaStrong}`}>
@@ -274,7 +274,7 @@ export default async function DashboardPage() {
 
         <div>
           <PanelBlock
-            title="Ultimas Movimentacoes Operacionais"
+            title="Últimas Movimentações Operacionais"
             subtitle={operationalMovements.length + " eventos"}
             icon={FileText}
           >
@@ -339,12 +339,12 @@ interface KpiCardProps {
 }
 
 function formatDays(value: number | null) {
-  if (value === null) return "Nao calculado";
+  if (value === null) return "Não calculado";
   return value === 1 ? "1 dia" : `${value} dias`;
 }
 
 function formatDecimalDays(value: number | null) {
-  if (value === null) return "Nao calculado";
+  if (value === null) return "Não calculado";
   const formatted = value.toLocaleString("pt-BR", {
     maximumFractionDigits: 1,
     minimumFractionDigits: value % 1 === 0 ? 0 : 1,
@@ -442,7 +442,7 @@ function RankingPanel({
         <div className="px-4 py-8 text-center">
           <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground/25" />
           <p className={`mt-2 text-muted-foreground ${typography.emptyState}`}>
-            Sem dados historicos
+            Sem dados históricos
           </p>
         </div>
       ) : (
@@ -616,7 +616,7 @@ function PanelBlock({
           </span>
           {subtitle && (
             <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
-              Â· {subtitle}
+              · {subtitle}
             </span>
           )}
         </div>

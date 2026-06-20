@@ -156,16 +156,16 @@ export function UsuariosClient({
 
   function handleCreateUser(formData: FormData) {
     startTransition(async () => {
-      const toastId = toast.loading("Criando usuario...");
+      const toastId = toast.loading("Criando usuário...");
       try {
         await createUser(formData);
-        toast.success("Usuario criado com senha temporaria andcheck@2025.", {
+        toast.success("Usuário criado com senha temporária andcheck@2025.", {
           id: toastId,
         });
         setShowForm(false);
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Erro ao criar usuario.",
+          error instanceof Error ? error.message : "Erro ao criar usuário.",
           { id: toastId },
         );
       }
@@ -174,14 +174,14 @@ export function UsuariosClient({
 
   function handleUpdateUser(formData: FormData) {
     startTransition(async () => {
-      const toastId = toast.loading("Atualizando usuario...");
+      const toastId = toast.loading("Atualizando usuário...");
       try {
         await updateUser(formData);
-        toast.success("Usuario atualizado.", { id: toastId });
+        toast.success("Usuário atualizado.", { id: toastId });
         setEditingUser(null);
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Erro ao atualizar usuario.",
+          error instanceof Error ? error.message : "Erro ao atualizar usuário.",
           { id: toastId },
         );
       }
@@ -192,26 +192,26 @@ export function UsuariosClient({
     startTransition(async () => {
       try {
         await setUserActive(userId, isActive);
-        toast.success(isActive ? "Usuario ativado." : "Usuario desativado.");
+        toast.success(isActive ? "Usuário ativado." : "Usuário desativado.");
       } catch {
-        toast.error("Nao foi possivel alterar o status.");
+        toast.error("Não foi possível alterar o status.");
       }
     });
   }
 
   function handleDelete(user: UserRow) {
     const confirmed = window.confirm(
-      `Excluir definitivamente o usuario ${user.name}?`,
+      `Excluir definitivamente o usuário ${user.name}?`,
     );
     if (!confirmed) return;
 
     startTransition(async () => {
       try {
         await deleteUser(user.id);
-        toast.success("Usuario excluido.");
+        toast.success("Usuário excluido.");
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Nao foi possivel excluir.",
+          error instanceof Error ? error.message : "Não foi possível excluir.",
         );
       }
     });
@@ -222,13 +222,13 @@ export function UsuariosClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS Â· Administracao
+            AndCheck EHS · Administracao
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
-            Usuarios
+            Usuários
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {activeCount} ativos Â· {users.length} total
+            {activeCount} ativos · {users.length} total
           </p>
         </div>
         <button
@@ -240,7 +240,7 @@ export function UsuariosClient({
           className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
         >
           <UserPlus className="w-3.5 h-3.5" />
-          Novo Usuario
+          Novo Usuário
         </button>
       </div>
 
@@ -274,7 +274,7 @@ export function UsuariosClient({
           <div className="flex items-center gap-2 border-b border-border pb-2">
             <Plus className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className="text-[10px] font-bold uppercase tracking-widest">
-              {editingUser ? "Edicao de Usuario" : "Cadastro de Usuario"}
+              {editingUser ? "Edição de Usuário" : "Cadastro de Usuário"}
             </p>
           </div>
 
@@ -374,7 +374,7 @@ export function UsuariosClient({
               className="inline-flex items-center gap-2 h-8 rounded-md px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
             >
               {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              {editingUser ? "Atualizar Usuario" : "Salvar Usuario"}
+              {editingUser ? "Atualizar Usuário" : "Salvar Usuário"}
             </button>
           </div>
         </form>
@@ -410,7 +410,7 @@ export function UsuariosClient({
 
       <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
-          {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Acoes"].map(
+          {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Ações"].map(
             (header) => (
               <p
                 key={header}
@@ -426,7 +426,7 @@ export function UsuariosClient({
           <div className="text-center py-12">
             <Users className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
             <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
-              Nenhum usuario encontrado
+              Nenhum usuário encontrado
             </p>
           </div>
         ) : (
@@ -485,8 +485,8 @@ export function UsuariosClient({
                     <button
                       type="button"
                       disabled={isPending}
-                      title="Editar usuario"
-                      aria-label={`Editar usuario ${user.name}`}
+                      title="Editar usuário"
+                      aria-label={`Editar usuário ${user.name}`}
                       onClick={() => {
                         setShowForm(false);
                         setEditingUser(user);
@@ -501,15 +501,15 @@ export function UsuariosClient({
                       onClick={() => handleStatus(user.id, !user.is_active)}
                       aria-label={
                         user.is_active
-                          ? `Desativar usuario ${user.name}`
-                          : `Ativar usuario ${user.name}`
+                          ? `Desativar usuário ${user.name}`
+                          : `Ativar usuário ${user.name}`
                       }
                       title={
                         isCurrentUser
-                          ? "Nao e permitido desativar o proprio usuario."
+                          ? "Não é permitido desativar o proprio usuário."
                           : user.is_active
-                            ? "Desativar usuario"
-                            : "Ativar usuario"
+                            ? "Desativar usuário"
+                            : "Ativar usuário"
                       }
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                     >
@@ -519,14 +519,14 @@ export function UsuariosClient({
                       type="button"
                       disabled={isPending || !canDeleteThisUser}
                       onClick={() => handleDelete(user)}
-                      aria-label={`Excluir usuario ${user.name}`}
+                      aria-label={`Excluir usuário ${user.name}`}
                       title={
                         isCurrentUser
-                          ? "Nao e permitido excluir o proprio usuario."
+                          ? "Não é permitido excluir o proprio usuário."
                           : isProtectedAdmin
-                            ? "Nao e permitido excluir administradores."
+                            ? "Não é permitido excluir administradores."
                             : !canDeleteUsers
-                              ? "Voce nao tem permissao para excluir usuarios."
+                              ? "Você não tem permissão para excluir usuários."
                               : undefined
                       }
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
@@ -542,7 +542,7 @@ export function UsuariosClient({
 
         <div className="px-4 py-2 bg-muted/30 border-t border-border">
           <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
-            {filtered.length} registro(s) Â· Modulo de usuarios Â· AndCheck EHS
+            {filtered.length} registro(s) · Módulo de usuários · AndCheck EHS
           </p>
         </div>
       </div>

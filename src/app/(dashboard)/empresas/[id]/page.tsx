@@ -20,9 +20,9 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
   if (!company) notFound();
 
   const indicators = [
-    { label: "Usuarios", value: company._count.users, icon: Users },
+    { label: "Usuários", value: company._count.users, icon: Users },
     { label: "Andaimes", value: company._count.scaffolds, icon: Construction },
-    { label: "Inspecoes", value: company._count.inspections, icon: ClipboardCheck },
+    { label: "Inspeções", value: company._count.inspections, icon: ClipboardCheck },
     { label: "NCs", value: company._count.nonConformities, icon: ClipboardList },
   ];
 
@@ -49,7 +49,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
             <Info label="Tipo" value={TYPE_LABELS[company.type]} />
             <Info label="Status" value={company.active ? "Ativa" : "Inativa"} />
             <Info label="Data de criacao" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />
-            <div className="sm:col-span-2"><Info label="Descricao" value={company.description ?? "Nao informada"} /></div>
+            <div className="sm:col-span-2"><Info label="Descrição" value={company.description ?? "Não informada"} /></div>
           </CardContent>
         </Card>
 
@@ -67,7 +67,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
               {indicators.map((indicator) => <div key={indicator.label} className="border bg-muted/20 p-2"><span className="text-muted-foreground">{indicator.label}:</span> <strong className="font-mono">{indicator.value}</strong></div>)}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              {indicators.map((indicator) => <Button key={indicator.label} variant="outline" disabled className="justify-start"><indicator.icon /> {indicator.label === "NCs" ? "Nao Conformidades" : indicator.label}</Button>)}
+              {indicators.map((indicator) => <Button key={indicator.label} variant="outline" disabled className="justify-start"><indicator.icon /> {indicator.label === "NCs" ? "Não Conformidades" : indicator.label}</Button>)}
             </div>
             <p className="text-[10px] text-muted-foreground">Atalhos preparados para integracao administrativa futura.</p>
           </CardContent>
