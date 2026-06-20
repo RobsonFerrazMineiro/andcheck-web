@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createCompany, setCompanyActive, updateCompany } from "@/lib/actions/company-actions";
+import { surface, typography } from "@/lib/design-system";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 import { Building2, CheckCircle2, Eye, Factory, ImageIcon, Loader2, Pencil, Plus, Power, Search, Upload, Users, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -125,9 +126,9 @@ export function EmpresasClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Administracao</p>
-          <h1 className="text-2xl font-bold tracking-tight">Gestao de Empresas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Cadastro, vinculo operacional e status das empresas.</p>
+          <p className={`${typography.pageEyebrow} text-muted-foreground`}>Administracao</p>
+          <h1 className={`${typography.pageTitle} text-foreground`}>Gestao de Empresas</h1>
+          <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>Cadastro, vinculo operacional e status das empresas.</p>
         </div>
         {canManage && (
           <Button onClick={() => { setEditing(null); setCreating((value) => !value); }} disabled={isPending}>
@@ -199,7 +200,7 @@ export function EmpresasClient({
       </div>
 
       <div className="overflow-hidden border border-border bg-card">
-        <div className="hidden grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] gap-4 border-b bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground lg:grid">
+        <div className={`hidden grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
           <span>Nome</span><span>Tipo</span><span>Workspace</span><span>Usuarios</span><span>Andaimes</span><span>Status</span><span className="text-right">Acoes</span>
         </div>
         {filtered.length === 0 ? (
@@ -210,15 +211,15 @@ export function EmpresasClient({
               <div className="flex min-w-0 items-center gap-2">
                 <CompanyLogo name={company.name} logoUrl={company.logoUrl} size="sm" />
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold">{company.name}</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">{company.code}</p>
+                  <p className={`truncate text-foreground ${typography.bodyStrong}`}>{company.name}</p>
+                  <p className={`text-muted-foreground ${typography.codeMuted}`}>{company.code}</p>
                 </div>
               </div>
             </div>
-            <Badge variant="outline" className={`hidden w-fit rounded-none text-[9px] lg:inline-flex ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
-            <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
-            <p className="hidden font-mono text-xs lg:block">{company.users}</p>
-            <p className="hidden font-mono text-xs lg:block">{company.scaffolds}</p>
+            <Badge variant="outline" className={`hidden w-fit rounded-none lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
+            <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
+            <p className={`hidden lg:block ${typography.code}`}>{company.users}</p>
+            <p className={`hidden lg:block ${typography.code}`}>{company.scaffolds}</p>
             <StatusBadge active={company.active} />
             <div className="flex justify-end gap-1">
               <Button asChild variant="outline" size="icon-sm" title="Visualizar"><Link href={`/empresas/${company.id}`}><Eye /></Link></Button>
@@ -234,7 +235,7 @@ export function EmpresasClient({
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
-  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-1 font-mono text-2xl font-bold">{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
+  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
 }
 
 function Field({ label, name, defaultValue, placeholder, required }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean }) {
@@ -274,7 +275,7 @@ function CompanyLogo({
   }
 
   return (
-    <div className={`${dimensions} flex shrink-0 items-center justify-center bg-primary text-[10px] font-bold tracking-wide text-primary-foreground`}>
+    <div className={`${dimensions} flex shrink-0 items-center justify-center bg-primary text-primary-foreground ${typography.action}`}>
       {getInitials(name) || "AC"}
     </div>
   );
@@ -373,7 +374,7 @@ function LogoUploadField({
             onChange={handleFileChange}
             disabled={isUploading}
           />
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className={`mt-1 text-muted-foreground ${typography.bodyMuted}`}>
             PNG, JPG ou WEBP ate 2 MB.
           </p>
         </div>
@@ -399,7 +400,7 @@ function SelectField({ label, name, defaultValue, options }: { label: string; na
 }
 
 function OptionalSelectField({ label, name, options }: { label: string; name: string; options: Array<[string, string]> }) {
-  return <div className="space-y-1.5"><Label>{label}</Label><Select name={name} defaultValue="none"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Nao vincular agora</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select><p className="text-[10px] text-muted-foreground">Opcional. Novos vinculos nao substituem os existentes.</p></div>;
+  return <div className="space-y-1.5"><Label>{label}</Label><Select name={name} defaultValue="none"><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Nao vincular agora</SelectItem>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select><p className={`${typography.bodyMuted} text-muted-foreground`}>Opcional. Novos vinculos nao substituem os existentes.</p></div>;
 }
 
 function FilterSelect({ value, onValueChange, placeholder, options }: { value: string; onValueChange: (value: string) => void; placeholder: string; options: Array<[string, string]> }) {
@@ -412,14 +413,14 @@ function TypeFilterButton({ active, label, count, onClick }: { active: boolean; 
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide transition-colors ${
+      className={`inline-flex items-center gap-2 border px-3 py-1.5 transition-colors ${typography.action} ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
       {label}
-      <span className={`font-mono text-[9px] ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+      <span className={`${typography.codeMuted} ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
         {count}
       </span>
     </button>
@@ -427,5 +428,5 @@ function TypeFilterButton({ active, label, count, onClick }: { active: boolean; 
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 text-[10px] font-bold ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativa" : "Inativa"}</span>;
+  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativa" : "Inativa"}</span>;
 }

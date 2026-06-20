@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { surface, typography } from "@/lib/design-system";
 
 type AuditRow = {
   id: string;
@@ -501,7 +502,7 @@ function ActionBadge({ row }: { row: AuditRow }) {
     <Badge
       variant="outline"
       title={meta.label}
-      className={`max-w-full rounded-none px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${TONE_STYLES[meta.tone]}`}
+      className={`max-w-full rounded-none px-2 py-0.5 ${typography.badge} ${TONE_STYLES[meta.tone]}`}
     >
       <span className="block truncate">{meta.label}</span>
     </Badge>
@@ -514,12 +515,12 @@ function EntityBadge({ row }: { row: AuditRow }) {
     <div className="flex flex-wrap items-center gap-2">
       <Badge
         variant="outline"
-        className="inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-slate-700"
+        className={`inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-2 py-0.5 text-slate-700 ${typography.badge}`}
       >
         <Icon className="size-3" />
         {ENTITY_BADGE_LABELS[row.entityType] ?? labelEntity(row.entityType).toUpperCase()}
       </Badge>
-      <span className="font-mono text-[11px] font-semibold text-foreground">
+      <span className={`text-foreground ${typography.code}`}>
         {row.entityLabel ?? row.entityId ?? "-"}
       </span>
     </div>
@@ -588,13 +589,13 @@ export function AuditoriaClient({
     <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
             AndCheck EHS · Rastreabilidade
           </p>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Auditoria
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className={`mt-0.5 text-muted-foreground ${typography.sectionDescription}`}>
             {total} evento(s) registrados
           </p>
         </div>
@@ -602,14 +603,14 @@ export function AuditoriaClient({
           <button
             type="button"
             onClick={() => exportRowsToCsv(exportRows)}
-            className="inline-flex h-8 items-center gap-2 border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+            className={`inline-flex h-8 items-center gap-2 border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
           >
             <Download className="h-3.5 w-3.5" />
             Exportar CSV
           </button>
           <div className="flex h-8 items-center gap-2 border border-border bg-card px-3">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <span className={`${typography.action} text-muted-foreground`}>
               Log Imutavel
             </span>
           </div>
@@ -687,7 +688,7 @@ export function AuditoriaClient({
       <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
         <div className="overflow-x-auto">
           <div className="min-w-[1180px]">
-            <div className={`grid ${AUDIT_TABLE_GRID} gap-3 px-4 py-2.5 bg-primary border-b border-border`}>
+            <div className={`grid ${AUDIT_TABLE_GRID} gap-3 border-b border-border ${surface.tableHeader}`}>
               {[
                 "Data/Hora",
                 "Usuario",
@@ -699,7 +700,7 @@ export function AuditoriaClient({
               ].map((header) => (
                 <p
                   key={header}
-                  className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
+                  className="text-primary-foreground/60"
                 >
                   {header}
                 </p>
@@ -709,7 +710,7 @@ export function AuditoriaClient({
             {rows.length === 0 ? (
               <div className="text-center py-12">
                 <FileClock className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
-                <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+                <p className={`text-muted-foreground ${typography.emptyState}`}>
                   Nenhum evento encontrado
                 </p>
               </div>
@@ -725,25 +726,25 @@ export function AuditoriaClient({
                       (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                     }
                   >
-                    <p className="min-w-0 text-[11px] font-mono text-muted-foreground">
+                    <p className={`min-w-0 text-muted-foreground ${typography.code}`}>
                       {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
                     </p>
-                    <p className="min-w-0 truncate text-[11px] font-semibold text-foreground">
+                    <p className={`min-w-0 truncate text-foreground ${typography.bodyStrong}`}>
                       {row.userName ?? "Sistema"}
                     </p>
-                    <p className="min-w-0 truncate text-[10px] text-muted-foreground font-mono">
+                    <p className={`min-w-0 truncate text-muted-foreground ${typography.codeMuted}`}>
                       {row.userRole ?? "-"}
                     </p>
                     <div className="min-w-0">
                       <ActionBadge row={row} />
                     </div>
-                    <p className="min-w-0 truncate text-[10px] text-muted-foreground font-mono">
+                    <p className={`min-w-0 truncate text-muted-foreground ${typography.codeMuted}`}>
                       {entityDisplay(row)}
                     </p>
-                    <p className="min-w-0 truncate text-[11px] text-foreground">
+                    <p className={`min-w-0 truncate text-foreground ${typography.sectionDescription}`}>
                       {friendlyDescription(row)}
                     </p>
-                    <p className="min-w-0 truncate text-[10px] text-muted-foreground">
+                    <p className={`min-w-0 truncate text-muted-foreground ${typography.bodyMuted}`}>
                       {companyDisplay(row)}
                     </p>
                   </button>
@@ -754,7 +755,7 @@ export function AuditoriaClient({
         </div>
 
         <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-t border-border">
-          <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest">
+          <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
             Pagina {page} de {totalPages}
           </p>
           <div className="flex items-center gap-2">
@@ -781,24 +782,24 @@ export function AuditoriaClient({
           <div className="bg-card border border-border shadow-xl w-full max-w-5xl max-h-[88vh] overflow-auto">
             <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border bg-primary">
               <div>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/50">
+                <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
                   Evento de Auditoria
                 </p>
-                <h2 className="text-[15px] font-bold text-primary-foreground mt-1">
+                <h2 className="mt-1 text-[15px] font-bold text-primary-foreground">
                   {friendlyDescription(selected)}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="h-7 px-3 border border-primary-foreground/20 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70"
+                className={`h-7 border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
               >
                 Fechar
               </button>
             </div>
 
             <div className="p-5 border-b border-border">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              <p className={`mb-3 text-muted-foreground ${typography.action}`}>
                 Resumo
               </p>
               <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -830,7 +831,7 @@ export function AuditoriaClient({
             </div>
 
             <div className="p-5 border-b border-border">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              <p className={`mb-3 text-muted-foreground ${typography.action}`}>
                 Alteracoes
               </p>
               <div className="overflow-x-auto border border-border">

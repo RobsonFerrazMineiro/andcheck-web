@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { surface, typography } from "@/lib/design-system";
 
 const TYPE_LABELS: Record<string, string> = {
   tubular: "Tubular",
@@ -68,20 +69,20 @@ export function AndaimesClient({
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
             AndCheck EHS · Gestão de Ativos
           </p>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {scaffolds.length} unidades cadastradas
           </p>
         </div>
         {canCreateScaffold && (
           <Link
             href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+            className={`inline-flex h-8 shrink-0 items-center gap-1.5 bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
           >
             <Plus className="w-3.5 h-3.5" />
             Cadastrar Andaime
@@ -116,7 +117,7 @@ export function AndaimesClient({
       </div>
 
       {filtered.length !== scaffolds.length && (
-        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+        <p className={`${typography.panelSubtitle} text-muted-foreground`}>
           {filtered.length} resultado(s) filtrado(s)
         </p>
       )}
@@ -124,16 +125,16 @@ export function AndaimesClient({
       {filtered.length === 0 ? (
         <div className="bg-card border border-border p-14 text-center">
           <Construction className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+          <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhum andaime encontrado
           </p>
-          <p className="text-[10px] text-muted-foreground/60 mb-4">
+          <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
             Cadastre o primeiro ativo para iniciar o controle
           </p>
           {canCreateScaffold && (
             <Link
               href="/andaimes/novo"
-              className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
+              className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground ${typography.action}`}
             >
               <Plus className="w-3.5 h-3.5" />
               Cadastrar
@@ -142,7 +143,7 @@ export function AndaimesClient({
         </div>
       ) : (
         <div className="bg-card border border-border shadow-sm overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+          <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
             {[
               "TAG / Código",
               "Tipo",
@@ -154,7 +155,7 @@ export function AndaimesClient({
               <p
                 key={i}
                 className={
-                  "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                  "text-primary-foreground/60 " +
                   (i === 0
                     ? "col-span-2"
                     : i === 1
@@ -187,10 +188,10 @@ export function AndaimesClient({
                     <Construction className="w-3.5 h-3.5 text-primary/40" />
                   </div>
                   <div className="flex-1 md:contents">
-                    <p className="md:col-span-2 font-bold text-[12px] font-mono text-foreground">
+                    <p className={`md:col-span-2 text-foreground ${typography.code}`}>
                       {scaffold.code}
                     </p>
-                    <p className="md:col-span-2 text-[11px] text-muted-foreground">
+                    <p className={`md:col-span-2 text-muted-foreground ${typography.sectionDescription}`}>
                       {TYPE_LABELS[scaffold.type] ?? scaffold.type}
                       {scaffold.height && (
                         <span className="text-muted-foreground/40 ml-1">
@@ -200,11 +201,11 @@ export function AndaimesClient({
                     </p>
                     <div className="md:col-span-3 flex items-center gap-1">
                       <MapPin className="w-3 h-3 text-muted-foreground/30 shrink-0 hidden md:block" />
-                      <p className="text-[11px] text-muted-foreground truncate">
+                      <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
                         {scaffold.location}
                       </p>
                     </div>
-                    <p className="hidden md:block md:col-span-2 text-[11px] text-muted-foreground font-mono">
+                    <p className={`hidden md:block md:col-span-2 text-muted-foreground ${typography.code}`}>
                       {scaffold.validity_date
                         ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
                         : "—"}
@@ -224,7 +225,7 @@ export function AndaimesClient({
             ))}
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
               {filtered.length} registro(s) · Documento Controlado · AndCheck
               EHS
             </p>

@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { surface, typography } from "@/lib/design-system";
 
 export type ArchiveScaffoldRow = {
   id: string;
@@ -56,10 +57,10 @@ function Kpi({
     <div className={`border border-l-4 bg-card p-3 ${className}`}>
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`${typography.sectionLabel} text-muted-foreground`}>
             {label}
           </p>
-          <p className="mt-1 font-mono text-2xl font-bold text-foreground">
+          <p className={`mt-1 text-foreground ${typography.kpiValue}`}>
             {value}
           </p>
         </div>
@@ -83,7 +84,7 @@ function CountBadge({
   return (
     <Badge
       variant="outline"
-      className={`inline-flex w-fit items-center gap-1 rounded-none px-1.5 py-0.5 font-mono text-[9px] font-bold ${className}`}
+      className={`inline-flex w-fit items-center gap-1 rounded-none px-1.5 py-0.5 ${typography.badge} ${className}`}
     >
       <Icon className="size-2.5" />
       {value} {label}
@@ -171,13 +172,13 @@ export function AcervoClient({
     <div className="flex min-w-0 flex-col gap-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`mb-1 text-muted-foreground ${typography.pageEyebrow}`}>
             AndCheck EHS - Historico operacional
           </p>
-          <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Acervo de Andaimes
           </h1>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className={`mt-0.5 text-muted-foreground ${typography.sectionDescription}`}>
             Consulta historica de andaimes desmontados.
           </p>
         </div>
@@ -297,7 +298,7 @@ export function AcervoClient({
       </div>
 
       <div className="min-w-0 overflow-hidden border border-border bg-card shadow-sm">
-        <div className="hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border bg-primary px-4 py-2.5 xl:grid">
+        <div className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
           {[
             "TAG",
             "Area",
@@ -311,7 +312,7 @@ export function AcervoClient({
           ].map((header, index) => (
             <p
               key={header || `actions-${index}`}
-              className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
+              className="text-primary-foreground/60"
             >
               {header}
             </p>
@@ -322,10 +323,10 @@ export function AcervoClient({
             <div className="mb-3 flex size-12 items-center justify-center border border-border bg-muted/30">
               <Archive className="size-6 text-muted-foreground/40" />
             </div>
-            <p className="mb-1 text-[12px] font-semibold uppercase tracking-wide text-foreground">
+            <p className={`mb-1 text-foreground ${typography.emptyState}`}>
               Nenhum andaime desmontado encontrado
             </p>
-            <p className="max-w-sm text-[11px] leading-relaxed text-muted-foreground">
+            <p className={`max-w-sm leading-relaxed text-muted-foreground ${typography.sectionDescription}`}>
               Os andaimes desmontados serao armazenados automaticamente neste
               acervo para consulta historica.
             </p>
@@ -348,22 +349,22 @@ export function AcervoClient({
                     <Archive className="size-3.5 text-primary/40" />
                   </div>
                   <div className="min-w-0 flex-1 xl:contents">
-                    <p className="font-mono text-[12px] font-bold text-foreground">
+                    <p className={`text-foreground ${typography.code}`}>
                       {row.code}
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className={`${typography.sectionDescription} text-muted-foreground`}>
                       {row.area || "-"}
                     </p>
-                    <p className="hidden truncate text-[11px] text-muted-foreground xl:block">
+                    <p className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}>
                       {row.companyName || "-"}
                     </p>
-                    <p className="hidden truncate text-[11px] text-muted-foreground xl:block">
+                    <p className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}>
                       {row.workspaceName || "-"}
                     </p>
                     <div className="hidden xl:flex xl:items-center">
                       <StatusBadge status="desmontado" />
                     </div>
-                    <p className="hidden font-mono text-[11px] text-muted-foreground xl:block">
+                    <p className={`hidden text-muted-foreground xl:block ${typography.code}`}>
                       {formatDate(row.dismantledAt)}
                     </p>
                     <div className="hidden xl:flex xl:items-center">
@@ -394,7 +395,7 @@ export function AcervoClient({
             ))}
           </div>
         )}
-        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">
+        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
           {filtered.length} registro(s) - Acervo de andaimes
         </div>
       </div>

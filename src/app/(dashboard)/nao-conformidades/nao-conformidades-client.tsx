@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { surface, typography } from "@/lib/design-system";
 
 export type NonConformityRow = {
   id: string;
@@ -109,7 +110,7 @@ function Badge({
   return (
     <span
       className={
-        "inline-flex items-center border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
+        `inline-flex items-center border px-2 py-0.5 ${typography.badge} ` +
         (styles[value] ?? "bg-slate-50 text-slate-600 border-slate-300")
       }
     >
@@ -219,13 +220,13 @@ export function NaoConformidadesClient({
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
             AndCheck EHS · Controle de Tratativas
           </p>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Nao Conformidades
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {initialData.length} registro(s) de NC no sistema
           </p>
         </div>
@@ -268,10 +269,10 @@ export function NaoConformidadesClient({
               "border border-l-4 p-3 text-center " + card.bg + " " + card.bar
             }
           >
-            <p className={"text-[26px] font-black font-mono " + card.color}>
+            <p className={`${typography.operationalValue} ${card.color}`}>
               {card.value}
             </p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className={`${typography.sectionLabel} text-muted-foreground`}>
               {card.label}
             </p>
           </div>
@@ -357,7 +358,7 @@ export function NaoConformidadesClient({
       </div>
 
       {filtered.length !== initialData.length && (
-        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+        <p className={`${typography.panelSubtitle} text-muted-foreground`}>
           {filtered.length} resultado(s) filtrado(s)
         </p>
       )}
@@ -365,16 +366,16 @@ export function NaoConformidadesClient({
       {filtered.length === 0 ? (
         <div className="bg-card border border-border p-14 text-center">
           <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+          <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhuma nao conformidade encontrada
           </p>
-          <p className="text-[10px] text-muted-foreground/60">
+          <p className={`${typography.bodyMuted} text-muted-foreground/60`}>
             As NCs geradas por inspecoes reprovadas aparecerao nesta listagem.
           </p>
         </div>
       ) : (
         <div className="bg-card border border-border shadow-sm overflow-hidden">
-          <div className="hidden xl:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+          <div className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
             {[
               "Codigo",
               "Data",
@@ -389,7 +390,7 @@ export function NaoConformidadesClient({
               <p
                 key={i}
                 className={
-                  "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                  "text-primary-foreground/60 " +
                   (i === 0
                     ? "col-span-1"
                     : i === 1
@@ -433,24 +434,24 @@ export function NaoConformidadesClient({
                       <AlertTriangle className="w-3.5 h-3.5 text-primary/40" />
                     </div>
                     <div className="flex-1 xl:contents min-w-0">
-                      <p className="xl:col-span-1 font-bold text-[11px] font-mono text-foreground">
+                      <p className={`xl:col-span-1 text-foreground ${typography.code}`}>
                         {nc.code}
                       </p>
                       <div className="xl:col-span-1 hidden xl:flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className={`${typography.sectionDescription} text-muted-foreground`}>
                           {format(parseISO(nc.createdAt), "dd/MM/yy")}
                         </p>
                       </div>
                       <div className="xl:col-span-2 min-w-0">
-                        <p className="text-[11px] font-semibold text-foreground truncate">
+                        <p className={`truncate text-foreground ${typography.bodyStrong}`}>
                           {nc.scaffold.code}
                         </p>
-                        <p className="text-[9px] text-muted-foreground truncate">
+                        <p className={`truncate text-muted-foreground ${typography.panelSubtitle}`}>
                           {nc.scaffold.area}
                         </p>
                       </div>
-                      <p className="xl:col-span-2 hidden xl:block text-[11px] text-muted-foreground truncate">
+                      <p className={`hidden truncate text-muted-foreground xl:col-span-2 xl:block ${typography.sectionDescription}`}>
                         {company}
                       </p>
                       <div className="hidden xl:flex xl:col-span-1 items-center">
@@ -462,13 +463,13 @@ export function NaoConformidadesClient({
                       </div>
                       <div className="xl:col-span-2 hidden xl:flex items-center gap-1">
                         <User className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground truncate">
+                        <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
                           {responsible}
                         </p>
                       </div>
                       <p
                         className={
-                          "hidden xl:block xl:col-span-1 text-[11px] font-mono " +
+                          `hidden xl:block xl:col-span-1 ${typography.codeMuted} ` +
                           (overdue ? "text-red-700 font-bold" : "text-muted-foreground")
                         }
                       >
@@ -500,7 +501,7 @@ export function NaoConformidadesClient({
             })}
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
               {filtered.length} registro(s) · Controle de tratativas · AndCheck
               EHS
             </p>

@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { surface, typography } from "@/lib/design-system";
 
 export type InspectionRow = {
   id: string;
@@ -58,20 +59,20 @@ export function InspecoesClient({
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
             AndCheck EHS · Registros Técnicos
           </p>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Histórico de Inspeções
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {inspections.length} registros no sistema
           </p>
         </div>
         {canCreateInspection && (
           <Link
           href="/inspecoes/nova"
-          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+          className={`inline-flex h-8 shrink-0 items-center gap-1.5 bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
         >
           <Plus className="w-3.5 h-3.5" />
           Nova Inspeção
@@ -106,7 +107,7 @@ export function InspecoesClient({
       </div>
 
       {filtered.length !== inspections.length && (
-        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+        <p className={`${typography.panelSubtitle} text-muted-foreground`}>
           {filtered.length} resultado(s) filtrado(s)
         </p>
       )}
@@ -114,16 +115,16 @@ export function InspecoesClient({
       {filtered.length === 0 ? (
         <div className="bg-card border border-border p-14 text-center">
           <ClipboardCheck className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-          <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+          <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhuma inspeção encontrada
           </p>
-          <p className="text-[10px] text-muted-foreground/60 mb-4">
+          <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
             Registre a primeira vistoria para iniciar o histórico
           </p>
           {canCreateInspection && (
             <Link
             href="/inspecoes/nova"
-            className="inline-flex items-center gap-1.5 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 h-8"
+            className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground ${typography.action}`}
           >
             <Plus className="w-3.5 h-3.5" />
             Nova Inspeção
@@ -132,13 +133,13 @@ export function InspecoesClient({
         </div>
       ) : (
         <div className="bg-card border border-border shadow-sm overflow-hidden">
-          <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-2.5 bg-primary border-b border-border">
+          <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
             {["Andaime", "Data", "Inspetor", "Validade", "Resultado", ""].map(
               (h, i) => (
                 <p
                   key={i}
                   className={
-                    "text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60 " +
+                    "text-primary-foreground/60 " +
                     (i === 0
                       ? "col-span-2"
                       : i === 1
@@ -173,22 +174,22 @@ export function InspecoesClient({
                       <ClipboardCheck className="w-3.5 h-3.5 text-primary/40" />
                     </div>
                     <div className="flex-1 md:contents">
-                      <p className="md:col-span-2 font-mono text-[11px] text-foreground font-bold">
+                      <p className={`md:col-span-2 text-foreground ${typography.code}`}>
                         {insp.scaffold_code}
                       </p>
                       <div className="md:col-span-2 hidden md:flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className={`${typography.sectionDescription} text-muted-foreground`}>
                           {format(parseISO(insp.date), "dd/MM/yyyy")}
                         </p>
                       </div>
                       <div className="md:col-span-4 hidden md:flex items-center gap-1">
                         <User className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className="text-[11px] text-muted-foreground truncate">
+                        <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
                           {insp.inspector_name}
                         </p>
                       </div>
-                      <p className="hidden md:block md:col-span-1 text-[11px] text-muted-foreground font-mono">
+                      <p className={`hidden md:block md:col-span-1 text-muted-foreground ${typography.code}`}>
                         {insp.validity_days > 0
                           ? insp.validity_days + "d"
                           : "—"}
@@ -209,7 +210,7 @@ export function InspecoesClient({
             })}
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
               {filtered.length} registro(s) · Documento Controlado · AndCheck
               EHS
             </p>

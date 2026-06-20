@@ -17,6 +17,7 @@ import {
   setWorkspaceActive,
   updateWorkspace,
 } from "@/lib/actions/workspace-actions";
+import { surface, typography } from "@/lib/design-system";
 import {
   Building2,
   CheckCircle2,
@@ -167,13 +168,13 @@ export function WorkspacesClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <p className={`${typography.pageEyebrow} text-muted-foreground`}>
             Administracao
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Gestao de Workspaces
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>
             Cadastro e controle das plantas operacionais.
           </p>
         </div>
@@ -284,7 +285,7 @@ export function WorkspacesClient({
       </div>
 
       <div className="overflow-hidden border border-border bg-card">
-        <div className="hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b bg-muted/40 px-4 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground lg:grid">
+        <div className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
           <span>Nome</span><span>Codigo</span><span>Proprietaria</span><span>Cidade/Estado</span><span>Coordenadas</span><span>Status</span><span className="text-right">Acoes</span>
         </div>
         {filtered.length === 0 ? (
@@ -298,13 +299,13 @@ export function WorkspacesClient({
               className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] lg:gap-4 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-bold">{workspace.name}</p>
-                <p className="truncate text-[10px] text-muted-foreground lg:hidden">{workspace.ownerCompanyName}</p>
+                <p className={`truncate text-foreground ${typography.bodyStrong}`}>{workspace.name}</p>
+                <p className={`truncate text-muted-foreground lg:hidden ${typography.bodyMuted}`}>{workspace.ownerCompanyName}</p>
               </div>
-              <p className="hidden font-mono text-[10px] lg:block">{workspace.code}</p>
-              <p className="hidden truncate text-[11px] text-muted-foreground lg:block">{workspace.ownerCompanyName}</p>
-              <p className="hidden text-[11px] text-muted-foreground lg:block">{locationLabel(workspace.city, workspace.state)}</p>
-              <p className="hidden font-mono text-[10px] text-muted-foreground lg:block">{coordinatesLabel(workspace.latitude, workspace.longitude)}</p>
+              <p className={`hidden lg:block ${typography.codeMuted}`}>{workspace.code}</p>
+              <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{workspace.ownerCompanyName}</p>
+              <p className={`hidden text-muted-foreground lg:block ${typography.sectionDescription}`}>{locationLabel(workspace.city, workspace.state)}</p>
+              <p className={`hidden text-muted-foreground lg:block ${typography.codeMuted}`}>{coordinatesLabel(workspace.latitude, workspace.longitude)}</p>
               <StatusBadge active={workspace.active} />
               <div className="flex justify-end gap-1">
                 <Button asChild variant="outline" size="icon-sm" title="Visualizar">
@@ -324,7 +325,7 @@ export function WorkspacesClient({
             </div>
           ))
         )}
-        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">
+        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
           {filtered.length} registro(s) · Modulo administrativo
         </div>
       </div>
@@ -410,7 +411,7 @@ function WorkspaceLocationFields({
         showCoordinates={false}
       />
       <div className="space-y-2 border border-border bg-muted/20 p-3">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className={`${typography.sectionLabel} text-muted-foreground`}>
           Coordenadas
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -439,7 +440,7 @@ function WorkspaceLocationFields({
             />
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">
+        <p className={`${typography.bodyMuted} text-muted-foreground`}>
           Coordenadas opcionais. Use estes campos apenas para ajuste tecnico fino.
         </p>
       </div>
@@ -448,7 +449,7 @@ function WorkspaceLocationFields({
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: typeof Factory; label: string; value: number }) {
-  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-1 font-mono text-2xl font-bold">{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
+  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
 }
 
 function Field({ label, name, defaultValue, placeholder, required, type = "text", step, maxLength }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean; type?: string; step?: string; maxLength?: number }) {
@@ -464,5 +465,5 @@ function FilterSelect({ value, onValueChange, placeholder, options }: { value: s
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 text-[10px] font-bold ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativo" : "Inativo"}</span>;
+  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativo" : "Inativo"}</span>;
 }
