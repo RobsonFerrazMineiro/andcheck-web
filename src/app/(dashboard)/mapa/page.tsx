@@ -1,10 +1,17 @@
 ﻿import { isPast } from "date-fns";
-import { Construction } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Construction,
+  ShieldOff,
+} from "lucide-react";
 import Link from "next/link";
 
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getContextCapabilities } from "@/lib/data-scope";
+import { typography } from "@/lib/design-system";
 import { MapaOperacionalClient } from "./mapa-client";
 
 export default async function MapaPage() {
@@ -108,53 +115,67 @@ export default async function MapaPage() {
           {
             label: "Liberados",
             value: liberados,
-            color: "text-emerald-600",
-            bg: "bg-emerald-50 border-emerald-200",
-            bar: "border-l-emerald-600",
+            icon: CheckCircle2,
+            iconClass: "text-emerald-600",
+            border: "border-l-4 border-l-emerald-600",
+            valueClass: "text-emerald-700",
           },
           {
             label: "Em Montagem",
             value: emMontagem,
-            color: "text-blue-600",
-            bg: "bg-blue-50 border-blue-200",
-            bar: "border-l-blue-600",
+            icon: Construction,
+            iconClass: "text-blue-600",
+            border: "border-l-4 border-l-blue-600",
+            valueClass: "text-blue-700",
           },
           {
             label: "Pend. Liberação",
             value: pendenteLiberacao,
-            color: "text-amber-600",
-            bg: "bg-amber-50 border-amber-200",
-            bar: "border-l-amber-500",
+            icon: Clock,
+            iconClass: "text-amber-500",
+            border: "border-l-4 border-l-amber-500",
+            valueClass: "text-amber-700",
           },
           {
             label: "Reprov. / Interdit.",
             value: reprovados,
-            color: "text-red-600",
-            bg: "bg-red-50 border-red-200",
-            bar: "border-l-red-600",
+            icon: ShieldOff,
+            iconClass: "text-red-600",
+            border: "border-l-4 border-l-red-600",
+            valueClass: "text-red-700",
           },
           {
             label: "Vencidos",
             value: vencidos,
-            color: "text-gray-600",
-            bg: "bg-gray-50 border-gray-300",
-            bar: "border-l-gray-600",
+            icon: AlertTriangle,
+            iconClass: "text-slate-500",
+            border: "border-l-4 border-l-slate-500",
+            valueClass: "text-slate-700",
           },
-        ].map((k) => (
-          <div
-            key={k.label}
-            className={
-              "border border-l-4 rounded-lg p-3 text-center " + k.bg + " " + k.bar
-            }
-          >
-            <p className={"text-[26px] font-black font-mono " + k.color}>
-              {k.value}
-            </p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              {k.label}
-            </p>
-          </div>
-        ))}
+        ].map((k) => {
+          const Icon = k.icon;
+
+          return (
+            <div
+              key={k.label}
+              className={`rounded-lg border border-border bg-card p-4 shadow-sm ${k.border}`}
+            >
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <p
+                  className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+                >
+                  {k.label}
+                </p>
+                <Icon className={`h-4 w-4 shrink-0 ${k.iconClass}`} />
+              </div>
+              <p
+                className={`${typography.kpiValue} leading-none ${k.valueClass}`}
+              >
+                {k.value}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       <MapaOperacionalClient

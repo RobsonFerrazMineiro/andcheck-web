@@ -2,6 +2,7 @@
 
 import {
   Archive,
+  BarChart3,
   ChevronRight,
   ClipboardCheck,
   ClipboardList,
@@ -65,6 +66,12 @@ const navItems = [
     label: "Auditoria",
     icon: FileClock,
     desc: "Logs e rastreabilidade",
+  },
+  {
+    path: "/relatorios",
+    label: "Relatórios Gerenciais",
+    icon: BarChart3,
+    desc: "Indicadores e exportações",
   },
 ];
 

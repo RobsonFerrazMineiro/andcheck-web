@@ -410,7 +410,7 @@ export async function getDashboardMetrics() {
       ? Math.round(
           (onTimeClosedNonConformities / closedNonConformities.length) * 100,
         )
-      : 0;
+      : null;
   const averageOperationDays = average(operationDays);
   const averageCorrectionDays = average(correctionDays);
 

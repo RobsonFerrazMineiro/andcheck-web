@@ -7,6 +7,7 @@ import {
 } from "@/components/layout/context-switcher";
 import {
   Archive,
+  BarChart3,
   ClipboardCheck,
   ClipboardList,
   Construction,
@@ -33,6 +34,7 @@ const navItems = [
   { path: "/mapa", label: "Mapa Operacional", icon: Map },
   { path: "/usuarios", label: "Usuários", icon: Users },
   { path: "/auditoria", label: "Auditoria", icon: FileClock },
+  { path: "/relatorios", label: "Relatórios Gerenciais", icon: BarChart3 },
   { path: "/empresas", label: "Empresas", icon: Building2 },
   { path: "/workspaces", label: "Workspaces", icon: MapPinned },
 ];

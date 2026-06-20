@@ -199,7 +199,9 @@ export default async function DashboardPage() {
           />
           <ExecutiveKpiCard
             label="NCs em Dia"
-            value={`${historical.onTimeClosureRate}%`}
+            value={formatPercentageOrHistoricalBase(
+              historical.onTimeClosureRate,
+            )}
             description="Percentual de NCs encerradas dentro do prazo definido."
             icon={CheckCircle2}
             theme="blue"
@@ -383,6 +385,11 @@ function formatDecimalDays(value: number | null) {
     minimumFractionDigits: value % 1 === 0 ? 0 : 1,
   });
   return value === 1 ? "1 dia" : `${formatted} dias`;
+}
+
+function formatPercentageOrHistoricalBase(value: number | null) {
+  if (value === null) return "Sem base histórica";
+  return `${value}%`;
 }
 
 type ExecutiveTheme = "slate" | "green" | "blue" | "amber";
