@@ -60,9 +60,11 @@ export function InspectionPerformanceChart({ inspections }: Props) {
   );
 
   return (
-    <div className="bg-card border border-border shadow-sm flex flex-col h-full">
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
       {/* Header */}
-      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
+      <div
+        className={`flex items-center justify-between ${surface.panelHeader}`}
+      >
         <div className="flex items-center gap-2">
           <Activity className={surface.panelHeaderIcon} />
           <span className={surface.panelHeaderTitle}>

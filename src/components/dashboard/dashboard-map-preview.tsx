@@ -15,7 +15,9 @@ const OperationalMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="w-full h-full flex items-center justify-center bg-muted/20">
-        <p className={`${typography.action} animate-pulse text-muted-foreground`}>
+        <p
+          className={`${typography.action} animate-pulse text-muted-foreground`}
+        >
           Carregando mapa…
         </p>
       </div>
@@ -78,14 +80,14 @@ export function DashboardMapPreview({
   const hasMap = pins.length > 0;
 
   return (
-    <div className="bg-card border border-border shadow-sm flex flex-col h-full">
+    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
       {/* Header */}
-      <div className={`flex items-center justify-between ${surface.panelHeader}`}>
+      <div
+        className={`flex items-center justify-between ${surface.panelHeader}`}
+      >
         <div className="flex items-center gap-2">
           <MapPin className={surface.panelHeaderIcon} />
-          <span className={surface.panelHeaderTitle}>
-            Mapa Operacional
-          </span>
+          <span className={surface.panelHeaderTitle}>Mapa Operacional</span>
           <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
             · {pins.length}/{scaffolds.length} georreferênciados
           </span>
@@ -118,10 +120,14 @@ export function DashboardMapPreview({
             style={{ minHeight: 220 }}
           >
             <MapPin className="w-6 h-6 text-muted-foreground/30" />
-            <p className={`${typography.sectionDescription} text-center text-muted-foreground`}>
+            <p
+              className={`${typography.sectionDescription} text-center text-muted-foreground`}
+            >
               Nenhum andaime georreferênciado
             </p>
-            <p className={`${typography.panelSubtitle} max-w-45 text-center text-muted-foreground/50`}>
+            <p
+              className={`${typography.panelSubtitle} max-w-45 text-center text-muted-foreground/50`}
+            >
               Cadastre andaimes com localização GPS para visualizá-los aqui.
             </p>
           </div>

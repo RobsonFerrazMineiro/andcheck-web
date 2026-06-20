@@ -172,7 +172,7 @@ export function EmpresasClient({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className={`${typography.pageEyebrow} text-muted-foreground`}>
             Administração
@@ -815,7 +815,7 @@ function TypeFilterButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`inline-flex items-center gap-2 border px-3 py-1.5 transition-colors ${typography.action} ${
+      className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 transition-colors ${typography.action} ${
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"

@@ -20,6 +20,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { surface, typography } from "@/lib/design-system";
+
 const OperationalMap = dynamic(
   () =>
     import("@/components/maps/operational-map").then((m) => m.OperationalMap),
@@ -143,8 +145,7 @@ export function MapaOperacionalClient({
       scaffolds.filter(
         (scaffold) =>
           (!activeStatus || scaffold.effectiveStatus === activeStatus) &&
-          (activeCompanyId === "all" ||
-            scaffold.companyId === activeCompanyId),
+          (activeCompanyId === "all" || scaffold.companyId === activeCompanyId),
       ),
     [activeCompanyId, activeStatus, scaffolds],
   );
@@ -156,22 +157,23 @@ export function MapaOperacionalClient({
   return (
     <>
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="flex flex-col justify-between gap-2 border-b border-border px-4 py-3 sm:flex-row sm:items-center">
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-              Mapa de satelite - posicionamento real
-            </p>
-            <p className="mt-1 text-[10px] text-muted-foreground/60">
-              Filtro ativo: {filterLabel(activeStatus)}
-              {activeCompanyId !== "all" &&
-                ` - ${
-                  companies.find((company) => company.id === activeCompanyId)
-                    ?.name ?? "Empresa"
-                }`}
-            </p>
+        <div
+          className={`flex flex-col justify-between gap-2 sm:flex-row sm:items-center ${surface.panelHeader}`}
+        >
+          <div className="flex items-center gap-2">
+            <MapPin className={surface.panelHeaderIcon} />
+            <span className={surface.panelHeaderTitle}>Mapa de Satélite</span>
+            <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
+              · {comCoords} andaimes georreferênciados
+            </span>
           </div>
-          <p className="text-[9px] uppercase tracking-widest text-muted-foreground/40">
-            {comCoords} andaimes no mapa - clique no pin para detalhes
+          <p className={`${typography.panelSubtitle} text-slate-400`}>
+            Filtro: {filterLabel(activeStatus)}
+            {activeCompanyId !== "all" &&
+              ` · ${
+                companies.find((company) => company.id === activeCompanyId)
+                  ?.name ?? "Empresa"
+              }`}
           </p>
         </div>
         <div style={{ height: 480 }}>
@@ -182,14 +184,22 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4">
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Filtros operacionais
-          </p>
+      <div className="overflow-hidden rounded-lg border border-border bg-card p-0">
+        <div
+          className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${surface.panelHeader}`}
+        >
+          <div className="flex items-center gap-2">
+            <Construction className={surface.panelHeaderIcon} />
+            <span className={surface.panelHeaderTitle}>
+              Filtros Operacionais
+            </span>
+          </div>
           <div className="flex flex-wrap items-center gap-2">
             {canFilterCompany && companies.length > 1 && (
-              <Select value={activeCompanyId} onValueChange={setActiveCompanyId}>
+              <Select
+                value={activeCompanyId}
+                onValueChange={setActiveCompanyId}
+              >
                 <SelectTrigger className="h-8 w-52 rounded-md text-[10px]">
                   <SelectValue placeholder="Todas as empresas" />
                 </SelectTrigger>
@@ -218,7 +228,7 @@ export function MapaOperacionalClient({
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="p-4 flex flex-wrap gap-2">
           {LEGEND_FILTERS.map((item) => {
             const count = scaffolds.filter(
               (scaffold) =>
@@ -253,13 +263,19 @@ export function MapaOperacionalClient({
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Andaimes - listagem
-          </p>
-          <p className="text-[9px] uppercase tracking-widest text-muted-foreground/50">
+        <div
+          className={`flex items-center justify-between gap-3 ${surface.panelHeader}`}
+        >
+          <div className="flex items-center gap-2">
+            <Construction className={surface.panelHeaderIcon} />
+            <span className={surface.panelHeaderTitle}>Andaimes</span>
+            <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
+              · Listagem
+            </span>
+          </div>
+          <span className={`${typography.panelSubtitle} text-slate-400`}>
             {filteredScaffolds.length} de {scaffolds.length} registros
-          </p>
+          </span>
         </div>
         <div className="divide-y divide-border">
           {filteredScaffolds.length === 0 ? (
@@ -289,9 +305,7 @@ export function MapaOperacionalClient({
                     {canFilterCompany ? `${scaffold.companyName} - ` : ""}
                     {scaffold.location} - {scaffold.area}
                     {!scaffold.latitude && (
-                      <span className="ml-1 text-amber-500">
-                        - sem coords
-                      </span>
+                      <span className="ml-1 text-amber-500">- sem coords</span>
                     )}
                   </p>
                 </div>

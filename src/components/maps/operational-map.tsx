@@ -173,11 +173,7 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
         </span>
       </div>
       <div class="andcheck-popup-body">
-        ${
-          showCompanyName
-            ? infoRow("Empresa", scaffold.companyName)
-            : ""
-        }
+        ${showCompanyName ? infoRow("Empresa", scaffold.companyName) : ""}
         ${infoRow("Área", scaffold.area)}
         ${
           location
@@ -275,29 +271,29 @@ export function OperationalMap({
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  // Captura os valores de configuração na montagem para evitar dependência reativa no effect de init
+  const initOptsRef = useRef({ center, zoom, interactive });
 
+  // ── Effect 1: cria o mapa UMA vez por mount ───────────────────────────
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
 
-    const defaultCenter: [number, number] =
-      scaffolds.length > 0
-        ? [
-            scaffolds.reduce((sum, pin) => sum + pin.latitude, 0) /
-              scaffolds.length,
-            scaffolds.reduce((sum, pin) => sum + pin.longitude, 0) /
-              scaffolds.length,
-          ]
-        : [-15.7801, -47.9292];
+    const {
+      center: initCenter,
+      zoom: initZoom,
+      interactive: initInteractive,
+    } = initOptsRef.current;
 
-    const map = L.map(containerRef.current, {
-      center: center ?? defaultCenter,
-      zoom,
-      zoomControl: interactive,
-      scrollWheelZoom: interactive,
-      dragging: interactive,
-      doubleClickZoom: interactive,
+    const map = L.map(container, {
+      center: initCenter ?? [-1.519, -48.628],
+      zoom: initZoom,
+      zoomControl: initInteractive,
+      scrollWheelZoom: initInteractive,
+      dragging: initInteractive,
+      doubleClickZoom: initInteractive,
     });
-
     mapRef.current = map;
 
     L.tileLayer(
@@ -314,6 +310,42 @@ export function OperationalMap({
       { opacity: 0.7, maxZoom: 20 },
     ).addTo(map);
 
+    return () => {
+      // Remove markers before map.remove() para cancelar callbacks RAF pendentes
+      markersRef.current.forEach((m) => {
+        try {
+          m.remove();
+        } catch {
+          /* ignore */
+        }
+      });
+      markersRef.current = [];
+      // try/catch: protege contra _leaflet_pos undefined no StrictMode
+      try {
+        map.remove();
+      } catch {
+        /* ignore */
+      }
+      mapRef.current = null;
+    };
+  }, []); // Deps vazias intencionais: o mapa só é recriado quando o componente é remontado (via key prop no pai)
+
+  // ── Effect 2: atualiza markers quando dados mudam ─────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    // Remove markers antigos
+    markersRef.current.forEach((m) => {
+      try {
+        m.remove();
+      } catch {
+        /* ignore */
+      }
+    });
+    markersRef.current = [];
+
+    // Adiciona novos markers
     scaffolds.forEach((scaffold) => {
       const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
       const marker = L.marker([scaffold.latitude, scaffold.longitude], {
@@ -327,20 +359,26 @@ export function OperationalMap({
         minWidth: variant === "compact" ? 204 : 292,
       });
       marker.addTo(map);
+      markersRef.current.push(marker);
     });
 
     if (scaffolds.length > 1 && !center) {
       const bounds = L.latLngBounds(
-        scaffolds.map((scaffold) => [scaffold.latitude, scaffold.longitude]),
+        scaffolds.map((s) => [s.latitude, s.longitude]),
       );
-      map.fitBounds(bounds, { padding: [40, 40] });
+      try {
+        map.fitBounds(bounds, { padding: [40, 40] });
+      } catch {
+        /* ignore */
+      }
+    } else if (scaffolds.length === 1 && !center) {
+      try {
+        map.setView([scaffolds[0].latitude, scaffolds[0].longitude], zoom);
+      } catch {
+        /* ignore */
+      }
     }
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, [center, interactive, scaffolds, showCompanyName, variant, zoom]);
+  }, [scaffolds, showCompanyName, variant, center, zoom]);
 
   return (
     <div ref={containerRef} style={{ height, width: "100%" }} className="z-0" />

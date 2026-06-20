@@ -165,7 +165,7 @@ export function WorkspacesClient({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className={`${typography.pageEyebrow} text-muted-foreground`}>
             Administração
