@@ -14,6 +14,7 @@ import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 import { prisma } from "@/lib/prisma";
 
 const DAY_IN_MS = 86_400_000;
+const MOVEMENT_GROUP_WINDOW_MS = 30 * 60 * 1000;
 
 function average(values: number[]) {
   if (values.length === 0) return null;
@@ -50,6 +51,7 @@ function getOperationalMovement(log: {
       return {
         badge: "ANDAIME CRIADO",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:created`,
+        groupable: false,
         title: `Andaime ${label} criado`,
         tone: "green" as const,
       };
@@ -59,6 +61,7 @@ function getOperationalMovement(log: {
         return {
           badge: "LIBERADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
+          groupable: false,
           title: `Andaime ${label} liberado`,
           tone: "green" as const,
         };
@@ -67,6 +70,7 @@ function getOperationalMovement(log: {
         return {
           badge: "INTERDITADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:interditado`,
+          groupable: false,
           title: `Andaime ${label} interditado`,
           tone: "red" as const,
         };
@@ -75,6 +79,7 @@ function getOperationalMovement(log: {
         return {
           badge: "DESMONTADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:desmontado`,
+          groupable: false,
           title: `Andaime ${label} desmontado`,
           tone: "red" as const,
         };
@@ -83,6 +88,7 @@ function getOperationalMovement(log: {
         return {
           badge: "LIBERADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:liberado`,
+          groupable: false,
           title: `Andaime ${label} liberado`,
           tone: "green" as const,
         };
@@ -91,6 +97,7 @@ function getOperationalMovement(log: {
         return {
           badge: "REPROVADO",
           dedupeKey: `${log.entityType}:${log.entityId ?? label}:reprovado`,
+          groupable: false,
           title: `Andaime ${label} reprovado`,
           tone: "red" as const,
         };
@@ -103,14 +110,25 @@ function getOperationalMovement(log: {
       return {
         badge: "INSPECAO REPROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:reprovada`,
+        groupable: false,
         title: `Inspecao ${label} reprovada`,
         tone: "red" as const,
       };
     }
-    if (result === "aprovado" || result === "aprovado_com_ressalvas") {
+    if (result === "aprovado_com_ressalvas") {
+      return {
+        badge: "COM RESSALVAS",
+        dedupeKey: `${log.entityType}:${log.entityId ?? label}:ressalvas`,
+        groupable: false,
+        title: `Inspecao ${label} aprovada com ressalvas`,
+        tone: "amber" as const,
+      };
+    }
+    if (result === "aprovado") {
       return {
         badge: "INSPECAO APROVADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:aprovada`,
+        groupable: false,
         title: `Inspecao ${label} aprovada`,
         tone: "green" as const,
       };
@@ -123,18 +141,47 @@ function getOperationalMovement(log: {
       return {
         badge: "NC ABERTA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:aberta`,
+        groupable: false,
         title: `Nao conformidade ${label} aberta`,
         tone: "red" as const,
       };
     }
-    if (log.action === AuditAction.COMPLETE) {
+    if (log.action === AuditAction.COMPLETE || status === "CLOSED") {
       return {
         badge: "NC ENCERRADA",
         dedupeKey: `${log.entityType}:${log.entityId ?? label}:encerrada`,
+        groupable: false,
         title: `Nao conformidade ${label} encerrada`,
         tone: "green" as const,
       };
     }
+    if (
+      log.action === AuditAction.UPDATE ||
+      log.action === AuditAction.STATUS_CHANGE ||
+      log.action === AuditAction.UPLOAD
+    ) {
+      return {
+        badge: "NC ATUALIZADA",
+        dedupeKey: `${log.entityType}:${log.entityId ?? label}:atualizada`,
+        groupable: true,
+        title: label,
+        tone: "amber" as const,
+      };
+    }
+  }
+
+  if (
+    log.entityType === AuditEntityType.DOCUMENT &&
+    log.action === AuditAction.DOCUMENT_UPDATED &&
+    status === "EXPIRED"
+  ) {
+    return {
+      badge: "DOCUMENTO VENCIDO",
+      dedupeKey: `${log.entityType}:${log.entityId ?? label}:vencido`,
+      groupable: false,
+      title: `Documento tecnico ${label} vencido`,
+      tone: "red" as const,
+    };
   }
 
   if (
@@ -144,6 +191,7 @@ function getOperationalMovement(log: {
     return {
       badge: "DOCUMENTO",
       dedupeKey: `${log.entityType}:${log.entityId ?? label}:anexado`,
+      groupable: false,
       title: `Documento tecnico anexado em ${label}`,
       tone: "blue" as const,
     };
@@ -252,8 +300,8 @@ export async function getDashboardMetrics() {
         OR: [
           { entityType: AuditEntityType.SCAFFOLD, action: { in: [AuditAction.CREATE, AuditAction.STATUS_CHANGE] } },
           { entityType: AuditEntityType.INSPECTION, action: AuditAction.CREATE },
-          { entityType: AuditEntityType.NON_CONFORMITY, action: { in: [AuditAction.CREATE, AuditAction.COMPLETE] } },
-          { entityType: AuditEntityType.DOCUMENT, action: { in: [AuditAction.DOCUMENT_CREATED, AuditAction.UPLOAD] } },
+          { entityType: AuditEntityType.NON_CONFORMITY, action: { in: [AuditAction.CREATE, AuditAction.UPDATE, AuditAction.STATUS_CHANGE, AuditAction.COMPLETE, AuditAction.UPLOAD] } },
+          { entityType: AuditEntityType.DOCUMENT, action: { in: [AuditAction.DOCUMENT_CREATED, AuditAction.DOCUMENT_UPDATED, AuditAction.UPLOAD] } },
         ],
       },
       orderBy: { createdAt: "desc" },
@@ -325,30 +373,57 @@ export async function getDashboardMetrics() {
       })),
     },
     operationalMovements: auditLogs
-      .flatMap((log) => {
+      .reduce<Array<{
+        id: string;
+        badge: string;
+        count: number;
+        dedupeKey: string;
+        groupable: boolean;
+        title: string;
+        tone: "green" | "blue" | "amber" | "red";
+        userName: string;
+        createdAt: Date;
+      }>>((movements, log) => {
         const movement = getOperationalMovement(log);
-        if (!movement) return [];
-        return [{
+        if (!movement) return movements;
+
+        if (movement.groupable) {
+          const grouped = movements.find(
+            (item) =>
+              item.groupable &&
+              item.dedupeKey === movement.dedupeKey &&
+              differenceInMilliseconds(item.createdAt, log.createdAt) <=
+                MOVEMENT_GROUP_WINDOW_MS,
+          );
+          if (grouped) {
+            grouped.count += 1;
+            return movements;
+          }
+        }
+
+        movements.push({
           id: log.id,
           badge: movement.badge,
+          count: 1,
           dedupeKey: movement.dedupeKey,
+          groupable: movement.groupable,
           title: movement.title,
           tone: movement.tone,
           userName: log.userName ?? "Sistema",
           createdAt: log.createdAt,
-        }];
-      })
-      .filter((movement, index, movements) => {
-        const previous = movements[index - 1];
-        return !previous || previous.dedupeKey !== movement.dedupeKey;
-      })
+        });
+        return movements;
+      }, [])
       .slice(0, 10)
       .map((movement) => ({
         id: movement.id,
         badge: movement.badge,
         title: movement.title,
         tone: movement.tone,
-        userName: movement.userName,
+        userName:
+          movement.groupable && movement.count > 1
+            ? `${movement.count} alteracoes registradas`
+            : movement.userName,
         createdAt: movement.createdAt,
       })),
   };
