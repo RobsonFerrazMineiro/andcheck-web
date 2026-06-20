@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { format, parseISO } from "date-fns";
 import {
@@ -70,7 +70,7 @@ export function AndaimesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Gestão de Ativos
+            AndCheck EHS Â· GestÃ£o de Ativos
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes
@@ -82,7 +82,7 @@ export function AndaimesClient({
         {canCreateScaffold && (
           <Link
             href="/andaimes/novo"
-            className={`inline-flex h-8 shrink-0 items-center gap-1.5 bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+            className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
           >
             <Plus className="w-3.5 h-3.5" />
             Cadastrar Andaime
@@ -90,18 +90,18 @@ export function AndaimesClient({
         )}
       </div>
 
-      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+      <div className="bg-card border border-border shadow-sm rounded-lg p-3 flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
-            placeholder="Buscar por TAG, localização ou área..."
+            placeholder="Buscar por TAG, localizaÃ§Ã£o ou Ã¡rea..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-none border-border"
+            className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-none">
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -123,7 +123,7 @@ export function AndaimesClient({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border p-14 text-center">
+        <div className="bg-card border border-border rounded-lg p-14 text-center">
           <Construction className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhum andaime encontrado
@@ -134,7 +134,7 @@ export function AndaimesClient({
           {canCreateScaffold && (
             <Link
               href="/andaimes/novo"
-              className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground ${typography.action}`}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
             >
               <Plus className="w-3.5 h-3.5" />
               Cadastrar
@@ -142,12 +142,12 @@ export function AndaimesClient({
           )}
         </div>
       ) : (
-        <div className="bg-card border border-border shadow-sm overflow-hidden">
+        <div className="bg-card border border-border shadow-sm rounded-lg overflow-hidden">
           <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
             {[
-              "TAG / Código",
+              "TAG / CÃ³digo",
               "Tipo",
-              "Localização",
+              "LocalizaÃ§Ã£o",
               "Validade",
               "Status",
               "",
@@ -195,7 +195,7 @@ export function AndaimesClient({
                       {TYPE_LABELS[scaffold.type] ?? scaffold.type}
                       {scaffold.height && (
                         <span className="text-muted-foreground/40 ml-1">
-                          · {scaffold.height}m
+                          Â· {scaffold.height}m
                         </span>
                       )}
                     </p>
@@ -208,7 +208,7 @@ export function AndaimesClient({
                     <p className={`hidden md:block md:col-span-2 text-muted-foreground ${typography.code}`}>
                       {scaffold.validity_date
                         ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
-                        : "—"}
+                        : "â€”"}
                     </p>
                     <div className="hidden md:flex md:col-span-2 items-center">
                       <StatusBadge status={scaffold.status} />
@@ -226,7 +226,7 @@ export function AndaimesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) · Documento Controlado · AndCheck
+              {filtered.length} registro(s) Â· Documento Controlado Â· AndCheck
               EHS
             </p>
           </div>

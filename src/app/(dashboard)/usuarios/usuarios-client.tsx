@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CheckCircle2,
@@ -83,7 +83,7 @@ function initials(name: string) {
 function RoleBadge({ role }: { role?: { code: string; name: string } }) {
   if (!role) {
     return (
-      <Badge variant="outline" className="rounded-none text-[9px] uppercase">
+      <Badge variant="outline" className="rounded-md text-[9px] uppercase">
         Sem perfil
       </Badge>
     );
@@ -92,7 +92,7 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
   return (
     <span
       className={
-        "inline-flex items-center gap-1 border px-2 py-0.5 text-[10px] font-bold " +
+        "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold " +
         "uppercase tracking-wide " +
         (ROLE_BADGE[role.code] ?? "bg-muted text-muted-foreground border-border")
       }
@@ -222,13 +222,13 @@ export function UsuariosClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Administracao
+            AndCheck EHS Â· Administracao
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Usuarios
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {activeCount} ativos · {users.length} total
+            {activeCount} ativos Â· {users.length} total
           </p>
         </div>
         <button
@@ -266,7 +266,7 @@ export function UsuariosClient({
         <form
           key={editingUser?.id ?? "new-user"}
           action={editingUser ? handleUpdateUser : handleCreateUser}
-          className="bg-card border border-border shadow-sm p-4 space-y-4"
+          className="bg-card border border-border rounded-lg shadow-sm p-4 space-y-4"
         >
           {editingUser && (
             <input type="hidden" name="user_id" value={editingUser.id} />
@@ -320,7 +320,7 @@ export function UsuariosClient({
                 Perfil *
               </Label>
               <Select name="role_id" required defaultValue={editingUser?.roles[0]?.id}>
-                <SelectTrigger className="h-8 text-[11px] rounded-none">
+                <SelectTrigger className="h-8 text-[11px] rounded-md">
                   <SelectValue placeholder="Selecionar perfil" />
                 </SelectTrigger>
                 <SelectContent>
@@ -346,7 +346,7 @@ export function UsuariosClient({
                   editingUser?.is_active === false ? "inactive" : "active"
                 }
               >
-                <SelectTrigger className="h-8 text-[11px] rounded-none">
+                <SelectTrigger className="h-8 text-[11px] rounded-md">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -364,14 +364,14 @@ export function UsuariosClient({
                 setShowForm(false);
                 setEditingUser(null);
               }}
-              className="h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted"
+              className="h-8 rounded-md px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 h-8 px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-8 rounded-md px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
             >
               {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {editingUser ? "Atualizar Usuario" : "Salvar Usuario"}
@@ -380,18 +380,18 @@ export function UsuariosClient({
         </form>
       )}
 
-      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+      <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             placeholder="Buscar por nome, e-mail, matricula ou empresa..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-none border-border"
+            className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-none">
+          <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Filtro" />
           </SelectTrigger>
@@ -408,7 +408,7 @@ export function UsuariosClient({
         </Select>
       </div>
 
-      <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
+      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
           {["", "Nome", "Empresa", "Matricula", "Perfil", "Departamento", "Status", "Acoes"].map(
             (header) => (
@@ -491,7 +491,7 @@ export function UsuariosClient({
                         setShowForm(false);
                         setEditingUser(user);
                       }}
-                      className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
@@ -511,7 +511,7 @@ export function UsuariosClient({
                             ? "Desativar usuario"
                             : "Ativar usuario"
                       }
-                      className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Power className="h-3.5 w-3.5" />
                     </button>
@@ -529,7 +529,7 @@ export function UsuariosClient({
                               ? "Voce nao tem permissao para excluir usuarios."
                               : undefined
                       }
-                      className="inline-flex h-7 w-7 items-center justify-center border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -542,7 +542,7 @@ export function UsuariosClient({
 
         <div className="px-4 py-2 bg-muted/30 border-t border-border">
           <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
-            {filtered.length} registro(s) · Modulo de usuarios · AndCheck EHS
+            {filtered.length} registro(s) Â· Modulo de usuarios Â· AndCheck EHS
           </p>
         </div>
       </div>
@@ -571,7 +571,7 @@ function Field({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={label.includes("*")}
-        className="h-8 text-[11px] rounded-none"
+        className="h-8 text-[11px] rounded-md"
       />
     </div>
   );
@@ -581,7 +581,7 @@ function StatusPill({ active }: { active: boolean }) {
   return (
     <span
       className={
-        "inline-flex items-center gap-1 px-2 py-0.5 border text-[10px] font-bold " +
+        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 border text-[10px] font-bold " +
         (active
           ? "bg-emerald-50 text-emerald-700 border-emerald-200"
           : "bg-slate-100 text-slate-600 border-slate-200")

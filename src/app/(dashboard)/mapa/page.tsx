@@ -1,4 +1,4 @@
-import { isPast } from "date-fns";
+﻿import { isPast } from "date-fns";
 import { Construction } from "lucide-react";
 import Link from "next/link";
 
@@ -77,17 +77,17 @@ export default async function MapaPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Visualizacao Espacial
+            AndCheck EHS Â· Visualizacao Espacial
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            {total} andaimes cadastrados · {comCoords} georreferenciados
+            {total} andaimes cadastrados Â· {comCoords} georreferenciados
             {semCoords > 0 && (
               <span className="text-amber-600">
                 {" "}
-                · {semCoords} sem coordenadas
+                Â· {semCoords} sem coordenadas
               </span>
             )}
           </p>
@@ -95,7 +95,7 @@ export default async function MapaPage() {
         {canCreateScaffold && (
           <Link
             href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+            className="inline-flex items-center gap-1.5 rounded-md bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
           >
             <Construction className="w-3.5 h-3.5" />
             Novo Andaime
@@ -144,7 +144,7 @@ export default async function MapaPage() {
           <div
             key={k.label}
             className={
-              "border border-l-4 p-3 text-center " + k.bg + " " + k.bar
+              "border border-l-4 rounded-lg p-3 text-center " + k.bg + " " + k.bar
             }
           >
             <p className={"text-[26px] font-black font-mono " + k.color}>

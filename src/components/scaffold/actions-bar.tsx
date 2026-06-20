@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckCircle2, ClipboardCheck, HardHat, Wrench } from "lucide-react";
 import Link from "next/link";
@@ -232,7 +232,7 @@ function DismantleDialog({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md border border-border bg-card shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-xl">
         <div className="border-b border-border bg-primary px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/50">
             Registrar Desmontagem

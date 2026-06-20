@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { format } from "date-fns";
 import {
@@ -502,7 +502,7 @@ function ActionBadge({ row }: { row: AuditRow }) {
     <Badge
       variant="outline"
       title={meta.label}
-      className={`max-w-full rounded-none px-2 py-0.5 ${typography.badge} ${TONE_STYLES[meta.tone]}`}
+      className={`max-w-full rounded-md px-2 py-0.5 ${typography.badge} ${TONE_STYLES[meta.tone]}`}
     >
       <span className="block truncate">{meta.label}</span>
     </Badge>
@@ -515,7 +515,7 @@ function EntityBadge({ row }: { row: AuditRow }) {
     <div className="flex flex-wrap items-center gap-2">
       <Badge
         variant="outline"
-        className={`inline-flex w-fit items-center gap-1 rounded-none border-slate-300 bg-slate-50 px-2 py-0.5 text-slate-700 ${typography.badge}`}
+        className={`inline-flex w-fit items-center gap-1 rounded-md border-slate-300 bg-slate-50 px-2 py-0.5 text-slate-700 ${typography.badge}`}
       >
         <Icon className="size-3" />
         {ENTITY_BADGE_LABELS[row.entityType] ?? labelEntity(row.entityType).toUpperCase()}
@@ -590,7 +590,7 @@ export function AuditoriaClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Rastreabilidade
+            AndCheck EHS Â· Rastreabilidade
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Auditoria
@@ -603,12 +603,12 @@ export function AuditoriaClient({
           <button
             type="button"
             onClick={() => exportRowsToCsv(exportRows)}
-            className={`inline-flex h-8 items-center gap-2 border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
+            className={`inline-flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
           >
             <Download className="h-3.5 w-3.5" />
             Exportar CSV
           </button>
-          <div className="flex h-8 items-center gap-2 border border-border bg-card px-3">
+          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span className={`${typography.action} text-muted-foreground`}>
               Log Imutavel
@@ -619,7 +619,7 @@ export function AuditoriaClient({
 
       <form
         action="/auditoria"
-        className="grid min-w-0 grid-cols-1 gap-2 border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.3fr_170px_170px_150px_150px_130px_130px_auto]"
+        className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.3fr_170px_170px_150px_150px_130px_130px_auto]"
       >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
@@ -627,11 +627,11 @@ export function AuditoriaClient({
             name="search"
             defaultValue={filters.search}
             placeholder="Buscar descricao, usuario ou entidade..."
-            className="pl-9 h-8 text-[11px] rounded-none border-border"
+            className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select name="action" defaultValue={filters.action || "all"}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Acao" />
           </SelectTrigger>
@@ -645,7 +645,7 @@ export function AuditoriaClient({
           </SelectContent>
         </Select>
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
@@ -660,32 +660,32 @@ export function AuditoriaClient({
           name="user"
           defaultValue={filters.user}
           placeholder="Usuario"
-          className="h-8 text-[11px] rounded-none border-border"
+          className="h-8 text-[11px] rounded-md border-border"
         />
         <Input
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
-          className="h-8 text-[11px] rounded-none border-border"
+          className="h-8 text-[11px] rounded-md border-border"
         />
         <Input
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
-          className="h-8 text-[11px] rounded-none border-border"
+          className="h-8 text-[11px] rounded-md border-border"
         />
         <Input
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
-          className="h-8 text-[11px] rounded-none border-border"
+          className="h-8 text-[11px] rounded-md border-border"
         />
-        <button className="h-8 px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
+        <button className="h-8 rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
           Filtrar
         </button>
       </form>
 
-      <div className="min-w-0 overflow-hidden bg-card border border-border shadow-sm">
+      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="overflow-x-auto">
           <div className="min-w-[1180px]">
             <div className={`grid ${AUDIT_TABLE_GRID} gap-3 border-b border-border ${surface.tableHeader}`}>
@@ -779,7 +779,7 @@ export function AuditoriaClient({
 
       {selected && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-card border border-border shadow-xl w-full max-w-5xl max-h-[88vh] overflow-auto">
+          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-5xl max-h-[88vh] overflow-auto">
             <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border bg-primary">
               <div>
                 <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
@@ -792,7 +792,7 @@ export function AuditoriaClient({
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className={`h-7 border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
+                className={`h-7 rounded-md border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
               >
                 Fechar
               </button>
@@ -823,7 +823,7 @@ export function AuditoriaClient({
                 <Detail label="Acao" value={labelAction(selected)} />
                 <Detail
                   label="Entidade"
-                  value={`${labelEntity(selected.entityType)} · ${
+                  value={`${labelEntity(selected.entityType)} Â· ${
                     selected.entityLabel ?? selected.entityId ?? "-"
                   }`}
                 />
@@ -901,7 +901,7 @@ function JsonBlock({ title, value }: { title: string; value: unknown }) {
       <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
         {title}
       </p>
-      <pre className="bg-muted/40 border border-border p-3 text-[11px] font-mono whitespace-pre-wrap break-words max-h-72 overflow-auto">
+      <pre className="bg-muted/40 rounded-lg border border-border p-3 text-[11px] font-mono whitespace-pre-wrap break-words max-h-72 overflow-auto">
         {formatJson(value)}
       </pre>
     </div>

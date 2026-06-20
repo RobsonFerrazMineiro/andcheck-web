@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { DocumentType } from "@prisma/client";
 import { format, isPast } from "date-fns";
@@ -29,20 +29,20 @@ import {
 } from "@/lib/document-view";
 import { uploadFile } from "@/lib/upload-file";
 
-// ── Tipos e constantes ────────────────────────────────────────────────────────
+// â”€â”€ Tipos e constantes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const DOC_TYPES = [
   {
     value: "ART",
-    label: "ART — Anotação de Responsabilidade Técnica",
+    label: "ART â€” AnotaÃ§Ã£o de Responsabilidade TÃ©cnica",
     priority: true,
   },
   {
     value: "RRT",
-    label: "RRT — Registro de Responsabilidade Técnica",
+    label: "RRT â€” Registro de Responsabilidade TÃ©cnica",
     priority: true,
   },
-  { value: "MEMORIAL_CALCULO", label: "Memorial de Cálculo", priority: true },
+  { value: "MEMORIAL_CALCULO", label: "Memorial de CÃ¡lculo", priority: true },
   { value: "CROQUI", label: "Croqui", priority: true },
   { value: "PROJETO", label: "Projeto Estrutural", priority: false },
   { value: "PROCEDIMENTO", label: "Procedimento de Montagem", priority: false },
@@ -70,7 +70,7 @@ type ScaffoldDocumentMetadata = {
 };
 
 function docTypeLabel(type: string) {
-  return DOC_TYPES.find((d) => d.value === type)?.label.split(" — ")[0] ?? type;
+  return DOC_TYPES.find((d) => d.value === type)?.label.split(" â€” ")[0] ?? type;
 }
 
 function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
@@ -79,7 +79,7 @@ function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
 }
 
 
-// ── Sub-componente: badge de status ──────────────────────────────────────────
+// â”€â”€ Sub-componente: badge de status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatusBadge({
   status,
 }: {
@@ -99,7 +99,7 @@ function StatusBadge({
   );
 }
 
-// ── Modal de adição ───────────────────────────────────────────────────────────
+// â”€â”€ Modal de adiÃ§Ã£o â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface ModalProps {
   scaffoldId: string;
   onClose: () => void;
@@ -123,11 +123,11 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
       return;
     }
     if (file.size > MAX_SIZE) {
-      toast.error("Arquivo muito grande. Máximo 5 MB.");
+      toast.error("Arquivo muito grande. MÃ¡ximo 5 MB.");
       return;
     }
     if (!uploadedBy.trim()) {
-      toast.error("Informe o responsável pelo upload.");
+      toast.error("Informe o responsÃ¡vel pelo upload.");
       return;
     }
 
@@ -167,13 +167,13 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-card border border-border shadow-xl w-full max-w-lg">
+      <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg">
         {/* Header do modal */}
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-              Adicionar Documento Técnico
+              Adicionar Documento TÃ©cnico
             </p>
           </div>
           <button
@@ -203,16 +203,16 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             </select>
           </div>
 
-          {/* Título */}
+          {/* TÃ­tulo */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Título / Nome (opcional)
+              TÃ­tulo / Nome (opcional)
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={`Ex: ${docTypeLabel(type)} - Andaime Área 5`}
+              placeholder={`Ex: ${docTypeLabel(type)} - Andaime Ãrea 5`}
               className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
@@ -222,7 +222,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Arquivo *{" "}
               <span className="normal-case font-normal text-muted-foreground/60">
-                (PDF, JPG, PNG, WEBP, DOC — máx. 5 MB)
+                (PDF, JPG, PNG, WEBP, DOC â€” mÃ¡x. 5 MB)
               </span>
             </label>
             <div
@@ -248,16 +248,16 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             />
           </div>
 
-          {/* Responsável */}
+          {/* ResponsÃ¡vel */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Responsável pelo Upload *
+              ResponsÃ¡vel pelo Upload *
             </label>
             <input
               type="text"
               value={uploadedBy}
               onChange={(e) => setUploadedBy(e.target.value)}
-              placeholder="Nome do responsável"
+              placeholder="Nome do responsÃ¡vel"
               required
               className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             />
@@ -266,7 +266,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           {/* Validade */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Validade / Revisão (opcional)
+              Validade / RevisÃ£o (opcional)
             </label>
             <input
               type="date"
@@ -276,10 +276,10 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             />
           </div>
 
-          {/* Observação */}
+          {/* ObservaÃ§Ã£o */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Observação (opcional)
+              ObservaÃ§Ã£o (opcional)
             </label>
             <textarea
               value={observation}
@@ -289,7 +289,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             />
           </div>
 
-          {/* Ações */}
+          {/* AÃ§Ãµes */}
           <div className="flex justify-end gap-3 pt-1">
             <button
               type="button"
@@ -317,7 +317,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
   );
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
+// â”€â”€ Componente principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Props {
   scaffoldId: string;
   initialDocuments: ScaffoldDocumentMetadata[];
@@ -341,7 +341,7 @@ export function ScaffoldDocumentSection({
   );
 
   function handleAdded() {
-    // Revalida a página para recarregar os documentos via server
+    // Revalida a pÃ¡gina para recarregar os documentos via server
     router.refresh();
   }
 
@@ -362,7 +362,7 @@ export function ScaffoldDocumentSection({
 
   function handleView(doc: ScaffoldDocumentMetadata) {
     if (!getDocumentViewUrl(doc)) {
-      toast.error("Arquivo indisponível ou URL inválida.");
+      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
       return;
     }
     setPreviewDoc(doc);
@@ -370,20 +370,20 @@ export function ScaffoldDocumentSection({
 
   function handleDownload(doc: ScaffoldDocumentMetadata) {
     if (!downloadDocumentFile(doc)) {
-      toast.error("Arquivo indisponível ou URL inválida.");
+      toast.error("Arquivo indisponÃ­vel ou URL invÃ¡lida.");
     }
   }
 
   return (
     <>
-      {/* ── Seção ── */}
+      {/* â”€â”€ SeÃ§Ã£o â”€â”€ */}
       <div className="bg-card border border-border shadow-sm overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
-              Documentação Técnica
+              DocumentaÃ§Ã£o TÃ©cnica
             </p>
             <span className="text-[9px] font-mono text-muted-foreground/50">
               {docs.length} doc(s)
@@ -413,9 +413,9 @@ export function ScaffoldDocumentSection({
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {/* Cabeçalho da tabela */}
+            {/* CabeÃ§alho da tabela */}
             <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2 bg-muted/30">
-              {["Documento", "Data / Validade", "Status", "Ações"].map((h) => (
+              {["Documento", "Data / Validade", "Status", "AÃ§Ãµes"].map((h) => (
                 <p
                   key={h}
                   className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
@@ -447,7 +447,7 @@ export function ScaffoldDocumentSection({
                       {doc.title}
                     </p>
                     <p className="text-[9px] text-muted-foreground truncate">
-                      {doc.file_name} · {doc.uploaded_by} ·{" "}
+                      {doc.file_name} Â· {doc.uploaded_by} Â·{" "}
                       {format(new Date(doc.created_at), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                     {doc.observation && (
@@ -462,7 +462,7 @@ export function ScaffoldDocumentSection({
                     {doc.expires_at ? (
                       <>
                         <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                          Válido até
+                          VÃ¡lido atÃ©
                         </p>
                         <p
                           className={`text-[11px] font-semibold ${status === "vencido" ? "text-red-600" : "text-foreground"}`}
@@ -473,7 +473,7 @@ export function ScaffoldDocumentSection({
                         </p>
                       </>
                     ) : (
-                      <p className="text-[9px] text-muted-foreground/40">—</p>
+                      <p className="text-[9px] text-muted-foreground/40">â€”</p>
                     )}
                   </div>
 
@@ -482,7 +482,7 @@ export function ScaffoldDocumentSection({
                     <StatusBadge status={status} />
                   </div>
 
-                  {/* Ações */}
+                  {/* AÃ§Ãµes */}
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleView(doc)}

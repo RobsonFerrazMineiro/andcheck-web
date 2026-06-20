@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+﻿import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyDetail } from "@/lib/actions/company-actions";
@@ -38,11 +38,11 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {indicators.map((indicator) => <Card key={indicator.label} className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-2xl font-bold">{indicator.value}</p></div><indicator.icon className="size-5 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => <Card key={indicator.label} className="rounded-lg"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-2xl font-bold">{indicator.value}</p></div><indicator.icon className="size-5 text-primary" /></CardContent></Card>)}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
-        <Card className="rounded-none">
+        <Card className="rounded-lg">
           <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <Info label="Workspaces vinculados" value={company.workspaceLinks.filter((link) => link.active).map((link) => link.workspace.name).join(", ") || "Sem vinculo operacional"} />
@@ -53,14 +53,14 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
           </CardContent>
         </Card>
 
-        <Card className="rounded-none">
+        <Card className="rounded-lg">
           <CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="size-4" /> Empresa</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-start gap-3">
               <CompanyLogo name={company.name} logoUrl={company.logoUrl} />
               <div className="min-w-0">
                 <p className="truncate text-lg font-bold">{company.name}</p>
-                <Badge variant="outline" className="mt-1 rounded-none">{company.active ? "Ativa" : "Inativa"}</Badge>
+                <Badge variant="outline" className="mt-1 rounded-md">{company.active ? "Ativa" : "Inativa"}</Badge>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">

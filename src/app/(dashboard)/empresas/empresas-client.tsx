@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -145,7 +145,7 @@ export function EmpresasClient({
       </div>
 
       {(creating || editing) && canManage && (
-        <Card className="rounded-none border-primary/20">
+        <Card className="rounded-lg border-primary/20">
           <CardContent>
             <form action={submit} className="grid gap-4 lg:grid-cols-2">
               {formCompany && <input type="hidden" name="companyId" value={formCompany.id} />}
@@ -172,7 +172,7 @@ export function EmpresasClient({
         </Card>
       )}
 
-      <div className="space-y-3 border border-border bg-card p-3">
+      <div className="space-y-3 rounded-lg border border-border bg-card p-3">
         <div className="flex flex-wrap gap-2" aria-label="Filtros rapidos por tipo de empresa">
           <TypeFilterButton
             active={type === "all"}
@@ -199,7 +199,7 @@ export function EmpresasClient({
         </div>
       </div>
 
-      <div className="overflow-hidden border border-border bg-card">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className={`hidden grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
           <span>Nome</span><span>Tipo</span><span>Workspace</span><span>Usuarios</span><span>Andaimes</span><span>Status</span><span className="text-right">Acoes</span>
         </div>
@@ -216,7 +216,7 @@ export function EmpresasClient({
                 </div>
               </div>
             </div>
-            <Badge variant="outline" className={`hidden w-fit rounded-none lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
+            <Badge variant="outline" className={`hidden w-fit rounded-md lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}>{TYPE_LABELS[company.type]}</Badge>
             <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{company.workspaceNames.join(", ") || "Sem vinculo"}</p>
             <p className={`hidden lg:block ${typography.code}`}>{company.users}</p>
             <p className={`hidden lg:block ${typography.code}`}>{company.scaffolds}</p>
@@ -228,14 +228,14 @@ export function EmpresasClient({
             </div>
           </div>
         ))}
-        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">{filtered.length} registro(s) · Modulo administrativo</div>
+        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">{filtered.length} registro(s) Â· Modulo administrativo</div>
       </div>
     </div>
   );
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
-  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
+  return <Card className="rounded-lg"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
 }
 
 function Field({ label, name, defaultValue, placeholder, required }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean }) {
@@ -269,13 +269,13 @@ function CompanyLogo({
       <img
         src={getUploadedFilePreviewUrl(logoUrl)}
         alt={`Logo ${name}`}
-        className={`${dimensions} shrink-0 border bg-white object-contain p-1`}
+        className={`${dimensions} shrink-0 rounded-md border bg-white object-contain p-1`}
       />
     );
   }
 
   return (
-    <div className={`${dimensions} flex shrink-0 items-center justify-center bg-primary text-primary-foreground ${typography.action}`}>
+    <div className={`${dimensions} flex shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground ${typography.action}`}>
       {getInitials(name) || "AC"}
     </div>
   );

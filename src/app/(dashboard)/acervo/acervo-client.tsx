@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { format, parseISO } from "date-fns";
 import {
@@ -54,7 +54,7 @@ function Kpi({
   className: string;
 }) {
   return (
-    <div className={`border border-l-4 bg-card p-3 ${className}`}>
+    <div className={`border border-l-4 bg-card rounded-lg p-3 ${className}`}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className={`${typography.sectionLabel} text-muted-foreground`}>
@@ -84,7 +84,7 @@ function CountBadge({
   return (
     <Badge
       variant="outline"
-      className={`inline-flex w-fit items-center gap-1 rounded-none px-1.5 py-0.5 ${typography.badge} ${className}`}
+      className={`inline-flex w-fit items-center gap-1 rounded-md px-1.5 py-0.5 ${typography.badge} ${className}`}
     >
       <Icon className="size-2.5" />
       {value} {label}
@@ -211,18 +211,18 @@ export function AcervoClient({
         />
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-2 border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
+      <div className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
           <Input
             placeholder="Buscar por TAG, area, empresa ou workspace..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="h-8 rounded-none border-border pl-9 text-[11px]"
+            className="h-8 rounded-md border-border pl-9 text-[11px]"
           />
         </div>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="h-8 rounded-none text-[11px]">
+          <SelectTrigger className="h-8 rounded-md text-[11px]">
             <Filter className="mr-1.5 size-3.5 text-muted-foreground/50" />
             <SelectValue placeholder="Empresa" />
           </SelectTrigger>
@@ -236,7 +236,7 @@ export function AcervoClient({
           </SelectContent>
         </Select>
         <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
-          <SelectTrigger className="h-8 rounded-none text-[11px]">
+          <SelectTrigger className="h-8 rounded-md text-[11px]">
             <SelectValue placeholder="Workspace" />
           </SelectTrigger>
           <SelectContent>
@@ -249,7 +249,7 @@ export function AcervoClient({
           </SelectContent>
         </Select>
         <Select value={areaFilter} onValueChange={setAreaFilter}>
-          <SelectTrigger className="h-8 rounded-none text-[11px]">
+          <SelectTrigger className="h-8 rounded-md text-[11px]">
             <SelectValue placeholder="Area" />
           </SelectTrigger>
           <SelectContent>
@@ -266,17 +266,17 @@ export function AcervoClient({
           aria-label="Periodo inicial"
           value={periodStart}
           onChange={(event) => setPeriodStart(event.target.value)}
-          className="h-8 rounded-none border-border text-[11px]"
+          className="h-8 rounded-md border-border text-[11px]"
         />
         <Input
           type="date"
           aria-label="Periodo final"
           value={periodEnd}
           onChange={(event) => setPeriodEnd(event.target.value)}
-          className="h-8 rounded-none border-border text-[11px]"
+          className="h-8 rounded-md border-border text-[11px]"
         />
         <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
-          <SelectTrigger className="h-8 rounded-none text-[11px]">
+          <SelectTrigger className="h-8 rounded-md text-[11px]">
             <SelectValue placeholder="Possui NC" />
           </SelectTrigger>
           <SelectContent>
@@ -286,7 +286,7 @@ export function AcervoClient({
           </SelectContent>
         </Select>
         <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
-          <SelectTrigger className="h-8 rounded-none text-[11px]">
+          <SelectTrigger className="h-8 rounded-md text-[11px]">
             <SelectValue placeholder="Possui documentos" />
           </SelectTrigger>
           <SelectContent>
@@ -297,7 +297,7 @@ export function AcervoClient({
         </Select>
       </div>
 
-      <div className="min-w-0 overflow-hidden border border-border bg-card shadow-sm">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
           {[
             "TAG",
@@ -320,7 +320,7 @@ export function AcervoClient({
         </div>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-14 text-center">
-            <div className="mb-3 flex size-12 items-center justify-center border border-border bg-muted/30">
+            <div className="mb-3 flex size-12 items-center justify-center rounded-lg border border-border bg-muted/30">
               <Archive className="size-6 text-muted-foreground/40" />
             </div>
             <p className={`mb-1 text-foreground ${typography.emptyState}`}>
@@ -330,7 +330,7 @@ export function AcervoClient({
               Os andaimes desmontados serao armazenados automaticamente neste
               acervo para consulta historica.
             </p>
-            <Button asChild variant="outline" className="mt-4 rounded-none">
+            <Button asChild variant="outline" className="mt-4 rounded-md">
               <Link href="/andaimes">Voltar para Andaimes</Link>
             </Button>
           </div>

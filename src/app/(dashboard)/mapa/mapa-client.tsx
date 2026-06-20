@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -155,7 +155,7 @@ export function MapaOperacionalClient({
 
   return (
     <>
-      <div className="overflow-hidden border border-border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="flex flex-col justify-between gap-2 border-b border-border px-4 py-3 sm:flex-row sm:items-center">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
@@ -182,7 +182,7 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="border border-border bg-card p-4">
+      <div className="rounded-lg border border-border bg-card p-4">
         <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Filtros operacionais
@@ -190,7 +190,7 @@ export function MapaOperacionalClient({
           <div className="flex flex-wrap items-center gap-2">
             {canFilterCompany && companies.length > 1 && (
               <Select value={activeCompanyId} onValueChange={setActiveCompanyId}>
-                <SelectTrigger className="h-8 w-52 rounded-none text-[10px]">
+                <SelectTrigger className="h-8 w-52 rounded-md text-[10px]">
                   <SelectValue placeholder="Todas as empresas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,7 +210,7 @@ export function MapaOperacionalClient({
                   setActiveStatus(null);
                   setActiveCompanyId("all");
                 }}
-                className="inline-flex h-7 items-center gap-1.5 border border-border px-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+                className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
               >
                 <RotateCcw className="size-3" />
                 Limpar
@@ -234,7 +234,7 @@ export function MapaOperacionalClient({
                 type="button"
                 onClick={() => setActiveStatus(active ? null : item.status)}
                 className={
-                  "inline-flex h-8 items-center gap-2 border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
+                  "inline-flex h-8 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
                   (active
                     ? "border-accent bg-accent/10 text-foreground"
                     : "border-border text-muted-foreground hover:bg-muted/60")
@@ -252,7 +252,7 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="overflow-hidden border border-border bg-card shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Andaimes - listagem
@@ -299,14 +299,14 @@ export function MapaOperacionalClient({
                 <div className="flex shrink-0 gap-1.5">
                   <Link
                     href={`/andaimes/${scaffold.id}`}
-                    className="flex size-6 items-center justify-center rounded hover:bg-muted"
+                    className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                     title="Detalhe"
                   >
                     <Construction className="size-3.5 text-muted-foreground" />
                   </Link>
                   <Link
                     href={`/qr/${scaffold.id}`}
-                    className="flex size-6 items-center justify-center rounded hover:bg-muted"
+                    className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                     title="QR Code"
                   >
                     <QrCode className="size-3.5 text-muted-foreground" />
@@ -314,7 +314,7 @@ export function MapaOperacionalClient({
                   {canInspect && (
                     <Link
                       href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
-                      className="flex size-6 items-center justify-center rounded hover:bg-muted"
+                      className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                       title="Inspecionar"
                     >
                       <ClipboardCheck className="size-3.5 text-muted-foreground" />

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -199,7 +199,7 @@ export function WorkspacesClient({
       </div>
 
       {(creating || editing) && canManage && (
-        <Card className="rounded-none border-primary/20">
+        <Card className="rounded-lg border-primary/20">
           <CardContent>
             <form action={submit} className="grid gap-4 lg:grid-cols-2">
               {editing && (
@@ -260,7 +260,7 @@ export function WorkspacesClient({
         </Card>
       )}
 
-      <div className="grid gap-3 border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">
+      <div className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
           <Input
@@ -284,7 +284,7 @@ export function WorkspacesClient({
         />
       </div>
 
-      <div className="overflow-hidden border border-border bg-card">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
           <span>Nome</span><span>Codigo</span><span>Proprietaria</span><span>Cidade/Estado</span><span>Coordenadas</span><span>Status</span><span className="text-right">Acoes</span>
         </div>
@@ -326,7 +326,7 @@ export function WorkspacesClient({
           ))
         )}
         <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
-          {filtered.length} registro(s) · Modulo administrativo
+          {filtered.length} registro(s) Â· Modulo administrativo
         </div>
       </div>
     </div>
@@ -410,7 +410,7 @@ function WorkspaceLocationFields({
         selectedZoom={17}
         showCoordinates={false}
       />
-      <div className="space-y-2 border border-border bg-muted/20 p-3">
+      <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
         <p className={`${typography.sectionLabel} text-muted-foreground`}>
           Coordenadas
         </p>
@@ -449,7 +449,7 @@ function WorkspaceLocationFields({
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: typeof Factory; label: string; value: number }) {
-  return <Card className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
+  return <Card className="rounded-lg"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
 }
 
 function Field({ label, name, defaultValue, placeholder, required, type = "text", step, maxLength }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean; type?: string; step?: string; maxLength?: number }) {
@@ -465,5 +465,5 @@ function FilterSelect({ value, onValueChange, placeholder, options }: { value: s
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return <span className={`inline-flex w-fit items-center gap-1 border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativo" : "Inativo"}</span>;
+  return <span className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativo" : "Inativo"}</span>;
 }

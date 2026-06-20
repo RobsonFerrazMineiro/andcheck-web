@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+﻿import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMyProfile } from "@/lib/actions/profile-actions";
 import { getRoleLabel } from "@/lib/rbac";
@@ -40,13 +40,13 @@ export default async function PerfilPage() {
             Dados da sessao autenticada e credenciais do usuario atual.
           </p>
         </div>
-        <Badge variant="outline" className="w-fit rounded-none border-emerald-300 bg-emerald-50 text-emerald-700">
+        <Badge variant="outline" className="w-fit rounded-md border-emerald-300 bg-emerald-50 text-emerald-700">
           <CheckCircle2 className="size-3" /> Sessao ativa
         </Badge>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <Card className="rounded-none">
+        <Card className="rounded-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-4" /> Identidade
@@ -68,7 +68,7 @@ export default async function PerfilPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-none">
+        <Card className="rounded-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="size-4" /> Seguranca

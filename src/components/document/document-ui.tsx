@@ -1,4 +1,4 @@
-import {
+﻿import {
   Archive,
   CheckCircle2,
   FileImage,
@@ -20,9 +20,9 @@ const STATUS_LABELS: Record<CorporateDocumentStatus, string> = {
 };
 
 const STATUS_STYLES: Record<CorporateDocumentStatus, string> = {
-  ACTIVE: "rounded-none border-green-200 bg-green-50 text-green-700",
-  EXPIRED: "rounded-none border-red-200 bg-red-50 text-red-700",
-  ARCHIVED: "rounded-none border-slate-200 bg-slate-100 text-slate-600",
+  ACTIVE: "rounded-md border-green-200 bg-green-50 text-green-700",
+  EXPIRED: "rounded-md border-red-200 bg-red-50 text-red-700",
+  ARCHIVED: "rounded-md border-slate-200 bg-slate-100 text-slate-600",
 };
 
 const STATUS_ICONS = {

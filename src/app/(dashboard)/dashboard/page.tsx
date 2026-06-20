@@ -1,4 +1,4 @@
-import { differenceInDays, format } from "date-fns";
+﻿import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Painel Operacional
+            AndCheck EHS Â· Painel Operacional
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
           {canCreateScaffold && (
             <Link
               href="/andaimes/novo"
-              className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
             >
               <Plus className="w-3.5 h-3.5" />
               Novo Andaime
@@ -101,10 +101,10 @@ export default async function DashboardPage() {
           {canCreateInspection && (
             <Link
               href="/inspecoes/nova"
-              className={`inline-flex h-8 items-center gap-1.5 border border-border px-3 text-foreground hover:bg-muted ${typography.action}`}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-foreground hover:bg-muted ${typography.action}`}
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
-              Nova Inspeção
+              Nova InspeÃ§Ã£o
             </Link>
           )}
         </div>
@@ -125,15 +125,15 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={Wrench}
           theme="blue"
-          hint="Aguardando conclusão"
+          hint="Aguardando conclusÃ£o"
         />
         <KpiCard
-          label="Pend. Liberação"
+          label="Pend. LiberaÃ§Ã£o"
           value={pendenteLiberacao}
           total={scaffolds.length}
           icon={Clock}
           theme="amber"
-          hint="Aguardando inspeção"
+          hint="Aguardando inspeÃ§Ã£o"
         />
         <KpiCard
           label="Reprov. / Interdit."
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={ShieldOff}
           theme="red"
-          hint="Ação corretiva"
+          hint="AÃ§Ã£o corretiva"
         />
         <KpiCard
           label="Vence em 3 dias"
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
           total={scaffolds.length}
           icon={AlertTriangle}
           theme="orange"
-          hint="Requer renovação"
+          hint="Requer renovaÃ§Ã£o"
         />
       </div>
 
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
                     </p>
                     <div className="min-w-0">
                       <p className={`${typography.bodyMuted} truncate text-muted-foreground`}>
-                        {s.location} · {s.area}
+                        {s.location} Â· {s.area}
                       </p>
                       {showResponsibleCompany && (
                         <p className={`mt-0.5 truncate text-muted-foreground/70 ${typography.metaStrong}`}>
@@ -319,7 +319,7 @@ export default async function DashboardPage() {
         {NORMS.map((n) => (
           <span
             key={n}
-            className={`${typography.codeMuted} border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground/50`}
+            className={`${typography.codeMuted} rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground/50`}
           >
             {n}
           </span>
@@ -397,7 +397,7 @@ function ExecutiveKpiCard({
   const t = EXECUTIVE_THEMES[theme];
 
   return (
-    <div className={"bg-card border border-border p-4 shadow-sm " + t.border}>
+    <div className={"bg-card border border-border rounded-lg p-4 shadow-sm " + t.border}>
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className={`${typography.sectionLabel} leading-tight text-muted-foreground`}>
           {label}
@@ -512,7 +512,7 @@ function MovementBadge({
   return (
     <span
       className={
-        "inline-flex w-full max-w-full items-center gap-1.5 border px-2 py-0.5 " +
+        "inline-flex w-full max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 " +
         typography.badge + " " +
         styles.badge
       }
@@ -563,7 +563,7 @@ function KpiCard({
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <div
-      className={"bg-card " + t.border + " border border-border p-4 shadow-sm"}
+      className={"bg-card " + t.border + " border border-border rounded-lg p-4 shadow-sm"}
     >
       <div className="flex items-start justify-between mb-2">
         <p className={`${typography.sectionLabel} pr-2 leading-tight text-muted-foreground`}>
@@ -607,7 +607,7 @@ function PanelBlock({
   children,
 }: PanelBlockProps) {
   return (
-    <div className="bg-card border border-border shadow-sm h-full flex flex-col">
+    <div className="bg-card border border-border rounded-lg shadow-sm h-full flex flex-col overflow-hidden">
       <div className={`flex items-center justify-between ${surface.panelHeader}`}>
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
@@ -616,7 +616,7 @@ function PanelBlock({
           </span>
           {subtitle && (
             <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
-              · {subtitle}
+              Â· {subtitle}
             </span>
           )}
         </div>

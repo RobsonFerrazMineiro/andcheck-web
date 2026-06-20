@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+﻿import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
@@ -62,10 +62,10 @@ export default async function WorkspaceDetailPage({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-        {indicators.map((indicator) => <Card key={indicator.label} className="rounded-none"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-2xl font-bold">{indicator.value}</p></div><indicator.icon className="size-5 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => <Card key={indicator.label} className="rounded-lg"><CardContent className="flex items-center justify-between"><div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-2xl font-bold">{indicator.value}</p></div><indicator.icon className="size-5 text-primary" /></CardContent></Card>)}
       </div>
 
-      <Card className="rounded-none">
+      <Card className="rounded-lg">
         <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Info label="Nome" value={workspace.name} />
@@ -80,7 +80,7 @@ export default async function WorkspaceDetailPage({
         </CardContent>
       </Card>
 
-      <Card className="rounded-none">
+      <Card className="rounded-lg">
         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Empresas vinculadas</CardTitle></CardHeader>
         <CardContent>
           {workspace.companyLinks.length === 0 ? (
@@ -90,7 +90,7 @@ export default async function WorkspaceDetailPage({
               {workspace.companyLinks.map(({ company, role }) => (
                 <Link key={company.id} href={`/empresas/${company.id}`} className="flex items-center justify-between gap-3 border bg-muted/15 p-3 transition-colors hover:bg-muted/40">
                   <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
-                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-none text-[9px]">{role === "OWNER" ? "Proprietaria" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
+                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietaria" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
                 </Link>
               ))}
             </div>

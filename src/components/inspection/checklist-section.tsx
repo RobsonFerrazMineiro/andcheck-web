@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   AlertTriangle,
@@ -42,7 +42,7 @@ const STATUSES: {
   },
   {
     value: "nao_conforme",
-    label: "Não Conforme",
+    label: "NÃ£o Conforme",
     icon: <XCircle className="w-3.5 h-3.5" />,
     activeClass: "bg-red-100 text-red-700 border-red-300",
     hoverClass: "hover:border-red-300",
@@ -126,7 +126,7 @@ export default function ChecklistSection({
                     className="bg-red-50 text-red-600 border-red-200 text-[9px] shrink-0 uppercase tracking-wider"
                   >
                     <AlertTriangle className="w-3 h-3 mr-1" />
-                    Crítico
+                    CrÃ­tico
                   </Badge>
                 )}
               </div>
@@ -151,16 +151,16 @@ export default function ChecklistSection({
                 ))}
               </div>
 
-              {/* Observation input — só aparece se não for "conforme" */}
+              {/* Observation input â€” sÃ³ aparece se nÃ£o for "conforme" */}
               {val.status !== "" && val.status !== "conforme" && (
                 <div className="flex items-center gap-2">
                   <Input
-                    placeholder="Observação sobre este item..."
+                    placeholder="ObservaÃ§Ã£o sobre este item..."
                     value={val.observation}
                     onChange={(e) =>
                       handleChange(idx, "observation", e.target.value)
                     }
-                    className="text-[11px] h-8 rounded-none border-border flex-1"
+                    className="text-[11px] h-8 rounded-md border-border flex-1"
                   />
                   {/* Input de arquivo oculto */}
                   <input

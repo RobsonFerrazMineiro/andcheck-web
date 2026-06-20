@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ArrowLeft, Save } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -95,7 +95,7 @@ export default function NovoAndaimePage() {
         err instanceof Error ? err.message : "Erro ao salvar andaime.";
       setError(
         msg.includes("Unique constraint")
-          ? "Já existe um andaime com este código."
+          ? "JÃ¡ existe um andaime com este cÃ³digo."
           : msg,
       );
       setSaving(false);
@@ -104,7 +104,7 @@ export default function NovoAndaimePage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
         <Button variant="ghost" size="icon" className="w-7 h-7" asChild>
           <Link href="/andaimes">
@@ -113,7 +113,7 @@ export default function NovoAndaimePage() {
         </Button>
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-            AndCheck EHS · Gestão de Ativos
+            AndCheck EHS Â· GestÃ£o de Ativos
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Cadastro de Andaime
@@ -121,13 +121,13 @@ export default function NovoAndaimePage() {
         </div>
       </div>
 
-      {/* ── Formulário ── */}
+      {/* â”€â”€ FormulÃ¡rio â”€â”€ */}
       <div className="bg-card border border-border shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* TAG e Tipo */}
-          <FormSection title="Identificação">
+          <FormSection title="IdentificaÃ§Ã£o">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Código / TAG">
+              <Field label="CÃ³digo / TAG">
                 <div className="flex items-center h-9 px-3 border border-border bg-muted/40">
                   <span className="text-[11px] text-muted-foreground italic">
                     Gerado automaticamente ao salvar
@@ -139,7 +139,7 @@ export default function NovoAndaimePage() {
                   value={form.type}
                   onValueChange={(v) => setForm({ ...form, type: v })}
                 >
-                  <SelectTrigger className="rounded-none h-9 text-[12px]">
+                  <SelectTrigger className="rounded-md h-9 text-[12px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -156,28 +156,28 @@ export default function NovoAndaimePage() {
             </div>
           </FormSection>
 
-          {/* Localização */}
-          <FormSection title="Localização">
+          {/* LocalizaÃ§Ã£o */}
+          <FormSection title="LocalizaÃ§Ã£o">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Localização *">
+              <Field label="LocalizaÃ§Ã£o *">
                 <Input
-                  placeholder="Ex: Área 5 – Plataforma B"
+                  placeholder="Ex: Ãrea 5 â€“ Plataforma B"
                   value={form.location}
                   onChange={set("location")}
                   required
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Área / Setor">
+              <Field label="Ãrea / Setor">
                 <Input
-                  placeholder="Ex: Manutenção Industrial"
+                  placeholder="Ex: ManutenÃ§Ã£o Industrial"
                   value={form.area}
                   onChange={set("area")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
             </div>
-            <Field label="Geolocalização (opcional)">
+            <Field label="GeolocalizaÃ§Ã£o (opcional)">
               <LocationPicker
                 latitude={latitude}
                 longitude={longitude}
@@ -189,8 +189,8 @@ export default function NovoAndaimePage() {
             </Field>
           </FormSection>
 
-          {/* Dados Técnicos */}
-          <FormSection title="Dados Técnicos">
+          {/* Dados TÃ©cnicos */}
+          <FormSection title="Dados TÃ©cnicos">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Field label="Altura (m) *">
                 <Input
@@ -201,7 +201,7 @@ export default function NovoAndaimePage() {
                   value={form.height}
                   onChange={set("height")}
                   required
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
               <Field label="Largura (m)">
@@ -212,7 +212,7 @@ export default function NovoAndaimePage() {
                   placeholder="1.5"
                   value={form.width}
                   onChange={set("width")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
               <Field label="Comprimento (m)">
@@ -223,31 +223,31 @@ export default function NovoAndaimePage() {
                   placeholder="4.0"
                   value={form.length}
                   onChange={set("length")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Carga Máx. (kg)">
+              <Field label="Carga MÃ¡x. (kg)">
                 <Input
                   type="number"
                   min="0"
                   placeholder="500"
                   value={form.max_load}
                   onChange={set("max_load")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
             </div>
           </FormSection>
 
           {/* Responsabilidade */}
-          <FormSection title="Responsabilidade Técnica">
+          <FormSection title="Responsabilidade TÃ©cnica">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Responsável Técnico">
+              <Field label="ResponsÃ¡vel TÃ©cnico">
                 <Input
-                  placeholder="Nome do responsável"
+                  placeholder="Nome do responsÃ¡vel"
                   value={form.responsible}
                   onChange={set("responsible")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
               <Field label="Empresa Montadora">
@@ -255,21 +255,21 @@ export default function NovoAndaimePage() {
                   placeholder="Nome da empresa"
                   value={form.company}
                   onChange={set("company")}
-                  className="rounded-none h-9 text-[12px]"
+                  className="rounded-md h-9 text-[12px]"
                 />
               </Field>
             </div>
           </FormSection>
 
-          {/* Observações */}
-          <FormSection title="Observações">
-            <Field label="Observações gerais">
+          {/* ObservaÃ§Ãµes */}
+          <FormSection title="ObservaÃ§Ãµes">
+            <Field label="ObservaÃ§Ãµes gerais">
               <Textarea
-                placeholder="Informações adicionais sobre o andaime..."
+                placeholder="InformaÃ§Ãµes adicionais sobre o andaime..."
                 value={form.notes}
                 onChange={set("notes")}
                 rows={3}
-                className="rounded-none text-[12px] resize-none"
+                className="rounded-md text-[12px] resize-none"
               />
             </Field>
           </FormSection>
@@ -278,8 +278,8 @@ export default function NovoAndaimePage() {
           <div className="bg-muted/30 border border-border px-4 py-3">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
               Status inicial:{" "}
-              <span className="font-bold text-blue-700">EM MONTAGEM</span> — o
-              andaime ficará em montagem até ser liberado após inspeção.
+              <span className="font-bold text-blue-700">EM MONTAGEM</span> â€” o
+              andaime ficarÃ¡ em montagem atÃ© ser liberado apÃ³s inspeÃ§Ã£o.
             </p>
           </div>
 
@@ -295,7 +295,7 @@ export default function NovoAndaimePage() {
             <Button
               type="button"
               variant="outline"
-              className="rounded-none text-[11px] uppercase tracking-widest h-9"
+              className="rounded-md text-[11px] uppercase tracking-widest h-9"
               asChild
             >
               <Link href="/andaimes">Cancelar</Link>
@@ -303,7 +303,7 @@ export default function NovoAndaimePage() {
             <Button
               type="submit"
               disabled={saving}
-              className="rounded-none text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="rounded-md text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
               <Save className="w-3.5 h-3.5 mr-1.5" />
               {saving ? "Salvando..." : "Cadastrar Andaime"}
@@ -312,15 +312,15 @@ export default function NovoAndaimePage() {
         </form>
       </div>
 
-      {/* Rodapé normativo */}
+      {/* RodapÃ© normativo */}
       <p className="text-[8px] text-muted-foreground/30 uppercase tracking-widest text-right">
-        Conforme NR-18 · NBR 6494 · AndCheck EHS · Documento Controlado
+        Conforme NR-18 Â· NBR 6494 Â· AndCheck EHS Â· Documento Controlado
       </p>
     </div>
   );
 }
 
-// ── Sub-components ─────────────────────────────────────────
+// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function FormSection({
   title,

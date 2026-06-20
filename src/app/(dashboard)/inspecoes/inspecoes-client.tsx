@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { format, parseISO } from "date-fns";
 import {
@@ -60,10 +60,10 @@ export function InspecoesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Registros Técnicos
+            AndCheck EHS Â· Registros TÃ©cnicos
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
-            Histórico de Inspeções
+            HistÃ³rico de InspeÃ§Ãµes
           </h1>
           <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             {inspections.length} registros no sistema
@@ -72,26 +72,26 @@ export function InspecoesClient({
         {canCreateInspection && (
           <Link
           href="/inspecoes/nova"
-          className={`inline-flex h-8 shrink-0 items-center gap-1.5 bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+          className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
         >
           <Plus className="w-3.5 h-3.5" />
-          Nova Inspeção
+          Nova InspeÃ§Ã£o
           </Link>
         )}
       </div>
 
-      <div className="bg-card border border-border shadow-sm p-3 flex flex-col sm:flex-row gap-2">
+      <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             placeholder="Buscar por andaime (TAG) ou inspetor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-none border-border"
+            className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select value={resultFilter} onValueChange={setResultFilter}>
-          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-none">
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Resultado" />
           </SelectTrigger>
@@ -113,26 +113,26 @@ export function InspecoesClient({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border p-14 text-center">
+        <div className="bg-card border border-border rounded-lg p-14 text-center">
           <ClipboardCheck className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
-            Nenhuma inspeção encontrada
+            Nenhuma inspeÃ§Ã£o encontrada
           </p>
           <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
-            Registre a primeira vistoria para iniciar o histórico
+            Registre a primeira vistoria para iniciar o histÃ³rico
           </p>
           {canCreateInspection && (
             <Link
             href="/inspecoes/nova"
-            className={`inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-accent-foreground ${typography.action}`}
+            className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
           >
             <Plus className="w-3.5 h-3.5" />
-            Nova Inspeção
+            Nova InspeÃ§Ã£o
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-card border border-border shadow-sm overflow-hidden">
+        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
             {["Andaime", "Data", "Inspetor", "Validade", "Resultado", ""].map(
               (h, i) => (
@@ -192,7 +192,7 @@ export function InspecoesClient({
                       <p className={`hidden md:block md:col-span-1 text-muted-foreground ${typography.code}`}>
                         {insp.validity_days > 0
                           ? insp.validity_days + "d"
-                          : "—"}
+                          : "â€”"}
                       </p>
                       <div className="hidden md:flex md:col-span-2 items-center">
                         <StatusBadge status={insp.result} />
@@ -211,7 +211,7 @@ export function InspecoesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) · Documento Controlado · AndCheck
+              {filtered.length} registro(s) Â· Documento Controlado Â· AndCheck
               EHS
             </p>
           </div>

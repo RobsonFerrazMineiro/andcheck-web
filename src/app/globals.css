@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -104,7 +104,7 @@
     font-feature-settings: "ss01", "cv05";
   }
 
-  /* Scrollbar técnica enterprise */
+  /* Scrollbar tÃ©cnica enterprise */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -161,6 +161,8 @@
 
   .andcheck-popup {
     color: var(--foreground);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
   }
 
   .andcheck-popup-full {
@@ -209,6 +211,7 @@
 
   .andcheck-popup-header span {
     border: 1px solid;
+    border-radius: var(--radius-md);
     padding: 3px 7px;
     font-size: 9px;
     font-weight: 800;
@@ -268,6 +271,7 @@
     letter-spacing: 0.06em;
     min-height: 28px;
     padding: 6px 8px;
+    border-radius: var(--radius-md);
     text-decoration: none;
     text-transform: uppercase;
     white-space: nowrap;

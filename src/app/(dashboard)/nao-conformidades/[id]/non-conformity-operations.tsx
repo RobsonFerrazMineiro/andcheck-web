@@ -273,7 +273,7 @@ export function NonConformityOperations({
               name="responsibleUserId"
               defaultValue={responsibleUserId ?? undefined}
             >
-              <SelectTrigger className="w-full rounded-none">
+              <SelectTrigger className="w-full rounded-md">
                 <SelectValue placeholder="Planejamento, Supervisor ou Encarregado" />
               </SelectTrigger>
               <SelectContent>
@@ -307,13 +307,13 @@ export function NonConformityOperations({
               name="dueDate"
               type="date"
               defaultValue={dueDate ? dueDate.slice(0, 10) : ""}
-              className="rounded-none"
+              className="rounded-md"
               required
             />
             <Textarea
               name="reason"
               placeholder="Motivo da alteracao"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
               required
             />
             <div className="flex justify-end gap-2">
@@ -338,7 +338,7 @@ export function NonConformityOperations({
             <Textarea
               name="comment"
               placeholder="Comentario operacional"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
               required
             />
             <div className="flex justify-end gap-2">
@@ -362,7 +362,7 @@ export function NonConformityOperations({
             <Textarea
               name="comment"
               placeholder="Comentario de encerramento"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
               required
             />
             <div className="flex justify-end gap-2">
@@ -386,7 +386,7 @@ export function NonConformityOperations({
             <Textarea
               name="comment"
               placeholder="Motivo da rejeicao"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
               required
             />
             <div className="flex justify-end gap-2">
@@ -412,7 +412,7 @@ export function NonConformityOperations({
             <Textarea
               name="comment"
               placeholder="Motivo do cancelamento"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
               required
             />
             <div className="flex justify-end gap-2">
@@ -506,13 +506,13 @@ export function NonConformityItemEvidenceButton({
               name="file"
               type="file"
               accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-              className="rounded-none"
+              className="rounded-md"
               required
             />
             <Textarea
               name="observation"
               placeholder="Comentario opcional"
-              className="rounded-none text-[12px]"
+              className="rounded-md text-[12px]"
             />
             <div className="flex justify-end gap-2">
               <Button

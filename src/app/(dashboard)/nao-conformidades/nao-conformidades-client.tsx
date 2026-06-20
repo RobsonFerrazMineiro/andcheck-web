@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { format, isPast, parseISO } from "date-fns";
 import {
@@ -221,7 +221,7 @@ export function NaoConformidadesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Controle de Tratativas
+            AndCheck EHS Â· Controle de Tratativas
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Nao Conformidades
@@ -266,7 +266,7 @@ export function NaoConformidadesClient({
           <div
             key={card.label}
             className={
-              "border border-l-4 p-3 text-center " + card.bg + " " + card.bar
+              "border border-l-4 rounded-lg p-3 text-center " + card.bg + " " + card.bar
             }
           >
             <p className={`${typography.operationalValue} ${card.color}`}>
@@ -279,18 +279,18 @@ export function NaoConformidadesClient({
         ))}
       </div>
 
-      <div className="bg-card border border-border shadow-sm p-3 grid grid-cols-1 lg:grid-cols-[1.4fr_170px_170px_170px_170px_140px] gap-2">
+      <div className="bg-card border border-border rounded-lg shadow-sm p-3 grid grid-cols-1 lg:grid-cols-[1.4fr_170px_170px_170px_170px_140px] gap-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             placeholder="Buscar por codigo, andaime, empresa ou responsavel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-none border-border"
+            className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -304,7 +304,7 @@ export function NaoConformidadesClient({
           </SelectContent>
         </Select>
         <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <SelectValue placeholder="Empresa" />
           </SelectTrigger>
           <SelectContent>
@@ -320,7 +320,7 @@ export function NaoConformidadesClient({
           value={classificationFilter}
           onValueChange={setClassificationFilter}
         >
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <SelectValue placeholder="Classificacao" />
           </SelectTrigger>
           <SelectContent>
@@ -333,7 +333,7 @@ export function NaoConformidadesClient({
           </SelectContent>
         </Select>
         <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <SelectValue placeholder="Responsavel" />
           </SelectTrigger>
           <SelectContent>
@@ -346,7 +346,7 @@ export function NaoConformidadesClient({
           </SelectContent>
         </Select>
         <Select value={dueFilter} onValueChange={setDueFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-none">
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
             <SelectValue placeholder="Vencimento" />
           </SelectTrigger>
           <SelectContent>
@@ -364,7 +364,7 @@ export function NaoConformidadesClient({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border p-14 text-center">
+        <div className="bg-card border border-border rounded-lg p-14 text-center">
           <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhuma nao conformidade encontrada
@@ -374,7 +374,7 @@ export function NaoConformidadesClient({
           </p>
         </div>
       ) : (
-        <div className="bg-card border border-border shadow-sm overflow-hidden">
+        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <div className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
             {[
               "Codigo",
@@ -502,7 +502,7 @@ export function NaoConformidadesClient({
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) · Controle de tratativas · AndCheck
+              {filtered.length} registro(s) Â· Controle de tratativas Â· AndCheck
               EHS
             </p>
           </div>
