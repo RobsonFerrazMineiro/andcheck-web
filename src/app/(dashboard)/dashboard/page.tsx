@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     canCurrentUser("inspections.create"),
   ]);
   const { scaffolds, inspections } = dashboardMetrics.operational;
-  const { historical, rankings } = dashboardMetrics;
+  const { historical, operationalMovements, rankings } = dashboardMetrics;
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&
@@ -272,41 +272,39 @@ export default async function DashboardPage() {
         <div>
           <PanelBlock
             title="Ultimas Movimentacoes Operacionais"
-            subtitle={inspections.length + " total"}
+            subtitle={operationalMovements.length + " eventos"}
             icon={FileText}
-            action={
-              <Link
-                href="/inspecoes"
-                className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                Ver todos <ArrowRight className="w-3 h-3" />
-              </Link>
-            }
           >
-            <div className="divide-y divide-border">
-              {inspections.slice(0, 7).map((insp) => (
-                <Link
-                  key={insp.id}
-                  href={"/inspecoes/" + insp.id}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-colors"
-                >
-                  <div className="min-w-0">
-                    <p className="font-bold text-[11px] text-foreground font-mono uppercase">
-                      {insp.scaffold_code}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {format(insp.date, "dd/MM/yyyy")} · {insp.inspector_name}
-                    </p>
-                    {showResponsibleCompany && (
-                      <p className="mt-0.5 truncate text-[9px] font-semibold text-muted-foreground/70">
-                        Empresa: {insp.scaffold.tenantCompany.name}
+            {operationalMovements.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <FileText className="mx-auto h-8 w-8 text-muted-foreground/25" />
+                <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Nenhuma movimentacao operacional
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {operationalMovements.map((movement) => (
+                  <div
+                    key={movement.id}
+                    className="grid grid-cols-[minmax(120px,auto)_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3"
+                  >
+                    <MovementBadge label={movement.badge} tone={movement.tone} />
+                    <div className="min-w-0">
+                      <p className="truncate text-[11px] font-semibold text-foreground">
+                        {movement.title}
                       </p>
-                    )}
+                      <p className="mt-0.5 truncate text-[9px] uppercase tracking-wider text-muted-foreground/60">
+                        {movement.userName}
+                      </p>
+                    </div>
+                    <p className="shrink-0 font-mono text-[10px] text-muted-foreground">
+                      {format(movement.createdAt, "dd/MM HH:mm")}
+                    </p>
                   </div>
-                  <StatusBadge status={insp.result} />
-                </Link>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </PanelBlock>
         </div>
       </div>
@@ -352,6 +350,7 @@ function formatDecimalDays(value: number | null) {
 }
 
 type ExecutiveTheme = "slate" | "green" | "blue" | "amber";
+type MovementTone = "green" | "blue" | "amber" | "red";
 
 const EXECUTIVE_THEMES: Record<
   ExecutiveTheme,
@@ -464,6 +463,33 @@ function RankingPanel({
         </div>
       )}
     </PanelBlock>
+  );
+}
+
+const MOVEMENT_BADGE_STYLES: Record<MovementTone, string> = {
+  green: "border-emerald-300 bg-emerald-50 text-emerald-800",
+  blue: "border-blue-300 bg-blue-50 text-blue-800",
+  amber: "border-amber-300 bg-amber-50 text-amber-800",
+  red: "border-red-300 bg-red-50 text-red-800",
+};
+
+function MovementBadge({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: MovementTone;
+}) {
+  return (
+    <span
+      className={
+        "inline-flex w-fit max-w-full items-center border px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest " +
+        MOVEMENT_BADGE_STYLES[tone]
+      }
+      title={label}
+    >
+      <span className="truncate">{label}</span>
+    </span>
   );
 }
 

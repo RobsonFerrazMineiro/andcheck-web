@@ -2,6 +2,8 @@ import "server-only";
 
 import { differenceInMilliseconds } from "date-fns";
 import {
+  AuditAction,
+  AuditEntityType,
   InspectionResult,
   NonConformityStatus,
   Prisma,
@@ -20,6 +22,81 @@ function average(values: number[]) {
 
 function roundOneDecimal(value: number) {
   return Math.round(value * 10) / 10;
+}
+
+function getJsonString(value: Prisma.JsonValue | null, key: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const item = value[key];
+  return typeof item === "string" ? item : null;
+}
+
+function getOperationalMovement(log: {
+  action: AuditAction;
+  entityType: AuditEntityType;
+  entityLabel: string | null;
+  description: string;
+  userName: string | null;
+  newValue: Prisma.JsonValue | null;
+  createdAt: Date;
+}) {
+  const label = log.entityLabel ?? "registro";
+  const status = getJsonString(log.newValue, "status");
+  const result = getJsonString(log.newValue, "result");
+  const inspectionResult = getJsonString(log.newValue, "inspection_result");
+
+  if (log.entityType === AuditEntityType.SCAFFOLD) {
+    if (log.action === AuditAction.CREATE) {
+      return { badge: "ANDAIME CRIADO", title: `Andaime ${label} criado`, tone: "green" as const };
+    }
+    if (log.action === AuditAction.STATUS_CHANGE) {
+      if (status === "liberado") {
+        return { badge: "LIBERADO", title: `Andaime ${label} liberado`, tone: "green" as const };
+      }
+      if (status === "interditado") {
+        return { badge: "INTERDITADO", title: `Andaime ${label} interditado`, tone: "red" as const };
+      }
+      if (status === "desmontado") {
+        return { badge: "DESMONTADO", title: `Andaime ${label} desmontado`, tone: "red" as const };
+      }
+      if (inspectionResult === "aprovado" || inspectionResult === "aprovado_com_ressalvas") {
+        return { badge: "LIBERADO", title: `Andaime ${label} liberado`, tone: "green" as const };
+      }
+      if (inspectionResult === "reprovado") {
+        return { badge: "REPROVADO", title: `Andaime ${label} reprovado`, tone: "red" as const };
+      }
+    }
+  }
+
+  if (log.entityType === AuditEntityType.INSPECTION && log.action === AuditAction.CREATE) {
+    if (result === "reprovado") {
+      return { badge: "INSPECAO REPROVADA", title: `Inspecao ${label} reprovada`, tone: "red" as const };
+    }
+    if (result === "aprovado" || result === "aprovado_com_ressalvas") {
+      return { badge: "INSPECAO APROVADA", title: `Inspecao ${label} aprovada`, tone: "green" as const };
+    }
+    return { badge: "INSPECAO CRIADA", title: `Inspecao ${label} criada`, tone: "blue" as const };
+  }
+
+  if (log.entityType === AuditEntityType.NON_CONFORMITY) {
+    if (log.action === AuditAction.CREATE) {
+      return { badge: "NC ABERTA", title: `Nao conformidade ${label} aberta`, tone: "red" as const };
+    }
+    if (log.action === AuditAction.UPDATE || log.action === AuditAction.STATUS_CHANGE) {
+      return { badge: "NC ATUALIZADA", title: `Nao conformidade ${label} atualizada`, tone: "amber" as const };
+    }
+    if (log.action === AuditAction.COMPLETE) {
+      return { badge: "NC ENCERRADA", title: `Nao conformidade ${label} encerrada`, tone: "green" as const };
+    }
+  }
+
+  if (
+    log.entityType === AuditEntityType.DOCUMENT &&
+    (log.action === AuditAction.DOCUMENT_CREATED || log.action === AuditAction.UPLOAD)
+  ) {
+    return { badge: "DOCUMENTO", title: `Documento tecnico anexado em ${label}`, tone: "blue" as const };
+  }
+
+  return null;
 }
 
 export async function getDashboardMetrics() {
@@ -45,6 +122,7 @@ export async function getDashboardMetrics() {
     closedNonConformities,
     companyRanking,
     areaRanking,
+    auditLogs,
   ] = await Promise.all([
     prisma.scaffold.findMany({
       where: activeScaffoldWhere,
@@ -115,6 +193,29 @@ export async function getDashboardMetrics() {
       orderBy: { _count: { area: "desc" } },
       take: 4,
     }),
+    prisma.auditLog.findMany({
+      where: {
+        ...scopedWhere,
+        OR: [
+          { entityType: AuditEntityType.SCAFFOLD, action: { in: [AuditAction.CREATE, AuditAction.STATUS_CHANGE] } },
+          { entityType: AuditEntityType.INSPECTION, action: AuditAction.CREATE },
+          { entityType: AuditEntityType.NON_CONFORMITY, action: { in: [AuditAction.CREATE, AuditAction.UPDATE, AuditAction.STATUS_CHANGE, AuditAction.COMPLETE] } },
+          { entityType: AuditEntityType.DOCUMENT, action: { in: [AuditAction.DOCUMENT_CREATED, AuditAction.UPLOAD] } },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+      select: {
+        id: true,
+        action: true,
+        entityType: true,
+        entityLabel: true,
+        description: true,
+        userName: true,
+        newValue: true,
+        createdAt: true,
+      },
+    }),
   ]);
 
   const companyIds = companyRanking.map((item) => item.companyId);
@@ -169,5 +270,17 @@ export async function getDashboardMetrics() {
         total: item._count._all,
       })),
     },
+    operationalMovements: auditLogs.flatMap((log) => {
+      const movement = getOperationalMovement(log);
+      if (!movement) return [];
+      return [{
+        id: log.id,
+        badge: movement.badge,
+        title: movement.title,
+        tone: movement.tone,
+        userName: log.userName ?? "Sistema",
+        createdAt: log.createdAt,
+      }];
+    }).slice(0, 10),
   };
 }
