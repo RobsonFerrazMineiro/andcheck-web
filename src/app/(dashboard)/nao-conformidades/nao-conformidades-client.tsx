@@ -6,6 +6,7 @@ import {
   Calendar,
   ChevronRight,
   ClipboardList,
+  Clock,
   Filter,
   Search,
   User,
@@ -226,57 +227,83 @@ export function NaoConformidadesClient({
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Não Conformidades
           </h1>
-          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+          <p
+            className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
+          >
             {initialData.length} registro(s) de NC no sistema
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          {
-            label: "NCs Abertas",
-            value: abertas,
-            color: "text-blue-600",
-            bg: "bg-blue-50 border-blue-200",
-            bar: "border-l-blue-600",
-          },
-          {
-            label: "Em Tratamento",
-            value: emTratamento,
-            color: "text-amber-600",
-            bg: "bg-amber-50 border-amber-200",
-            bar: "border-l-amber-500",
-          },
-          {
-            label: "Críticas",
-            value: criticas,
-            color: "text-red-700",
-            bg: "bg-red-50 border-red-200",
-            bar: "border-l-red-700",
-          },
-          {
-            label: "Vencidas",
-            value: vencidas,
-            color: "text-slate-700",
-            bg: "bg-slate-50 border-slate-300",
-            bar: "border-l-slate-700",
-          },
-        ].map((card) => (
-          <div
-            key={card.label}
-            className={
-              "border border-l-4 rounded-lg p-3 text-center " + card.bg + " " + card.bar
-            }
-          >
-            <p className={`${typography.operationalValue} ${card.color}`}>
-              {card.value}
-            </p>
-            <p className={`${typography.sectionLabel} text-muted-foreground`}>
-              {card.label}
-            </p>
-          </div>
-        ))}
+        {(
+          [
+            {
+              label: "NCs Abertas",
+              value: abertas,
+              icon: ClipboardList,
+              iconClass: "text-blue-600",
+              border: "border-l-4 border-l-blue-600",
+              valueClass: "text-blue-700",
+            },
+            {
+              label: "Em Tratamento",
+              value: emTratamento,
+              icon: Clock,
+              iconClass: "text-amber-500",
+              border: "border-l-4 border-l-amber-500",
+              valueClass: "text-amber-700",
+            },
+            {
+              label: "Críticas",
+              value: criticas,
+              icon: AlertTriangle,
+              iconClass: "text-red-600",
+              border: "border-l-4 border-l-red-600",
+              valueClass: "text-red-700",
+            },
+            {
+              label: "Vencidas",
+              value: vencidas,
+              icon: Calendar,
+              iconClass: "text-slate-500",
+              border: "border-l-4 border-l-slate-500",
+              valueClass: "text-slate-700",
+            },
+          ] as Array<{
+            label: string;
+            value: number;
+            icon: React.ElementType;
+            iconClass: string;
+            border: string;
+            valueClass: string;
+          }>
+        ).map((card) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={card.label}
+              className={
+                "bg-card border border-border rounded-lg p-4 shadow-sm " +
+                card.border
+              }
+            >
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <p
+                  className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+                >
+                  {card.label}
+                </p>
+                <Icon className={"h-4 w-4 shrink-0 " + card.iconClass} />
+              </div>
+              <p
+                className={`${typography.kpiValue} leading-none ${card.valueClass}`}
+              >
+                {card.value}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       <div className="bg-card border border-border rounded-lg shadow-sm p-3 grid grid-cols-1 lg:grid-cols-[1.4fr_170px_170px_170px_170px_140px] gap-2">
@@ -375,7 +402,9 @@ export function NaoConformidadesClient({
         </div>
       ) : (
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-          <div className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
+          <div
+            className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}
+          >
             {[
               "Código",
               "Data",
@@ -434,24 +463,34 @@ export function NaoConformidadesClient({
                       <AlertTriangle className="w-3.5 h-3.5 text-primary/40" />
                     </div>
                     <div className="flex-1 xl:contents min-w-0">
-                      <p className={`xl:col-span-1 text-foreground ${typography.code}`}>
+                      <p
+                        className={`xl:col-span-1 text-foreground ${typography.code}`}
+                      >
                         {nc.code}
                       </p>
                       <div className="xl:col-span-1 hidden xl:flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className={`${typography.sectionDescription} text-muted-foreground`}>
+                        <p
+                          className={`${typography.sectionDescription} text-muted-foreground`}
+                        >
                           {format(parseISO(nc.createdAt), "dd/MM/yy")}
                         </p>
                       </div>
                       <div className="xl:col-span-2 min-w-0">
-                        <p className={`truncate text-foreground ${typography.bodyStrong}`}>
+                        <p
+                          className={`truncate text-foreground ${typography.bodyStrong}`}
+                        >
                           {nc.scaffold.code}
                         </p>
-                        <p className={`truncate text-muted-foreground ${typography.panelSubtitle}`}>
+                        <p
+                          className={`truncate text-muted-foreground ${typography.panelSubtitle}`}
+                        >
                           {nc.scaffold.area}
                         </p>
                       </div>
-                      <p className={`hidden truncate text-muted-foreground xl:col-span-2 xl:block ${typography.sectionDescription}`}>
+                      <p
+                        className={`hidden truncate text-muted-foreground xl:col-span-2 xl:block ${typography.sectionDescription}`}
+                      >
                         {company}
                       </p>
                       <div className="hidden xl:flex xl:col-span-1 items-center">
@@ -463,14 +502,18 @@ export function NaoConformidadesClient({
                       </div>
                       <div className="xl:col-span-2 hidden xl:flex items-center gap-1">
                         <User className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
+                        <p
+                          className={`truncate text-muted-foreground ${typography.sectionDescription}`}
+                        >
                           {responsible}
                         </p>
                       </div>
                       <p
                         className={
                           `hidden xl:block xl:col-span-1 ${typography.codeMuted} ` +
-                          (overdue ? "text-red-700 font-bold" : "text-muted-foreground")
+                          (overdue
+                            ? "text-red-700 font-bold"
+                            : "text-muted-foreground")
                         }
                       >
                         {nc.dueDate
@@ -501,7 +544,9 @@ export function NaoConformidadesClient({
             })}
           </div>
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
+            <p
+              className={`${typography.panelSubtitle} text-muted-foreground/40`}
+            >
               {filtered.length} registro(s) · Controle de tratativas · AndCheck
               EHS
             </p>

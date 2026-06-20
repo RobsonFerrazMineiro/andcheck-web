@@ -47,25 +47,31 @@ function Kpi({
   label,
   value,
   className,
+  iconClass = "text-muted-foreground",
+  valueClass = "text-foreground",
 }: {
   icon: typeof Archive;
   label: string;
   value: number;
   className: string;
+  iconClass?: string;
+  valueClass?: string;
 }) {
   return (
-    <div className={`border border-l-4 bg-card rounded-lg p-3 ${className}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className={`${typography.sectionLabel} text-muted-foreground`}>
-            {label}
-          </p>
-          <p className={`mt-1 text-foreground ${typography.kpiValue}`}>
-            {value}
-          </p>
-        </div>
-        <Icon className="size-5 text-muted-foreground" />
+    <div
+      className={`border border-l-4 bg-card rounded-lg p-4 shadow-sm ${className}`}
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p
+          className={`${typography.sectionLabel} text-muted-foreground leading-tight`}
+        >
+          {label}
+        </p>
+        <Icon className={`h-4 w-4 shrink-0 ${iconClass}`} />
       </div>
+      <p className={`${typography.kpiValue} leading-none ${valueClass}`}>
+        {value}
+      </p>
     </div>
   );
 }
@@ -178,7 +184,9 @@ export function AcervoClient({
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Acervo de Andaimes
           </h1>
-          <p className={`mt-0.5 text-muted-foreground ${typography.sectionDescription}`}>
+          <p
+            className={`mt-0.5 text-muted-foreground ${typography.sectionDescription}`}
+          >
             Consulta historica de andaimes desmontados.
           </p>
         </div>
@@ -190,24 +198,32 @@ export function AcervoClient({
           label="Total de Andaimes"
           value={total}
           className="border-slate-200 border-l-slate-500"
+          iconClass="text-slate-500"
+          valueClass="text-slate-700"
         />
         <Kpi
           icon={CheckCircle2}
           label="Desmontados"
           value={total}
-          className="border-green-200 border-l-green-500 bg-green-50"
+          className="border-green-200 border-l-green-500 bg-green-50/40"
+          iconClass="text-green-600"
+          valueClass="text-green-700"
         />
         <Kpi
           icon={AlertTriangle}
           label="Com Tratativas"
           value={withNc}
-          className="border-red-200 border-l-red-500 bg-red-50"
+          className="border-red-200 border-l-red-500 bg-red-50/40"
+          iconClass="text-red-500"
+          valueClass="text-red-700"
         />
         <Kpi
           icon={FileText}
           label="Com Documentação"
           value={withDocuments}
-          className="border-slate-200 border-l-slate-500 bg-slate-50"
+          className="border-slate-200 border-l-slate-500 bg-slate-50/40"
+          iconClass="text-slate-500"
+          valueClass="text-slate-700"
         />
       </div>
 
@@ -298,7 +314,9 @@ export function AcervoClient({
       </div>
 
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-        <div className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}>
+        <div
+          className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}
+        >
           {[
             "TAG",
             "Área",
@@ -326,7 +344,9 @@ export function AcervoClient({
             <p className={`mb-1 text-foreground ${typography.emptyState}`}>
               Nenhum andaime desmontado encontrado
             </p>
-            <p className={`max-w-sm leading-relaxed text-muted-foreground ${typography.sectionDescription}`}>
+            <p
+              className={`max-w-sm leading-relaxed text-muted-foreground ${typography.sectionDescription}`}
+            >
               Os andaimes desmontados serao armazenados automaticamente neste
               acervo para consulta historica.
             </p>
@@ -352,19 +372,27 @@ export function AcervoClient({
                     <p className={`text-foreground ${typography.code}`}>
                       {row.code}
                     </p>
-                    <p className={`${typography.sectionDescription} text-muted-foreground`}>
+                    <p
+                      className={`${typography.sectionDescription} text-muted-foreground`}
+                    >
                       {row.area || "-"}
                     </p>
-                    <p className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}>
+                    <p
+                      className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}
+                    >
                       {row.companyName || "-"}
                     </p>
-                    <p className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}>
+                    <p
+                      className={`hidden truncate text-muted-foreground xl:block ${typography.sectionDescription}`}
+                    >
                       {row.workspaceName || "-"}
                     </p>
                     <div className="hidden xl:flex xl:items-center">
                       <StatusBadge status="desmontado" />
                     </div>
-                    <p className={`hidden text-muted-foreground xl:block ${typography.code}`}>
+                    <p
+                      className={`hidden text-muted-foreground xl:block ${typography.code}`}
+                    >
                       {formatDate(row.dismantledAt)}
                     </p>
                     <div className="hidden xl:flex xl:items-center">
@@ -395,7 +423,9 @@ export function AcervoClient({
             ))}
           </div>
         )}
-        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
+        <div
+          className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}
+        >
           {filtered.length} registro(s) - Acervo de andaimes
         </div>
       </div>

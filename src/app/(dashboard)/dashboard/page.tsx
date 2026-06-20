@@ -113,7 +113,15 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <KpiCard
+          label="Andaimes Montados"
+          value={scaffolds.length}
+          total={0}
+          icon={Construction}
+          theme="slate"
+          hint="Inventário operacional ativo"
+        />
         <KpiCard
           label="Liberados"
           value={liberados}
@@ -121,6 +129,7 @@ export default async function DashboardPage() {
           icon={CheckCircle2}
           theme="green"
           hint="Operacional"
+          showPct
         />
         <KpiCard
           label="Em Montagem"
@@ -129,6 +138,7 @@ export default async function DashboardPage() {
           icon={Wrench}
           theme="blue"
           hint="Aguardando conclusão"
+          showPct
         />
         <KpiCard
           label="Pend. Liberação"
@@ -137,6 +147,7 @@ export default async function DashboardPage() {
           icon={Clock}
           theme="amber"
           hint="Aguardando inspeção"
+          showPct
         />
         <KpiCard
           label="Reprov. / Interdit."
@@ -145,6 +156,7 @@ export default async function DashboardPage() {
           icon={ShieldOff}
           theme="red"
           hint="Ação corretiva"
+          showPct
         />
         <KpiCard
           label="Vence em 3 dias"
@@ -153,6 +165,7 @@ export default async function DashboardPage() {
           icon={AlertTriangle}
           theme="orange"
           hint="Requer renovação"
+          showPct
         />
       </div>
 
@@ -353,8 +366,9 @@ interface KpiCardProps {
   value: number;
   total: number;
   icon: React.ElementType;
-  theme: "green" | "blue" | "amber" | "red" | "orange";
+  theme: "green" | "blue" | "amber" | "red" | "orange" | "slate";
   hint: string;
+  showPct?: boolean;
 }
 
 function formatDays(value: number | null) {
@@ -567,26 +581,37 @@ const THEMES = {
     border: "border-l-4 border-l-green-600",
     val: "text-green-700",
     bar: "bg-green-500",
+    icon: "text-green-600",
   },
   blue: {
     border: "border-l-4 border-l-blue-600",
     val: "text-blue-700",
     bar: "bg-blue-500",
+    icon: "text-blue-600",
   },
   amber: {
     border: "border-l-4 border-l-amber-500",
     val: "text-amber-700",
     bar: "bg-amber-400",
+    icon: "text-amber-500",
   },
   red: {
     border: "border-l-4 border-l-red-600",
     val: "text-red-700",
     bar: "bg-red-500",
+    icon: "text-red-600",
   },
   orange: {
     border: "border-l-4 border-l-orange-500",
     val: "text-orange-700",
     bar: "bg-orange-400",
+    icon: "text-orange-500",
+  },
+  slate: {
+    border: "border-l-4 border-l-slate-500",
+    val: "text-slate-700",
+    bar: "bg-slate-400",
+    icon: "text-slate-500",
   },
 } as const;
 function KpiCard({
@@ -596,9 +621,11 @@ function KpiCard({
   icon: Icon,
   theme,
   hint,
+  showPct,
 }: KpiCardProps) {
   const t = THEMES[theme];
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  const showBar = total > 0;
   return (
     <div
       className={
@@ -611,7 +638,7 @@ function KpiCard({
         >
           {label}
         </p>
-        <Icon className="w-4 h-4 shrink-0 text-muted-foreground/40" />
+        <Icon className={"w-4 h-4 shrink-0 " + t.icon} />
       </div>
       <p
         className={typography.operationalValue + " " + t.val + " leading-none"}
@@ -619,14 +646,16 @@ function KpiCard({
         {value}
       </p>
       <div className="mt-3">
-        <div className="w-full bg-border/60 h-0.75 mb-1.5">
-          <div
-            className={t.bar + " h-0.75 transition-all"}
-            style={{ width: pct + "%" }}
-          />
-        </div>
+        {showBar && (
+          <div className="w-full bg-border/60 h-0.75 mb-1.5">
+            <div
+              className={t.bar + " h-0.75 transition-all"}
+              style={{ width: pct + "%" }}
+            />
+          </div>
+        )}
         <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
-          {hint}
+          {showPct && showBar ? `${pct}% do inventário` : hint}
         </p>
       </div>
     </div>

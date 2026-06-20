@@ -32,8 +32,8 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -46,7 +46,7 @@ const LocationPicker = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-[380px] items-center justify-center border border-border bg-muted/20 text-xs text-muted-foreground">
+      <div className="flex h-95 items-center justify-center border border-border bg-muted/20 text-xs text-muted-foreground">
         <Loader2 className="mr-2 size-4 animate-spin" />
         Carregando mapa...
       </div>
@@ -104,8 +104,7 @@ export function WorkspacesClient({
       const matchesStatus =
         status === "all" || (status === "active") === workspace.active;
       const matchesOwner =
-        ownerCompanyId === "all" ||
-        ownerCompanyId === workspace.ownerCompanyId;
+        ownerCompanyId === "all" || ownerCompanyId === workspace.ownerCompanyId;
       return matchesSearch && matchesStatus && matchesOwner;
     });
   }, [initialWorkspaces, ownerCompanyId, search, status]);
@@ -174,7 +173,9 @@ export function WorkspacesClient({
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Gestao de Workspaces
           </h1>
-          <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>
+          <p
+            className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}
+          >
             Cadastro e controle das plantas operacionais.
           </p>
         </div>
@@ -192,10 +193,38 @@ export function WorkspacesClient({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi icon={MapPin} label="Workspaces" value={initialWorkspaces.length} />
-        <Kpi icon={CheckCircle2} label="Ativos" value={activeCount} />
-        <Kpi icon={Building2} label="Empresas vinculadas" value={linkedCompanies} />
-        <Kpi icon={Construction} label="Andaimes vinculados" value={linkedScaffolds} />
+        <Kpi
+          icon={MapPin}
+          label="Workspaces"
+          value={initialWorkspaces.length}
+          iconClass="text-blue-600"
+          borderClass="border-l-4 border-l-blue-500"
+          valueClass="text-blue-700"
+        />
+        <Kpi
+          icon={CheckCircle2}
+          label="Ativos"
+          value={activeCount}
+          iconClass="text-green-600"
+          borderClass="border-l-4 border-l-green-500"
+          valueClass="text-green-700"
+        />
+        <Kpi
+          icon={Building2}
+          label="Empresas vinculadas"
+          value={linkedCompanies}
+          iconClass="text-violet-600"
+          borderClass="border-l-4 border-l-violet-500"
+          valueClass="text-violet-700"
+        />
+        <Kpi
+          icon={Construction}
+          label="Andaimes vinculados"
+          value={linkedScaffolds}
+          iconClass="text-amber-600"
+          borderClass="border-l-4 border-l-amber-500"
+          valueClass="text-amber-700"
+        />
       </div>
 
       {(creating || editing) && canManage && (
@@ -205,7 +234,12 @@ export function WorkspacesClient({
               {editing && (
                 <input type="hidden" name="workspaceId" value={editing.id} />
               )}
-              <Field label="Nome" name="name" defaultValue={editing?.name} required />
+              <Field
+                label="Nome"
+                name="name"
+                defaultValue={editing?.name}
+                required
+              />
               <Field
                 label="Código"
                 name="code"
@@ -216,24 +250,45 @@ export function WorkspacesClient({
                 label="Empresa proprietaria"
                 name="ownerCompanyId"
                 defaultValue={editing?.ownerCompanyId ?? ownerCompanies[0]?.id}
-                options={ownerCompanies.map((company) => [company.id, company.name])}
+                options={ownerCompanies.map((company) => [
+                  company.id,
+                  company.name,
+                ])}
               />
               <SelectField
                 label="Status"
                 name="status"
                 defaultValue={editing?.active === false ? "INACTIVE" : "ACTIVE"}
-                options={[["ACTIVE", "Ativo"], ["INACTIVE", "Inativo"]]}
+                options={[
+                  ["ACTIVE", "Ativo"],
+                  ["INACTIVE", "Inativo"],
+                ]}
               />
-              <Field label="Cidade" name="city" defaultValue={editing?.city ?? undefined} />
-              <Field label="Estado" name="state" defaultValue={editing?.state ?? undefined} placeholder="PA" maxLength={2} />
+              <Field
+                label="Cidade"
+                name="city"
+                defaultValue={editing?.city ?? undefined}
+              />
+              <Field
+                label="Estado"
+                name="state"
+                defaultValue={editing?.state ?? undefined}
+                placeholder="PA"
+                maxLength={2}
+              />
               <div className="lg:col-span-2">
-                <Field label="Endereço" name="address" defaultValue={editing?.address ?? undefined} />
+                <Field
+                  label="Endereço"
+                  name="address"
+                  defaultValue={editing?.address ?? undefined}
+                />
               </div>
               <div className="space-y-3 lg:col-span-2">
                 <div>
                   <Label>Localização da planta</Label>
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    Selecione no mapa a localização aproximada da planta operacional.
+                    Selecione no mapa a localização aproximada da planta
+                    operacional.
                   </p>
                 </div>
                 <WorkspaceLocationFields
@@ -244,7 +299,12 @@ export function WorkspacesClient({
               </div>
               <div className="space-y-1.5 lg:col-span-2">
                 <Label htmlFor="description">Descrição</Label>
-                <Textarea id="description" name="description" defaultValue={editing?.description ?? ""} placeholder="Descrição opcional da planta" />
+                <Textarea
+                  id="description"
+                  name="description"
+                  defaultValue={editing?.description ?? ""}
+                  placeholder="Descrição opcional da planta"
+                />
               </div>
               <div className="flex justify-end gap-2 lg:col-span-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
@@ -274,7 +334,10 @@ export function WorkspacesClient({
           value={status}
           onValueChange={setStatus}
           placeholder="Todos os status"
-          options={[["active", "Ativos"], ["inactive", "Inativos"]]}
+          options={[
+            ["active", "Ativos"],
+            ["inactive", "Inativos"],
+          ]}
         />
         <FilterSelect
           value={ownerCompanyId}
@@ -285,8 +348,16 @@ export function WorkspacesClient({
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <div className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}>
-          <span>Nome</span><span>Código</span><span>Proprietaria</span><span>Cidade/Estado</span><span>Coordenadas</span><span>Status</span><span className="text-right">Ações</span>
+        <div
+          className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}
+        >
+          <span>Nome</span>
+          <span>Código</span>
+          <span>Proprietaria</span>
+          <span>Cidade/Estado</span>
+          <span>Coordenadas</span>
+          <span>Status</span>
+          <span className="text-right">Ações</span>
         </div>
         {filtered.length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
@@ -299,25 +370,68 @@ export function WorkspacesClient({
               className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] lg:gap-4 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
             >
               <div className="min-w-0 flex-1">
-                <p className={`truncate text-foreground ${typography.bodyStrong}`}>{workspace.name}</p>
-                <p className={`truncate text-muted-foreground lg:hidden ${typography.bodyMuted}`}>{workspace.ownerCompanyName}</p>
+                <p
+                  className={`truncate text-foreground ${typography.bodyStrong}`}
+                >
+                  {workspace.name}
+                </p>
+                <p
+                  className={`truncate text-muted-foreground lg:hidden ${typography.bodyMuted}`}
+                >
+                  {workspace.ownerCompanyName}
+                </p>
               </div>
-              <p className={`hidden lg:block ${typography.codeMuted}`}>{workspace.code}</p>
-              <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>{workspace.ownerCompanyName}</p>
-              <p className={`hidden text-muted-foreground lg:block ${typography.sectionDescription}`}>{locationLabel(workspace.city, workspace.state)}</p>
-              <p className={`hidden text-muted-foreground lg:block ${typography.codeMuted}`}>{coordinatesLabel(workspace.latitude, workspace.longitude)}</p>
+              <p className={`hidden lg:block ${typography.codeMuted}`}>
+                {workspace.code}
+              </p>
+              <p
+                className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}
+              >
+                {workspace.ownerCompanyName}
+              </p>
+              <p
+                className={`hidden text-muted-foreground lg:block ${typography.sectionDescription}`}
+              >
+                {locationLabel(workspace.city, workspace.state)}
+              </p>
+              <p
+                className={`hidden text-muted-foreground lg:block ${typography.codeMuted}`}
+              >
+                {coordinatesLabel(workspace.latitude, workspace.longitude)}
+              </p>
               <StatusBadge active={workspace.active} />
               <div className="flex justify-end gap-1">
-                <Button asChild variant="outline" size="icon-sm" title="Visualizar">
-                  <Link href={`/workspaces/${workspace.id}`}><Eye /></Link>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="icon-sm"
+                  title="Visualizar"
+                >
+                  <Link href={`/workspaces/${workspace.id}`}>
+                    <Eye />
+                  </Link>
                 </Button>
                 {canManage && (
-                  <Button variant="outline" size="icon-sm" title="Editar" onClick={() => { setCreating(false); setEditing(workspace); }}>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    title="Editar"
+                    onClick={() => {
+                      setCreating(false);
+                      setEditing(workspace);
+                    }}
+                  >
                     <Pencil />
                   </Button>
                 )}
                 {canManage && (
-                  <Button variant="outline" size="icon-sm" title={workspace.active ? "Desativar" : "Ativar"} onClick={() => toggleStatus(workspace)} disabled={isPending}>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    title={workspace.active ? "Desativar" : "Ativar"}
+                    onClick={() => toggleStatus(workspace)}
+                    disabled={isPending}
+                  >
                     <Power />
                   </Button>
                 )}
@@ -325,7 +439,9 @@ export function WorkspacesClient({
             </div>
           ))
         )}
-        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
+        <div
+          className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}
+        >
           {filtered.length} registro(s) · Módulo administrativo
         </div>
       </div>
@@ -441,29 +557,156 @@ function WorkspaceLocationFields({
           </div>
         </div>
         <p className={`${typography.bodyMuted} text-muted-foreground`}>
-          Coordenadas opcionais. Use estes campos apenas para ajuste tecnico fino.
+          Coordenadas opcionais. Use estes campos apenas para ajuste tecnico
+          fino.
         </p>
       </div>
     </div>
   );
 }
 
-function Kpi({ icon: Icon, label, value }: { icon: typeof Factory; label: string; value: number }) {
-  return <Card className="rounded-lg"><CardContent className="flex items-center justify-between"><div><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 ${typography.kpiValue}`}>{value}</p></div><Icon className="size-5 text-primary" /></CardContent></Card>;
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  iconClass = "text-primary",
+  borderClass = "",
+  valueClass = "",
+}: {
+  icon: typeof Factory;
+  label: string;
+  value: number;
+  iconClass?: string;
+  borderClass?: string;
+  valueClass?: string;
+}) {
+  return (
+    <div
+      className={`bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p
+          className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+        >
+          {label}
+        </p>
+        <Icon className={`h-4 w-4 shrink-0 ${iconClass}`} />
+      </div>
+      <p className={`${typography.kpiValue} leading-none ${valueClass}`}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
-function Field({ label, name, defaultValue, placeholder, required, type = "text", step, maxLength }: { label: string; name: string; defaultValue?: string; placeholder?: string; required?: boolean; type?: string; step?: string; maxLength?: number }) {
-  return <div className="space-y-1.5"><Label htmlFor={name}>{label}{required ? " *" : ""}</Label><Input id={name} name={name} defaultValue={defaultValue} placeholder={placeholder} required={required} type={type} step={step} maxLength={maxLength} /></div>;
+function Field({
+  label,
+  name,
+  defaultValue,
+  placeholder,
+  required,
+  type = "text",
+  step,
+  maxLength,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string;
+  placeholder?: string;
+  required?: boolean;
+  type?: string;
+  step?: string;
+  maxLength?: number;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={name}>
+        {label}
+        {required ? " *" : ""}
+      </Label>
+      <Input
+        id={name}
+        name={name}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        required={required}
+        type={type}
+        step={step}
+        maxLength={maxLength}
+      />
+    </div>
+  );
 }
 
-function SelectField({ label, name, defaultValue, options }: { label: string; name: string; defaultValue?: string; options: Array<[string, string]> }) {
-  return <div className="space-y-1.5"><Label>{label} *</Label><Select name={name} defaultValue={defaultValue} required><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{options.map(([value, text]) => <SelectItem key={value} value={value}>{text}</SelectItem>)}</SelectContent></Select></div>;
+function SelectField({
+  label,
+  name,
+  defaultValue,
+  options,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string;
+  options: Array<[string, string]>;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label>{label} *</Label>
+      <Select name={name} defaultValue={defaultValue} required>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(([value, text]) => (
+            <SelectItem key={value} value={value}>
+              {text}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
-function FilterSelect({ value, onValueChange, placeholder, options }: { value: string; onValueChange: (value: string) => void; placeholder: string; options: Array<[string, string]> }) {
-  return <Select value={value} onValueChange={onValueChange}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{placeholder}</SelectItem>{options.map(([optionValue, label]) => <SelectItem key={optionValue} value={optionValue}>{label}</SelectItem>)}</SelectContent></Select>;
+function FilterSelect({
+  value,
+  onValueChange,
+  placeholder,
+  options,
+}: {
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder: string;
+  options: Array<[string, string]>;
+}) {
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className="w-full">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">{placeholder}</SelectItem>
+        {options.map(([optionValue, label]) => (
+          <SelectItem key={optionValue} value={optionValue}>
+            {label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 function StatusBadge({ active }: { active: boolean }) {
-  return <span className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}>{active ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}{active ? "Ativo" : "Inativo"}</span>;
+  return (
+    <span
+      className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}
+    >
+      {active ? (
+        <CheckCircle2 className="size-3" />
+      ) : (
+        <XCircle className="size-3" />
+      )}
+      {active ? "Ativo" : "Inativo"}
+    </span>
+  );
 }

@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   Filter,
+  KeyRound,
   Loader2,
   Pencil,
   Plus,
@@ -33,6 +34,7 @@ import {
   setUserActive,
   updateUser,
 } from "@/lib/actions/user-actions";
+import { typography } from "@/lib/design-system";
 
 type UserRow = {
   id: string;
@@ -94,7 +96,8 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
       className={
         "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold " +
         "uppercase tracking-wide " +
-        (ROLE_BADGE[role.code] ?? "bg-muted text-muted-foreground border-border")
+        (ROLE_BADGE[role.code] ??
+          "bg-muted text-muted-foreground border-border")
       }
     >
       <ShieldCheck className="w-3 h-3" />
@@ -245,21 +248,74 @@ export function UsuariosClient({
       </div>
 
       <div className="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-4">
-        {[
-          { label: "Total", value: users.length, tone: "text-foreground" },
-          { label: "Ativos", value: activeCount, tone: "text-emerald-600" },
-          { label: "HSE", value: inspectorCount, tone: "text-blue-600" },
-          { label: "Admins", value: adminCount, tone: "text-purple-600" },
-        ].map((card) => (
-          <div key={card.label} className="bg-card border border-border p-4">
-            <p className={"text-[24px] font-bold font-mono " + card.tone}>
-              {card.value}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              {card.label}
-            </p>
-          </div>
-        ))}
+        {(
+          [
+            {
+              label: "Total",
+              value: users.length,
+              icon: Users,
+              iconClass: "text-slate-500",
+              border: "border-l-4 border-l-slate-500",
+              valueClass: "text-slate-700",
+            },
+            {
+              label: "Ativos",
+              value: activeCount,
+              icon: CheckCircle2,
+              iconClass: "text-green-600",
+              border: "border-l-4 border-l-green-500",
+              valueClass: "text-green-700",
+            },
+            {
+              label: "HSE",
+              value: inspectorCount,
+              icon: ShieldCheck,
+              iconClass: "text-blue-600",
+              border: "border-l-4 border-l-blue-500",
+              valueClass: "text-blue-700",
+            },
+            {
+              label: "Admins",
+              value: adminCount,
+              icon: KeyRound,
+              iconClass: "text-purple-600",
+              border: "border-l-4 border-l-purple-500",
+              valueClass: "text-purple-700",
+            },
+          ] as Array<{
+            label: string;
+            value: number;
+            icon: React.ElementType;
+            iconClass: string;
+            border: string;
+            valueClass: string;
+          }>
+        ).map((card) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={card.label}
+              className={
+                "bg-card border border-border rounded-lg p-4 shadow-sm " +
+                card.border
+              }
+            >
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <p
+                  className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+                >
+                  {card.label}
+                </p>
+                <Icon className={"h-4 w-4 shrink-0 " + card.iconClass} />
+              </div>
+              <p
+                className={`${typography.kpiValue} leading-none ${card.valueClass}`}
+              >
+                {card.value}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
       {(showForm || editingUser) && (
@@ -319,7 +375,11 @@ export function UsuariosClient({
               <Label className="text-[10px] uppercase tracking-wider font-bold">
                 Perfil *
               </Label>
-              <Select name="role_id" required defaultValue={editingUser?.roles[0]?.id}>
+              <Select
+                name="role_id"
+                required
+                defaultValue={editingUser?.roles[0]?.id}
+              >
                 <SelectTrigger className="h-8 text-[11px] rounded-md">
                   <SelectValue placeholder="Selecionar perfil" />
                 </SelectTrigger>
@@ -410,16 +470,23 @@ export function UsuariosClient({
 
       <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
-          {["", "Nome", "Empresa", "Matrícula", "Perfil", "Departamento", "Status", "Ações"].map(
-            (header) => (
-              <p
-                key={header}
-                className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
-              >
-                {header}
-              </p>
-            ),
-          )}
+          {[
+            "",
+            "Nome",
+            "Empresa",
+            "Matrícula",
+            "Perfil",
+            "Departamento",
+            "Status",
+            "Ações",
+          ].map((header) => (
+            <p
+              key={header}
+              className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
+            >
+              {header}
+            </p>
+          ))}
         </div>
 
         {filtered.length === 0 ? (
