@@ -7,12 +7,18 @@ import {
   ScaffoldStatus,
 } from "@prisma/client";
 import {
+  addDays,
+  addMonths,
+  addWeeks,
   differenceInCalendarDays,
   differenceInMilliseconds,
   endOfDay,
+  endOfMonth,
+  endOfWeek,
   format,
   startOfDay,
   startOfMonth,
+  startOfWeek,
   subDays,
 } from "date-fns";
 
@@ -26,6 +32,8 @@ export type ReportPeriodKey =
   | "today"
   | "7d"
   | "30d"
+  | "90d"
+  | "365d"
   | "month"
   | "custom";
 
@@ -62,6 +70,14 @@ function resolvePeriod(filters: ManagementReportFilters) {
 
   if (filters.period === "7d") {
     return { from: startOfDay(subDays(today, 6)), to: endOfDay(today) };
+  }
+
+  if (filters.period === "90d") {
+    return { from: startOfDay(subDays(today, 89)), to: endOfDay(today) };
+  }
+
+  if (filters.period === "365d") {
+    return { from: startOfDay(subDays(today, 364)), to: endOfDay(today) };
   }
 
   if (filters.period === "month") {
@@ -101,7 +117,7 @@ function normalizeFilters(
     companyId: single("companyId") || "all",
     workspaceId: single("workspaceId") || "all",
     area: single("area") || "all",
-    period: ["today", "7d", "30d", "month", "custom"].includes(period)
+    period: ["today", "7d", "30d", "90d", "365d", "month", "custom"].includes(period)
       ? period
       : "30d",
     dateFrom: single("dateFrom"),
@@ -160,36 +176,104 @@ function applySelectionScopeToNonConformity(
   } satisfies Prisma.NonConformityWhereInput;
 }
 
-function buildDailyBuckets(from: Date, to: Date) {
+function limitBucketDate(date: Date, limit: Date, direction: "from" | "to") {
+  if (direction === "from") return date < limit ? limit : date;
+  return date > limit ? limit : date;
+}
+
+function startOfQuarterLocal(date: Date) {
+  const quarterStartMonth = Math.floor(date.getMonth() / 3) * 3;
+  return startOfDay(new Date(date.getFullYear(), quarterStartMonth, 1));
+}
+
+function endOfQuarterLocal(date: Date) {
+  const quarterStartMonth = Math.floor(date.getMonth() / 3) * 3;
+  return endOfDay(endOfMonth(new Date(date.getFullYear(), quarterStartMonth + 2, 1)));
+}
+
+function formatMonthLabel(date: Date) {
+  const months = [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+  ];
+  return `${months[date.getMonth()]}/${format(date, "yyyy")}`;
+}
+
+function formatQuarterLabel(date: Date) {
+  const quarter = Math.floor(date.getMonth() / 3) + 1;
+  return `T${quarter}/${format(date, "yyyy")}`;
+}
+
+function buildTimeBuckets(from: Date, to: Date) {
   const totalDays = Math.max(1, differenceInCalendarDays(to, from) + 1);
-  const bucketCount = Math.min(totalDays, 14);
-  const step = Math.max(1, Math.ceil(totalDays / bucketCount));
+  const granularity =
+    totalDays <= 31
+      ? "day"
+      : totalDays <= 90
+        ? "week"
+        : totalDays <= 365
+          ? "month"
+          : "quarter";
   const buckets: Array<{ key: string; label: string; from: Date; to: Date }> =
     [];
 
-  for (let offset = 0; offset < totalDays; offset += step) {
-    const bucketFrom = startOfDay(
-      new Date(from.getFullYear(), from.getMonth(), from.getDate() + offset),
-    );
-    const bucketTo = endOfDay(
-      new Date(
-        from.getFullYear(),
-        from.getMonth(),
-        from.getDate() + Math.min(offset + step - 1, totalDays - 1),
-      ),
-    );
+  let cursor = startOfDay(from);
+  while (cursor <= to) {
+    const rawFrom =
+      granularity === "day"
+        ? startOfDay(cursor)
+        : granularity === "week"
+          ? startOfWeek(cursor, { weekStartsOn: 1 })
+          : granularity === "month"
+            ? startOfMonth(cursor)
+            : startOfQuarterLocal(cursor);
+    const rawTo =
+      granularity === "day"
+        ? endOfDay(cursor)
+        : granularity === "week"
+          ? endOfWeek(cursor, { weekStartsOn: 1 })
+          : granularity === "month"
+            ? endOfMonth(cursor)
+            : endOfQuarterLocal(cursor);
+    const bucketFrom = limitBucketDate(startOfDay(rawFrom), from, "from");
+    const bucketTo = limitBucketDate(endOfDay(rawTo), to, "to");
+    const label =
+      granularity === "day"
+        ? format(bucketFrom, "dd/MM")
+        : granularity === "week"
+          ? `${format(bucketFrom, "dd/MM")} - ${format(bucketTo, "dd/MM")}`
+          : granularity === "month"
+            ? formatMonthLabel(bucketFrom)
+            : formatQuarterLabel(bucketFrom);
+
     buckets.push({
       key: format(bucketFrom, "yyyy-MM-dd"),
-      label:
-        step === 1
-          ? format(bucketFrom, "dd/MM")
-          : `${format(bucketFrom, "dd/MM")} - ${format(bucketTo, "dd/MM")}`,
+      label,
       from: bucketFrom,
       to: bucketTo,
     });
+
+    cursor =
+      granularity === "day"
+        ? addDays(cursor, 1)
+        : granularity === "week"
+          ? addWeeks(startOfWeek(cursor, { weekStartsOn: 1 }), 1)
+          : granularity === "month"
+            ? addMonths(startOfMonth(cursor), 1)
+            : addMonths(startOfQuarterLocal(cursor), 3);
   }
 
-  return buckets;
+  return { buckets, granularity };
 }
 
 function inBucket(date: Date, bucket: { from: Date; to: Date }) {
@@ -358,6 +442,7 @@ export async function getManagementReportData(
           select: {
             area: true,
             tenantCompany: { select: { id: true, name: true } },
+            workspace: { select: { name: true } },
           },
         },
       },
@@ -378,13 +463,14 @@ export async function getManagementReportData(
           select: {
             area: true,
             tenantCompany: { select: { id: true, name: true } },
+            workspace: { select: { name: true } },
           },
         },
       },
     }),
     prisma.nonConformity.findMany({
       where: closedNcWhere,
-      select: { id: true, createdAt: true, closedAt: true },
+      select: { id: true, createdAt: true, dueDate: true, closedAt: true },
     }),
     prisma.scaffold.findMany({
       where: applySelectionScope(
@@ -412,7 +498,7 @@ export async function getManagementReportData(
     }),
     prisma.nonConformity.findMany({
       where: previousClosedNcWhere,
-      select: { id: true, createdAt: true, closedAt: true },
+      select: { id: true, createdAt: true, dueDate: true, closedAt: true },
     }),
     prisma.scaffold.findMany({
       where: applySelectionScope(
@@ -482,6 +568,20 @@ export async function getManagementReportData(
   const correctionDays = getCorrectionDays(closedNonConformities);
   const previousOperationDays = getOperationDays(previousDismantledScaffolds);
   const previousCorrectionDays = getCorrectionDays(previousClosedNonConformities);
+  const onTimeClosedNonConformities = closedNonConformities.filter(
+    (item) => item.closedAt && item.dueDate && item.closedAt <= endOfDay(item.dueDate),
+  ).length;
+  const previousOnTimeClosedNonConformities = previousClosedNonConformities.filter(
+    (item) => item.closedAt && item.dueDate && item.closedAt <= endOfDay(item.dueDate),
+  ).length;
+  const onTimeClosureRate =
+    closedNonConformities.length > 0
+      ? (onTimeClosedNonConformities / closedNonConformities.length) * 100
+      : null;
+  const previousOnTimeClosureRate =
+    previousClosedNonConformities.length > 0
+      ? (previousOnTimeClosedNonConformities / previousClosedNonConformities.length) * 100
+      : null;
   const previousInspectionKpis = {
     total: previousInspections.length,
     aprovadas: previousInspections.filter(
@@ -502,7 +602,7 @@ export async function getManagementReportData(
     });
   }).filter((value) => value >= 0);
 
-  const buckets = buildDailyBuckets(from, to);
+  const { buckets, granularity } = buildTimeBuckets(from, to);
   const inspectionTrend = buckets.map((bucket) => ({
     label: bucket.label,
     aprovadas: inspections.filter(
@@ -527,29 +627,69 @@ export async function getManagementReportData(
 
   const companyRank = new Map<
     string,
-    { id: string; name: string; scaffolds: number; inspections: number; ncs: number }
+    {
+      id: string;
+      name: string;
+      scaffolds: number;
+      inspections: number;
+      ncs: number;
+      aprovadas: number;
+      reprovadas: number;
+      ressalvas: number;
+    }
   >();
   const areaRank = new Map<
     string,
-    { name: string; scaffolds: number; inspections: number; ncs: number }
+    {
+      name: string;
+      scaffolds: number;
+      inspections: number;
+      ncs: number;
+      companies: Set<string>;
+      workspaces: Set<string>;
+    }
   >();
   const inspectorRank = new Map<
     string,
-    { name: string; inspections: number; aprovadas: number; reprovadas: number }
+    {
+      name: string;
+      inspections: number;
+      aprovadas: number;
+      reprovadas: number;
+      ressalvas: number;
+    }
   >();
 
   for (const scaffold of scaffolds) {
     const id = scaffold.tenantCompany.id;
     const item =
       companyRank.get(id) ??
-      { id, name: scaffold.tenantCompany.name, scaffolds: 0, inspections: 0, ncs: 0 };
+      {
+        id,
+        name: scaffold.tenantCompany.name,
+        scaffolds: 0,
+        inspections: 0,
+        ncs: 0,
+        aprovadas: 0,
+        reprovadas: 0,
+        ressalvas: 0,
+      };
     item.scaffolds += 1;
     companyRank.set(id, item);
 
     const areaItem =
       areaRank.get(scaffold.area) ??
-      { name: scaffold.area, scaffolds: 0, inspections: 0, ncs: 0 };
+      {
+        name: scaffold.area,
+        scaffolds: 0,
+        inspections: 0,
+        ncs: 0,
+        companies: new Set<string>(),
+        workspaces: new Set<string>(),
+      };
     areaItem.scaffolds += 1;
+    areaItem.companies.add(scaffold.tenantCompany.name);
+    areaItem.workspaces.add(scaffold.workspace.name);
     areaRank.set(scaffold.area, areaItem);
   }
   for (const inspection of inspections) {
@@ -562,14 +702,32 @@ export async function getManagementReportData(
         scaffolds: 0,
         inspections: 0,
         ncs: 0,
+        aprovadas: 0,
+        reprovadas: 0,
+        ressalvas: 0,
       };
     item.inspections += 1;
+    if (inspection.result === InspectionResult.aprovado) item.aprovadas += 1;
+    if (inspection.result === InspectionResult.reprovado) item.reprovadas += 1;
+    if (inspection.result === InspectionResult.aprovado_com_ressalvas) {
+      item.ressalvas += 1;
+    }
     companyRank.set(id, item);
 
     const area = inspection.scaffold.area;
     const areaItem =
-      areaRank.get(area) ?? { name: area, scaffolds: 0, inspections: 0, ncs: 0 };
+      areaRank.get(area) ??
+      {
+        name: area,
+        scaffolds: 0,
+        inspections: 0,
+        ncs: 0,
+        companies: new Set<string>(),
+        workspaces: new Set<string>(),
+      };
     areaItem.inspections += 1;
+    areaItem.companies.add(inspection.scaffold.tenantCompany.name);
+    areaItem.workspaces.add(inspection.scaffold.workspace.name);
     areaRank.set(area, areaItem);
 
     const inspector =
@@ -579,29 +737,49 @@ export async function getManagementReportData(
         inspections: 0,
         aprovadas: 0,
         reprovadas: 0,
+        ressalvas: 0,
       };
     inspector.inspections += 1;
-    if (
-      inspection.result === "aprovado" ||
-      inspection.result === "aprovado_com_ressalvas"
-    ) {
+    if (inspection.result === "aprovado") {
       inspector.aprovadas += 1;
     }
     if (inspection.result === "reprovado") inspector.reprovadas += 1;
+    if (inspection.result === "aprovado_com_ressalvas") {
+      inspector.ressalvas += 1;
+    }
     inspectorRank.set(inspection.inspector_name, inspector);
   }
   for (const nc of nonConformities) {
     const id = nc.scaffold.tenantCompany.id;
     const item =
       companyRank.get(id) ??
-      { id, name: nc.scaffold.tenantCompany.name, scaffolds: 0, inspections: 0, ncs: 0 };
+      {
+        id,
+        name: nc.scaffold.tenantCompany.name,
+        scaffolds: 0,
+        inspections: 0,
+        ncs: 0,
+        aprovadas: 0,
+        reprovadas: 0,
+        ressalvas: 0,
+      };
     item.ncs += 1;
     companyRank.set(id, item);
 
     const area = nc.scaffold.area;
     const areaItem =
-      areaRank.get(area) ?? { name: area, scaffolds: 0, inspections: 0, ncs: 0 };
+      areaRank.get(area) ??
+      {
+        name: area,
+        scaffolds: 0,
+        inspections: 0,
+        ncs: 0,
+        companies: new Set<string>(),
+        workspaces: new Set<string>(),
+      };
     areaItem.ncs += 1;
+    areaItem.companies.add(nc.scaffold.tenantCompany.name);
+    areaItem.workspaces.add(nc.scaffold.workspace.name);
     areaRank.set(area, areaItem);
   }
 
@@ -610,6 +788,42 @@ export async function getManagementReportData(
     workspaces,
     areas: areas.map((item) => item.area).filter(Boolean),
   };
+  const companyRankings = [...companyRank.values()]
+    .map((item) => ({
+      ...item,
+      approvalRate:
+        item.inspections > 0
+          ? ((item.aprovadas + item.ressalvas) / item.inspections) * 100
+          : null,
+    }))
+    .sort(
+      (a, b) =>
+        b.scaffolds + b.inspections + b.ncs -
+        (a.scaffolds + a.inspections + a.ncs),
+    );
+  const areaRankings = [...areaRank.values()]
+    .map((item) => ({
+      name: item.name,
+      scaffolds: item.scaffolds,
+      inspections: item.inspections,
+      ncs: item.ncs,
+      companies: [...item.companies],
+      workspaces: [...item.workspaces],
+    }))
+    .sort(
+      (a, b) =>
+        b.scaffolds + b.inspections + b.ncs -
+        (a.scaffolds + a.inspections + a.ncs),
+    );
+  const inspectorRankings = [...inspectorRank.values()]
+    .map((item) => ({
+      ...item,
+      approvalRate:
+        item.inspections > 0
+          ? ((item.aprovadas + item.ressalvas) / item.inspections) * 100
+          : null,
+    }))
+    .sort((a, b) => b.inspections - a.inspections);
 
   return {
     filters: {
@@ -627,6 +841,9 @@ export async function getManagementReportData(
         operationDays: average(operationDays),
         correctionDays: average(correctionDays),
         inspectionIntervalDays: average(intervals),
+      },
+      quality: {
+        onTimeClosureRate,
       },
     },
     trends: {
@@ -653,18 +870,20 @@ export async function getManagementReportData(
         current: closedNonConformities.length,
         previous: previousClosedNonConformities.length,
       },
+      onTimeClosureRate: {
+        current: onTimeClosureRate,
+        previous: previousOnTimeClosureRate,
+      },
     },
     charts: {
+      granularity,
       inspectionTrend,
       nonConformityTrend,
     },
     rankings: {
-      companies: [...companyRank.values()]
-        .sort((a, b) => b.scaffolds + b.inspections + b.ncs - (a.scaffolds + a.inspections + a.ncs)),
-      areas: [...areaRank.values()]
-        .sort((a, b) => b.scaffolds + b.inspections + b.ncs - (a.scaffolds + a.inspections + a.ncs)),
-      inspectors: [...inspectorRank.values()]
-        .sort((a, b) => b.inspections - a.inspections),
+      companies: companyRankings,
+      areas: areaRankings,
+      inspectors: inspectorRankings,
     },
     exportRows: {
       scaffolds: scaffolds.map((item) => ({

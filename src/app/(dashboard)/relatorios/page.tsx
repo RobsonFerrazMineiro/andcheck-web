@@ -1,15 +1,30 @@
 import type { ElementType } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
+  Archive,
+  Ban,
   BarChart3,
   Building2,
+  CheckCircle2,
+  CircleAlert,
+  Clock3,
   ClipboardCheck,
   Construction,
   Factory,
   Filter,
+  Flag,
+  Gauge,
+  Hourglass,
   Lightbulb,
+  ListChecks,
+  RotateCcw,
+  ShieldCheck,
   TimerReset,
+  TrendingUp,
   UserCheck,
+  Wrench,
+  XCircle,
 } from "lucide-react";
 
 import { getManagementReportData } from "@/lib/management-reports";
@@ -25,6 +40,7 @@ type TrendTone = "good" | "bad" | "neutral";
 type TrendItem = {
   label: string;
   value: string;
+  icon: ElementType;
   trend?: {
     value: string;
     tone: TrendTone;
@@ -40,6 +56,11 @@ function formatAverage(value: number | null) {
 function formatPercent(value: number, total: number) {
   if (total === 0) return "Sem base histórica";
   return `${Math.round((value / total) * 100)}%`;
+}
+
+function buildRankingHref(path: string, filters: Record<string, string>) {
+  const params = new URLSearchParams(filters);
+  return `${path}?${params.toString()}`;
 }
 
 function getTrend(
@@ -67,38 +88,46 @@ export default async function RelatoriosPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
   const report = await getManagementReportData(params);
   const { filters } = report;
+  const rankingQuery = {
+    companyId: filters.companyId,
+    workspaceId: filters.workspaceId,
+    area: filters.area,
+    period: filters.period,
+    dateFrom: filters.dateFrom,
+    dateTo: filters.dateTo,
+  };
   const inspectionTotals = [
     {
       label: "Aprovadas",
       value: report.kpis.inspections.aprovadas,
-      color: "bg-emerald-500",
-      track: "bg-emerald-50",
+      color: "#059669",
     },
     {
       label: "Reprovadas",
       value: report.kpis.inspections.reprovadas,
-      color: "bg-red-500",
-      track: "bg-red-50",
+      color: "#be123c",
     },
     {
       label: "Com ressalvas",
       value: report.kpis.inspections.ressalvas,
-      color: "bg-amber-500",
-      track: "bg-amber-50",
+      color: "#d97706",
     },
   ];
   const insights: TrendItem[] = [
     {
       label: "Empresa mais ativa",
       value: report.rankings.companies[0]?.name ?? "Sem dados",
+      icon: Building2,
     },
     {
       label: "Área com maior volume",
       value: report.rankings.areas[0]?.name ?? "Sem dados",
+      icon: Factory,
     },
     {
       label: "Inspetor mais ativo",
       value: report.rankings.inspectors[0]?.name ?? "Sem dados",
+      icon: UserCheck,
     },
     {
       label: "Taxa de aprovação",
@@ -106,6 +135,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
         report.kpis.inspections.aprovadas,
         report.kpis.inspections.total,
       ),
+      icon: TrendingUp,
       trend: getTrend(
         report.trends.approvalRate.current,
         report.trends.approvalRate.previous,
@@ -115,6 +145,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
     {
       label: "Tempo médio em operação",
       value: formatAverage(report.kpis.averages.operationDays),
+      icon: Clock3,
       trend: getTrend(
         report.trends.operationDays.current,
         report.trends.operationDays.previous,
@@ -124,6 +155,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
     {
       label: "Tempo médio de correção",
       value: formatAverage(report.kpis.averages.correctionDays),
+      icon: Wrench,
       trend: getTrend(
         report.trends.correctionDays.current,
         report.trends.correctionDays.previous,
@@ -133,6 +165,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
     {
       label: "NCs encerradas",
       value: report.kpis.nonConformities.encerradas.toString(),
+      icon: ShieldCheck,
       trend: getTrend(
         report.trends.closedNonConformities.current,
         report.trends.closedNonConformities.previous,
@@ -205,6 +238,8 @@ export default async function RelatoriosPage({ searchParams }: Props) {
               ["today", "Hoje"],
               ["7d", "Últimos 7 dias"],
               ["30d", "Últimos 30 dias"],
+              ["90d", "Últimos 90 dias"],
+              ["365d", "Últimos 12 meses"],
               ["month", "Este mês"],
               ["custom", "Personalizado"],
             ]}
@@ -228,33 +263,37 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           title="Andaimes"
           icon={Construction}
           items={[
-            ["Total cadastrados", report.kpis.scaffolds.total],
-            ["Liberados", report.kpis.scaffolds.liberados],
-            ["Em montagem", report.kpis.scaffolds.emMontagem],
-            ["Pendentes", report.kpis.scaffolds.pendentes],
-            ["Interditados", report.kpis.scaffolds.interditados],
-            ["Vencidos", report.kpis.scaffolds.vencidos],
-            ["Desmontados", report.kpis.scaffolds.desmontados],
+            ["Total cadastrados", report.kpis.scaffolds.total, ListChecks],
+            ["Liberados", report.kpis.scaffolds.liberados, ShieldCheck],
+            ["Em montagem", report.kpis.scaffolds.emMontagem, Construction],
+            ["Pendentes", report.kpis.scaffolds.pendentes, Hourglass],
+            ["Interditados", report.kpis.scaffolds.interditados, Ban],
+            ["Vencidos", report.kpis.scaffolds.vencidos, CircleAlert],
+            ["Desmontados", report.kpis.scaffolds.desmontados, Archive],
           ]}
         />
         <KpiPanel
           title="Inspeções"
           icon={ClipboardCheck}
           items={[
-            ["Total realizadas", report.kpis.inspections.total],
-            ["Aprovadas", report.kpis.inspections.aprovadas],
-            ["Reprovadas", report.kpis.inspections.reprovadas],
-            ["Com ressalvas", report.kpis.inspections.ressalvas],
+            ["Total realizadas", report.kpis.inspections.total, ClipboardCheck],
+            ["Aprovadas", report.kpis.inspections.aprovadas, CheckCircle2],
+            ["Reprovadas", report.kpis.inspections.reprovadas, XCircle],
+            ["Com ressalvas", report.kpis.inspections.ressalvas, Flag],
           ]}
         />
         <KpiPanel
           title="Não Conformidades"
           icon={AlertTriangle}
           items={[
-            ["Abertas", report.kpis.nonConformities.abertas],
-            ["Em tratamento", report.kpis.nonConformities.emTratamento],
-            ["Encerradas", report.kpis.nonConformities.encerradas],
-            ["Vencidas", report.kpis.nonConformities.vencidas],
+            ["Abertas", report.kpis.nonConformities.abertas, AlertTriangle],
+            [
+              "Em tratamento",
+              report.kpis.nonConformities.emTratamento,
+              RotateCcw,
+            ],
+            ["Encerradas", report.kpis.nonConformities.encerradas, ShieldCheck],
+            ["Vencidas", report.kpis.nonConformities.vencidas, CircleAlert],
           ]}
         />
         <KpiPanel
@@ -264,14 +303,17 @@ export default async function RelatoriosPage({ searchParams }: Props) {
             [
               "Tempo médio em operação",
               formatAverage(report.kpis.averages.operationDays),
+              Clock3,
             ],
             [
               "Correção de NC",
               formatAverage(report.kpis.averages.correctionDays),
+              Wrench,
             ],
             [
               "Entre inspeções",
               formatAverage(report.kpis.averages.inspectionIntervalDays),
+              Gauge,
             ],
           ]}
         />
@@ -298,36 +340,39 @@ export default async function RelatoriosPage({ searchParams }: Props) {
         <RankingPanel
           title="Empresas"
           icon={Building2}
+          href={buildRankingHref("/relatorios/rankings/empresas", rankingQuery)}
           rows={report.rankings.companies.map((item) => ({
             label: item.name,
             values: [
-              { label: "Andaimes", value: item.scaffolds, color: "bg-accent" },
-              { label: "Inspeções", value: item.inspections, color: "bg-blue-500" },
-              { label: "NCs", value: item.ncs, color: "bg-red-500" },
+              { label: "Andaimes", value: item.scaffolds, color: "#d97706" },
+              { label: "Inspeções", value: item.inspections, color: "#64748b" },
+              { label: "NCs", value: item.ncs, color: "#be123c" },
             ],
           }))}
         />
         <RankingPanel
           title="Áreas Operacionais"
           icon={Factory}
+          href={buildRankingHref("/relatorios/rankings/areas", rankingQuery)}
           rows={report.rankings.areas.map((item) => ({
             label: item.name,
             values: [
-              { label: "Andaimes", value: item.scaffolds, color: "bg-accent" },
-              { label: "Inspeções", value: item.inspections, color: "bg-blue-500" },
-              { label: "NCs", value: item.ncs, color: "bg-red-500" },
+              { label: "Andaimes", value: item.scaffolds, color: "#d97706" },
+              { label: "Inspeções", value: item.inspections, color: "#64748b" },
+              { label: "NCs", value: item.ncs, color: "#be123c" },
             ],
           }))}
         />
         <RankingPanel
           title="Top Inspetores"
           icon={UserCheck}
+          href={buildRankingHref("/relatorios/rankings/inspetores", rankingQuery)}
           rows={report.rankings.inspectors.map((item) => ({
             label: item.name,
             values: [
-              { label: "Inspeções", value: item.inspections, color: "bg-blue-500" },
-              { label: "Aprovação", value: item.aprovadas, color: "bg-emerald-500" },
-              { label: "Reprovação", value: item.reprovadas, color: "bg-red-500" },
+              { label: "Inspeções", value: item.inspections, color: "#64748b" },
+              { label: "Aprovado", value: item.aprovadas, color: "#059669" },
+              { label: "Reprovado", value: item.reprovadas, color: "#be123c" },
             ],
           }))}
         />
@@ -403,7 +448,7 @@ function KpiPanel({
 }: {
   title: string;
   icon: ElementType;
-  items: Array<[string, number | string]>;
+  items: Array<[string, number | string, ElementType]>;
 }) {
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -414,9 +459,12 @@ function KpiPanel({
         </div>
       </div>
       <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
-        {items.map(([label, value]) => (
+        {items.map(([label, value, ItemIcon]) => (
           <div key={label} className="bg-card p-3">
-            <p className={`${typography.sectionLabel} text-muted-foreground`}>
+            <p
+              className={`${typography.sectionLabel} flex items-center gap-1.5 text-muted-foreground`}
+            >
+              <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
               {label}
             </p>
             <p className={`${typography.kpiValue} mt-1.5 text-foreground`}>
@@ -436,9 +484,11 @@ function InspectionPerformanceChart({
 }: {
   title: string;
   icon: ElementType;
-  rows: Array<{ label: string; value: number; color: string; track: string }>;
+  rows: Array<{ label: string; value: number; color: string }>;
 }) {
-  const max = Math.max(1, ...rows.map((item) => item.value));
+  const total = rows.reduce((sum, item) => sum + item.value, 0);
+  const approved = rows.find((item) => item.label === "Aprovadas")?.value ?? 0;
+  const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -448,24 +498,42 @@ function InspectionPerformanceChart({
           <p className={surface.panelHeaderTitle}>{title}</p>
         </div>
       </div>
-      <div className="space-y-3 p-4">
-        {rows.map((item) => (
-          <div
-            key={item.label}
-            className="grid grid-cols-[120px_1fr_42px] items-center gap-3"
-          >
-            <p className={`${typography.bodyStrong} truncate`}>{item.label}</p>
-            <div className={`h-3 overflow-hidden rounded-sm ${item.track}`}>
-              <div
-                className={`h-full rounded-sm ${item.color}`}
-                style={{ width: `${Math.max(4, (item.value / max) * 100)}%` }}
-              />
-            </div>
-            <p className="text-right font-mono text-[12px] font-bold text-foreground">
-              {item.value}
+      <div className="grid grid-cols-[216px_1fr] items-center gap-2 p-4">
+        <div className="relative flex size-52 items-center justify-center">
+          <MiniDonut
+            values={rows}
+            sizeClassName="size-52"
+            strokeWidth={6}
+            gap={1.4}
+          />
+          <div className="absolute text-center">
+            <p className="font-mono text-[22px] font-black leading-none text-foreground">
+              {approvalRate}%
+            </p>
+            <p className="mt-1 max-w-24 text-[8px] font-bold uppercase leading-tight tracking-wider text-muted-foreground">
+              Taxa de aprovação
             </p>
           </div>
-        ))}
+        </div>
+        <div className="space-y-2">
+          {rows.map((item) => (
+            <div
+              key={item.label}
+              className="grid max-w-[300px] grid-cols-[150px_28px] items-center gap-0.5"
+            >
+              <span className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span
+                  className="size-2 shrink-0 rounded-sm"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="truncate">{item.label}</span>
+              </span>
+              <span className="text-right font-mono text-[12px] font-bold text-foreground">
+                {item.value}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -487,6 +555,13 @@ function NonConformityTrendChart({
   const ticks = [max, Math.round(max * 0.66), Math.round(max * 0.33), 0].filter(
     (value, index, values) => values.indexOf(value) === index,
   );
+  const labelInterval = Math.max(1, Math.ceil(rows.length / 6));
+  const getLabelOffset = (label: string) => {
+    if (label.includes(" - ")) return 36;
+    if (label.length === 5) return 18;
+    if (label.includes("/")) return 24;
+    return 0;
+  };
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -496,10 +571,10 @@ function NonConformityTrendChart({
           <p className={surface.panelHeaderTitle}>{title}</p>
         </div>
       </div>
-      <div className="p-4">
+      <div className="p-4 pb-6">
         <div className="mb-3 flex items-center gap-4">
-          <LegendItem color="bg-red-500" label="NCs Abertas" />
-          <LegendItem color="bg-emerald-500" label="NCs Encerradas" />
+          <LegendItem color="bg-[#be123c]" label="NCs abertas" />
+          <LegendItem color="bg-[#059669]" label="NCs encerradas" />
         </div>
         <div className="grid grid-cols-[28px_1fr] gap-2">
           <div className="relative h-28">
@@ -513,7 +588,7 @@ function NonConformityTrendChart({
               </span>
             ))}
           </div>
-          <div className="relative h-28 border-b border-l border-border">
+          <div className="relative h-28 border-b border-l border-border bg-slate-50/50">
             <div className="absolute inset-0 flex items-end justify-between gap-1 px-2">
               {rows.map((item) => (
                 <div
@@ -522,11 +597,11 @@ function NonConformityTrendChart({
                   title={`Período: ${item.label}\nNCs abertas: ${item.abertas}\nNCs encerradas: ${item.encerradas}`}
                 >
                   <div
-                    className="w-full max-w-3 rounded-t-sm bg-red-500"
+                    className="w-full max-w-3 rounded-t-sm bg-[#be123c]"
                     style={{ height: `${Math.max(4, (item.abertas / max) * 100)}%` }}
                   />
                   <div
-                    className="w-full max-w-3 rounded-t-sm bg-emerald-500"
+                    className="w-full max-w-3 rounded-t-sm bg-[#059669]"
                     style={{
                       height: `${Math.max(4, (item.encerradas / max) * 100)}%`,
                     }}
@@ -536,14 +611,25 @@ function NonConformityTrendChart({
             </div>
           </div>
           <span />
-          <div className="mt-2 flex justify-between gap-1 px-2">
-            {rows.map((item) => (
+          <div className="mt-2 flex h-16 justify-between gap-1 px-2">
+            {rows.map((item, index) => (
               <span
                 key={item.label}
-                className="min-w-0 flex-1 truncate text-center font-mono text-[9px] font-semibold text-muted-foreground"
+                className="relative min-w-0 flex-1 font-mono text-[10px] font-bold text-muted-foreground"
                 title={item.label}
               >
-                {item.label}
+                {(index % labelInterval === 0 || index === rows.length - 1) && (
+                  <span
+                    className="absolute left-1/2 top-0 block"
+                    style={{
+                      transform: `translateX(calc(-50% + ${getLabelOffset(item.label)}px))`,
+                    }}
+                  >
+                    <span className="block origin-top-left rotate-90 whitespace-nowrap">
+                      {item.label}
+                    </span>
+                  </span>
+                )}
               </span>
             ))}
           </div>
@@ -567,21 +653,18 @@ function LegendItem({ color, label }: { color: string; label: string }) {
 function RankingPanel({
   title,
   icon: Icon,
+  href,
   rows,
 }: {
   title: string;
   icon: ElementType;
+  href: string;
   rows: Array<{
     label: string;
     values: Array<{ label: string; value: number; color: string }>;
   }>;
 }) {
-  const max = Math.max(
-    1,
-    ...rows.flatMap((row) => row.values.map((item) => item.value)),
-  );
   const visibleRows = rows.slice(0, 5);
-  const hiddenRows = rows.slice(5);
 
   return (
     <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
@@ -597,30 +680,19 @@ function RankingPanel({
             Sem dados no período.
           </p>
         ) : (
-          <>
-            {visibleRows.map((row, index) => (
-              <RankingRow key={row.label} index={index} row={row} max={max} />
-            ))}
-            {hiddenRows.length > 0 && (
-              <details className="group">
-                <summary className="cursor-pointer list-none border-t border-border px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-muted/40">
-                  Ver ranking completo →
-                </summary>
-                <div className="divide-y divide-border border-t border-border">
-                  {hiddenRows.map((row, index) => (
-                    <RankingRow
-                      key={row.label}
-                      index={index + visibleRows.length}
-                      row={row}
-                      max={max}
-                    />
-                  ))}
-                </div>
-              </details>
-            )}
-          </>
+          visibleRows.map((row, index) => (
+            <RankingRow key={row.label} index={index} row={row} />
+          ))
         )}
       </div>
+      {rows.length > 5 && (
+        <Link
+          href={href}
+          className="block border-t border-border px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-muted/40"
+        >
+          Ver ranking completo →
+        </Link>
+      )}
     </section>
   );
 }
@@ -628,47 +700,132 @@ function RankingPanel({
 function RankingRow({
   index,
   row,
-  max,
 }: {
   index: number;
   row: {
     label: string;
     values: Array<{ label: string; value: number; color: string }>;
   };
-  max: number;
 }) {
   return (
-    <div className="p-3">
-      <div className="mb-2 flex items-center gap-3">
+    <div className="px-3 py-2.5">
+      <div className="flex items-center gap-3">
         <span className="font-mono text-[10px] font-bold text-muted-foreground">
           {index + 1}.
-        </span>
-        <p className={`${typography.bodyStrong} min-w-0 flex-1 truncate`}>
-          {row.label}
-        </p>
-      </div>
-      <div className="space-y-1.5">
-        {row.values.map((item) => (
-          <div
-            key={item.label}
-            className="grid grid-cols-[70px_1fr_28px] items-center gap-2"
-          >
-            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-              {item.label}
-            </span>
-            <div className="h-2 overflow-hidden rounded-sm bg-muted">
+      </span>
+      <p className={`${typography.bodyStrong} min-w-0 flex-1 truncate`}>
+        {row.label}
+      </p>
+        <div className="ml-3 flex shrink-0 items-center gap-5">
+          <MiniDonut values={row.values} />
+          <div className="space-y-0.5">
+            {row.values.map((item) => (
               <div
-                className={`h-full rounded-sm ${item.color}`}
-                style={{ width: `${Math.max(4, (item.value / max) * 100)}%` }}
-              />
-            </div>
-            <span className="text-right font-mono text-[10px] font-bold text-foreground">
-              {item.value}
-            </span>
+                key={item.label}
+                className="grid grid-cols-[72px_24px] items-center gap-1.5"
+              >
+                <span className="flex min-w-0 items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span
+                    className="size-1.5 shrink-0 rounded-sm"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="truncate">{item.label}</span>
+                </span>
+                <span className="text-right font-mono text-[10px] font-bold text-foreground">
+                  {item.value}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
     </div>
+  );
+}
+
+function MiniDonut({
+  values,
+  sizeClassName = "size-11",
+  strokeWidth = 7,
+  gap = 2.4,
+}: {
+  values: Array<{ label: string; value: number; color: string }>;
+  sizeClassName?: string;
+  strokeWidth?: number;
+  gap?: number;
+}) {
+  const total = values.reduce((sum, item) => sum + item.value, 0);
+  const radius = 15;
+  const circumference = 2 * Math.PI * radius;
+
+  if (total === 0) {
+    return (
+      <svg
+        viewBox="0 0 40 40"
+        className={`${sizeClassName} shrink-0`}
+        aria-hidden="true"
+      >
+        <circle
+          cx="20"
+          cy="20"
+          r={radius}
+          fill="none"
+          stroke="#e2e8f0"
+          strokeWidth={strokeWidth}
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      viewBox="0 0 40 40"
+      className={`${sizeClassName} shrink-0`}
+      aria-hidden="true"
+    >
+      {values
+        .reduce<
+          Array<{
+            color: string;
+            label: string;
+            length: number;
+            offset: number;
+          }>
+        >((segments, item) => {
+          const previousOffset = segments.reduce(
+            (sum, segment) => sum + segment.length,
+            0,
+          );
+          const rawLength = (item.value / total) * circumference;
+          return [
+            ...segments,
+            {
+              color: item.color,
+              label: item.label,
+              length: rawLength,
+              offset: previousOffset,
+            },
+          ];
+        }, [])
+        .filter((segment) => segment.length > 0)
+        .map((segment) => (
+          <circle
+            key={segment.label}
+            cx="20"
+            cy="20"
+            r={radius}
+            fill="none"
+            stroke={segment.color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={`${Math.max(0, segment.length - gap)} ${
+              circumference - Math.max(0, segment.length - gap)
+            }`}
+            strokeDashoffset={-(segment.offset + gap / 2)}
+            strokeLinecap="butt"
+            transform="rotate(-90 20 20)"
+          />
+        ))}
+    </svg>
   );
 }
 
@@ -685,9 +842,14 @@ function InsightsPanel({ items }: { items: TrendItem[] }) {
         </p>
       </div>
       <div className="grid gap-px bg-border sm:grid-cols-2 xl:grid-cols-4">
-        {items.map((item) => (
+        {items.map((item) => {
+          const ItemIcon = item.icon;
+          return (
           <div key={item.label} className="bg-card p-3">
-            <p className={`${typography.sectionLabel} text-muted-foreground`}>
+            <p
+              className={`${typography.sectionLabel} flex items-center gap-1.5 text-muted-foreground`}
+            >
+              <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
               {item.label}
             </p>
             <p className="mt-1 truncate text-[13px] font-semibold text-foreground">
@@ -707,7 +869,8 @@ function InsightsPanel({ items }: { items: TrendItem[] }) {
               </p>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

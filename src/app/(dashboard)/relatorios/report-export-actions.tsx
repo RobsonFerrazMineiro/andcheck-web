@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Download, FileSpreadsheet } from "lucide-react";
+import { toast } from "sonner";
 
 import type { ManagementReportData } from "@/lib/management-reports";
 
@@ -52,49 +54,6 @@ function tableHtml(title: string, rows: Array<Record<string, unknown>>) {
   `;
 }
 
-function buildExecutiveHtml(report: ManagementReportData) {
-  return `
-    <!doctype html>
-    <html lang="pt-BR">
-      <head>
-        <meta charset="utf-8" />
-        <title>Relatório Gerencial AndCheck</title>
-        <style>
-          body { font-family: Inter, Arial, sans-serif; color: #1f2937; margin: 32px; }
-          .eyebrow { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: #64748b; font-weight: 700; }
-          h1 { font-size: 22px; margin: 6px 0 4px; text-transform: uppercase; }
-          h2 { font-size: 12px; margin: 24px 0 8px; text-transform: uppercase; letter-spacing: 0.12em; color: #334155; }
-          .period { color: #64748b; font-size: 12px; margin-bottom: 20px; }
-          .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-          .card { border: 1px solid #cbd5e1; border-left: 4px solid #ea580c; padding: 12px; }
-          .label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #64748b; font-weight: 700; }
-          .value { font-size: 22px; font-weight: 800; margin-top: 8px; }
-          table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
-          th { background: #1f2937; color: white; text-align: left; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px; }
-          td { border-bottom: 1px solid #e2e8f0; padding: 7px 8px; }
-          @media print { button { display: none; } body { margin: 18mm; } }
-        </style>
-      </head>
-      <body>
-        <p class="eyebrow">AndCheck EHS • Business Intelligence</p>
-        <h1>Relatórios Gerenciais</h1>
-        <p class="period">Período: ${escapeHtml(report.periodLabel)}</p>
-        <div class="grid">
-          ${metricRows(report)
-            .map(
-              ([label, value]) =>
-                `<div class="card"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div></div>`,
-            )
-            .join("")}
-        </div>
-        ${tableHtml("Empresas Mais Ativas", report.rankings.companies)}
-        ${tableHtml("Áreas Operacionais", report.rankings.areas)}
-        ${tableHtml("Inspetores Mais Ativos", report.rankings.inspectors)}
-      </body>
-    </html>
-  `;
-}
-
 function downloadFile(fileName: string, mimeType: string, content: string) {
   const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
@@ -129,26 +88,66 @@ function exportExcel(report: ManagementReportData) {
   );
 }
 
-function exportPdf(report: ManagementReportData) {
-  const win = window.open("", "_blank", "noopener,noreferrer,width=1200,height=900");
-  if (!win) return;
-  win.document.open();
-  win.document.write(buildExecutiveHtml(report));
-  win.document.close();
-  win.focus();
-  win.print();
-}
-
 export function ReportExportActions({ report }: Props) {
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function exportPdf() {
+    const toastId = toast.loading("Gerando PDF gerencial...");
+    setPdfLoading(true);
+
+    try {
+      const response = await fetch(`/api/relatorios/pdf${window.location.search}`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error ?? "Não foi possível gerar o PDF.");
+      }
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/pdf")) {
+        throw new Error("A resposta recebida não é um PDF válido.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const opened = window.open(url, "_blank", "noopener,noreferrer");
+
+      if (!opened) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "relatorio-gerencial-andcheck.pdf";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      toast.success("PDF gerado com sucesso.", { id: toastId });
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível gerar o PDF gerencial.",
+        { id: toastId },
+      );
+    } finally {
+      setPdfLoading(false);
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       <button
         type="button"
-        onClick={() => exportPdf(report)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted"
+        onClick={exportPdf}
+        disabled={pdfLoading}
+        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Download className="size-3.5" />
-        Exportar PDF
+        {pdfLoading ? "Gerando..." : "Exportar PDF"}
       </button>
       <button
         type="button"
