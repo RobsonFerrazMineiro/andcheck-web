@@ -22,7 +22,7 @@ import {
   subDays,
 } from "date-fns";
 
-import { requireAnyPermission } from "@/lib/authz";
+import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 import { prisma } from "@/lib/prisma";
 
@@ -49,6 +49,127 @@ export type ManagementReportFilters = {
 export type ManagementReportData = Awaited<
   ReturnType<typeof getManagementReportData>
 >;
+
+export type TrendDirection = "up" | "down" | "neutral" | "none";
+
+export type TrendStatus =
+  | "positive"
+  | "negative"
+  | "neutral"
+  | "no-history"
+  | "new-record";
+
+export type KpiTrend = {
+  direction: TrendDirection;
+  status: TrendStatus;
+  label: string;
+  currentValue: number;
+  previousValue: number | null;
+  absoluteDiff: number | null;
+  percentDiff: number | null;
+};
+
+export type ManagementReportFilterLabels = {
+  company: string;
+  workspace: string;
+  area: string;
+};
+
+type MetricType = "percentage" | "number" | "days";
+type TrendPolarity = "higher-is-better" | "lower-is-better";
+
+export function calculateKpiTrend({
+  currentValue,
+  previousValue,
+  metricType,
+  polarity,
+  unitLabel = "",
+}: {
+  currentValue: number | null;
+  previousValue: number | null;
+  metricType: MetricType;
+  polarity: TrendPolarity;
+  unitLabel?: string;
+}): KpiTrend {
+  const current = currentValue ?? 0;
+
+  if (currentValue === null) {
+    return {
+      direction: "none",
+      status: "no-history",
+      label: "Sem base histórica",
+      currentValue: current,
+      previousValue: previousValue ?? null,
+      absoluteDiff: null,
+      percentDiff: null,
+    };
+  }
+
+  if (previousValue === null) {
+    return {
+      direction: "none",
+      status: currentValue > 0 ? "new-record" : "no-history",
+      label: currentValue > 0 ? "Novo registro" : "Sem base histórica",
+      currentValue,
+      previousValue: null,
+      absoluteDiff: null,
+      percentDiff: null,
+    };
+  }
+
+  const absoluteDiff = currentValue - previousValue;
+  const roundedDiff = Math.round(absoluteDiff * 10) / 10;
+  const percentDiff =
+    previousValue !== 0 ? (absoluteDiff / Math.abs(previousValue)) * 100 : null;
+
+  if (Math.abs(roundedDiff) < 0.1) {
+    return {
+      direction: "neutral",
+      status: "neutral",
+      label: "Estável",
+      currentValue,
+      previousValue,
+      absoluteDiff: roundedDiff,
+      percentDiff,
+    };
+  }
+
+  const direction: TrendDirection = absoluteDiff > 0 ? "up" : "down";
+  const positive =
+    polarity === "lower-is-better" ? absoluteDiff < 0 : absoluteDiff > 0;
+  const prefix = absoluteDiff > 0 ? "+" : "-";
+  const value = Math.abs(roundedDiff).toLocaleString("pt-BR");
+  const suffix = metricType === "percentage" ? "%" : unitLabel;
+
+  return {
+    direction,
+    status: positive ? "positive" : "negative",
+    label: `${prefix}${value}${suffix}`,
+    currentValue,
+    previousValue,
+    absoluteDiff: roundedDiff,
+    percentDiff,
+  };
+}
+
+export function resolveManagementReportFilterLabels(
+  report: ManagementReportData,
+): ManagementReportFilterLabels {
+  const company =
+    report.filters.companyId === "all"
+      ? "Todas as empresas"
+      : report.options.companies.find((item) => item.id === report.filters.companyId)
+          ?.name ?? "Empresa selecionada";
+  const workspace =
+    report.filters.workspaceId === "all"
+      ? "Todos os workspaces"
+      : report.options.workspaces.find(
+          (item) => item.id === report.filters.workspaceId,
+        )?.name ?? "Workspace selecionado";
+  const area = report.filters.area === "all" ? "Todas as áreas" : report.filters.area;
+
+  return { company, workspace, area };
+}
 
 function average(values: number[]) {
   if (!values.length) return null;
@@ -284,6 +405,14 @@ function formatDateIso(date: Date) {
   return format(date, "yyyy-MM-dd");
 }
 
+function formatDateBr(date?: Date | null) {
+  return date ? format(date, "dd/MM/yyyy") : "";
+}
+
+function daysBetween(from: Date, to: Date) {
+  return Math.max(0, differenceInCalendarDays(to, from));
+}
+
 function getOperationDays(
   scaffolds: Array<{
     released_at: Date | null;
@@ -313,11 +442,101 @@ function getCorrectionDays(
   });
 }
 
+function fixChecklistText(value: string) {
+  return value
+    .replaceAll("Ã§", "ç")
+    .replaceAll("Ã£", "ã")
+    .replaceAll("Ã¡", "á")
+    .replaceAll("Ã©", "é")
+    .replaceAll("Ã­", "í")
+    .replaceAll("Ã³", "ó")
+    .replaceAll("Ãº", "ú")
+    .replaceAll("Ã¢", "â")
+    .replaceAll("Ãª", "ê")
+    .replaceAll("Ãµ", "õ")
+    .replaceAll("Ã“", "Ó")
+    .replaceAll("Ã", "à")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function summarizeChecklistNonConformity(label: string) {
+  const clean = fixChecklistText(label);
+  const normalized = clean
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+
+  if (normalized.includes("guarda-corpo superior")) {
+    return "Guarda-corpo superior ausente/irregular";
+  }
+  if (normalized.includes("guarda-corpo intermediario")) {
+    return "Guarda-corpo intermediário ausente/irregular";
+  }
+  if (normalized.includes("rodape")) return "Rodapé ausente ou irregular";
+  if (normalized.includes("plataformas de trabalho")) {
+    return "Piso/plataforma incompleta ou destravada";
+  }
+  if (normalized.includes("base") || normalized.includes("sapatas")) {
+    return "Base/sapatas inadequadas";
+  }
+  if (normalized.includes("contraventamento")) {
+    return "Contraventamento ausente ou irregular";
+  }
+  if (normalized.includes("travamento") || normalized.includes("amarracao")) {
+    return "Travamento/amarração inadequados";
+  }
+  if (normalized.includes("deformacoes") || normalized.includes("corrosao")) {
+    return "Tubos com deformação, trinca ou corrosão";
+  }
+  if (normalized.includes("bracadeiras") || normalized.includes("acopladores")) {
+    return "Braçadeiras/acopladores irregulares";
+  }
+  if (normalized.includes("montantes")) return "Montantes fora de prumo";
+  if (normalized.includes("escada")) return "Acesso por escada irregular";
+  if (normalized.includes("alcapao")) return "Alçapão de acesso irregular";
+  if (normalized.includes("linha de vida")) return "Linha de vida ausente/irregular";
+  if (normalized.includes("sinalizacao") || normalized.includes("isolamento")) {
+    return "Sinalização ou isolamento da área ausente";
+  }
+  if (normalized.includes("tela de protecao")) return "Tela de proteção ausente";
+  if (normalized.includes("rede de seguranca") || normalized.includes("bandeja")) {
+    return "Rede de segurança/bandeja ausente";
+  }
+  if (normalized.includes("redes eletricas") || normalized.includes("distancia segura")) {
+    return "Distância insegura de rede elétrica";
+  }
+  if (normalized.includes("aterramento")) return "Aterramento ausente/irregular";
+  if (normalized.includes("iluminacao")) return "Iluminação inadequada";
+  if (normalized.includes("art/rrt")) return "ART/RRT ausente, vencida ou inválida";
+  if (normalized.includes("projeto estrutural")) return "Projeto estrutural ausente";
+  if (normalized.includes("ordem de servico")) return "Ordem de serviço ausente/incompleta";
+  if (normalized.includes("permissao de trabalho") || normalized.includes("pt")) {
+    return "Permissão de trabalho ausente/vencida";
+  }
+  if (normalized.includes("capacitacao") || normalized.includes("treinamento")) {
+    return "Capacitação/treinamento ausente ou vencido";
+  }
+  if (normalized.includes("memorial de calculo")) return "Memorial de cálculo ausente";
+  if (normalized.includes("placa de identificacao")) {
+    return "Placa de identificação/carga ausente";
+  }
+  if (normalized.includes("capacete")) return "Capacete com jugular ausente";
+  if (normalized.includes("cinto de seguranca")) return "Cinto de segurança inadequado";
+  if (normalized.includes("calcado")) return "Calçado de segurança inadequado";
+  if (normalized.includes("luvas")) return "Luvas de proteção ausentes";
+  if (normalized.includes("oculos")) return "Óculos de proteção ausentes";
+  if (normalized.includes("aso")) return "ASO para trabalho em altura ausente/vencido";
+
+  return clean.replace(/\s*\([^)]*\)/g, "").slice(0, 72);
+}
+
 export async function getManagementReportData(
   searchParams: Record<string, string | string[] | undefined>,
 ) {
   await requireAnyPermission(["read.all", "read.own_company"]);
 
+  const access = await getCurrentUserAccess();
   const scope = await getDataScope();
   const scopedWhere = dataScopeWhere(scope);
   const filters = normalizeFilters(searchParams);
@@ -387,6 +606,7 @@ export async function getManagementReportData(
     previousInspections,
     previousClosedNonConformities,
     previousDismantledScaffolds,
+    currentUser,
   ] = await Promise.all([
     prisma.company.findMany({
       where: {
@@ -421,8 +641,16 @@ export async function getManagementReportData(
         area: true,
         status: true,
         created_at: true,
+        released_at: true,
+        validity_date: true,
+        responsible: true,
         tenantCompany: { select: { id: true, name: true } },
         workspace: { select: { id: true, name: true } },
+        inspections: {
+          orderBy: { date: "desc" },
+          take: 1,
+          select: { date: true },
+        },
         _count: { select: { inspections: true, nonConformities: true } },
       },
     }),
@@ -436,10 +664,13 @@ export async function getManagementReportData(
         date: true,
         inspector_name: true,
         result: true,
+        notes: true,
         companyId: true,
         workspaceId: true,
+        _count: { select: { nonConformities: true } },
         scaffold: {
           select: {
+            code: true,
             area: true,
             tenantCompany: { select: { id: true, name: true } },
             workspace: { select: { name: true } },
@@ -453,14 +684,28 @@ export async function getManagementReportData(
       select: {
         id: true,
         code: true,
+        title: true,
         status: true,
         createdAt: true,
         dueDate: true,
         closedAt: true,
+        description: true,
+        classification: true,
         companyId: true,
         workspaceId: true,
+        responsibleUser: { select: { name: true } },
+        checklistItems: {
+          select: {
+            checklistEntry: {
+              select: {
+                item_label: true,
+              },
+            },
+          },
+        },
         scaffold: {
           select: {
+            code: true,
             area: true,
             tenantCompany: { select: { id: true, name: true } },
             workspace: { select: { name: true } },
@@ -517,6 +762,12 @@ export async function getManagementReportData(
         dismantled_at: true,
       },
     }),
+    access?.userId
+      ? prisma.user.findUnique({
+          where: { id: access.userId },
+          select: { name: true, email: true },
+        })
+      : Promise.resolve(null),
   ]);
 
   const scaffoldStatus = {
@@ -533,6 +784,14 @@ export async function getManagementReportData(
     desmontados: scaffolds.filter((item) => item.status === "desmontado")
       .length,
   };
+  const activeScaffolds =
+    scaffoldStatus.liberados +
+    scaffoldStatus.emMontagem +
+    scaffoldStatus.pendentes +
+    scaffoldStatus.interditados +
+    scaffoldStatus.vencidos;
+  const utilizationRate =
+    scaffoldStatus.total > 0 ? (activeScaffolds / scaffoldStatus.total) * 100 : null;
 
   const inspectionKpis = {
     total: inspections.length,
@@ -588,6 +847,14 @@ export async function getManagementReportData(
       (item) => item.result === InspectionResult.aprovado,
     ).length,
   };
+  const approvalRate =
+    inspectionKpis.total > 0
+      ? (inspectionKpis.aprovadas / inspectionKpis.total) * 100
+      : null;
+  const previousApprovalRate =
+    previousInspectionKpis.total > 0
+      ? (previousInspectionKpis.aprovadas / previousInspectionKpis.total) * 100
+      : null;
 
   const inspectionsByScaffold = new Map<string, Date[]>();
   for (const inspection of inspections) {
@@ -824,6 +1091,24 @@ export async function getManagementReportData(
           : null,
     }))
     .sort((a, b) => b.inspections - a.inspections);
+  const nonConformityTypeRankings = [
+    ...nonConformities.reduce((rank, item) => {
+      const labels = item.checklistItems.length
+        ? item.checklistItems.map((checklistItem) =>
+            summarizeChecklistNonConformity(
+              checklistItem.checklistEntry.item_label,
+            ),
+          )
+        : [summarizeChecklistNonConformity(item.title)];
+
+      for (const label of labels) {
+        rank.set(label, (rank.get(label) ?? 0) + 1);
+      }
+      return rank;
+    }, new Map<string, number>()),
+  ]
+    .map(([title, occurrences]) => ({ title, occurrences }))
+    .sort((a, b) => b.occurrences - a.occurrences || a.title.localeCompare(b.title));
 
   return {
     filters: {
@@ -832,6 +1117,7 @@ export async function getManagementReportData(
       dateTo: formatDateIso(to),
     },
     periodLabel: `${format(from, "dd/MM/yyyy")} - ${format(to, "dd/MM/yyyy")}`,
+    exportedBy: currentUser?.name ?? currentUser?.email ?? access?.email ?? "",
     options,
     kpis: {
       scaffolds: scaffoldStatus,
@@ -844,36 +1130,43 @@ export async function getManagementReportData(
       },
       quality: {
         onTimeClosureRate,
+        utilizationRate,
+        activeScaffolds,
       },
     },
     trends: {
-      approvalRate: {
-        current:
-          inspectionKpis.total > 0
-            ? (inspectionKpis.aprovadas / inspectionKpis.total) * 100
-            : null,
-        previous:
-          previousInspectionKpis.total > 0
-            ? (previousInspectionKpis.aprovadas / previousInspectionKpis.total) *
-              100
-            : null,
-      },
-      operationDays: {
-        current: average(operationDays),
-        previous: average(previousOperationDays),
-      },
-      correctionDays: {
-        current: average(correctionDays),
-        previous: average(previousCorrectionDays),
-      },
-      closedNonConformities: {
-        current: closedNonConformities.length,
-        previous: previousClosedNonConformities.length,
-      },
-      onTimeClosureRate: {
-        current: onTimeClosureRate,
-        previous: previousOnTimeClosureRate,
-      },
+      approvalRate: calculateKpiTrend({
+        currentValue: approvalRate,
+        previousValue: previousApprovalRate,
+        metricType: "percentage",
+        polarity: "higher-is-better",
+      }),
+      operationDays: calculateKpiTrend({
+        currentValue: average(operationDays),
+        previousValue: average(previousOperationDays),
+        metricType: "days",
+        polarity: "lower-is-better",
+        unitLabel: " dias",
+      }),
+      correctionDays: calculateKpiTrend({
+        currentValue: average(correctionDays),
+        previousValue: average(previousCorrectionDays),
+        metricType: "days",
+        polarity: "lower-is-better",
+        unitLabel: " dias",
+      }),
+      closedNonConformities: calculateKpiTrend({
+        currentValue: closedNonConformities.length,
+        previousValue: previousClosedNonConformities.length,
+        metricType: "number",
+        polarity: "higher-is-better",
+      }),
+      onTimeClosureRate: calculateKpiTrend({
+        currentValue: onTimeClosureRate,
+        previousValue: previousOnTimeClosureRate,
+        metricType: "percentage",
+        polarity: "higher-is-better",
+      }),
     },
     charts: {
       granularity,
@@ -884,31 +1177,55 @@ export async function getManagementReportData(
       companies: companyRankings,
       areas: areaRankings,
       inspectors: inspectorRankings,
+      nonConformities: nonConformityTypeRankings,
     },
     exportRows: {
       scaffolds: scaffolds.map((item) => ({
-        tag: item.code,
-        area: item.area,
+        codigoTag: item.code,
         empresa: item.tenantCompany.name,
         workspace: item.workspace.name,
+        area: item.area,
         status: item.status,
-        criadoEm: format(item.created_at, "dd/MM/yyyy"),
+        dataCriacao: formatDateBr(item.created_at),
+        dataLiberacao: formatDateBr(item.released_at),
+        dataValidade: formatDateBr(item.validity_date),
+        responsavel: item.responsible,
+        ultimaInspecao: formatDateBr(item.inspections[0]?.date),
       })),
       inspections: inspections.map((item) => ({
-        andaime: item.scaffold_code,
-        data: format(item.date, "dd/MM/yyyy"),
+        codigoInspecao: item.id,
+        tagAndaime: item.scaffold_code,
+        empresa: item.scaffold.tenantCompany.name,
+        workspace: item.scaffold.workspace.name,
+        area: item.scaffold.area,
         inspetor: item.inspector_name,
         resultado: item.result,
-        empresa: item.scaffold.tenantCompany.name,
-        area: item.scaffold.area,
+        dataInspecao: formatDateBr(item.date),
+        quantidadeNcs: item._count.nonConformities,
+        observacoes: item.notes ?? "",
       })),
       nonConformities: nonConformities.map((item) => ({
-        codigo: item.code,
-        status: item.status,
+        codigoNc: item.code,
+        tagAndaime: item.scaffold.code,
         empresa: item.scaffold.tenantCompany.name,
+        workspace: item.scaffold.workspace.name,
         area: item.scaffold.area,
-        abertura: format(item.createdAt, "dd/MM/yyyy"),
-        encerramento: item.closedAt ? format(item.closedAt, "dd/MM/yyyy") : "",
+        tipoNc: item.checklistItems.length
+          ? item.checklistItems
+              .map((checklistItem) =>
+                summarizeChecklistNonConformity(
+                  checklistItem.checklistEntry.item_label,
+                ),
+              )
+              .join("; ")
+          : summarizeChecklistNonConformity(item.title),
+        descricao: item.description,
+        status: item.status,
+        criticidade: item.classification,
+        dataAbertura: formatDateBr(item.createdAt),
+        dataCorrecao: formatDateBr(item.closedAt),
+        responsavel: item.responsibleUser?.name ?? "",
+        diasEmAberto: daysBetween(item.createdAt, item.closedAt ?? new Date()),
       })),
     },
   };

@@ -27,7 +27,10 @@ import {
   XCircle,
 } from "lucide-react";
 
-import { getManagementReportData } from "@/lib/management-reports";
+import {
+  getManagementReportData,
+  type KpiTrend,
+} from "@/lib/management-reports";
 import { surface, typography } from "@/lib/design-system";
 import { ReportExportActions } from "./report-export-actions";
 
@@ -58,30 +61,27 @@ function formatPercent(value: number, total: number) {
   return `${Math.round((value / total) * 100)}%`;
 }
 
+function formatRate(value: number | null) {
+  if (value === null) return "Sem base histórica";
+  return `${Math.round(value)}%`;
+}
+
 function buildRankingHref(path: string, filters: Record<string, string>) {
   const params = new URLSearchParams(filters);
   return `${path}?${params.toString()}`;
 }
 
-function getTrend(
-  current: number | null,
-  previous: number | null,
-  options: { suffix?: string; lowerIsBetter?: boolean } = {},
-) {
-  if (current === null || previous === null) return undefined;
-
-  const delta = current - previous;
-  const rounded = Math.round(delta * 10) / 10;
-  const isNeutral = Math.abs(rounded) < 0.1;
-  const improved = options.lowerIsBetter ? delta < 0 : delta > 0;
-  const tone: TrendTone = isNeutral ? "neutral" : improved ? "good" : "bad";
-  const signal = rounded > 0 ? "↑ +" : rounded < 0 ? "↓ " : "→ ";
-  const suffix = options.suffix ?? "";
-
+function getTrend(trend: KpiTrend) {
+  if (trend.status === "no-history") return undefined;
   return {
-    value: `${signal}${rounded.toLocaleString("pt-BR")}${suffix}`,
-    tone,
-  };
+    value: trend.label,
+    tone:
+      trend.status === "positive"
+        ? "good"
+        : trend.status === "negative"
+          ? "bad"
+          : "neutral",
+  } satisfies TrendItem["trend"];
 }
 
 export default async function RelatoriosPage({ searchParams }: Props) {
@@ -136,40 +136,25 @@ export default async function RelatoriosPage({ searchParams }: Props) {
         report.kpis.inspections.total,
       ),
       icon: TrendingUp,
-      trend: getTrend(
-        report.trends.approvalRate.current,
-        report.trends.approvalRate.previous,
-        { suffix: "%" },
-      ),
+      trend: getTrend(report.trends.approvalRate),
     },
     {
       label: "Tempo médio em operação",
       value: formatAverage(report.kpis.averages.operationDays),
       icon: Clock3,
-      trend: getTrend(
-        report.trends.operationDays.current,
-        report.trends.operationDays.previous,
-        { suffix: " dias", lowerIsBetter: true },
-      ),
+      trend: getTrend(report.trends.operationDays),
     },
     {
       label: "Tempo médio de correção",
       value: formatAverage(report.kpis.averages.correctionDays),
       icon: Wrench,
-      trend: getTrend(
-        report.trends.correctionDays.current,
-        report.trends.correctionDays.previous,
-        { suffix: " dias", lowerIsBetter: true },
-      ),
+      trend: getTrend(report.trends.correctionDays),
     },
     {
       label: "NCs encerradas",
       value: report.kpis.nonConformities.encerradas.toString(),
       icon: ShieldCheck,
-      trend: getTrend(
-        report.trends.closedNonConformities.current,
-        report.trends.closedNonConformities.previous,
-      ),
+      trend: getTrend(report.trends.closedNonConformities),
     },
   ];
 
@@ -270,6 +255,11 @@ export default async function RelatoriosPage({ searchParams }: Props) {
             ["Interditados", report.kpis.scaffolds.interditados, Ban],
             ["Vencidos", report.kpis.scaffolds.vencidos, CircleAlert],
             ["Desmontados", report.kpis.scaffolds.desmontados, Archive],
+            [
+              "Taxa de utilização",
+              formatRate(report.kpis.quality.utilizationRate),
+              Gauge,
+            ],
           ]}
         />
         <KpiPanel
@@ -377,6 +367,8 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           }))}
         />
       </div>
+
+      <TopNonConformitiesPanel rows={report.rankings.nonConformities} />
 
       <InsightsPanel items={insights} />
     </div>
@@ -557,9 +549,9 @@ function NonConformityTrendChart({
   );
   const labelInterval = Math.max(1, Math.ceil(rows.length / 6));
   const getLabelOffset = (label: string) => {
-    if (label.includes(" - ")) return 36;
-    if (label.length === 5) return 18;
-    if (label.includes("/")) return 24;
+    if (label.includes(" - ")) return 44;
+    if (label.length === 5) return 22;
+    if (label.includes("/")) return 28;
     return 0;
   };
 
@@ -740,6 +732,60 @@ function RankingRow({
         </div>
       </div>
     </div>
+  );
+}
+
+function TopNonConformitiesPanel({
+  rows,
+}: {
+  rows: Array<{ title: string; occurrences: number }>;
+}) {
+  const visibleRows = rows.slice(0, 5);
+
+  return (
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className={surface.panelHeader}>
+        <div className="flex items-center gap-2">
+          <AlertTriangle className={surface.panelHeaderIcon} />
+          <p className={surface.panelHeaderTitle}>Top Não Conformidades</p>
+        </div>
+        <p className={surface.panelHeaderSubtitle}>
+          Tipos mais recorrentes no período
+        </p>
+      </div>
+      {visibleRows.length === 0 ? (
+        <div className="px-4 py-6 text-center">
+          <p className="text-[12px] font-semibold text-foreground">
+            Nenhuma não conformidade registrada no período.
+          </p>
+        </div>
+      ) : (
+        <div className="divide-y divide-border">
+          <div className="grid grid-cols-[1fr_110px] bg-muted/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <span>Não Conformidade</span>
+            <span className="text-right">Ocorrências</span>
+          </div>
+          {visibleRows.map((item, index) => (
+            <div
+              key={item.title}
+              className="grid grid-cols-[1fr_110px] items-center gap-4 px-4 py-2.5 hover:bg-primary/5"
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="font-mono text-[10px] font-bold text-muted-foreground">
+                  {index + 1}.
+                </span>
+                <span className="truncate text-[12px] font-semibold text-foreground">
+                  {item.title}
+                </span>
+              </div>
+              <span className="text-right font-mono text-[13px] font-bold text-foreground">
+                {item.occurrences}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 

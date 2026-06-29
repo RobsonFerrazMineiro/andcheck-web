@@ -1,11 +1,11 @@
 import { format } from "date-fns";
 import { jsPDF } from "jspdf";
 
-import type { ManagementReportData } from "@/lib/management-reports";
+import type { KpiTrend, ManagementReportData } from "@/lib/management-reports";
 
 type RGB = [number, number, number];
 type DonutItem = { label: string; value: number; color: RGB };
-type KpiTrend = { value: string; color: RGB; direction: "up" | "down" | "flat" } | null;
+type PdfTrend = { value: string; color: RGB; direction: "up" | "down" | "flat" } | null;
 type KpiIcon =
   | "scaffold"
   | "inspection"
@@ -61,6 +61,12 @@ function setHairline(doc: jsPDF) {
   doc.setLineWidth(0.2);
 }
 
+function tint(color: RGB, amount = 0.9): RGB {
+  return color.map((value) =>
+    Math.round(value + (255 - value) * amount),
+  ) as RGB;
+}
+
 function text(
   doc: jsPDF,
   value: string,
@@ -92,40 +98,34 @@ function formatRate(value: number | null) {
   return `${Math.round(value)}%`;
 }
 
-function diffTrend(
-  current: number | null,
-  previous: number | null,
-  suffix: string,
-  lowerIsBetter = false,
-  showComparison = false,
-): KpiTrend {
-  if (current === null || previous === null) return null;
-  const diff = Math.round((current - previous) * 10) / 10;
-  if (diff === 0) {
-    return {
-      value: showComparison ? "0 vs período anterior" : "0",
-      color: C.muted,
-      direction: "flat",
-    };
-  }
-  const improved = lowerIsBetter ? diff < 0 : diff > 0;
-  const abs = Math.abs(diff).toLocaleString("pt-BR");
-  const comparison = showComparison ? " vs período anterior" : "";
-  return {
-    value: `${diff > 0 ? "+" : "-"}${abs}${suffix}${comparison}`,
-    color: improved ? C.green : C.red,
-    direction: diff > 0 ? "up" : "down",
-  };
+function formatTrendRate(trend: KpiTrend) {
+  if (trend.status === "no-history") return "Sem base histórica";
+  return formatRate(trend.currentValue);
 }
 
-function trendOrNoBase(trend: KpiTrend): KpiTrend {
-  return trend ?? { value: "Sem base histórica", color: C.muted, direction: "flat" };
+function toPdfTrend(trend: KpiTrend, showComparison = false): PdfTrend {
+  const value =
+    trend.status === "no-history"
+      ? "Sem base histórica"
+      : `${trend.label}${showComparison ? " vs período anterior" : ""}`;
+  return {
+    value,
+    color:
+      trend.status === "positive"
+        ? C.green
+        : trend.status === "negative"
+          ? C.red
+          : C.muted,
+    direction:
+      trend.direction === "up" ? "up" : trend.direction === "down" ? "down" : "flat",
+  };
 }
 
 function sectionHeader(doc: jsPDF, title: string, x: number, y: number, w: number) {
   setHairline(doc);
   setFill(doc, C.primary);
-  doc.rect(x, y, w, 8, "F");
+  doc.roundedRect(x, y, w, 8, 1.4, 1.4, "F");
+  doc.rect(x, y + 4, w, 4, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   setText(doc, C.white);
@@ -133,46 +133,54 @@ function sectionHeader(doc: jsPDF, title: string, x: number, y: number, w: numbe
 }
 
 function drawKpiIcon(doc: jsPDF, icon: KpiIcon, x: number, y: number, color: RGB) {
+  setFill(doc, tint(color, 0.93));
   setDraw(doc, color);
   setText(doc, color);
-  doc.setLineWidth(0.35);
-  doc.circle(x, y, 4.2, "S");
+  doc.setLineWidth(0.42);
+  doc.circle(x, y, 4.8, "FD");
+  doc.setLineWidth(0.5);
 
   if (icon === "scaffold") {
-    doc.line(x - 2.2, y + 1.8, x + 2.2, y + 1.8);
-    doc.line(x - 1.7, y + 1.8, x - 0.6, y - 1.8);
-    doc.line(x + 1.7, y + 1.8, x + 0.6, y - 1.8);
-    doc.line(x - 1.1, y, x + 1.1, y);
+    doc.line(x - 2.4, y + 2, x + 2.4, y + 2);
+    doc.line(x - 1.9, y + 2, x - 0.7, y - 2);
+    doc.line(x + 1.9, y + 2, x + 0.7, y - 2);
+    doc.line(x - 1.25, y - 0.2, x + 1.25, y - 0.2);
+    doc.line(x - 0.45, y - 1.1, x + 0.45, y - 1.1);
   }
   if (icon === "inspection") {
-    doc.rect(x - 1.8, y - 2.2, 3.6, 4.4, "S");
-    doc.line(x - 0.9, y, x - 0.1, y + 0.8);
-    doc.line(x - 0.1, y + 0.8, x + 1.2, y - 0.9);
+    doc.roundedRect(x - 2, y - 2.5, 4, 5, 0.45, 0.45, "S");
+    doc.line(x - 0.9, y + 0.2, x - 0.2, y + 0.9);
+    doc.line(x - 0.2, y + 0.9, x + 1.15, y - 0.95);
+    doc.line(x - 0.8, y - 1.3, x + 0.8, y - 1.3);
   }
   if (icon === "nc") {
-    doc.triangle(x, y - 2.2, x - 2.2, y + 1.8, x + 2.2, y + 1.8, "S");
-    doc.line(x, y - 0.8, x, y + 0.7);
-    doc.circle(x, y + 1.3, 0.25, "F");
+    doc.triangle(x, y - 2.55, x - 2.55, y + 2.05, x + 2.55, y + 2.05, "S");
+    doc.line(x, y - 0.95, x, y + 0.7);
+    doc.circle(x, y + 1.45, 0.28, "F");
   }
   if (icon === "time" || icon === "correction") {
-    doc.circle(x, y, 2.3, "S");
-    doc.line(x, y, x, y - 1.3);
-    doc.line(x, y, x + 1.2, y + 0.8);
+    doc.circle(x, y, 2.55, "S");
+    doc.line(x, y, x, y - 1.45);
+    doc.line(x, y, x + 1.35, y + 0.85);
+    if (icon === "correction") {
+      doc.line(x + 1.6, y - 2.8, x + 2.4, y - 2);
+      doc.line(x + 2.4, y - 2, x + 2.7, y - 2.8);
+    }
   }
   if (icon === "rate" || icon === "ontime") {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    text(doc, "%", x, y + 2.1, { align: "center" });
+    doc.circle(x - 1.2, y - 1.15, 0.45, "S");
+    doc.circle(x + 1.25, y + 1.2, 0.45, "S");
+    doc.line(x - 1.85, y + 1.95, x + 1.85, y - 1.95);
   }
   if (icon === "closed") {
-    doc.line(x - 1.6, y, x - 0.4, y + 1.2);
-    doc.line(x - 0.4, y + 1.2, x + 1.8, y - 1.4);
+    doc.line(x - 1.7, y, x - 0.45, y + 1.25);
+    doc.line(x - 0.45, y + 1.25, x + 1.95, y - 1.45);
   }
 
   setHairline(doc);
 }
 
-function drawTrendGlyph(doc: jsPDF, trend: KpiTrend, x: number, y: number) {
+function drawTrendGlyph(doc: jsPDF, trend: PdfTrend, x: number, y: number) {
   if (!trend || trend.direction === "flat") return;
   setDraw(doc, trend.color);
   doc.setLineWidth(0.35);
@@ -217,21 +225,22 @@ function card(
   w: number,
   color: RGB,
   icon?: KpiIcon,
-  trend: KpiTrend = null,
+  trend: PdfTrend = null,
 ) {
   setHairline(doc);
   setFill(doc, C.white);
   setDraw(doc, C.border);
-  doc.rect(x, y, w, 25, "FD");
+  doc.roundedRect(x, y, w, 25, 1.2, 1.2, "FD");
   setFill(doc, color);
-  doc.rect(x, y, 1.8, 25, "F");
+  doc.rect(x, y + 0.5, 1.8, 24, "F");
   if (icon) {
-    drawKpiIcon(doc, icon, x + w - 9.5, y + 7.6, color);
+    drawKpiIcon(doc, icon, x + w - 9.6, y + 7.7, color);
   }
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.6);
   setText(doc, C.muted);
-  text(doc, label.toUpperCase(), x + 5, y + 6.2);
+  const labelLines = doc.splitTextToSize(label.toUpperCase(), w - 22).slice(0, 2);
+  doc.text(labelLines, x + 5, y + 6.2);
   doc.setFontSize(String(value).length > 14 ? 11 : 15);
   setText(doc, C.black);
   text(doc, String(value), x + 5, y + 15);
@@ -331,19 +340,21 @@ function largeDonutPanel(
   sectionHeader(doc, title, x, y, w);
   setFill(doc, C.white);
   setDraw(doc, C.border);
-  doc.rect(x, y + 8, w, h - 8, "FD");
+  doc.rect(x, y + 8, w, h - 8, "F");
   donut(doc, items, x + 35, y + 45, 24, 7.5);
   legendWithPercent(doc, items, x + 70, y + 27, 32, 6.7);
 
   if (footer) {
     setFill(doc, C.bg);
     setDraw(doc, C.border);
-    doc.rect(x + 70, y + h - 16, w - 78, 9, "FD");
+    doc.roundedRect(x + 70, y + h - 16, w - 78, 9, 1, 1, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.8);
     setText(doc, C.slate);
     text(doc, footer, x + 74, y + h - 10.2);
   }
+  setDraw(doc, C.border);
+  doc.roundedRect(x, y, w, h, 1.4, 1.4, "S");
 }
 
 function performancePanel(
@@ -360,7 +371,7 @@ function performancePanel(
   sectionHeader(doc, "Desempenho de Inspeções", x, y, w);
   setFill(doc, C.white);
   setDraw(doc, C.border);
-  doc.rect(x, y + 8, w, h - 8, "FD");
+  doc.rect(x, y + 8, w, h - 8, "F");
   const legendX = x + 62;
   const donutX = x + (legendX - x) / 2;
   donut(doc, items, donutX, y + 33, 17, 5.5, {
@@ -370,6 +381,8 @@ function performancePanel(
     labelSize: 6,
   });
   legendWithPercent(doc, items, legendX, y + 28, 34, 7.4);
+  setDraw(doc, C.border);
+  doc.roundedRect(x, y, w, h, 1.4, 1.4, "S");
 }
 
 function groupedNcChart(
@@ -384,7 +397,7 @@ function groupedNcChart(
   sectionHeader(doc, "Evolução das NCs", x, y, w);
   setFill(doc, C.white);
   setDraw(doc, C.border);
-  doc.rect(x, y + 8, w, h - 8, "FD");
+  doc.rect(x, y + 8, w, h - 8, "F");
 
   const rows = report.charts.nonConformityTrend;
   const max = Math.max(1, ...rows.flatMap((item) => [item.abertas, item.encerradas]));
@@ -456,6 +469,8 @@ function groupedNcChart(
       });
     }
   });
+  setDraw(doc, C.border);
+  doc.roundedRect(x, y, w, h, 1.4, 1.4, "S");
 }
 
 function rankingTable(
@@ -468,6 +483,7 @@ function rankingTable(
   widths: number[],
   columns: string[],
 ) {
+  const startY = y;
   sectionHeader(doc, title, x, y, w);
   let cy = y + 8;
   setFill(doc, C.bg);
@@ -478,28 +494,103 @@ function rankingTable(
   setText(doc, C.muted);
   let cx = x + 3;
   columns.forEach((column, index) => {
-    text(doc, column.toUpperCase(), cx, cy + 4.8);
+    const isNumeric = index > 1;
+    text(doc, column.toUpperCase(), isNumeric ? cx + widths[index] - 3 : cx, cy + 4.8, {
+      align: isNumeric ? "right" : "left",
+    });
     cx += widths[index];
   });
   cy += 7;
 
-  rows.slice(0, 5).forEach((row) => {
+  rows.slice(0, 5).forEach((row, rowIndex) => {
     const cellLines = row.map((cell, index) =>
       doc.splitTextToSize(String(cell), Math.max(6, widths[index] - 3)),
     );
     const rowH = Math.max(8, Math.max(...cellLines.map((lines) => lines.length)) * 3.5 + 3);
+    setFill(doc, rowIndex % 2 === 0 ? C.white : C.bg);
     setDraw(doc, C.border);
-    doc.line(x, cy + rowH, x + w, cy + rowH);
+    doc.rect(x, cy, w, rowH, "FD");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.1);
     setText(doc, C.black);
     let tx = x + 3;
     cellLines.forEach((lines, index) => {
-      doc.text(lines.slice(0, 2), tx, cy + 4.8);
+      if (index > 1) {
+        text(doc, String(row[index]), tx + widths[index] - 3, cy + 4.8, {
+          align: "right",
+        });
+      } else {
+        doc.text(lines.slice(0, 2), tx, cy + 4.8);
+      }
       tx += widths[index];
     });
     cy += rowH;
   });
+
+  setDraw(doc, C.border);
+  doc.roundedRect(x, startY, w, cy - startY, 1.2, 1.2, "S");
+}
+
+function topNonConformitiesTable(
+  doc: jsPDF,
+  rows: Array<{ title: string; occurrences: number }>,
+  x: number,
+  y: number,
+  w: number,
+) {
+  const startY = y;
+  sectionHeader(doc, "Top Não Conformidades", x, y, w);
+  let cy = y + 8;
+  setFill(doc, C.bg);
+  setDraw(doc, C.border);
+  doc.rect(x, cy, w, 7, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.8);
+  setText(doc, C.muted);
+  text(doc, "NÃO CONFORMIDADE", x + 4, cy + 4.8);
+  text(doc, "OCORRÊNCIAS", x + w - 4, cy + 4.8, { align: "right" });
+  cy += 7;
+
+  if (rows.length === 0) {
+    setFill(doc, C.white);
+    setDraw(doc, C.border);
+    doc.rect(x, cy, w, 11, "FD");
+    setDraw(doc, C.border);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    setText(doc, C.muted);
+    text(doc, "Nenhuma não conformidade registrada no período.", x + 4, cy + 6);
+    setDraw(doc, C.border);
+    doc.roundedRect(x, startY, w, cy + 11 - startY, 1.2, 1.2, "S");
+    return;
+  }
+
+  rows.slice(0, 5).forEach((row, index) => {
+    const titleLines = doc.splitTextToSize(row.title, w - 36);
+    const rowH = Math.max(8, titleLines.length * 3.5 + 3);
+    setFill(doc, index % 2 === 0 ? C.white : C.bg);
+    setDraw(doc, C.border);
+    doc.rect(x, cy, w, rowH, "FD");
+    setDraw(doc, C.border);
+    doc.line(x, cy + rowH, x + w, cy + rowH);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7);
+    setText(doc, C.slate);
+    text(doc, String(index + 1), x + 4, cy + 4.8);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.3);
+    setText(doc, C.black);
+    doc.text(titleLines.slice(0, 2), x + 12, cy + 4.8);
+    doc.setFont("helvetica", "bold");
+    setText(doc, C.black);
+    text(doc, String(row.occurrences), x + w - 4, cy + 4.8, {
+      align: "right",
+    });
+    cy += rowH;
+  });
+
+  setDraw(doc, C.border);
+  doc.roundedRect(x, startY, w, cy - startY, 1.2, 1.2, "S");
 }
 
 function addFooter(doc: jsPDF) {
@@ -544,29 +635,10 @@ export function generateManagementReportPdf(
     { label: "NCs em tratamento", value: report.kpis.nonConformities.emTratamento, color: C.sky },
     { label: "NCs vencidas", value: report.kpis.nonConformities.vencidas, color: C.slate },
   ];
-  const approvalTrend = diffTrend(
-    report.trends.approvalRate.current,
-    report.trends.approvalRate.previous,
-    "%",
-    false,
-    true,
-  );
-  const closedNcTrend = diffTrend(
-    report.trends.closedNonConformities.current,
-    report.trends.closedNonConformities.previous,
-    "",
-  );
-  const onTimeTrend = diffTrend(
-    report.trends.onTimeClosureRate.current,
-    report.trends.onTimeClosureRate.previous,
-    "%",
-  );
-  const correctionTrend = diffTrend(
-    report.trends.correctionDays.current,
-    report.trends.correctionDays.previous,
-    " dias",
-    true,
-  );
+  const approvalTrend = toPdfTrend(report.trends.approvalRate, true);
+  const closedNcTrend = toPdfTrend(report.trends.closedNonConformities);
+  const onTimeTrend = toPdfTrend(report.trends.onTimeClosureRate);
+  const correctionTrend = toPdfTrend(report.trends.correctionDays);
   addHeader(doc, labels, report);
 
   let y = 44;
@@ -587,49 +659,60 @@ export function generateManagementReportPdf(
   );
 
   y += 28;
+  const executiveCardW = (W - gap * 4) / 5;
   card(
     doc,
     "Taxa de aprovação",
-    formatRate(report.trends.approvalRate.current),
+    formatTrendRate(report.trends.approvalRate),
     M,
     y,
-    cardW,
+    executiveCardW,
     C.green,
     "rate",
-    trendOrNoBase(approvalTrend),
+    approvalTrend,
   );
   card(
     doc,
     "NCs encerradas",
     report.kpis.nonConformities.encerradas,
-    M + (cardW + gap),
+    M + (executiveCardW + gap),
     y,
-    cardW,
+    executiveCardW,
     C.green,
     "closed",
-    trendOrNoBase(closedNcTrend),
+    closedNcTrend,
   );
   card(
     doc,
     "NCs em dia",
     formatRate(report.kpis.quality.onTimeClosureRate),
-    M + (cardW + gap) * 2,
+    M + (executiveCardW + gap) * 2,
     y,
-    cardW,
+    executiveCardW,
     C.blue,
     "ontime",
-    trendOrNoBase(onTimeTrend),
+    onTimeTrend,
+  );
+  card(
+    doc,
+    "Taxa de utilização",
+    formatRate(report.kpis.quality.utilizationRate),
+    M + (executiveCardW + gap) * 3,
+    y,
+    executiveCardW,
+    C.teal,
+    "rate",
   );
   card(
     doc,
     "Tempo médio correção",
     formatAverage(report.kpis.averages.correctionDays),
-    M + (cardW + gap) * 3,
+    M + (executiveCardW + gap) * 4,
     y,
-    cardW,
+    executiveCardW,
     C.orange,
     "correction",
-    trendOrNoBase(correctionTrend),
+    correctionTrend,
   );
 
   y += 34;
@@ -716,6 +799,11 @@ export function generateManagementReportPdf(
   insights.forEach(([label, value], index) => {
     card(doc, label, value, M + index * (cardW + gap), y, cardW, C.slate);
   });
+  addFooter(doc);
+
+  doc.addPage("a4", "landscape");
+  addHeader(doc, labels, report);
+  topNonConformitiesTable(doc, report.rankings.nonConformities, M, 44, W);
   addFooter(doc);
 
   return doc.output("arraybuffer");
