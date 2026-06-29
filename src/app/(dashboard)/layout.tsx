@@ -4,11 +4,13 @@ import { MobileHeader } from "@/components/layout/mobile-header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DesktopContextSwitcher } from "@/components/layout/context-switcher";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import {
   canCurrentUser,
   getCurrentUserAccess,
   requireAnyPermission,
 } from "@/lib/authz";
+import { getNotificationBellData } from "@/lib/actions/notification-actions";
 import { getContextSwitcherData } from "@/lib/context-switcher";
 import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
@@ -72,6 +74,7 @@ export default async function DashboardLayout({
     canCreateDocuments,
     canUpdateDocuments,
     canArchiveDocuments,
+    notificationBell,
   ] = await Promise.all([
     access?.companyId
       ? prisma.company.findUnique({
@@ -96,6 +99,7 @@ export default async function DashboardLayout({
     canCurrentUser("documents.create"),
     canCurrentUser("documents.update"),
     canCurrentUser("documents.archive"),
+    getNotificationBellData(),
   ]);
 
   const canManageUsers = canManageCompanyUsers || canCreateUsers;
@@ -168,6 +172,10 @@ export default async function DashboardLayout({
                 </span>
               ))}
             </div>
+            <NotificationBell
+              unreadCount={notificationBell.unreadCount}
+              latest={notificationBell.latest}
+            />
             {user && (
               <UserMenu
                 name={user.name ?? "Usuário"}

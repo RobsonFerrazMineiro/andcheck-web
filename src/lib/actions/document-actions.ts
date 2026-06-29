@@ -18,6 +18,7 @@ import {
 } from "@/lib/data-scope";
 import { getCurrentUserAccess } from "@/lib/authz";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { createNotification } from "@/lib/notifications/service";
 
 const DOCUMENT_VIEW_PERMISSIONS: PermissionCode[] = [
   "documents.view",
@@ -358,6 +359,25 @@ export async function createDocument(formData: FormData) {
     companyId: document.companyId,
     workspaceId: document.workspaceId,
   });
+  if (document.companyId) {
+    await createNotification({
+      companyId: document.companyId,
+      workspaceId: document.workspaceId,
+      userId: document.createdById,
+      type: "DOCUMENT_ATTACHED",
+      severity: "INFO",
+      title: `Documento ${document.title} anexado`,
+      message: `O documento ${document.title} foi anexado ao acervo tecnico.`,
+      entityType: "DOCUMENT",
+      entityId: document.id,
+      channels: ["INTERNAL"],
+      metadata: {
+        entityLabel: document.title,
+        status: document.status,
+        category: document.category,
+      },
+    });
+  }
 
   revalidatePath("/acervo");
   return { id: document.id };
@@ -566,6 +586,22 @@ export async function addScaffoldDocument(data: {
     },
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
+  });
+  await createNotification({
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+    type: "DOCUMENT_ATTACHED",
+    severity: "INFO",
+    title: `Documento ${doc.title} anexado`,
+    message: `O documento ${doc.title} foi anexado ao andaime ${scaffold.code}.`,
+    entityType: "SCAFFOLD",
+    entityId: scaffold.id,
+    channels: ["INTERNAL"],
+    metadata: {
+      entityLabel: scaffold.code,
+      status: doc.type,
+      documentTitle: doc.title,
+    },
   });
   revalidatePath(`/andaimes/${data.scaffold_id}`);
   return { id: doc.id };

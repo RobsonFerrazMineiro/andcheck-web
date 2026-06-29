@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import {
   requireAnyPermission,
   requirePermission,
@@ -19,7 +20,14 @@ import {
   getDataScope,
   getOwnedCreationContext,
 } from "@/lib/data-scope";
-import { ScaffoldStatus, ScaffoldType } from "@prisma/client";
+import { createNotification } from "@/lib/notifications/service";
+import {
+  ScaffoldStatus,
+  ScaffoldType,
+  type NotificationChannel,
+  type NotificationSeverity,
+  type NotificationType,
+} from "@prisma/client";
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
 export async function getScaffolds() {
@@ -298,6 +306,25 @@ export async function createScaffold(
       companyId: scaffold.companyId,
       workspaceId: scaffold.workspaceId,
     });
+    await createNotification({
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
+      type: "SCAFFOLD_CREATED",
+      severity: "INFO",
+      title: `Andaime ${scaffold.code} criado`,
+      message: `O andaime ${scaffold.code} foi criado e esta em montagem.`,
+      entityType: "SCAFFOLD",
+      entityId: scaffold.id,
+      channels: ["INTERNAL"],
+      metadata: {
+        entityLabel: scaffold.code,
+        status: scaffold.status,
+        area: scaffold.area,
+      },
+    });
+    revalidatePath("/andaimes");
+    revalidatePath(`/andaimes/${scaffold.id}`);
+    revalidatePath("/", "layout");
     return scaffold;
   } catch (err: unknown) {
     // Conflito de unique constraint por concorrência → tenta novamente
@@ -309,6 +336,43 @@ export async function createScaffold(
     throw err;
   }
 }
+
+const STATUS_NOTIFICATION: Partial<
+  Record<
+    ScaffoldStatus,
+    {
+      type: NotificationType;
+      severity: NotificationSeverity;
+      label: string;
+      channels: NotificationChannel[];
+    }
+  >
+> = {
+  liberado: {
+    type: "SCAFFOLD_RELEASED",
+    severity: "SUCCESS",
+    label: "liberado",
+    channels: ["INTERNAL"],
+  },
+  reprovado: {
+    type: "SCAFFOLD_REJECTED",
+    severity: "WARNING",
+    label: "reprovado",
+    channels: ["INTERNAL", "EMAIL"],
+  },
+  interditado: {
+    type: "SCAFFOLD_INTERDICTED",
+    severity: "CRITICAL",
+    label: "interditado",
+    channels: ["INTERNAL", "EMAIL"],
+  },
+  desmontado: {
+    type: "SCAFFOLD_DISASSEMBLED",
+    severity: "INFO",
+    label: "desmontado",
+    channels: ["INTERNAL"],
+  },
+};
 
 // ── Atualizar status ──────────────────────────────────────────────────────────
 export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
@@ -328,6 +392,25 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
+  const notification = STATUS_NOTIFICATION[status];
+  if (notification) {
+    await createNotification({
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
+      type: notification.type,
+      severity: notification.severity,
+      title: `Andaime ${scaffold.code} ${notification.label}`,
+      message: `O andaime ${scaffold.code} foi ${notification.label}.`,
+      entityType: "SCAFFOLD",
+      entityId: scaffold.id,
+      channels: notification.channels,
+      metadata: {
+        entityLabel: scaffold.code,
+        status: scaffold.status,
+        area: scaffold.area,
+      },
+    });
+  }
   return scaffold;
 }
 
@@ -357,6 +440,22 @@ export async function completeAssembly(id: string) {
     },
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
+  });
+  await createNotification({
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+    type: "INSPECTION_PENDING",
+    severity: "WARNING",
+    title: `Inspecao pendente: ${scaffold.code}`,
+    message: `O andaime ${scaffold.code} concluiu montagem e aguarda inspecao para liberacao.`,
+    entityType: "SCAFFOLD",
+    entityId: scaffold.id,
+    channels: ["INTERNAL", "EMAIL"],
+    metadata: {
+      entityLabel: scaffold.code,
+      status: scaffold.status,
+      area: scaffold.area,
+    },
   });
   return scaffold;
 }
@@ -411,6 +510,23 @@ export async function dismantleScaffold(
     },
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
+  });
+  await createNotification({
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+    type: "SCAFFOLD_DISASSEMBLED",
+    severity: "INFO",
+    title: `Andaime ${scaffold.code} desmontado`,
+    message: `O andaime ${scaffold.code} foi desmontado.`,
+    entityType: "SCAFFOLD",
+    entityId: scaffold.id,
+    channels: ["INTERNAL"],
+    metadata: {
+      entityLabel: scaffold.code,
+      status: scaffold.status,
+      area: scaffold.area,
+      reason,
+    },
   });
   return scaffold;
 }

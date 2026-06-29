@@ -26,10 +26,43 @@ import {
   NonConformityClassification,
   NonConformityStatus,
   Prisma,
+  type NotificationChannel,
+  type NotificationSeverity,
+  type NotificationType,
 } from "@prisma/client";
 import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-actions";
+import { createNotification } from "@/lib/notifications/service";
 
 const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
+
+const INSPECTION_RESULT_NOTIFICATION: Record<
+  InspectionResult,
+  {
+    type: NotificationType;
+    severity: NotificationSeverity;
+    label: string;
+    channels: NotificationChannel[];
+  }
+> = {
+  aprovado: {
+    type: "INSPECTION_APPROVED",
+    severity: "SUCCESS",
+    label: "aprovada",
+    channels: ["INTERNAL"],
+  },
+  aprovado_com_ressalvas: {
+    type: "INSPECTION_WITH_REMARKS",
+    severity: "WARNING",
+    label: "aprovada com ressalvas",
+    channels: ["INTERNAL", "EMAIL"],
+  },
+  reprovado: {
+    type: "INSPECTION_REJECTED",
+    severity: "CRITICAL",
+    label: "reprovada",
+    channels: ["INTERNAL", "EMAIL"],
+  },
+};
 
 async function findActiveNonConformity(scaffoldId: string) {
   return prisma.nonConformity.findFirst({
@@ -604,6 +637,69 @@ export async function createInspection(data: {
     },
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
+  });
+
+  await createNotification({
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+    type: "INSPECTION_COMPLETED",
+    severity: "INFO",
+    title: `Inspecao do andaime ${inspection.scaffold_code} realizada`,
+    message: `A inspecao do andaime ${inspection.scaffold_code} foi realizada por ${inspection.inspector_name}.`,
+    entityType: "INSPECTION",
+    entityId: inspection.id,
+    channels: ["INTERNAL"],
+    metadata: {
+      entityLabel: inspection.scaffold_code,
+      status: inspection.result,
+      inspectorName: inspection.inspector_name,
+    },
+  });
+
+  if (newStatus === "liberado" || newStatus === "reprovado") {
+    await createNotification({
+      companyId: scaffold.companyId,
+      workspaceId: scaffold.workspaceId,
+      type:
+        newStatus === "liberado"
+          ? "SCAFFOLD_RELEASED"
+          : "SCAFFOLD_REJECTED",
+      severity:
+        newStatus === "liberado"
+          ? "SUCCESS"
+          : "WARNING",
+      title: `Andaime ${scaffold.code} ${newStatus}`,
+      message: `O andaime ${scaffold.code} foi ${newStatus} apos inspecao.`,
+      entityType: "SCAFFOLD",
+      entityId: scaffold.id,
+      channels:
+        newStatus === "liberado"
+          ? ["INTERNAL"]
+          : ["INTERNAL", "EMAIL"],
+      metadata: {
+        entityLabel: scaffold.code,
+        status: scaffold.status,
+        inspectionId: inspection.id,
+      },
+    });
+  }
+
+  const resultNotification = INSPECTION_RESULT_NOTIFICATION[inspection.result];
+  await createNotification({
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+    type: resultNotification.type,
+    severity: resultNotification.severity,
+    title: `Inspecao ${resultNotification.label}: ${inspection.scaffold_code}`,
+    message: `A inspecao do andaime ${inspection.scaffold_code} foi ${resultNotification.label}.`,
+    entityType: "INSPECTION",
+    entityId: inspection.id,
+    channels: resultNotification.channels,
+    metadata: {
+      entityLabel: inspection.scaffold_code,
+      status: inspection.result,
+      inspectorName: inspection.inspector_name,
+    },
   });
 
   return { id: inspection.id };

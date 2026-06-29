@@ -165,6 +165,50 @@ enum CompanyWorkspaceRole {
   SCAFFOLD_COMPANY
 }
 
+enum NotificationType {
+  SCAFFOLD_CREATED
+  SCAFFOLD_RELEASED
+  SCAFFOLD_REJECTED
+  SCAFFOLD_INTERDICTED
+  SCAFFOLD_DISASSEMBLED
+  SCAFFOLD_EXPIRED
+  SCAFFOLD_EXPIRING_SOON
+  INSPECTION_PENDING
+  INSPECTION_COMPLETED
+  INSPECTION_APPROVED
+  INSPECTION_REJECTED
+  INSPECTION_WITH_REMARKS
+  NONCONFORMITY_OPENED
+  NONCONFORMITY_IN_PROGRESS
+  NONCONFORMITY_CORRECTED
+  NONCONFORMITY_CLOSED
+  NONCONFORMITY_EXPIRED
+  NONCONFORMITY_EXPIRING_SOON
+  DOCUMENT_ATTACHED
+  DOCUMENT_EXPIRED
+  DOCUMENT_EXPIRING_SOON
+}
+
+enum NotificationChannel {
+  INTERNAL
+  EMAIL
+}
+
+enum NotificationSeverity {
+  INFO
+  SUCCESS
+  WARNING
+  CRITICAL
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+  ARCHIVED
+}
+
 model Company {
   id          String      @id @default(cuid())
   name        String      @unique
@@ -186,6 +230,8 @@ model Company {
   auditLogs                  AuditLog[]
   scaffoldDocuments          ScaffoldDocument[]
   documents                  Document[]
+  notifications              Notification[]
+  notificationPreferences    NotificationPreference[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
@@ -218,6 +264,7 @@ model Workspace {
   auditLogs                  AuditLog[]
   scaffoldDocuments          ScaffoldDocument[]
   documents                  Document[]
+  notifications              Notification[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
@@ -567,6 +614,8 @@ model User {
   responsibleNonConformities NonConformity[]             @relation("NonConformityResponsible")
   createdNonConformities     NonConformity[]             @relation("NonConformityCreatedBy")
   createdDocuments           Document[]
+  notifications              Notification[]
+  notificationPreferences    NotificationPreference[]
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   nonConformityHistory       NonConformityHistory[]
@@ -709,6 +758,84 @@ model InspectionSignature {
   @@index([companyId])
   @@index([workspaceId])
   @@map("inspection_signatures")
+}
+
+model Notification {
+  id          String                @id @default(cuid())
+  companyId   String
+  workspaceId String?
+  userId      String?
+  type        NotificationType
+  severity    NotificationSeverity  @default(INFO)
+  title       String
+  message     String
+  entityType  String?
+  entityId    String?
+  channels    NotificationChannel[]
+  status      NotificationStatus    @default(PENDING)
+  readAt      DateTime?
+  sentAt      DateTime?
+  failedAt    DateTime?
+  error       String?
+  metadata    Json?
+  dedupeKey   String?               @unique
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  workspace         Workspace?         @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  user              User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  emailDeliveryLogs EmailDeliveryLog[]
+
+  @@index([companyId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+  @@index([companyId, userId, status])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id        String           @id @default(cuid())
+  userId    String
+  companyId String
+  type      NotificationType
+  internal  Boolean          @default(true)
+  email     Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId, type])
+  @@index([userId])
+  @@index([companyId])
+  @@map("notification_preferences")
+}
+
+model EmailDeliveryLog {
+  id                String             @id @default(cuid())
+  notificationId    String
+  recipientEmail    String
+  subject           String
+  status            NotificationStatus @default(PENDING)
+  provider          String?
+  providerMessageId String?
+  sentAt            DateTime?
+  failedAt          DateTime?
+  error             String?
+  createdAt         DateTime           @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId])
+  @@index([recipientEmail])
+  @@index([status])
+  @@map("email_delivery_logs")
 }
 
 model AuditLog {

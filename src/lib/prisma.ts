@@ -8,11 +8,20 @@ const connectionString = process.env.DATABASE_URL!;
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 function hasRequiredDelegates(client: PrismaClient) {
+  const delegatedClient = client as unknown as {
+    nonConformity?: unknown;
+    document?: unknown;
+    notification?: unknown;
+    notificationPreference?: unknown;
+    emailDeliveryLog?: unknown;
+  };
+
   return Boolean(
-    (client as unknown as { nonConformity?: unknown; document?: unknown })
-      .nonConformity &&
-      (client as unknown as { nonConformity?: unknown; document?: unknown })
-        .document,
+    delegatedClient.nonConformity &&
+      delegatedClient.document &&
+      delegatedClient.notification &&
+      delegatedClient.notificationPreference &&
+      delegatedClient.emailDeliveryLog,
   );
 }
 

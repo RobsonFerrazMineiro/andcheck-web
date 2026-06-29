@@ -21,6 +21,7 @@ import {
   ScaffoldStatus,
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/lib/notifications/service";
 
 type NonConformityAuditValue = Prisma.InputJsonObject;
 
@@ -298,7 +299,10 @@ function statusDescription(
 export async function logNonConformityCreated(id: string) {
   await requireNonConformityAccess();
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id },
+    include: { scaffold: { select: { code: true, area: true } } },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
@@ -306,6 +310,24 @@ export async function logNonConformityCreated(id: string) {
     action: AuditAction.CREATE,
     description: `Nao conformidade ${nc.code} criada`,
     newValue: toAuditValue(nc),
+  });
+  await createNotification({
+    companyId: nc.companyId,
+    workspaceId: nc.workspaceId,
+    userId: nc.responsibleUserId,
+    type: "NONCONFORMITY_OPENED",
+    severity: "WARNING",
+    title: `NC ${nc.code} aberta`,
+    message: `A nao conformidade ${nc.code} foi aberta no andaime ${nc.scaffold.code}.`,
+    entityType: "NONCONFORMITY",
+    entityId: nc.id,
+    channels: ["INTERNAL", "EMAIL"],
+    metadata: {
+      entityLabel: nc.code,
+      status: nc.status,
+      scaffoldCode: nc.scaffold.code,
+      area: nc.scaffold.area,
+    },
   });
 }
 
@@ -616,6 +638,44 @@ export async function updateNonConformityStatus(formData: FormData) {
     },
   });
 
+  if (parsedNextStatus === NonConformityStatus.CLOSED) {
+    await createNotification({
+      companyId: updated.companyId,
+      workspaceId: updated.workspaceId,
+      userId: updated.responsibleUserId,
+      type: "NONCONFORMITY_CLOSED",
+      severity: "SUCCESS",
+      title: `NC ${nc.code} encerrada`,
+      message: `A nao conformidade ${nc.code} foi encerrada.`,
+      entityType: "NONCONFORMITY",
+      entityId: nc.id,
+      channels: ["INTERNAL"],
+      metadata: {
+        entityLabel: nc.code,
+        status: updated.status,
+        scaffoldCode: nc.scaffold.code,
+      },
+    });
+  } else if (parsedNextStatus === NonConformityStatus.PENDING_VERIFICATION) {
+    await createNotification({
+      companyId: updated.companyId,
+      workspaceId: updated.workspaceId,
+      userId: updated.responsibleUserId,
+      type: "NONCONFORMITY_CORRECTED",
+      severity: "SUCCESS",
+      title: `NC ${nc.code} corrigida`,
+      message: `A nao conformidade ${nc.code} foi enviada para verificacao.`,
+      entityType: "NONCONFORMITY",
+      entityId: nc.id,
+      channels: ["INTERNAL"],
+      metadata: {
+        entityLabel: nc.code,
+        status: updated.status,
+        scaffoldCode: nc.scaffold.code,
+      },
+    });
+  }
+
   if (scaffoldReturnedToPendingRelease && nc.scaffold) {
     revalidatePath(`/qr/${nc.scaffold.tag ?? nc.scaffold.code}`);
   }
@@ -705,6 +765,26 @@ export async function updateNonConformityResponsible(formData: FormData) {
       status: updated.status,
     },
   });
+
+  if (nc.status === NonConformityStatus.OPEN) {
+    await createNotification({
+      companyId: updated.companyId,
+      workspaceId: updated.workspaceId,
+      userId: updated.responsibleUserId,
+      type: "NONCONFORMITY_IN_PROGRESS",
+      severity: "INFO",
+      title: `NC ${nc.code} em tratamento`,
+      message: `A nao conformidade ${nc.code} foi atribuida para tratamento.`,
+      entityType: "NONCONFORMITY",
+      entityId: nc.id,
+      channels: ["INTERNAL"],
+      metadata: {
+        entityLabel: nc.code,
+        status: updated.status,
+        responsibleName: responsible?.name ?? null,
+      },
+    });
+  }
 }
 
 export async function updateNonConformityDueDate(formData: FormData) {
