@@ -21,6 +21,10 @@ import { ScaffoldActionsBar } from "@/components/scaffold/actions-bar";
 import { ScaffoldDocumentSection } from "@/components/scaffold/document-section";
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { StatusBadge } from "@/components/shared/status-badge";
+import {
+  nonConformityStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
@@ -59,13 +63,17 @@ const NC_STATUS_LABELS: Record<string, string> = {
 };
 
 const NC_STATUS_STYLE: Record<string, string> = {
-  OPEN: "border-blue-400/60 bg-blue-50 text-blue-800",
-  ASSIGNED: "border-amber-400/60 bg-amber-50 text-amber-800",
-  IN_PROGRESS: "border-amber-400/60 bg-amber-50 text-amber-800",
-  PENDING_VERIFICATION: "border-purple-400/60 bg-purple-50 text-purple-800",
-  CLOSED: "border-emerald-400/60 bg-emerald-50 text-emerald-800",
-  REJECTED: "border-red-400/60 bg-red-50 text-red-800",
-  CANCELLED: "border-slate-400/60 bg-slate-100 text-slate-600",
+  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
+  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
+  IN_PROGRESS:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
+  PENDING_VERIFICATION:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
+      .badge,
+  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
+  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
+  CANCELLED:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
 };
 
 function NcBadge({ value }: { value: string }) {

@@ -10,6 +10,10 @@
 
 import { Badge } from "@/components/ui/badge";
 import { typography } from "@/lib/design-system";
+import {
+  documentStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 export type CorporateDocumentStatus = "ACTIVE" | "EXPIRED" | "ARCHIVED";
 
@@ -20,9 +24,9 @@ const STATUS_LABELS: Record<CorporateDocumentStatus, string> = {
 };
 
 const STATUS_STYLES: Record<CorporateDocumentStatus, string> = {
-  ACTIVE: "rounded-md border-green-200 bg-green-50 text-green-700",
-  EXPIRED: "rounded-md border-red-200 bg-red-50 text-red-700",
-  ARCHIVED: "rounded-md border-slate-200 bg-slate-100 text-slate-600",
+  ACTIVE: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("ACTIVE")].badge}`,
+  EXPIRED: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("EXPIRED")].badge}`,
+  ARCHIVED: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("ARCHIVED")].badge}`,
 };
 
 const STATUS_ICONS = {

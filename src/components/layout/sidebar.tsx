@@ -3,6 +3,7 @@
 import {
   Archive,
   BarChart3,
+  BriefcaseBusiness,
   ChevronRight,
   ClipboardCheck,
   ClipboardList,
@@ -24,6 +25,12 @@ const navItems = [
     label: "Painel Operacional",
     icon: LayoutDashboard,
     desc: "Visão geral e KPIs",
+  },
+  {
+    path: "/dashboard-gerencial",
+    label: "Dashboard Executivo",
+    icon: BriefcaseBusiness,
+    desc: "Indicadores estratégicos e BI",
   },
   {
     path: "/andaimes",

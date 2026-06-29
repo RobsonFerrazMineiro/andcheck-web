@@ -3,6 +3,10 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect, useRef } from "react";
+import {
+  scaffoldStatusTone,
+  SEMANTIC_TONE_HEX,
+} from "@/lib/semantic-tones";
 
 export interface ScaffoldPin {
   id: string;
@@ -22,14 +26,15 @@ export interface ScaffoldPin {
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  liberado: "#10b981",
-  em_montagem: "#3b82f6",
-  pendente_liberacao: "#f59e0b",
-  reprovado: "#ef4444",
-  interditado: "#7f1d1d",
-  vencido: "#374151",
-  desmontado: "#9ca3af",
-  pendente: "#f59e0b",
+  liberado: SEMANTIC_TONE_HEX[scaffoldStatusTone("liberado")],
+  em_montagem: SEMANTIC_TONE_HEX[scaffoldStatusTone("em_montagem")],
+  pendente_liberacao:
+    SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente_liberacao")],
+  reprovado: SEMANTIC_TONE_HEX[scaffoldStatusTone("reprovado")],
+  interditado: SEMANTIC_TONE_HEX[scaffoldStatusTone("interditado")],
+  vencido: SEMANTIC_TONE_HEX[scaffoldStatusTone("vencido")],
+  desmontado: SEMANTIC_TONE_HEX[scaffoldStatusTone("desmontado")],
+  pendente: SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente")],
 };
 
 const STATUS_LABEL: Record<string, string> = {

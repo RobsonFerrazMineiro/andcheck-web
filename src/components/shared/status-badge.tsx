@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 
 import { typography } from "@/lib/design-system";
+import {
+  inspectionResultTone,
+  scaffoldStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 type StatusKey =
   | "em_montagem"
@@ -115,6 +120,7 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
     icon: Clock,
     cls: "bg-slate-50 text-slate-600 border-slate-300/60",
   };
+  const visualClass = statusClass(status);
 
   const Icon = cfg.icon;
   const isLg = size === "lg";
@@ -122,7 +128,7 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border ${cfg.cls} ${
+      className={`inline-flex items-center gap-1.5 rounded-md border ${visualClass} ${
         isXl
           ? `${typography.badgeXl} px-4 py-2`
           : isLg
@@ -136,4 +142,20 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
       {cfg.label}
     </span>
   );
+}
+
+function statusClass(status: string) {
+  if (status in STATUS_MAP) {
+    const tone =
+      status === "aprovado" ||
+      status === "aprovado_com_ressalvas" ||
+      status === "nao_conforme" ||
+      status === "conforme" ||
+      status === "na"
+        ? inspectionResultTone(status)
+        : scaffoldStatusTone(status);
+    return SEMANTIC_TONE_CLASSES[tone].badge;
+  }
+
+  return SEMANTIC_TONE_CLASSES.disabled.badge;
 }

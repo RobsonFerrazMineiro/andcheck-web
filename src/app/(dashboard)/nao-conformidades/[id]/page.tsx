@@ -26,6 +26,10 @@ import {
   NonConformityItemEvidenceButton,
   NonConformityOperations,
 } from "./non-conformity-operations";
+import {
+  nonConformityStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -39,10 +43,10 @@ const CLASSIFICATION_LABELS: Record<string, string> = {
 };
 
 const CLASSIFICATION_STYLE: Record<string, string> = {
-  LOW: "bg-slate-50 text-slate-700 border-slate-300",
-  MEDIUM: "bg-amber-50 text-amber-800 border-amber-400/60",
-  HIGH: "bg-orange-50 text-orange-800 border-orange-400/60",
-  CRITICAL: "bg-red-100 text-red-900 border-red-600/70",
+  LOW: SEMANTIC_TONE_CLASSES.disabled.badge,
+  MEDIUM: SEMANTIC_TONE_CLASSES.warning.badge,
+  HIGH: SEMANTIC_TONE_CLASSES.warning.badge,
+  CRITICAL: SEMANTIC_TONE_CLASSES.critical.badge,
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -56,13 +60,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  OPEN: "bg-blue-50 text-blue-800 border-blue-400/60",
-  ASSIGNED: "bg-amber-50 text-amber-800 border-amber-400/60",
-  IN_PROGRESS: "bg-amber-50 text-amber-800 border-amber-400/60",
-  PENDING_VERIFICATION: "bg-purple-50 text-purple-800 border-purple-400/60",
-  CLOSED: "bg-emerald-50 text-emerald-800 border-emerald-400/60",
-  REJECTED: "bg-red-50 text-red-800 border-red-400/60",
-  CANCELLED: "bg-slate-100 text-slate-600 border-slate-400/60",
+  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
+  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
+  IN_PROGRESS:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
+  PENDING_VERIFICATION:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
+      .badge,
+  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
+  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
+  CANCELLED:
+    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
 };
 
 const EVIDENCE_LABELS: Record<string, string> = {

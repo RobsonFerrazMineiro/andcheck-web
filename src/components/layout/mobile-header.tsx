@@ -8,6 +8,7 @@ import {
 import {
   Archive,
   BarChart3,
+  BriefcaseBusiness,
   ClipboardCheck,
   ClipboardList,
   Construction,
@@ -27,6 +28,7 @@ import { useState } from "react";
 
 const navItems = [
   { path: "/dashboard", label: "Painel Operacional", icon: LayoutDashboard },
+  { path: "/dashboard-gerencial", label: "Dashboard Executivo", icon: BriefcaseBusiness },
   { path: "/andaimes", label: "Andaimes", icon: Construction },
   { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
   { path: "/nao-conformidades", label: "Não Conformidades", icon: ClipboardList },
