@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Codigo de referencia (nao versionar)
 referencia-codigo/
+
+# Codex local workspace helpers
+.codex-work/

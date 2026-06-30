@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { format, parseISO } from "date-fns";
+import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
   Calendar,
   ChevronRight,
@@ -22,7 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { surface, typography } from "@/lib/design-system";
+import { typography } from "@/lib/design-system";
+import {
+  inspectionResultTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 export type InspectionRow = {
   id: string;
@@ -44,15 +48,29 @@ export function InspecoesClient({
 }) {
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState("all");
+  const [expirationFilter, setExpirationFilter] = useState("all");
 
   const inspections = initialData;
+  const today = new Date();
   const filtered = inspections.filter((i) => {
     const matchSearch =
       !search ||
       i.scaffold_code.toLowerCase().includes(search.toLowerCase()) ||
       i.inspector_name.toLowerCase().includes(search.toLowerCase());
     const matchResult = resultFilter === "all" || i.result === resultFilter;
-    return matchSearch && matchResult;
+    const expiresAt =
+      i.validity_days > 0 ? addDays(parseISO(i.date), i.validity_days) : null;
+    const daysToExpire = expiresAt
+      ? differenceInCalendarDays(expiresAt, today)
+      : null;
+    const matchExpiration =
+      expirationFilter === "all" ||
+      (expirationFilter === "expiring_soon" &&
+        daysToExpire !== null &&
+        daysToExpire > 0 &&
+        daysToExpire <= 7) ||
+      (expirationFilter === "expiring_today" && daysToExpire === 0);
+    return matchSearch && matchResult && matchExpiration;
   });
 
   return (
@@ -66,17 +84,19 @@ export function InspecoesClient({
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Histórico de Inspeções
           </h1>
-          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+          <p
+            className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
+          >
             {inspections.length} registros no sistema
           </p>
         </div>
         {canCreateInspection && (
           <Link
-          href="/inspecoes/nova"
-          className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Nova Inspeção
+            href="/inspecoes/nova"
+            className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nova Inspeção
           </Link>
         )}
       </div>
@@ -105,6 +125,19 @@ export function InspecoesClient({
             <SelectItem value="reprovado">Reprovado</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={expirationFilter} onValueChange={setExpirationFilter}>
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
+            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+            <SelectValue placeholder="Vencimento" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Vencimentos</SelectItem>
+            <SelectItem value="expiring_soon">
+              Prestes a vencer (7 dias)
+            </SelectItem>
+            <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {filtered.length !== inspections.length && (
@@ -119,105 +152,133 @@ export function InspecoesClient({
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhuma inspeção encontrada
           </p>
-          <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
+          <p
+            className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}
+          >
             Registre a primeira vistoria para iniciar o histórico
           </p>
           {canCreateInspection && (
             <Link
-            href="/inspecoes/nova"
-            className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nova Inspeção
+              href="/inspecoes/nova"
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nova Inspeção
             </Link>
           )}
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-          <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
-            {["Andaime", "Data", "Inspetor", "Validade", "Resultado", ""].map(
-              (h, i) => (
-                <p
-                  key={i}
-                  className={
-                    "text-primary-foreground/60 " +
-                    (i === 0
-                      ? "col-span-2"
-                      : i === 1
-                        ? "col-span-2"
-                        : i === 2
-                          ? "col-span-4"
-                          : i === 3
-                            ? "col-span-1"
-                            : i === 4
-                              ? "col-span-2"
-                              : "col-span-1")
-                  }
-                >
-                  {h}
-                </p>
-              ),
-            )}
-          </div>
-          <div className="divide-y divide-border">
-            {filtered.map((insp, idx) => {
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {filtered.map((insp) => {
+              const tone =
+                SEMANTIC_TONE_CLASSES[inspectionResultTone(insp.result)];
               return (
                 <Link
                   key={insp.id}
                   href={"/inspecoes/" + insp.id}
-                  className={
-                    "flex md:grid md:grid-cols-12 md:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " +
-                    (idx % 2 === 1 ? "bg-muted/20" : "bg-card")
-                  }
+                  className={`group flex min-h-48 flex-col rounded-lg border border-border bg-card p-4 shadow-sm ring-1 transition-colors hover:bg-primary/5 ${tone.border}`}
                 >
-                  <div className="flex items-center gap-3 flex-1 md:contents">
-                    <div className="w-7 h-7 bg-primary/8 flex items-center justify-center shrink-0 md:hidden">
-                      <ClipboardCheck className="w-3.5 h-3.5 text-primary/40" />
-                    </div>
-                    <div className="flex-1 md:contents">
-                      <p className={`md:col-span-2 text-foreground ${typography.code}`}>
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className={`${typography.code} text-foreground`}>
                         {insp.scaffold_code}
                       </p>
-                      <div className="md:col-span-2 hidden md:flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className={`${typography.sectionDescription} text-muted-foreground`}>
-                          {format(parseISO(insp.date), "dd/MM/yyyy")}
-                        </p>
-                      </div>
-                      <div className="md:col-span-4 hidden md:flex items-center gap-1">
-                        <User className="w-3 h-3 text-muted-foreground/30 shrink-0" />
-                        <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
-                          {insp.inspector_name}
-                        </p>
-                      </div>
-                      <p className={`hidden md:block md:col-span-1 text-muted-foreground ${typography.code}`}>
-                        {insp.validity_days > 0
-                          ? insp.validity_days + "d"
-                          : "—"}
+                      <p
+                        className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}
+                      >
+                        Inspeção realizada em{" "}
+                        {format(parseISO(insp.date), "dd/MM/yyyy")}
                       </p>
-                      <div className="hidden md:flex md:col-span-2 items-center">
-                        <StatusBadge status={insp.result} />
-                      </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="md:hidden">
-                        <StatusBadge status={insp.result} />
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
+                    <StatusBadge status={insp.result} />
+                  </div>
+
+                  <div className="grid flex-1 gap-3">
+                    <InspectionMeta
+                      icon={User}
+                      label="Inspetor"
+                      value={insp.inspector_name || "Sem inspetor"}
+                    />
+                    <InspectionMeta
+                      icon={Calendar}
+                      label="Data"
+                      value={format(parseISO(insp.date), "dd/MM/yyyy")}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <InspectionMetric
+                        label="Validade"
+                        value={
+                          insp.validity_days > 0
+                            ? format(
+                                addDays(
+                                  parseISO(insp.date),
+                                  insp.validity_days,
+                                ),
+                                "dd/MM/yyyy",
+                              )
+                            : "—"
+                        }
+                      />
+                      <InspectionMetric
+                        label="Observação"
+                        value={insp.notes ? "Com nota" : "Sem nota"}
+                      />
                     </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <span
+                      className={`${typography.action} text-muted-foreground`}
+                    >
+                      Abrir inspeção
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground/30 transition-colors group-hover:text-foreground" />
                   </div>
                 </Link>
               );
             })}
           </div>
-          <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) · Documento Controlado · AndCheck
-              AndCheck
-            </p>
-          </div>
+          <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
+            {filtered.length} registro(s) · Documento Controlado · AndCheck
+          </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function InspectionMeta({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof User;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-2">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/40" />
+      <div className="min-w-0">
+        <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+          {label}
+        </p>
+        <p className={`truncate text-muted-foreground ${typography.bodyMuted}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function InspectionMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
+      <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+        {label}
+      </p>
+      <p className={`mt-1 text-foreground ${typography.code}`}>{value}</p>
     </div>
   );
 }

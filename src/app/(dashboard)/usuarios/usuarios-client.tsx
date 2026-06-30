@@ -516,8 +516,8 @@ export function UsuariosClient({
                   }
                 >
                   <div className="flex items-center gap-3 flex-1 lg:contents">
-                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                      <span className="text-[11px] font-bold">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                      <span className={typography.action}>
                         {initials(user.name)}
                       </span>
                     </div>

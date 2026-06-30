@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
   ChevronRight,
   Construction,
@@ -21,7 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { surface, typography } from "@/lib/design-system";
+import { typography } from "@/lib/design-system";
+import {
+  scaffoldStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 const TYPE_LABELS: Record<string, string> = {
   tubular: "Tubular",
@@ -53,8 +57,10 @@ export function AndaimesClient({
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [expirationFilter, setExpirationFilter] = useState("all");
 
   const scaffolds = initialData;
+  const today = new Date();
   const filtered = scaffolds.filter((s) => {
     const matchSearch =
       !search ||
@@ -62,7 +68,17 @@ export function AndaimesClient({
       s.location.toLowerCase().includes(search.toLowerCase()) ||
       s.area.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || s.status === statusFilter;
-    return matchSearch && matchStatus;
+    const daysToExpire = s.validity_date
+      ? differenceInCalendarDays(parseISO(s.validity_date), today)
+      : null;
+    const matchExpiration =
+      expirationFilter === "all" ||
+      (expirationFilter === "expiring_soon" &&
+        daysToExpire !== null &&
+        daysToExpire > 0 &&
+        daysToExpire <= 7) ||
+      (expirationFilter === "expiring_today" && daysToExpire === 0);
+    return matchSearch && matchStatus && matchExpiration;
   });
 
   return (
@@ -76,7 +92,9 @@ export function AndaimesClient({
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes
           </h1>
-          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+          <p
+            className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
+          >
             {scaffolds.length} unidades cadastradas
           </p>
         </div>
@@ -115,6 +133,19 @@ export function AndaimesClient({
             <SelectItem value="em_montagem">Em Montagem</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={expirationFilter} onValueChange={setExpirationFilter}>
+          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
+            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+            <SelectValue placeholder="Vencimento" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os Vencimentos</SelectItem>
+            <SelectItem value="expiring_soon">
+              Prestes a vencer (7 dias)
+            </SelectItem>
+            <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {filtered.length !== scaffolds.length && (
@@ -129,7 +160,9 @@ export function AndaimesClient({
           <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
             Nenhum andaime encontrado
           </p>
-          <p className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}>
+          <p
+            className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}
+          >
             Cadastre o primeiro ativo para iniciar o controle
           </p>
           {canCreateScaffold && (
@@ -143,96 +176,114 @@ export function AndaimesClient({
           )}
         </div>
       ) : (
-        <div className="bg-card border border-border shadow-sm rounded-lg overflow-hidden">
-          <div className={`hidden grid-cols-12 gap-4 border-b border-border md:grid ${surface.tableHeader}`}>
-            {[
-              "TAG / Código",
-              "Tipo",
-              "Localização",
-              "Validade",
-              "Status",
-              "",
-            ].map((h, i) => (
-              <p
-                key={i}
-                className={
-                  "text-primary-foreground/60 " +
-                  (i === 0
-                    ? "col-span-2"
-                    : i === 1
-                      ? "col-span-2"
-                      : i === 2
-                        ? "col-span-3"
-                        : i === 3
-                          ? "col-span-2"
-                          : i === 4
-                            ? "col-span-2"
-                            : "col-span-1")
-                }
-              >
-                {h}
-              </p>
-            ))}
-          </div>
-          <div className="divide-y divide-border">
-            {filtered.map((scaffold, idx) => (
-              <Link
-                key={scaffold.id}
-                href={"/andaimes/" + scaffold.id}
-                className={
-                  "flex md:grid md:grid-cols-12 md:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " +
-                  (idx % 2 === 1 ? "bg-muted/20" : "bg-card")
-                }
-              >
-                <div className="flex items-center gap-3 flex-1 md:contents">
-                  <div className="w-7 h-7 bg-primary/8 flex items-center justify-center shrink-0 md:hidden">
-                    <Construction className="w-3.5 h-3.5 text-primary/40" />
-                  </div>
-                  <div className="flex-1 md:contents">
-                    <p className={`md:col-span-2 text-foreground ${typography.code}`}>
-                      {scaffold.code}
-                    </p>
-                    <p className={`md:col-span-2 text-muted-foreground ${typography.sectionDescription}`}>
-                      {TYPE_LABELS[scaffold.type] ?? scaffold.type}
-                      {scaffold.height && (
-                        <span className="text-muted-foreground/40 ml-1">
-                          · {scaffold.height}m
-                        </span>
-                      )}
-                    </p>
-                    <div className="md:col-span-3 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-muted-foreground/30 shrink-0 hidden md:block" />
-                      <p className={`truncate text-muted-foreground ${typography.sectionDescription}`}>
-                        {scaffold.location}
+        <div className="space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {filtered.map((scaffold) => {
+              const tone =
+                SEMANTIC_TONE_CLASSES[scaffoldStatusTone(scaffold.status)];
+              return (
+                <Link
+                  key={scaffold.id}
+                  href={"/andaimes/" + scaffold.id}
+                  className={`group flex min-h-48 flex-col rounded-lg border border-border bg-card p-4 shadow-sm ring-1 transition-colors hover:bg-primary/5 ${tone.border}`}
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className={`${typography.code} text-foreground`}>
+                        {scaffold.code}
+                      </p>
+                      <p
+                        className={`mt-1 truncate text-muted-foreground ${typography.sectionDescription}`}
+                      >
+                        {TYPE_LABELS[scaffold.type] ?? scaffold.type}
+                        {scaffold.height ? ` · ${scaffold.height}m` : ""}
                       </p>
                     </div>
-                    <p className={`hidden md:block md:col-span-2 text-muted-foreground ${typography.code}`}>
-                      {scaffold.validity_date
-                        ? format(parseISO(scaffold.validity_date), "dd/MM/yyyy")
-                        : "—"}
-                    </p>
-                    <div className="hidden md:flex md:col-span-2 items-center">
-                      <StatusBadge status={scaffold.status} />
+                    <StatusBadge status={scaffold.status} />
+                  </div>
+
+                  <div className="grid flex-1 gap-3">
+                    <CardMeta
+                      icon={MapPin}
+                      label="Localização"
+                      value={scaffold.location || "Sem localização"}
+                    />
+                    <CardMeta
+                      icon={Construction}
+                      label="Área"
+                      value={scaffold.area || "Sem área"}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <CardMetric
+                        label="Validade"
+                        value={
+                          scaffold.validity_date
+                            ? format(
+                                parseISO(scaffold.validity_date),
+                                "dd/MM/yyyy",
+                              )
+                            : "—"
+                        }
+                      />
+                      <CardMetric
+                        label="Inspeções"
+                        value={scaffold._count.inspections.toString()}
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="md:hidden">
-                      <StatusBadge status={scaffold.status} />
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
+
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <span
+                      className={`${typography.action} text-muted-foreground`}
+                    >
+                      Ver detalhes
+                    </span>
+                    <ChevronRight className="size-4 text-muted-foreground/30 transition-colors group-hover:text-foreground" />
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
-          <div className="px-4 py-2 bg-muted/30 border-t border-border">
-            <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
-              {filtered.length} registro(s) · Documento Controlado · AndCheck
-              AndCheck
-            </p>
-          </div>
+          <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
+            {filtered.length} registro(s) · Documento Controlado · AndCheck
+          </p>
         </div>
       )}
+    </div>
+  );
+}
+
+function CardMeta({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof MapPin;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-2">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/40" />
+      <div className="min-w-0">
+        <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+          {label}
+        </p>
+        <p className={`truncate text-muted-foreground ${typography.bodyMuted}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CardMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
+      <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+        {label}
+      </p>
+      <p className={`mt-1 text-foreground ${typography.code}`}>{value}</p>
     </div>
   );
 }

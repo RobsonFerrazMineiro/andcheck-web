@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { format, isPast, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
   AlertTriangle,
   Calendar,
@@ -104,7 +104,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 function isOverdue(nc: NonConformityRow) {
   if (!nc.dueDate || ["CLOSED", "CANCELLED"].includes(nc.status)) return false;
-  return isPast(parseISO(nc.dueDate));
+  return differenceInCalendarDays(parseISO(nc.dueDate), new Date()) < 0;
 }
 
 function Badge({
@@ -180,18 +180,18 @@ export function NaoConformidadesClient({
       .join(" ")
       .toLowerCase();
 
-    const now = new Date();
     const dueDate = nc.dueDate ? parseISO(nc.dueDate) : null;
     const daysUntilDue = dueDate
-      ? (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      ? differenceInCalendarDays(dueDate, new Date())
       : null;
     const overdue = isOverdue(nc);
-    const dueNext7Days =
-      !!dueDate &&
-      !["CLOSED", "CANCELLED"].includes(nc.status) &&
-      !overdue &&
+    const openDeadline = !["CLOSED", "CANCELLED"].includes(nc.status);
+    const dueSoon =
+      openDeadline &&
       daysUntilDue !== null &&
+      daysUntilDue > 0 &&
       daysUntilDue <= 7;
+    const dueToday = openDeadline && daysUntilDue === 0;
 
     const matchSearch = !search || text.includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || nc.status === statusFilter;
@@ -204,7 +204,8 @@ export function NaoConformidadesClient({
     const matchDue =
       dueFilter === "all" ||
       (dueFilter === "overdue" && overdue) ||
-      (dueFilter === "due7" && dueNext7Days);
+      (dueFilter === "expiring_soon" && dueSoon) ||
+      (dueFilter === "expiring_today" && dueToday);
 
     return (
       matchSearch &&
@@ -388,7 +389,10 @@ export function NaoConformidadesClient({
           <SelectContent>
             <SelectItem value="all">Todos prazos</SelectItem>
             <SelectItem value="overdue">Vencidas</SelectItem>
-            <SelectItem value="due7">Vence em 7 dias</SelectItem>
+            <SelectItem value="expiring_soon">
+              Prestes a vencer (7 dias)
+            </SelectItem>
+            <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
           </SelectContent>
         </Select>
       </div>

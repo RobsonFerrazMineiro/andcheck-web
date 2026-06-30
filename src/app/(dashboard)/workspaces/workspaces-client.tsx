@@ -17,7 +17,7 @@ import {
   setWorkspaceActive,
   updateWorkspace,
 } from "@/lib/actions/workspace-actions";
-import { surface, typography } from "@/lib/design-system";
+import { typography } from "@/lib/design-system";
 import {
   Building2,
   CheckCircle2,
@@ -348,104 +348,109 @@ export function WorkspacesClient({
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <div
-          className={`hidden grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}
-        >
-          <span>Nome</span>
-          <span>Código</span>
-          <span>Proprietaria</span>
-          <span>Cidade/Estado</span>
-          <span>Coordenadas</span>
-          <span>Status</span>
-          <span className="text-right">Ações</span>
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-border bg-card p-10 text-center text-sm text-muted-foreground">
+          Nenhum workspace encontrado.
         </div>
-        {filtered.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            Nenhum workspace encontrado.
+      ) : (
+        <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {filtered.map((workspace) => (
+              <div
+                key={workspace.id}
+                className="flex min-h-56 flex-col rounded-lg border border-border bg-card p-4 shadow-sm"
+              >
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p
+                      className={`truncate text-foreground ${typography.bodyStrong}`}
+                    >
+                      {workspace.name}
+                    </p>
+                    <p
+                      className={`mt-1 text-muted-foreground ${typography.codeMuted}`}
+                    >
+                      {workspace.code}
+                    </p>
+                  </div>
+                  <StatusBadge active={workspace.active} />
+                </div>
+
+                <div className="grid flex-1 gap-3">
+                  <WorkspaceMeta
+                    icon={Building2}
+                    label="Proprietária"
+                    value={workspace.ownerCompanyName}
+                  />
+                  <WorkspaceMeta
+                    icon={MapPin}
+                    label="Cidade/Estado"
+                    value={locationLabel(workspace.city, workspace.state)}
+                  />
+                  <WorkspaceMeta
+                    icon={Factory}
+                    label="Coordenadas"
+                    value={coordinatesLabel(
+                      workspace.latitude,
+                      workspace.longitude,
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <WorkspaceMetric
+                      label="Empresas"
+                      value={workspace.companies.toString()}
+                    />
+                    <WorkspaceMetric
+                      label="Andaimes"
+                      value={workspace.scaffolds.toString()}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-end gap-1 border-t border-border pt-3">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="icon-sm"
+                    title="Visualizar"
+                  >
+                    <Link href={`/workspaces/${workspace.id}`}>
+                      <Eye />
+                    </Link>
+                  </Button>
+                  {canManage && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        title="Editar"
+                        onClick={() => {
+                          setCreating(false);
+                          setEditing(workspace);
+                        }}
+                      >
+                        <Pencil />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        title={workspace.active ? "Desativar" : "Ativar"}
+                        onClick={() => toggleStatus(workspace)}
+                        disabled={isPending}
+                      >
+                        <Power />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        ) : (
-          filtered.map((workspace, index) => (
-            <div
-              key={workspace.id}
-              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(190px,1.4fr)_110px_minmax(170px,1fr)_140px_150px_90px_120px] lg:gap-4 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
-            >
-              <div className="min-w-0 flex-1">
-                <p
-                  className={`truncate text-foreground ${typography.bodyStrong}`}
-                >
-                  {workspace.name}
-                </p>
-                <p
-                  className={`truncate text-muted-foreground lg:hidden ${typography.bodyMuted}`}
-                >
-                  {workspace.ownerCompanyName}
-                </p>
-              </div>
-              <p className={`hidden lg:block ${typography.codeMuted}`}>
-                {workspace.code}
-              </p>
-              <p
-                className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}
-              >
-                {workspace.ownerCompanyName}
-              </p>
-              <p
-                className={`hidden text-muted-foreground lg:block ${typography.sectionDescription}`}
-              >
-                {locationLabel(workspace.city, workspace.state)}
-              </p>
-              <p
-                className={`hidden text-muted-foreground lg:block ${typography.codeMuted}`}
-              >
-                {coordinatesLabel(workspace.latitude, workspace.longitude)}
-              </p>
-              <StatusBadge active={workspace.active} />
-              <div className="flex justify-end gap-1">
-                <Button
-                  asChild
-                  variant="outline"
-                  size="icon-sm"
-                  title="Visualizar"
-                >
-                  <Link href={`/workspaces/${workspace.id}`}>
-                    <Eye />
-                  </Link>
-                </Button>
-                {canManage && (
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    title="Editar"
-                    onClick={() => {
-                      setCreating(false);
-                      setEditing(workspace);
-                    }}
-                  >
-                    <Pencil />
-                  </Button>
-                )}
-                {canManage && (
-                  <Button
-                    variant="outline"
-                    size="icon-sm"
-                    title={workspace.active ? "Desativar" : "Ativar"}
-                    onClick={() => toggleStatus(workspace)}
-                    disabled={isPending}
-                  >
-                    <Power />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-        <div
-          className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}
-        >
-          {filtered.length} registro(s) · Módulo administrativo
+          <p className={`text-muted-foreground/50 ${typography.panelSubtitle}`}>
+            {filtered.length} registro(s) · Módulo administrativo
+          </p>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -562,6 +567,41 @@ function WorkspaceLocationFields({
           fino.
         </p>
       </div>
+    </div>
+  );
+}
+
+function WorkspaceMeta({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Factory;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex min-w-0 items-start gap-2">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground/40" />
+      <div className="min-w-0">
+        <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+          {label}
+        </p>
+        <p className={`truncate text-muted-foreground ${typography.bodyMuted}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function WorkspaceMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
+      <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+        {label}
+      </p>
+      <p className={`mt-1 text-foreground ${typography.code}`}>{value}</p>
     </div>
   );
 }

@@ -103,7 +103,7 @@ export default function NovoAndaimePage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-3xl mx-auto pb-10">
       {/* ── Header ── */}
       <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
         <Button variant="ghost" size="icon" className="w-7 h-7" asChild>

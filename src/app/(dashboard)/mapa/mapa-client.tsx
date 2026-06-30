@@ -16,6 +16,7 @@ import {
   QrCode,
   RotateCcw,
 } from "lucide-react";
+import { differenceInCalendarDays, parseISO } from "date-fns";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -138,6 +139,29 @@ function filterLabel(activeStatus: string | null) {
   );
 }
 
+function dueFilterLabel(dueFilter: string) {
+  if (dueFilter === "expiring_soon") return "Prestes a vencer (7 dias)";
+  if (dueFilter === "expiring_today") return "Vencendo hoje";
+  return "Todos os vencimentos";
+}
+
+function matchesDueFilter(validityDate: string | null, dueFilter: string) {
+  if (dueFilter === "all") return true;
+  if (!validityDate) return false;
+
+  const daysToExpire = differenceInCalendarDays(
+    parseISO(validityDate),
+    new Date(),
+  );
+
+  return (
+    (dueFilter === "expiring_soon" &&
+      daysToExpire > 0 &&
+      daysToExpire <= 7) ||
+    (dueFilter === "expiring_today" && daysToExpire === 0)
+  );
+}
+
 export function MapaOperacionalClient({
   scaffolds,
   canInspect,
@@ -149,6 +173,7 @@ export function MapaOperacionalClient({
 }) {
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
   const [activeCompanyId, setActiveCompanyId] = useState("all");
+  const [dueFilter, setDueFilter] = useState("all");
 
   const companies = useMemo(
     () =>
@@ -170,9 +195,11 @@ export function MapaOperacionalClient({
       scaffolds.filter(
         (scaffold) =>
           (!activeStatus || scaffold.effectiveStatus === activeStatus) &&
-          (activeCompanyId === "all" || scaffold.companyId === activeCompanyId),
+          (activeCompanyId === "all" ||
+            scaffold.companyId === activeCompanyId) &&
+          matchesDueFilter(scaffold.validity_date, dueFilter),
       ),
-    [activeCompanyId, activeStatus, scaffolds],
+    [activeCompanyId, activeStatus, dueFilter, scaffolds],
   );
 
   const comCoords = filteredScaffolds.filter(
@@ -199,6 +226,7 @@ export function MapaOperacionalClient({
                 companies.find((company) => company.id === activeCompanyId)
                   ?.name ?? "Empresa"
               }`}
+            {dueFilter !== "all" && ` · ${dueFilterLabel(dueFilter)}`}
           </p>
         </div>
         <div style={{ height: 480 }}>
@@ -238,12 +266,27 @@ export function MapaOperacionalClient({
                 </SelectContent>
               </Select>
             )}
-            {(activeStatus || activeCompanyId !== "all") && (
+            <Select value={dueFilter} onValueChange={setDueFilter}>
+              <SelectTrigger className="h-8 w-52 rounded-md text-[10px]">
+                <SelectValue placeholder="Vencimento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os vencimentos</SelectItem>
+                <SelectItem value="expiring_soon">
+                  Prestes a vencer (7 dias)
+                </SelectItem>
+                <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+              </SelectContent>
+            </Select>
+            {(activeStatus ||
+              activeCompanyId !== "all" ||
+              dueFilter !== "all") && (
               <button
                 type="button"
                 onClick={() => {
                   setActiveStatus(null);
                   setActiveCompanyId("all");
+                  setDueFilter("all");
                 }}
                 className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
               >
@@ -259,7 +302,8 @@ export function MapaOperacionalClient({
               (scaffold) =>
                 scaffold.effectiveStatus === item.status &&
                 (activeCompanyId === "all" ||
-                  scaffold.companyId === activeCompanyId),
+                  scaffold.companyId === activeCompanyId) &&
+                matchesDueFilter(scaffold.validity_date, dueFilter),
             ).length;
             const active = activeStatus === item.status;
 
