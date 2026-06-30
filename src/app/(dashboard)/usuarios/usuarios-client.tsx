@@ -224,9 +224,10 @@ export function UsuariosClient({
     <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <Users className="size-4" />
             AndCheck • Usuários
-          </p>
+          </div>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Usuários
           </h1>
@@ -240,7 +241,7 @@ export function UsuariosClient({
             setEditingUser(null);
             setShowForm((current) => !current);
           }}
-          className="inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
         >
           <UserPlus className="w-3.5 h-3.5" />
           Novo Usuário

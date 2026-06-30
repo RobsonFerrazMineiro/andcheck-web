@@ -460,7 +460,7 @@ function fixChecklistText(value: string) {
     .trim();
 }
 
-function summarizeChecklistNonConformity(label: string) {
+export function summarizeChecklistNonConformity(label: string) {
   const clean = fixChecklistText(label);
   const normalized = clean
     .toLowerCase()

@@ -85,9 +85,10 @@ export default async function DashboardPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <BarChart3 className="size-4" />
             AndCheck • Painel Operacional
-          </p>
+          </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
           </h1>
@@ -110,7 +111,7 @@ export default async function DashboardPage() {
           {canCreateInspection && (
             <Link
               href="/inspecoes/nova"
-              className={`inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-foreground hover:bg-muted ${typography.action}`}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-md border border-border/70 px-3 text-foreground hover:bg-muted ${typography.action}`}
             >
               <ClipboardCheck className="w-3.5 h-3.5" />
               Nova Inspeção

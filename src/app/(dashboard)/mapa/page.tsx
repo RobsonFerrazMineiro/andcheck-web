@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   Construction,
+  MapPin,
   ShieldOff,
 } from "lucide-react";
 import Link from "next/link";
@@ -83,9 +84,10 @@ export default async function MapaPage() {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <MapPin className="size-4" />
             AndCheck • Mapa Operacional
-          </p>
+          </div>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional
           </h1>

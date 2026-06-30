@@ -2,6 +2,7 @@ import "server-only";
 
 import { requireAnyPermission } from "@/lib/authz";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
+import { summarizeChecklistNonConformity } from "@/lib/management-reports";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 import {
@@ -173,6 +174,15 @@ export async function getExecutiveDashboard(
         dueDate: true,
         companyId: true,
         workspaceId: true,
+        checklistItems: {
+          select: {
+            checklistEntry: {
+              select: {
+                item_label: true,
+              },
+            },
+          },
+        },
         scaffold: {
           select: {
             area: true,
@@ -609,6 +619,11 @@ function buildRankings(
   nonConformities: Array<{
     code: string;
     title: string;
+    checklistItems: Array<{
+      checklistEntry: {
+        item_label: string;
+      };
+    }>;
     status: string;
     classification: string;
     scaffold: {
@@ -621,7 +636,7 @@ function buildRankings(
   const companyVolume = rankBy(scaffolds, (item) => item.tenantCompany.name);
   const areaVolume = rankBy(scaffolds, (item) => item.area || "Sem área");
   const inspectorVolume = rankBy(inspections, (item) => item.inspector_name || "Sem inspetor");
-  const ncVolume = rankBy(nonConformities, (item) => item.title || item.code);
+  const ncVolume = rankNonConformityTypes(nonConformities);
   const workspaceVolume = rankBy(scaffolds, (item) => item.workspace.name);
   const approvalByCompany = rankRatio(inspections, (item) => item.scaffold.tenantCompany.name, isApprovedInspection);
   const interdictionsByCompany = rankBy(
@@ -638,6 +653,37 @@ function buildRankings(
     approvalCompanies: approvalByCompany,
     interdictionCompanies: interdictionsByCompany,
   };
+}
+
+function rankNonConformityTypes(
+  nonConformities: Array<{
+    title: string;
+    checklistItems: Array<{
+      checklistEntry: {
+        item_label: string;
+      };
+    }>;
+  }>,
+) {
+  const totals = new Map<string, number>();
+  for (const item of nonConformities) {
+    const labels = item.checklistItems.length
+      ? item.checklistItems.map((checklistItem) =>
+          summarizeChecklistNonConformity(
+            checklistItem.checklistEntry.item_label,
+          ),
+        )
+      : [summarizeChecklistNonConformity(item.title)];
+
+    for (const label of labels) {
+      totals.set(label, (totals.get(label) ?? 0) + 1);
+    }
+  }
+
+  return [...totals]
+    .map(([name, total]) => ({ name, total }))
+    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name))
+    .slice(0, 8);
 }
 
 function buildProductivity(

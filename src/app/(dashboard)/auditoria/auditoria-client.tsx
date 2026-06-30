@@ -586,9 +586,10 @@ export function AuditoriaClient({
     <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <FileClock className="size-4" />
             AndCheck • Auditoria
-          </p>
+          </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Auditoria
           </h1>
@@ -600,7 +601,7 @@ export function AuditoriaClient({
           <button
             type="button"
             onClick={() => exportRowsToCsv(exportRows)}
-            className={`inline-flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
+            className={`inline-flex h-8 items-center gap-2 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
           >
             <Download className="h-3.5 w-3.5" />
             Exportar CSV

@@ -14,16 +14,17 @@ import {
   markNotificationAsRead,
   type NotificationFilter,
 } from "@/lib/actions/notification-actions";
+import { typography } from "@/lib/design-system";
 import { NOTIFICATION_ENTITY_GROUPS } from "@/lib/notifications/catalog";
-import { Archive, Check, ExternalLink } from "lucide-react";
+import { Archive, Bell, Check, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 const FILTERS: { value: NotificationFilter; label: string }[] = [
   { value: "all", label: "Todas" },
-  { value: "unread", label: "Nao lidas" },
-  { value: "critical", label: "Criticas" },
+  { value: "unread", label: "Não lidas" },
+  { value: "critical", label: "Críticas" },
   { value: "scaffolds", label: "Andaimes" },
-  { value: "inspections", label: "Inspecoes" },
+  { value: "inspections", label: "Inspeções" },
   { value: "nonconformities", label: "NCs" },
   { value: "documents", label: "Documentos" },
 ];
@@ -48,20 +49,27 @@ export default async function NotificationsPage({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Central operacional
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold">Notificacoes</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Alertas internos, historico e preferencias por canal.
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <Bell className="size-4" />
+            AndCheck • Notificações
+          </div>
+          <h1 className={`${typography.pageTitle} text-foreground`}>
+            Notificações
+          </h1>
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+            Alertas internos, histórico e preferências por canal.
           </p>
         </div>
-        <form action={markAllNotificationsAsRead}>
-          <Button type="submit" variant="outline" size="sm">
-            <Check className="size-4" />
+        <form action={markAllNotificationsAsRead} className="shrink-0">
+          <Button
+            type="submit"
+            size="sm"
+            className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+          >
+            <Check className="size-3.5" />
             Marcar todas como lidas
           </Button>
         </form>
@@ -72,8 +80,11 @@ export default async function NotificationsPage({
           <Button
             key={item.value}
             asChild
-            variant={filter === item.value ? "default" : "outline"}
+            variant={filter === item.value ? "default" : "ghost"}
             size="sm"
+            className={`h-8 rounded-md px-3 ${typography.action} ${
+              filter === item.value ? "" : "border border-border/70"
+            }`}
           >
             <Link href={`/notificacoes?filter=${item.value}`}>
               {item.label}
@@ -84,15 +95,15 @@ export default async function NotificationsPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Historico</CardTitle>
+          <CardTitle>Histórico</CardTitle>
           <CardDescription>
-            Ultimas notificacoes no seu escopo de acesso.
+            Últimas notificações no seu escopo de acesso.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {notifications.length === 0 ? (
             <div className="border border-dashed p-8 text-center text-sm text-muted-foreground">
-              Nenhuma notificacao encontrada para este filtro.
+              Nenhuma notificação encontrada para este filtro.
             </div>
           ) : (
             notifications.map((notification) => (
@@ -133,25 +144,39 @@ export default async function NotificationsPage({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                  <Button asChild variant="outline" size="sm">
+                  <Button
+                    asChild
+                    size="sm"
+                    className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+                  >
                     <Link href={entityPath(notification)}>
-                      <ExternalLink className="size-4" />
+                      <ExternalLink className="size-3.5" />
                       Abrir
                     </Link>
                   </Button>
                   {notification.status !== "READ" && (
                     <form action={markReadAction}>
                       <input type="hidden" name="id" value={notification.id} />
-                      <Button type="submit" variant="outline" size="sm">
-                        <Check className="size-4" />
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        size="sm"
+                        className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+                      >
+                        <Check className="size-3.5" />
                         Lida
                       </Button>
                     </form>
                   )}
                   <form action={archiveAction}>
                     <input type="hidden" name="id" value={notification.id} />
-                    <Button type="submit" variant="ghost" size="sm">
-                      <Archive className="size-4" />
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="sm"
+                      className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+                    >
+                      <Archive className="size-3.5" />
                       Arquivar
                     </Button>
                   </form>
@@ -173,8 +198,8 @@ function parseFilter(value?: string): NotificationFilter {
 }
 
 function severityLabel(severity: string) {
-  if (severity === "CRITICAL") return "Critica";
-  if (severity === "WARNING") return "Atencao";
+  if (severity === "CRITICAL") return "Crítica";
+  if (severity === "WARNING") return "Atenção";
   if (severity === "SUCCESS") return "Sucesso";
   return "Info";
 }
@@ -182,7 +207,7 @@ function severityLabel(severity: string) {
 function groupLabel(type: keyof typeof NOTIFICATION_ENTITY_GROUPS) {
   const group = NOTIFICATION_ENTITY_GROUPS[type];
   if (group === "SCAFFOLD") return "Andaimes";
-  if (group === "INSPECTION") return "Inspecoes";
+  if (group === "INSPECTION") return "Inspeções";
   if (group === "NONCONFORMITY") return "NCs";
   if (group === "DOCUMENT") return "Documentos";
   return "Geral";

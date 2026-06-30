@@ -167,9 +167,10 @@ export function WorkspacesClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className={`${typography.pageEyebrow} text-muted-foreground`}>
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <MapPin className="size-4" />
             AndCheck • Workspaces
-          </p>
+          </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Gestão de Workspaces
           </h1>

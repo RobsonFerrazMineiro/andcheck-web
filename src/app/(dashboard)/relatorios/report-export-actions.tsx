@@ -311,20 +311,20 @@ export function ReportExportActions({ report }: Props) {
     <div className="flex flex-wrap gap-2">
       <button
         type="button"
-        onClick={exportPdf}
-        disabled={pdfLoading}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <Printer className="size-3.5" />
-        {pdfLoading ? "Abrindo..." : "Exportar PDF"}
-      </button>
-      <button
-        type="button"
         onClick={() => exportExcel(report)}
         className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
       >
         <FileSpreadsheet className="size-3.5" />
         Exportar Excel
+      </button>
+      <button
+        type="button"
+        onClick={exportPdf}
+        disabled={pdfLoading}
+        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border/70 px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <Printer className="size-3.5" />
+        {pdfLoading ? "Abrindo..." : "Exportar PDF"}
       </button>
     </div>
   );

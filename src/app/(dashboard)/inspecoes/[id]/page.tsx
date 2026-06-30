@@ -236,9 +236,10 @@ export default async function InspectionDetailPage({ params }: Props) {
       <div className="bg-primary border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
           <div>
-            <p className="text-[9px] font-semibold tracking-widest uppercase text-primary-foreground/40 mb-1">
+            <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/40">
+              <ClipboardCheck className="size-4" />
               AndCheck • Inspeções
-            </p>
+            </div>
             <h2 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
               {docNum}
             </h2>

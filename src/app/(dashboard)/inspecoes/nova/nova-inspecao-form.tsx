@@ -445,9 +445,10 @@ export function NovaInspecaoForm({
       </div>
 
       <div className="pb-4 border-b-2 border-border">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+        <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <ClipboardCheck className="size-4" />
           AndCheck • Inspeções · NR-18 / NR-35 / ABNT NBR 6494
-        </p>
+        </div>
         <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
           Nova Inspeção
         </h1>

@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
 import {
   scaffoldStatusTone,
@@ -123,30 +124,37 @@ export function ExecutiveDashboardClient({ data }: Props) {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-4 border-b pb-5 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+    <div className="space-y-5">
+      <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+        <div>
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <BarChart3 className="size-4" />
             AndCheck • Dashboard Executivo
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-normal text-foreground">
-              Dashboard Executivo
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Indicadores estratégicos e Business Intelligence
-            </p>
-          </div>
+          <h1 className={`${typography.pageTitle} text-foreground`}>
+            Dashboard Executivo
+          </h1>
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+            Indicadores estratégicos e Business Intelligence
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Badge variant="secondary">{data.range.label}</Badge>
-          <Button variant="outline" size="sm" onClick={() => exportExcel(data)}>
-            <FileSpreadsheet data-icon="inline-start" />
+          <Button
+            size="sm"
+            className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+            onClick={() => exportExcel(data)}
+          >
+            <FileSpreadsheet className="size-3.5" />
             Excel
           </Button>
-          <Button variant="outline" size="sm" onClick={() => exportPdf(data)}>
-            <Download data-icon="inline-start" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+            onClick={() => exportPdf(data)}
+          >
+            <Download className="size-3.5" />
             PDF
           </Button>
         </div>
@@ -220,7 +228,11 @@ export function ExecutiveDashboardClient({ data }: Props) {
             </div>
           </div>
           <div className="mt-4 flex justify-end">
-            <Button onClick={applyFilters} disabled={isPending}>
+            <Button
+              className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+              onClick={applyFilters}
+              disabled={isPending}
+            >
               {isPending ? "Aplicando..." : "Aplicar filtros"}
             </Button>
           </div>

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Construction, Save } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -112,9 +112,10 @@ export default function NovoAndaimePage() {
           </Link>
         </Button>
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <Construction className="size-4" />
             AndCheck • Andaimes
-          </p>
+          </div>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Cadastro de Andaime
           </h1>
