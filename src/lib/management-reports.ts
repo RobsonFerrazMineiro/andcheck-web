@@ -444,18 +444,18 @@ function getCorrectionDays(
 
 function fixChecklistText(value: string) {
   return value
-    .replaceAll("Ã§", "ç")
-    .replaceAll("Ã£", "ã")
-    .replaceAll("Ã¡", "á")
-    .replaceAll("Ã©", "é")
-    .replaceAll("Ã­", "í")
-    .replaceAll("Ã³", "ó")
-    .replaceAll("Ãº", "ú")
-    .replaceAll("Ã¢", "â")
-    .replaceAll("Ãª", "ê")
-    .replaceAll("Ãµ", "õ")
-    .replaceAll("Ã“", "Ó")
-    .replaceAll("Ã", "à")
+    .replaceAll("\u00c3\u00a7", "ç")
+    .replaceAll("\u00c3\u00a3", "ã")
+    .replaceAll("\u00c3\u00a1", "á")
+    .replaceAll("\u00c3\u00a9", "é")
+    .replaceAll("\u00c3\u00ad", "í")
+    .replaceAll("\u00c3\u00b3", "ó")
+    .replaceAll("\u00c3\u00ba", "ú")
+    .replaceAll("\u00c3\u00a2", "â")
+    .replaceAll("\u00c3\u00aa", "ê")
+    .replaceAll("\u00c3\u00b5", "õ")
+    .replaceAll("\u00c3\u201c", "Ó")
+    .replaceAll("\u00c3", "à")
     .replace(/\s+/g, " ")
     .trim();
 }

@@ -56,7 +56,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: `Criado por ${actor}`,
         title: label,
-        tone: "green" as const,
+        tone: "success" as const,
       };
     }
     if (log.action === AuditAction.STATUS_CHANGE) {
@@ -67,7 +67,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: `Liberado por ${actor}`,
           title: label,
-          tone: "green" as const,
+          tone: "success" as const,
         };
       }
       if (status === "interditado") {
@@ -77,7 +77,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: actor,
           title: label,
-          tone: "slate" as const,
+          tone: "critical" as const,
         };
       }
       if (status === "desmontado") {
@@ -87,7 +87,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: actor,
           title: label,
-          tone: "slate" as const,
+          tone: "disabled" as const,
         };
       }
       if (
@@ -100,7 +100,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: `Liberado por ${actor}`,
           title: label,
-          tone: "green" as const,
+          tone: "success" as const,
         };
       }
       if (inspectionResult === "reprovado") {
@@ -110,7 +110,7 @@ function getOperationalMovement(log: {
           groupable: false,
           subtitle: actor,
           title: label,
-          tone: "red" as const,
+          tone: "critical" as const,
         };
       }
     }
@@ -127,7 +127,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: actor,
         title: scaffoldCode,
-        tone: "red" as const,
+        tone: "critical" as const,
       };
     }
     if (result === "aprovado_com_ressalvas") {
@@ -137,7 +137,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: actor,
         title: scaffoldCode,
-        tone: "amber" as const,
+        tone: "warning" as const,
       };
     }
     if (result === "aprovado") {
@@ -147,7 +147,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: actor,
         title: scaffoldCode,
-        tone: "blue" as const,
+        tone: "neutral" as const,
       };
     }
     return null;
@@ -161,7 +161,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: `Aberta por ${actor}`,
         title: label,
-        tone: "red" as const,
+        tone: "critical" as const,
       };
     }
     if (log.action === AuditAction.COMPLETE || status === "CLOSED") {
@@ -171,7 +171,7 @@ function getOperationalMovement(log: {
         groupable: false,
         subtitle: `Encerrada por ${actor}`,
         title: label,
-        tone: "green" as const,
+        tone: "success" as const,
       };
     }
     if (
@@ -185,7 +185,7 @@ function getOperationalMovement(log: {
         groupable: true,
         subtitle: `Atualizada por ${actor}`,
         title: label,
-        tone: "amber" as const,
+        tone: "warning" as const,
       };
     }
   }
@@ -201,7 +201,7 @@ function getOperationalMovement(log: {
       groupable: false,
       subtitle: "Documento tecnico vencido",
       title: label,
-      tone: "red" as const,
+      tone: "critical" as const,
     };
   }
 
@@ -216,7 +216,7 @@ function getOperationalMovement(log: {
       groupable: false,
       subtitle: `Anexado por ${actor}`,
       title: label,
-      tone: "blue" as const,
+      tone: "neutral" as const,
     };
   }
 
@@ -452,7 +452,12 @@ export async function getDashboardMetrics() {
           groupable: boolean;
           subtitle: string;
           title: string;
-          tone: "green" | "blue" | "amber" | "red" | "slate";
+          tone:
+            | "success"
+            | "critical"
+            | "warning"
+            | "neutral"
+            | "disabled";
           createdAt: Date;
         }>
       >((movements, log) => {

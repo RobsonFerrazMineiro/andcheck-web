@@ -25,7 +25,9 @@ export const SEMANTIC_TONE_CLASSES: Record<
   SemanticTone,
   {
     badge: string;
+    bar: string;
     border: string;
+    borderLeft: string;
     dot: string;
     icon: string;
     subtleBg: string;
@@ -34,7 +36,9 @@ export const SEMANTIC_TONE_CLASSES: Record<
 > = {
   success: {
     badge: "border-emerald-400/60 bg-emerald-50 text-emerald-800",
+    bar: "bg-emerald-500",
     border: "ring-emerald-600/35",
+    borderLeft: "border-l-4 border-l-emerald-600",
     dot: "bg-emerald-500",
     icon: "text-emerald-600",
     subtleBg: "bg-emerald-500/5",
@@ -42,7 +46,9 @@ export const SEMANTIC_TONE_CLASSES: Record<
   },
   critical: {
     badge: "border-red-500/60 bg-red-50 text-red-800",
+    bar: "bg-red-500",
     border: "ring-red-500/35",
+    borderLeft: "border-l-4 border-l-red-600",
     dot: "bg-red-600",
     icon: "text-red-600",
     subtleBg: "bg-red-500/5",
@@ -50,7 +56,9 @@ export const SEMANTIC_TONE_CLASSES: Record<
   },
   warning: {
     badge: "border-orange-400/60 bg-orange-50 text-orange-800",
+    bar: "bg-orange-500",
     border: "ring-orange-500/35",
+    borderLeft: "border-l-4 border-l-orange-500",
     dot: "bg-orange-500",
     icon: "text-orange-600",
     subtleBg: "bg-orange-500/5",
@@ -58,7 +66,9 @@ export const SEMANTIC_TONE_CLASSES: Record<
   },
   neutral: {
     badge: "border-blue-400/60 bg-blue-50 text-blue-800",
+    bar: "bg-blue-500",
     border: "ring-blue-500/35",
+    borderLeft: "border-l-4 border-l-blue-600",
     dot: "bg-blue-500",
     icon: "text-blue-600",
     subtleBg: "bg-blue-500/5",
@@ -66,13 +76,33 @@ export const SEMANTIC_TONE_CLASSES: Record<
   },
   disabled: {
     badge: "border-slate-300/70 bg-slate-100 text-slate-600",
+    bar: "bg-slate-400",
     border: "ring-slate-400/35",
+    borderLeft: "border-l-4 border-l-slate-500",
     dot: "bg-slate-500",
     icon: "text-slate-500",
     subtleBg: "bg-slate-500/5",
     text: "text-slate-600",
   },
 };
+
+export type LegacyColorTone =
+  | "green"
+  | "blue"
+  | "amber"
+  | "orange"
+  | "red"
+  | "slate";
+
+export function legacyColorToneToSemanticTone(
+  tone: LegacyColorTone,
+): SemanticTone {
+  if (tone === "green") return "success";
+  if (tone === "red") return "critical";
+  if (tone === "amber" || tone === "orange") return "warning";
+  if (tone === "slate") return "disabled";
+  return "neutral";
+}
 
 export function notificationSeverityTone(severity: string): SemanticTone {
   if (severity === "SUCCESS") return "success";

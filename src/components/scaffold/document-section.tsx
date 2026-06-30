@@ -27,6 +27,10 @@ import {
   getDocumentExtension,
   getDocumentViewUrl,
 } from "@/lib/document-view";
+import {
+  documentStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 import { uploadFile } from "@/lib/upload-file";
 
 // ── Tipos e constantes ────────────────────────────────────────────────────────
@@ -85,11 +89,7 @@ function StatusBadge({
 }: {
   status: "anexado" | "pendente" | "vencido";
 }) {
-  const cfg = {
-    anexado: "bg-green-100 text-green-700 border-green-300",
-    pendente: "bg-amber-50  text-amber-600  border-amber-300",
-    vencido: "bg-red-50    text-red-600    border-red-300",
-  }[status];
+  const cfg = SEMANTIC_TONE_CLASSES[documentStatusTone(status)].badge;
   return (
     <span
       className={`inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${cfg}`}
@@ -465,7 +465,11 @@ export function ScaffoldDocumentSection({
                           Válido até
                         </p>
                         <p
-                          className={`text-[11px] font-semibold ${status === "vencido" ? "text-red-600" : "text-foreground"}`}
+                          className={`text-[11px] font-semibold ${
+                            status === "vencido"
+                              ? SEMANTIC_TONE_CLASSES.critical.text
+                              : "text-foreground"
+                          }`}
                         >
                           {format(new Date(doc.expires_at), "dd/MM/yyyy", {
                             locale: ptBR,
