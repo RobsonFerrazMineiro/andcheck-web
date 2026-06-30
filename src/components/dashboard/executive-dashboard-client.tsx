@@ -128,7 +128,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <BarChart3 className="size-4" />
-            Dashboard Gerencial
+            AndCheck • Dashboard Executivo
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-normal text-foreground">
@@ -605,7 +605,7 @@ function formatNumber(value: number) {
 
 function exportExcel(data: ExecutiveDashboardData) {
   const rows = [
-    ["Dashboard Executivo - AndCheck"],
+    ["AndCheck • Dashboard Executivo"],
     ["Período", data.range.label],
     ["Gerado em", new Date(data.generatedAt).toLocaleString("pt-BR")],
     [],
@@ -639,7 +639,7 @@ async function exportPdf(data: ExecutiveDashboardData) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text("AndCheck - Dashboard Executivo", 12, 14);
+  doc.text("AndCheck • Dashboard Executivo", 12, 14);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.text(`Periodo: ${data.range.label}`, 12, 21);

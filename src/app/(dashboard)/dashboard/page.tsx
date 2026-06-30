@@ -28,6 +28,12 @@ import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getDashboardMetrics } from "@/lib/dashboard-metrics";
 import { getContextCapabilities } from "@/lib/data-scope";
 import { surface, typography } from "@/lib/design-system";
+import {
+  legacyColorToneToSemanticTone,
+  type LegacyColorTone,
+  type SemanticTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 const NORMS = [
   "NR-18 / 2022",
@@ -80,7 +86,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Painel Operacional
+            AndCheck • Painel Operacional
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Central de Controle de Andaimes
@@ -368,7 +374,7 @@ interface KpiCardProps {
   value: number;
   total: number;
   icon: React.ElementType;
-  theme: "green" | "blue" | "amber" | "red" | "orange" | "slate";
+  theme: LegacyColorTone;
   hint: string;
   showPct?: boolean;
 }
@@ -392,32 +398,35 @@ function formatPercentageOrHistoricalBase(value: number | null) {
   return `${value}%`;
 }
 
-type ExecutiveTheme = "slate" | "green" | "blue" | "amber";
-type MovementTone = "green" | "blue" | "amber" | "red" | "slate";
+type ExecutiveTheme = Extract<
+  LegacyColorTone,
+  "slate" | "green" | "blue" | "amber"
+>;
+type MovementTone = SemanticTone;
 
 const EXECUTIVE_THEMES: Record<
   ExecutiveTheme,
   { border: string; value: string; icon: string }
 > = {
   slate: {
-    border: "border-l-4 border-l-slate-500",
-    value: "text-slate-800",
-    icon: "text-slate-500",
+    border: SEMANTIC_TONE_CLASSES.disabled.borderLeft,
+    value: SEMANTIC_TONE_CLASSES.disabled.text,
+    icon: SEMANTIC_TONE_CLASSES.disabled.icon,
   },
   green: {
-    border: "border-l-4 border-l-green-500",
-    value: "text-green-700",
-    icon: "text-green-600",
+    border: SEMANTIC_TONE_CLASSES.success.borderLeft,
+    value: SEMANTIC_TONE_CLASSES.success.text,
+    icon: SEMANTIC_TONE_CLASSES.success.icon,
   },
   blue: {
-    border: "border-l-4 border-l-blue-500",
-    value: "text-blue-700",
-    icon: "text-blue-600",
+    border: SEMANTIC_TONE_CLASSES.neutral.borderLeft,
+    value: SEMANTIC_TONE_CLASSES.neutral.text,
+    icon: SEMANTIC_TONE_CLASSES.neutral.icon,
   },
   amber: {
-    border: "border-l-4 border-l-amber-500",
-    value: "text-amber-700",
-    icon: "text-amber-600",
+    border: SEMANTIC_TONE_CLASSES.warning.borderLeft,
+    value: SEMANTIC_TONE_CLASSES.warning.text,
+    icon: SEMANTIC_TONE_CLASSES.warning.icon,
   },
 };
 
@@ -531,24 +540,6 @@ function RankingPanel({
   );
 }
 
-const MOVEMENT_BADGE_STYLES: Record<MovementTone, { badge: string }> = {
-  green: {
-    badge: "border-green-400/60 bg-green-50 text-green-800",
-  },
-  blue: {
-    badge: "border-blue-400/60 bg-blue-50 text-blue-800",
-  },
-  amber: {
-    badge: "border-amber-400/60 bg-amber-50 text-amber-800",
-  },
-  red: {
-    badge: "border-red-400/60 bg-red-50 text-red-800",
-  },
-  slate: {
-    badge: "border-slate-400/60 bg-slate-100 text-slate-600",
-  },
-};
-
 const MOVEMENT_BADGE_ICONS: Record<string, React.ElementType> = {
   "ANDAIME CRIADO": Construction,
   LIBERADO: CheckCircle2,
@@ -565,7 +556,6 @@ const MOVEMENT_BADGE_ICONS: Record<string, React.ElementType> = {
 };
 
 function MovementBadge({ label, tone }: { label: string; tone: MovementTone }) {
-  const styles = MOVEMENT_BADGE_STYLES[tone];
   const Icon = MOVEMENT_BADGE_ICONS[label] ?? Clock;
 
   return (
@@ -574,7 +564,7 @@ function MovementBadge({ label, tone }: { label: string; tone: MovementTone }) {
         "inline-flex justify-self-start items-center gap-1.5 rounded-md border px-1.5 py-0.5 " +
         typography.badge +
         " " +
-        styles.badge
+        SEMANTIC_TONE_CLASSES[tone].badge
       }
     >
       <Icon className="h-2.5 w-2.5 shrink-0" />
@@ -583,44 +573,6 @@ function MovementBadge({ label, tone }: { label: string; tone: MovementTone }) {
   );
 }
 
-const THEMES = {
-  green: {
-    border: "border-l-4 border-l-green-600",
-    val: "text-green-700",
-    bar: "bg-green-500",
-    icon: "text-green-600",
-  },
-  blue: {
-    border: "border-l-4 border-l-blue-600",
-    val: "text-blue-700",
-    bar: "bg-blue-500",
-    icon: "text-blue-600",
-  },
-  amber: {
-    border: "border-l-4 border-l-amber-500",
-    val: "text-amber-700",
-    bar: "bg-amber-400",
-    icon: "text-amber-500",
-  },
-  red: {
-    border: "border-l-4 border-l-red-600",
-    val: "text-red-700",
-    bar: "bg-red-500",
-    icon: "text-red-600",
-  },
-  orange: {
-    border: "border-l-4 border-l-orange-500",
-    val: "text-orange-700",
-    bar: "bg-orange-400",
-    icon: "text-orange-500",
-  },
-  slate: {
-    border: "border-l-4 border-l-slate-500",
-    val: "text-slate-700",
-    bar: "bg-slate-400",
-    icon: "text-slate-500",
-  },
-} as const;
 function KpiCard({
   label,
   value,
@@ -630,13 +582,15 @@ function KpiCard({
   hint,
   showPct,
 }: KpiCardProps) {
-  const t = THEMES[theme];
+  const t = SEMANTIC_TONE_CLASSES[legacyColorToneToSemanticTone(theme)];
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   const showBar = total > 0;
   return (
     <div
       className={
-        "bg-card " + t.border + " border border-border rounded-lg p-4 shadow-sm"
+        "bg-card " +
+        t.borderLeft +
+        " border border-border rounded-lg p-4 shadow-sm"
       }
     >
       <div className="flex items-start justify-between mb-2">
@@ -648,7 +602,7 @@ function KpiCard({
         <Icon className={"w-4 h-4 shrink-0 " + t.icon} />
       </div>
       <p
-        className={typography.operationalValue + " " + t.val + " leading-none"}
+        className={typography.operationalValue + " " + t.text + " leading-none"}
       >
         {value}
       </p>

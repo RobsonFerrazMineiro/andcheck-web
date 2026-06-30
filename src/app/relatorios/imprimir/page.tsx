@@ -100,7 +100,7 @@ function PrintHeader({
   return (
     <header className="rounded-lg bg-slate-800 px-7 py-5 text-white">
       <p className="text-[11px] font-bold uppercase tracking-widest text-slate-300">
-        AndCheck EHS • Business Intelligence
+        AndCheck • Relatórios Gerenciais
       </p>
       <h1 className="mt-1 text-[26px] font-extrabold uppercase tracking-normal">
         Relatórios Gerenciais

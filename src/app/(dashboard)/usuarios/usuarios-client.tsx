@@ -225,7 +225,7 @@ export function UsuariosClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Administração
+            AndCheck • Usuários
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Usuários
@@ -609,7 +609,7 @@ export function UsuariosClient({
 
         <div className="px-4 py-2 bg-muted/30 border-t border-border">
           <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
-            {filtered.length} registro(s) · Módulo de usuários · AndCheck EHS
+            {filtered.length} registro(s) · Módulo de usuários · AndCheck
           </p>
         </div>
       </div>

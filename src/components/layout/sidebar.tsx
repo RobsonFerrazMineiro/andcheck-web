@@ -140,7 +140,7 @@ export function Sidebar({
               AndCheck
             </p>
             <p className="text-[9px] text-sidebar-foreground/40 tracking-widest uppercase mt-0.5">
-              Sistema EHS · SST
+              Gestão do Ciclo de Vida de Andaimes
             </p>
           </div>
         </Link>
@@ -159,7 +159,7 @@ export function Sidebar({
       {/* Section label */}
       <div className="px-3 pt-4 pb-1">
         <p className="text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25 px-2 mb-2">
-          Módulos do Sistema
+          Módulos da Plataforma
         </p>
       </div>
 

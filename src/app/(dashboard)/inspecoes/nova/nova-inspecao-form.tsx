@@ -446,7 +446,7 @@ export function NovaInspecaoForm({
 
       <div className="pb-4 border-b-2 border-border">
         <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-          AndCheck EHS · NR-18 / NR-35 / ABNT NBR 6494
+          AndCheck • Inspeções · NR-18 / NR-35 / ABNT NBR 6494
         </p>
         <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
           Nova Inspeção

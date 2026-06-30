@@ -113,7 +113,7 @@ export default function NovoAndaimePage() {
         </Button>
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
-            AndCheck EHS · Gestão de Ativos
+            AndCheck • Andaimes
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Cadastro de Andaime
@@ -314,7 +314,7 @@ export default function NovoAndaimePage() {
 
       {/* Rodapé normativo */}
       <p className="text-[8px] text-muted-foreground/30 uppercase tracking-widest text-right">
-        Conforme NR-18 · NBR 6494 · AndCheck EHS · Documento Controlado
+        Conforme NR-18 · NBR 6494 · AndCheck · Documento Controlado
       </p>
     </div>
   );

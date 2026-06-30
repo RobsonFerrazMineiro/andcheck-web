@@ -21,6 +21,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { surface, typography } from "@/lib/design-system";
+import {
+  scaffoldStatusTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 const OperationalMap = dynamic(
   () =>
@@ -83,26 +87,47 @@ type LegendFilter = {
 };
 
 const LEGEND_FILTERS: LegendFilter[] = [
-  { status: "liberado", label: "Liberado", dot: "bg-emerald-500" },
-  { status: "em_montagem", label: "Em montagem", dot: "bg-blue-500" },
+  {
+    status: "liberado",
+    label: "Liberado",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("liberado")].dot,
+  },
+  {
+    status: "em_montagem",
+    label: "Em montagem",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("em_montagem")].dot,
+  },
   {
     status: "pendente_liberacao",
     label: "Pend. liberação",
-    dot: "bg-amber-400",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("pendente_liberacao")].dot,
   },
-  { status: "reprovado", label: "Reprovado", dot: "bg-red-500" },
-  { status: "interditado", label: "Interditado", dot: "bg-red-900" },
-  { status: "vencido", label: "Vencido", dot: "bg-gray-600" },
+  {
+    status: "reprovado",
+    label: "Reprovado",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("reprovado")].dot,
+  },
+  {
+    status: "interditado",
+    label: "Interditado",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("interditado")].dot,
+  },
+  {
+    status: "vencido",
+    label: "Vencido",
+    dot: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("vencido")].dot,
+  },
 ];
 
 const STATUS_DOT: Record<string, string> = {
-  liberado: "bg-emerald-500",
-  em_montagem: "bg-blue-500",
-  pendente_liberacao: "bg-amber-400",
-  reprovado: "bg-red-500",
-  interditado: "bg-red-900",
-  vencido: "bg-gray-600",
-  pendente: "bg-amber-400",
+  liberado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("liberado")].dot,
+  em_montagem: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("em_montagem")].dot,
+  pendente_liberacao:
+    SEMANTIC_TONE_CLASSES[scaffoldStatusTone("pendente_liberacao")].dot,
+  reprovado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("reprovado")].dot,
+  interditado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("interditado")].dot,
+  vencido: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("vencido")].dot,
+  pendente: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("pendente")].dot,
 };
 
 function filterLabel(activeStatus: string | null) {
@@ -293,7 +318,8 @@ export function MapaOperacionalClient({
                 <div
                   className={
                     "size-2 shrink-0 rounded-full " +
-                    (STATUS_DOT[scaffold.effectiveStatus] ?? "bg-gray-400")
+                    (STATUS_DOT[scaffold.effectiveStatus] ??
+                      SEMANTIC_TONE_CLASSES.disabled.dot)
                   }
                 />
                 <MapPin className="size-3.5 shrink-0 text-muted-foreground/30" />
@@ -305,7 +331,11 @@ export function MapaOperacionalClient({
                     {canFilterCompany ? `${scaffold.companyName} - ` : ""}
                     {scaffold.location} - {scaffold.area}
                     {!scaffold.latitude && (
-                      <span className="ml-1 text-amber-500">- sem coords</span>
+                      <span
+                        className={`ml-1 ${SEMANTIC_TONE_CLASSES.warning.text}`}
+                      >
+                        - sem coords
+                      </span>
                     )}
                   </p>
                 </div>

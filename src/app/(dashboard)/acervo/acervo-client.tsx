@@ -179,7 +179,7 @@ export function AcervoClient({
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className={`mb-1 text-muted-foreground ${typography.pageEyebrow}`}>
-            AndCheck EHS - Histórico operacional
+            AndCheck • Acervo de Andaimes
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Acervo de Andaimes

@@ -242,7 +242,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="text-[9px] font-semibold tracking-widest uppercase text-primary-foreground/40 mb-1">
-              Controle de Tratativa · AndCheck EHS
+              AndCheck • Não Conformidades
             </p>
             <h1 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
               {nc.code}

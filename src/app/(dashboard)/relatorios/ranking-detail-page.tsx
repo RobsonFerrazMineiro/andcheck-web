@@ -38,7 +38,7 @@ export function RankingDetailPage({
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS • Business Intelligence
+            AndCheck • Relatórios Gerenciais
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>{title}</h1>
           <p

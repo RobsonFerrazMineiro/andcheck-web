@@ -30,6 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { surface, typography } from "@/lib/design-system";
+import {
+  type SemanticTone,
+  SEMANTIC_TONE_CLASSES,
+} from "@/lib/semantic-tones";
 
 type AuditRow = {
   id: string;
@@ -70,7 +74,7 @@ const ENTITY_LABELS: Record<string, string> = {
   PDF: "PDF",
   QR_CODE: "Status do andaime",
   SETTINGS: "Configuração",
-  NON_CONFORMITY: "Nao conformidade",
+  NON_CONFORMITY: "Não conformidade",
 };
 
 const ENTITY_BADGE_LABELS: Record<string, string> = {
@@ -84,7 +88,7 @@ const ENTITY_BADGE_LABELS: Record<string, string> = {
   PDF: "PDF",
   QR_CODE: "CONSULTA",
   SETTINGS: "CONFIGURAÇÃO",
-  NON_CONFORMITY: "NAO CONFORMIDADE",
+  NON_CONFORMITY: "NÃO CONFORMIDADE",
 };
 
 const ENTITY_ICONS: Record<string, React.ElementType> = {
@@ -101,14 +105,7 @@ const ENTITY_ICONS: Record<string, React.ElementType> = {
   WORKSPACE: MapPinned,
 };
 
-type EventTone = "green" | "amber" | "red" | "slate";
-
-const TONE_STYLES: Record<EventTone, string> = {
-  green: "border-emerald-300 bg-emerald-50 text-emerald-800",
-  amber: "border-amber-300 bg-amber-50 text-amber-800",
-  red: "border-red-300 bg-red-50 text-red-800",
-  slate: "border-slate-300 bg-slate-50 text-slate-700",
-};
+type EventTone = SemanticTone;
 
 const AUDIT_GROUPS = [
   { value: "all", label: "Todos" },
@@ -235,12 +232,12 @@ const ACTION_FILTERS = [
   ["UPDATE", "Atualização"],
   ["STATUS_CHANGE", "Alteração de status"],
   ["ROLE_CHANGE", "Alteração de perfil"],
-  ["COMPLETE", "Conclusao"],
+  ["COMPLETE", "Conclusão"],
   ["UPLOAD", "Upload"],
   ["DOWNLOAD", "Download"],
   ["GENERATE_PDF", "Geração de PDF"],
   ["VIEW_QR", "Consulta"],
-  ["DELETE", "Remocao"],
+  ["DELETE", "Remoção"],
 ] as const;
 
 const AUDIT_TABLE_GRID =
@@ -284,14 +281,14 @@ function getEventMeta(row: AuditRow): {
   const oldStatus = getRecordString(row.oldValue, "status");
 
   if (row.action === "VIEW_QR") {
-    return { label: "Consultou status", shortLabel: "CONSULTA", tone: "slate" };
+    return { label: "Consultou status", shortLabel: "CONSULTA", tone: "neutral" };
   }
   if (row.action === "ROLE_CHANGE") {
-    return { label: "Alterou perfil", shortLabel: "ALTERAÇÃO DE PERFIL", tone: "amber" };
+    return { label: "Alterou perfil", shortLabel: "ALTERAÇÃO DE PERFIL", tone: "warning" };
   }
   if (row.action === "STATUS_CHANGE") {
     if (newStatus === "desmontado") {
-      return { label: "Desmontou andaime", shortLabel: "DESMONTAGEM", tone: "red" };
+      return { label: "Desmontou andaime", shortLabel: "DESMONTAGEM", tone: "disabled" };
     }
     return {
       label:
@@ -300,49 +297,49 @@ function getEventMeta(row: AuditRow): {
           : "Alterou status",
       shortLabel: "ALTERAÇÃO DE STATUS",
       tone: ["reprovado", "interditado", "cancelled", "CANCELLED"].includes(newStatus ?? "")
-        ? "red"
-        : "amber",
+        ? "critical"
+        : "warning",
     };
   }
   if (row.action === "CREATE" || row.action.endsWith("_CREATED")) {
-    if (row.entityType === "USER") return { label: "Criou usuário", shortLabel: "CRIAÇÃO", tone: "green" };
-    if (row.entityType === "COMPANY") return { label: "Criou empresa", shortLabel: "CRIAÇÃO", tone: "green" };
-    if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIAÇÃO", tone: "green" };
-    if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIAÇÃO", tone: "green" };
-    if (row.entityType === "INSPECTION") return { label: "Criou inspeção", shortLabel: "CRIAÇÃO", tone: "green" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Criou não conformidade", shortLabel: "CRIAÇÃO", tone: "green" };
-    return { label: "Criou registro", shortLabel: "CRIAÇÃO", tone: "green" };
+    if (row.entityType === "USER") return { label: "Criou usuário", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "COMPANY") return { label: "Criou empresa", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "INSPECTION") return { label: "Criou inspeção", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Criou não conformidade", shortLabel: "CRIAÇÃO", tone: "success" };
+    return { label: "Criou registro", shortLabel: "CRIAÇÃO", tone: "success" };
   }
   if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
     if (row.action === "COMPANY_LOGO_UPDATED") {
-      return { label: "Atualizou logo", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+      return { label: "Atualizou logo", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
     }
-    if (row.entityType === "USER") return { label: "Atualizou usuário", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
-    if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
-    if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
-    if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou não conformidade", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
-    return { label: "Atualizou registro", shortLabel: "ATUALIZAÇÃO", tone: "amber" };
+    if (row.entityType === "USER") return { label: "Atualizou usuário", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou não conformidade", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    return { label: "Atualizou registro", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
   }
   if (row.entityType === "INSPECTION" && newStatus === "aprovado") {
-    return { label: "Aprovou inspeção", shortLabel: "APROVAÇÃO", tone: "green" };
+    return { label: "Aprovou inspeção", shortLabel: "APROVAÇÃO", tone: "success" };
   }
   if (row.entityType === "INSPECTION" && (newStatus === "reprovado" || oldStatus === "aprovado")) {
-    return { label: "Reprovou inspeção", shortLabel: "REPROVAÇÃO", tone: "red" };
+    return { label: "Reprovou inspeção", shortLabel: "REPROVAÇÃO", tone: "critical" };
   }
   if (row.entityType === "NON_CONFORMITY" && ["CLOSED", "closed"].includes(newStatus ?? "")) {
-    return { label: "Encerrou não conformidade", shortLabel: "ENCERRAMENTO", tone: "green" };
+    return { label: "Encerrou não conformidade", shortLabel: "ENCERRAMENTO", tone: "success" };
   }
   if (["DELETE", "CANCELLED", "CANCEL"].includes(row.action)) {
-    return { label: "Removeu registro", shortLabel: "REMOCAO", tone: "red" };
+    return { label: "Removeu registro", shortLabel: "REMOÇÃO", tone: "critical" };
   }
   if (row.action === "COMPLETE") {
-    return { label: "Concluiu etapa", shortLabel: "CONCLUSAO", tone: "green" };
+    return { label: "Concluiu etapa", shortLabel: "CONCLUSÃO", tone: "success" };
   }
   return {
     label: row.action.replaceAll("_", " ").toLowerCase(),
     shortLabel: row.action.replaceAll("_", " "),
-    tone: "slate",
+    tone: "disabled",
   };
 }
 
@@ -370,7 +367,7 @@ function entityDisplay(row: AuditRow) {
     case "QR_CODE":
       return `Status do andaime ${label}`;
     case "NON_CONFORMITY":
-      return `Nao conformidade ${label}`;
+      return `Não conformidade ${label}`;
     case "SETTINGS":
       return `Configuração ${label}`;
     default:
@@ -502,7 +499,7 @@ function ActionBadge({ row }: { row: AuditRow }) {
     <Badge
       variant="outline"
       title={meta.label}
-      className={`max-w-full rounded-md px-2 py-0.5 ${typography.badge} ${TONE_STYLES[meta.tone]}`}
+      className={`max-w-full rounded-md px-2 py-0.5 ${typography.badge} ${SEMANTIC_TONE_CLASSES[meta.tone].badge}`}
     >
       <span className="block truncate">{meta.label}</span>
     </Badge>
@@ -515,7 +512,7 @@ function EntityBadge({ row }: { row: AuditRow }) {
     <div className="flex flex-wrap items-center gap-2">
       <Badge
         variant="outline"
-        className={`inline-flex w-fit items-center gap-1 rounded-md border-slate-300 bg-slate-50 px-2 py-0.5 text-slate-700 ${typography.badge}`}
+        className={`inline-flex w-fit items-center gap-1 rounded-md px-2 py-0.5 ${typography.badge} ${SEMANTIC_TONE_CLASSES.neutral.badge}`}
       >
         <Icon className="size-3" />
         {ENTITY_BADGE_LABELS[row.entityType] ?? labelEntity(row.entityType).toUpperCase()}
@@ -590,7 +587,7 @@ export function AuditoriaClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Rastreabilidade
+            AndCheck • Auditoria
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Auditoria

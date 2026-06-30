@@ -1,5 +1,5 @@
 /**
- * AndCheck EHS — Relatório Técnico Controlado
+ * AndCheck — Relatório Técnico Controlado
  * ISO 9001:2015 · ISO 45001:2018 · NR-18 · NR-35 · ABNT NBR 6494
  */
 import { addDays, format } from "date-fns";
@@ -277,7 +277,7 @@ function addPageHeader(doc: jsPDF, docNum: string, now: string) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   st(doc, C.navyUltraLight);
-  doc.text(`AndCheck EHS  ·  ${docNum}  ·  Continuação`, M + 3, 6.5);
+  doc.text(`AndCheck  ·  ${docNum}  ·  Continuação`, M + 3, 6.5);
   doc.setFont("helvetica", "normal");
   st(doc, C.navyLight);
   doc.text(now, PW - M - 2, 6.5, { align: "right" });
@@ -931,7 +931,7 @@ export async function generateInspectionPDF(
     doc.setFontSize(6);
     st(doc, C.navyUltraLight);
     doc.text(
-      `AndCheck EHS  ·  Documento Controlado  ·  ${docNum}  ·  Rev. ${revNum}  ·  NR-18  ·  NR-35  ·  ABNT NBR 6494`,
+      `AndCheck  ·  Documento Controlado  ·  ${docNum}  ·  Rev. ${revNum}  ·  NR-18  ·  NR-35  ·  ABNT NBR 6494`,
       PW / 2,
       FY + 4.5,
       { align: "center" },

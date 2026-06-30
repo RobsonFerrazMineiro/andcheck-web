@@ -230,7 +230,7 @@ export function NaoConformidadesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Controle de Tratativas
+            AndCheck • Não Conformidades
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Não Conformidades
@@ -556,7 +556,7 @@ export function NaoConformidadesClient({
               className={`${typography.panelSubtitle} text-muted-foreground/40`}
             >
               {filtered.length} registro(s) · Controle de tratativas · AndCheck
-              EHS
+              AndCheck
             </p>
           </div>
         </div>

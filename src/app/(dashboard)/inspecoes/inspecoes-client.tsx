@@ -60,7 +60,7 @@ export function InspecoesClient({
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className={`${typography.pageEyebrow} mb-1 text-muted-foreground`}>
-            AndCheck EHS · Registros Técnicos
+            AndCheck • Inspeções
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Histórico de Inspeções
@@ -212,7 +212,7 @@ export function InspecoesClient({
           <div className="px-4 py-2 bg-muted/30 border-t border-border">
             <p className={`${typography.panelSubtitle} text-muted-foreground/40`}>
               {filtered.length} registro(s) · Documento Controlado · AndCheck
-              EHS
+              AndCheck
             </p>
           </div>
         </div>

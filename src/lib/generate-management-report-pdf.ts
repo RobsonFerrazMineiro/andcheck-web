@@ -202,7 +202,7 @@ function addHeader(doc: jsPDF, labels: ReportFilterLabels, report: ManagementRep
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   setText(doc, C.white);
-  text(doc, "ANDCHECK EHS • BUSINESS INTELLIGENCE", 14, 9);
+  text(doc, "ANDCHECK • RELATÓRIOS GERENCIAIS", 14, 9);
   doc.setFontSize(16);
   text(doc, "RELATÓRIOS GERENCIAIS", 14, 17);
 

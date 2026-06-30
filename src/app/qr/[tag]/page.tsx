@@ -298,7 +298,7 @@ export default async function QRPage({ params }: Props) {
         {/* ── Rodapé ─────────────────────────────────────────────── */}
         <div className="text-center pt-1 pb-2">
           <p className="text-[9px] text-white/20">
-            Gerado por AndCheck · Sistema de Gestão de Andaimes
+            Gerado por AndCheck · Plataforma de Gestão do Ciclo de Vida de Andaimes
           </p>
           <p className="text-[9px] text-white/20 mt-0.5">
             NR-18 · NR-35 · ABNT NBR 6494

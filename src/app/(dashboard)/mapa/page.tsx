@@ -84,7 +84,7 @@ export default async function MapaPage() {
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
-            AndCheck EHS · Visualizacao Espacial
+            AndCheck • Mapa Operacional
           </p>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional

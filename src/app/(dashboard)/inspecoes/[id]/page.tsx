@@ -237,7 +237,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
           <div>
             <p className="text-[9px] font-semibold tracking-widest uppercase text-primary-foreground/40 mb-1">
-              Relatório Técnico de Inspeção · AndCheck EHS
+              AndCheck • Inspeções
             </p>
             <h2 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
               {docNum}

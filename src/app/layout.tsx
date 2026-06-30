@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AndCheck — Sistema EHS · SST",
+  title: "AndCheck — Gestão do Ciclo de Vida de Andaimes Industriais",
   description:
-    "Sistema de gestão de andaimes e inspeções de segurança do trabalho",
+    "Plataforma especializada na gestão do ciclo de vida de andaimes industriais",
 };
 
 export default function RootLayout({

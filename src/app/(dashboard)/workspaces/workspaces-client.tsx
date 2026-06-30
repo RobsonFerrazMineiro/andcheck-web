@@ -168,10 +168,10 @@ export function WorkspacesClient({
       <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className={`${typography.pageEyebrow} text-muted-foreground`}>
-            Administração
+            AndCheck • Workspaces
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
-            Gestao de Workspaces
+            Gestão de Workspaces
           </h1>
           <p
             className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}
