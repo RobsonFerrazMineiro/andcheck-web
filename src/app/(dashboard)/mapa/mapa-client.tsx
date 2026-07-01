@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   Select,
@@ -348,11 +349,12 @@ export function MapaOperacionalClient({
         </div>
         <div className="divide-y divide-border">
           {filteredScaffolds.length === 0 ? (
-            <div className="px-4 py-10 text-center">
-              <p className="text-[12px] font-semibold text-muted-foreground">
-                Nenhum andaime encontrado para este filtro.
-              </p>
-            </div>
+            <EmptyState
+              icon={MapPin}
+              title="Nenhum andaime encontrado"
+              description="Ajuste os filtros para visualizar andaimes no mapa operacional."
+              className="border-0 border-b border-dashed"
+            />
           ) : (
             filteredScaffolds.map((scaffold) => (
               <div
@@ -389,6 +391,7 @@ export function MapaOperacionalClient({
                     href={`/andaimes/${scaffold.id}`}
                     className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                     title="Detalhe"
+                    aria-label={`Visualizar andaime ${scaffold.code}`}
                   >
                     <Construction className="size-3.5 text-muted-foreground" />
                   </Link>
@@ -396,6 +399,7 @@ export function MapaOperacionalClient({
                     href={`/qr/${scaffold.id}`}
                     className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                     title="QR Code"
+                    aria-label={`Abrir QR Code do andaime ${scaffold.code}`}
                   >
                     <QrCode className="size-3.5 text-muted-foreground" />
                   </Link>
@@ -404,6 +408,7 @@ export function MapaOperacionalClient({
                       href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
                       className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
                       title="Inspecionar"
+                      aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
                     >
                       <ClipboardCheck className="size-3.5 text-muted-foreground" />
                     </Link>

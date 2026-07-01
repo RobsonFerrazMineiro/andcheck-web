@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   createCompany,
   setCompanyActive,
@@ -376,9 +377,12 @@ export function EmpresasClient({
           <span className="text-right">Ações</span>
         </div>
         {filtered.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">
-            Nenhuma empresa encontrada.
-          </div>
+          <EmptyState
+            icon={Building2}
+            title="Nenhuma empresa encontrada"
+            description="Ajuste os filtros ou cadastre uma empresa para vincular operações e workspaces."
+            className="border-0 border-b border-dashed"
+          />
         ) : (
           filtered.map((company, index) => (
             <div
@@ -431,7 +435,10 @@ export function EmpresasClient({
                   size="icon-sm"
                   title="Visualizar"
                 >
-                  <Link href={`/empresas/${company.id}`}>
+                  <Link
+                    href={`/empresas/${company.id}`}
+                    aria-label={`Visualizar empresa ${company.name}`}
+                  >
                     <Eye />
                   </Link>
                 </Button>
@@ -440,6 +447,7 @@ export function EmpresasClient({
                     variant="outline"
                     size="icon-sm"
                     title="Editar"
+                    aria-label={`Editar empresa ${company.name}`}
                     onClick={() => {
                       setCreating(false);
                       setEditing(company);
@@ -453,6 +461,11 @@ export function EmpresasClient({
                     variant="outline"
                     size="icon-sm"
                     title={company.active ? "Desativar" : "Ativar"}
+                    aria-label={
+                      company.active
+                        ? `Desativar empresa ${company.name}`
+                        : `Ativar empresa ${company.name}`
+                    }
                     onClick={() => toggleStatus(company)}
                     disabled={isPending}
                   >

@@ -1,5 +1,6 @@
 "use client";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { markNotificationAsRead } from "@/lib/actions/notification-actions";
 import {
@@ -63,7 +64,7 @@ export function NotificationBell({
         variant="ghost"
         size="icon"
         className="relative"
-        aria-label="Abrir notificacoes"
+        aria-label="Abrir notificações"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
@@ -79,18 +80,21 @@ export function NotificationBell({
         <div className="absolute right-0 top-10 z-50 w-96 border bg-popover text-popover-foreground shadow-lg">
           <div className="flex items-center justify-between border-b p-3">
             <div>
-              <p className="text-sm font-semibold">Notificacoes</p>
+              <p className="text-sm font-semibold">Notificações</p>
               <p className="text-xs text-muted-foreground">
-                {unreadCount} nao lida(s)
+                {unreadCount} não lida(s)
               </p>
             </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
             {latest.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                Nenhuma notificacao recente.
-              </div>
+              <EmptyState
+                icon={Bell}
+                title="Nenhuma notificação recente"
+                description="Novos alertas operacionais aparecerão aqui."
+                className="border-0 py-6 shadow-none"
+              />
             ) : (
               latest.map((notification) => (
                 <div
@@ -145,13 +149,13 @@ export function NotificationBell({
             <Button asChild variant="ghost" size="sm" className="justify-start">
               <Link href="/notificacoes" onClick={() => setOpen(false)}>
                 <Bell className="size-3.5" />
-                Ver todas as notificacoes
+                Ver todas as notificações
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm" className="justify-start">
               <Link href="/perfil/notificacoes" onClick={() => setOpen(false)}>
                 <Settings className="size-3.5" />
-                Preferencias de Notificacao
+                Preferências de Notificação
               </Link>
             </Button>
           </div>

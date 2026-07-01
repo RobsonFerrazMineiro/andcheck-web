@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
+import { EmptyState } from "@/components/shared/empty-state";
 import { isPast } from "date-fns";
 import { ExternalLink, MapPin } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -115,22 +116,12 @@ export function DashboardMapPreview({
             variant="compact"
           />
         ) : (
-          <div
-            className="w-full h-full flex flex-col items-center justify-center gap-2 bg-muted/20"
-            style={{ minHeight: 220 }}
-          >
-            <MapPin className="w-6 h-6 text-muted-foreground/30" />
-            <p
-              className={`${typography.sectionDescription} text-center text-muted-foreground`}
-            >
-              Nenhum andaime georreferênciado
-            </p>
-            <p
-              className={`${typography.panelSubtitle} max-w-45 text-center text-muted-foreground/50`}
-            >
-              Cadastre andaimes com localização GPS para visualizá-los aqui.
-            </p>
-          </div>
+          <EmptyState
+            icon={MapPin}
+            title="Nenhum andaime georreferenciado"
+            description="Cadastre andaimes com localização GPS para visualizá-los aqui."
+            className="h-full min-h-[220px] justify-center rounded-none border-0 bg-muted/20 shadow-none"
+          />
         )}
       </div>
 

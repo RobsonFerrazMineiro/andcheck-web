@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { ArrowLeft, Construction, Save } from "lucide-react";
+import { ArrowLeft, Construction, Loader2, Save } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,7 +58,7 @@ export default function NovoAndaimePage() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const savingRef = useRef(false);
 
   const set =
     (field: keyof ScaffoldForm) =>
@@ -66,9 +67,12 @@ export default function NovoAndaimePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    if (savingRef.current) return;
+
+    savingRef.current = true;
     setSaving(true);
 
+    const toastId = toast.loading("Salvando andaime...");
     try {
       const scaffold = await createScaffold({
         type: form.type as
@@ -89,15 +93,18 @@ export default function NovoAndaimePage() {
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
       });
+      toast.success("Andaime cadastrado com sucesso.", { id: toastId });
       router.push("/andaimes/" + scaffold.id);
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Erro ao salvar andaime.";
-      setError(
+      toast.error(
         msg.includes("Unique constraint")
           ? "Já existe um andaime com este código."
-          : msg,
+          : "Não foi possível salvar o andaime. Verifique os dados e tente novamente.",
+        { id: toastId },
       );
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -284,13 +291,6 @@ export default function NovoAndaimePage() {
             </p>
           </div>
 
-          {/* Erro */}
-          {error && (
-            <div className="bg-red-50 border border-red-300 px-4 py-3">
-              <p className="text-[11px] text-red-700 font-semibold">{error}</p>
-            </div>
-          )}
-
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -306,7 +306,11 @@ export default function NovoAndaimePage() {
               disabled={saving}
               className="rounded-md text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
-              <Save className="w-3.5 h-3.5 mr-1.5" />
+              {saving ? (
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Save className="w-3.5 h-3.5 mr-1.5" />
+              )}
               {saving ? "Salvando..." : "Cadastrar Andaime"}
             </Button>
           </div>

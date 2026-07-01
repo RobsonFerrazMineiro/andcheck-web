@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -404,15 +405,11 @@ export function NaoConformidadesClient({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border rounded-lg p-14 text-center">
-          <ClipboardList className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-          <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
-            Nenhuma não conformidade encontrada
-          </p>
-          <p className={`${typography.bodyMuted} text-muted-foreground/60`}>
-            As NCs geradas por inspeções reprovadas aparecerao nesta listagem.
-          </p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title="Nenhuma não conformidade encontrada"
+          description="As NCs geradas por inspeções reprovadas aparecerão nesta listagem para acompanhamento."
+        />
       ) : (
         <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
           <div

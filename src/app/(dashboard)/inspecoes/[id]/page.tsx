@@ -22,6 +22,7 @@ import { notFound } from "next/navigation";
 
 import { PdfDownloadButton } from "@/components/inspection/pdf-download-button";
 import { PrintButton } from "@/components/inspection/print-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   nonConformityStatusTone,
@@ -453,11 +454,12 @@ export default async function InspectionDetailPage({ params }: Props) {
           </p>
         </div>
         {inspection.signatures.length === 0 ? (
-          <div className="px-4 py-5">
-            <p className="text-[11px] text-muted-foreground">
-              Nenhuma assinatura obrigatoria registrada nesta inspeção.
-            </p>
-          </div>
+          <EmptyState
+            icon={CheckCircle2}
+            title="Nenhuma assinatura obrigatoria registrada"
+            description="As assinaturas coletadas nesta inspeção aparecerão aqui."
+            className="border-0 border-b border-dashed py-8"
+          />
         ) : (
           <div className="divide-y divide-border">
             {inspection.signatures.map((signature) => (
@@ -573,12 +575,12 @@ export default async function InspectionDetailPage({ params }: Props) {
           </span>
         </div>
         {inspection.nonConformities.length === 0 ? (
-          <div className="px-4 py-6 text-center">
-            <AlertTriangle className="w-8 h-8 mx-auto mb-2 text-muted-foreground/20" />
-            <p className="text-[11px] text-muted-foreground">
-              Nenhuma não conformidade gerada por esta inspeção.
-            </p>
-          </div>
+          <EmptyState
+            icon={AlertTriangle}
+            title="Nenhuma não conformidade gerada"
+            description="Quando a inspeção gerar tratativas, elas serão exibidas neste painel."
+            className="border-0 border-b border-dashed"
+          />
         ) : (
           <div className="divide-y divide-border">
             <div className="grid grid-cols-4 gap-3 px-4 py-2 bg-muted/40">

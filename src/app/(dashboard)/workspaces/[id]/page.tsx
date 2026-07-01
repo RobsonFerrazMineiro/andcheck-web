@@ -1,6 +1,7 @@
 ﻿import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
 import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
 import {
@@ -84,7 +85,12 @@ export default async function WorkspaceDetailPage({
         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Empresas vinculadas</CardTitle></CardHeader>
         <CardContent>
           {workspace.companyLinks.length === 0 ? (
-            <div className="border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma empresa opera neste workspace.</div>
+            <EmptyState
+              icon={Building2}
+              title="Nenhuma empresa vinculada"
+              description="As empresas que operam neste workspace aparecerão aqui."
+              className="border-dashed"
+            />
           ) : (
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {workspace.companyLinks.map(({ company, role }) => (

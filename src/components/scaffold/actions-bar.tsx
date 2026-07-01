@@ -1,9 +1,16 @@
 ﻿"use client";
 
-import { CheckCircle2, ClipboardCheck, HardHat, Wrench } from "lucide-react";
+import {
+  CheckCircle2,
+  ClipboardCheck,
+  HardHat,
+  Loader2,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import {
   completeAssembly,
@@ -49,8 +56,21 @@ export function ScaffoldActionsBar({
 
   function handleCompleteAssembly() {
     startTransition(async () => {
-      await completeAssembly(scaffoldId);
-      router.refresh();
+      const toastId = toast.loading("Concluindo montagem...");
+      try {
+        await completeAssembly(scaffoldId);
+        toast.success("Montagem concluída. Andaime pendente de inspeção.", {
+          id: toastId,
+        });
+        router.refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Não foi possível concluir a montagem.",
+          { id: toastId },
+        );
+      }
     });
   }
 
@@ -70,14 +90,19 @@ export function ScaffoldActionsBar({
     }
 
     startTransition(async () => {
+      const toastId = toast.loading("Registrando desmontagem...");
       try {
         await dismantleScaffold(scaffoldId, {
           reason: dismantleReason,
           reasonDescription: dismantleReasonDescription,
         });
         setDismantleOpen(false);
+        toast.success("Desmontagem registrada.", { id: toastId });
         router.refresh();
       } catch (error) {
+        toast.error("Não foi possível registrar a desmontagem.", {
+          id: toastId,
+        });
         setDismantleError(
           error instanceof Error ? error.message : "Não foi possível desmontar.",
         );
@@ -107,7 +132,11 @@ export function ScaffoldActionsBar({
               disabled={isPending}
               className="inline-flex h-8 items-center gap-2 bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 disabled:opacity-60"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              {isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
               {isPending ? "Aguarde..." : "Concluir Montagem"}
             </button>
           )}
@@ -295,7 +324,10 @@ function DismantleDialog({
             disabled={isPending}
             className="h-8 bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground disabled:opacity-50"
           >
-            {isPending ? "Aguarde..." : "Confirmar Desmontagem"}
+            <span className="inline-flex items-center gap-1.5">
+              {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              {isPending ? "Aguarde..." : "Confirmar Desmontagem"}
+            </span>
           </button>
         </div>
       </div>

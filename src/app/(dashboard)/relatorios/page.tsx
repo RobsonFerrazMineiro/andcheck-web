@@ -22,11 +22,13 @@ import {
   ShieldCheck,
   TimerReset,
   TrendingUp,
+  type LucideIcon,
   UserCheck,
   Wrench,
   XCircle,
 } from "lucide-react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   getManagementReportData,
   type KpiTrend,
@@ -650,7 +652,7 @@ function RankingPanel({
   rows,
 }: {
   title: string;
-  icon: ElementType;
+  icon: LucideIcon;
   href: string;
   rows: Array<{
     label: string;
@@ -669,9 +671,12 @@ function RankingPanel({
       </div>
       <div className="divide-y divide-border">
         {rows.length === 0 ? (
-          <p className="p-4 text-[11px] text-muted-foreground">
-            Sem dados no período.
-          </p>
+          <EmptyState
+            icon={Icon}
+            title="Sem dados no período"
+            description="Os rankings serão exibidos conforme houver registros suficientes nos filtros aplicados."
+            className="border-0 border-b border-dashed py-8"
+          />
         ) : (
           visibleRows.map((row, index) => (
             <RankingRow key={row.label} index={index} row={row} />
@@ -755,11 +760,12 @@ function TopNonConformitiesPanel({
         </p>
       </div>
       {visibleRows.length === 0 ? (
-        <div className="px-4 py-6 text-center">
-          <p className="text-[12px] font-semibold text-foreground">
-            Nenhuma não conformidade registrada no período.
-          </p>
-        </div>
+        <EmptyState
+          icon={AlertTriangle}
+          title="Nenhuma não conformidade registrada"
+          description="As não conformidades mais recorrentes aparecerão aqui conforme os filtros aplicados."
+          className="border-0 border-b border-dashed py-8"
+        />
       ) : (
         <div className="divide-y divide-border">
           <div className="grid grid-cols-[1fr_110px] bg-muted/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

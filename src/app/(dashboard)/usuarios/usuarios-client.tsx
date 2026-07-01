@@ -18,6 +18,8 @@ import {
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,6 +123,7 @@ export function UsuariosClient({
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const users = initialData;
@@ -203,15 +206,11 @@ export function UsuariosClient({
   }
 
   function handleDelete(user: UserRow) {
-    const confirmed = window.confirm(
-      `Excluir definitivamente o usuário ${user.name}?`,
-    );
-    if (!confirmed) return;
-
     startTransition(async () => {
       try {
         await deleteUser(user.id);
         toast.success("Usuário excluido.");
+        setDeleteTarget(null);
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Não foi possível excluir.",
@@ -222,6 +221,30 @@ export function UsuariosClient({
 
   return (
     <div className="min-w-0 space-y-5">
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Excluir usuário"
+        description="Esta ação remove o acesso do usuário de forma definitiva."
+        details={
+          deleteTarget ? (
+            <div className="space-y-1">
+              <p className={`${typography.bodyStrong} text-foreground`}>
+                {deleteTarget.name}
+              </p>
+              <p className={`${typography.bodyMuted} text-muted-foreground`}>
+                {deleteTarget.email}
+              </p>
+            </div>
+          ) : null
+        }
+        confirmLabel="Excluir usuário"
+        destructive
+        pending={isPending}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) handleDelete(deleteTarget);
+        }}
+      />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -491,11 +514,25 @@ export function UsuariosClient({
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <Users className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
-            <p className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
-              Nenhum usuário encontrado
-            </p>
+          <div className="p-4">
+            <EmptyState
+              icon={Users}
+              title="Nenhum usuário encontrado"
+              description="Ajuste os filtros ou cadastre um usuário para liberar acesso ao ambiente."
+              action={
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingUser(null);
+                    setShowForm(true);
+                  }}
+                  className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+                >
+                  <UserPlus className="size-3.5" />
+                  Novo Usuário
+                </button>
+              }
+            />
           </div>
         ) : (
           <div className="divide-y divide-border">
@@ -586,7 +623,7 @@ export function UsuariosClient({
                     <button
                       type="button"
                       disabled={isPending || !canDeleteThisUser}
-                      onClick={() => handleDelete(user)}
+                      onClick={() => setDeleteTarget(user)}
                       aria-label={`Excluir usuário ${user.name}`}
                       title={
                         isCurrentUser

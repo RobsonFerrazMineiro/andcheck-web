@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -338,23 +339,17 @@ export function AcervoClient({
           ))}
         </div>
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-14 text-center">
-            <div className="mb-3 flex size-12 items-center justify-center rounded-lg border border-border bg-muted/30">
-              <Archive className="size-6 text-muted-foreground/40" />
-            </div>
-            <p className={`mb-1 text-foreground ${typography.emptyState}`}>
-              Nenhum andaime desmontado encontrado
-            </p>
-            <p
-              className={`max-w-sm leading-relaxed text-muted-foreground ${typography.sectionDescription}`}
-            >
-              Os andaimes desmontados serao armazenados automaticamente neste
-              acervo para consulta historica.
-            </p>
-            <Button asChild variant="outline" className="mt-4 rounded-md">
-              <Link href="/andaimes">Voltar para Andaimes</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={Archive}
+            title="Nenhum andaime desmontado encontrado"
+            description="Os andaimes desmontados serao armazenados automaticamente neste acervo para consulta historica."
+            className="border-0 border-b border-dashed"
+            action={
+              <Button asChild variant="outline" className="rounded-md">
+                <Link href="/andaimes">Voltar para Andaimes</Link>
+              </Button>
+            }
+          />
         ) : (
           <div className="divide-y divide-border">
             {filtered.map((row, index) => (

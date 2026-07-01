@@ -14,11 +14,13 @@ import {
   User,
   Wrench,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
 
@@ -646,14 +648,16 @@ function EmptyLine({
   icon: Icon,
   text,
 }: {
-  icon: React.ElementType;
+  icon: LucideIcon;
   text: string;
 }) {
   return (
-    <div className="py-8 text-center">
-      <Icon className="mx-auto mb-2 size-8 text-muted-foreground/20" />
-      <p className="text-[11px] text-muted-foreground">{text}</p>
-    </div>
+    <EmptyState
+      icon={Icon}
+      title={text.replace(/\.$/, "")}
+      description="Os registros deste bloco aparecerão aqui conforme o histórico operacional for consolidado."
+      className="border-0 border-b border-dashed py-8"
+    />
   );
 }
 

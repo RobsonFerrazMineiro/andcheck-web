@@ -16,7 +16,9 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   addScaffoldDocument,
   deleteScaffoldDocument,
@@ -31,6 +33,7 @@ import {
   documentStatusTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { typography } from "@/lib/design-system";
 import { uploadFile } from "@/lib/upload-file";
 
 // ── Tipos e constantes ────────────────────────────────────────────────────────
@@ -177,7 +180,9 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Fechar modal de documento"
             className="p-1 hover:bg-muted transition-colors"
           >
             <X className="w-4 h-4 text-muted-foreground" />
@@ -335,6 +340,8 @@ export function ScaffoldDocumentSection({
   const [removedDocumentIds, setRemovedDocumentIds] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<ScaffoldDocumentMetadata | null>(null);
+  const [deleteTarget, setDeleteTarget] =
+    useState<ScaffoldDocumentMetadata | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const docs = initialDocuments.filter(
     (document) => !removedDocumentIds.includes(document.id),
@@ -346,12 +353,12 @@ export function ScaffoldDocumentSection({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remover este documento?")) return;
     setDeleting(id);
     try {
       await deleteScaffoldDocument(id, scaffoldId);
       setRemovedDocumentIds((current) => [...current, id]);
       toast.success("Documento removido.");
+      setDeleteTarget(null);
       router.refresh();
     } catch {
       toast.error("Erro ao remover documento.");
@@ -391,6 +398,7 @@ export function ScaffoldDocumentSection({
           </div>
           {canAddDocument && (
             <button
+              type="button"
               onClick={() => setModalOpen(true)}
               className="flex items-center gap-1 h-7 px-3 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors"
             >
@@ -402,15 +410,12 @@ export function ScaffoldDocumentSection({
 
         {/* Lista de documentos */}
         {docs.length === 0 ? (
-          <div className="text-center py-8">
-            <FileText className="w-7 h-7 mx-auto mb-2 text-muted-foreground/20" />
-            <p className="text-[11px] text-muted-foreground">
-              Nenhum documento anexado
-            </p>
-            <p className="text-[9px] text-muted-foreground/50 mt-0.5">
-              Clique em &quot;Adicionar&quot; para anexar o primeiro documento
-            </p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="Nenhum documento anexado"
+            description='Clique em "Adicionar" para anexar o primeiro documento técnico.'
+            className="border-0 border-b border-dashed py-8"
+          />
         ) : (
           <div className="divide-y divide-border">
             {/* Cabeçalho da tabela */}
@@ -489,24 +494,30 @@ export function ScaffoldDocumentSection({
                   {/* Ações */}
                   <div className="flex items-center gap-1.5">
                     <button
+                      type="button"
                       onClick={() => handleView(doc)}
                       title="Visualizar"
+                      aria-label={`Visualizar documento ${doc.title}`}
                       className="w-7 h-7 flex items-center justify-center border border-border hover:bg-muted transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                     <button
+                      type="button"
                       onClick={() => handleDownload(doc)}
                       title="Baixar"
+                      aria-label={`Baixar documento ${doc.title}`}
                       className="w-7 h-7 flex items-center justify-center border border-border hover:bg-muted transition-colors"
                     >
                       <Download className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
                     {canDeleteDocument && (
                       <button
-                        onClick={() => handleDelete(doc.id)}
+                        type="button"
+                        onClick={() => setDeleteTarget(doc)}
                         disabled={deleting === doc.id}
                         title="Remover"
+                        aria-label={`Remover documento ${doc.title}`}
                         className="w-7 h-7 flex items-center justify-center border border-border hover:bg-red-50 hover:border-red-300 transition-colors disabled:opacity-40"
                       >
                         {deleting === doc.id ? (
@@ -532,6 +543,30 @@ export function ScaffoldDocumentSection({
           onAdded={handleAdded}
         />
       )}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Remover documento"
+        description="Esta ação remove o documento anexado ao andaime."
+        details={
+          deleteTarget ? (
+            <div className="space-y-1">
+              <p className={`${typography.bodyStrong} text-foreground`}>
+                {deleteTarget.title}
+              </p>
+              <p className={`${typography.bodyMuted} text-muted-foreground`}>
+                {deleteTarget.type}
+              </p>
+            </div>
+          ) : null
+        }
+        confirmLabel="Remover documento"
+        destructive
+        pending={Boolean(deleting)}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) void handleDelete(deleteTarget.id);
+        }}
+      />
       {previewDoc && (
         <DocumentPreviewModal
           document={previewDoc}

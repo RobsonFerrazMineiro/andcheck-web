@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -147,17 +148,12 @@ export function InspecoesClient({
       )}
 
       {filtered.length === 0 ? (
-        <div className="bg-card border border-border rounded-lg p-14 text-center">
-          <ClipboardCheck className="w-10 h-10 mx-auto mb-3 text-muted-foreground/20" />
-          <p className={`mb-1 text-muted-foreground ${typography.emptyState}`}>
-            Nenhuma inspeção encontrada
-          </p>
-          <p
-            className={`mb-4 text-muted-foreground/60 ${typography.bodyMuted}`}
-          >
-            Registre a primeira vistoria para iniciar o histórico
-          </p>
-          {canCreateInspection && (
+        <EmptyState
+          icon={ClipboardCheck}
+          title="Nenhuma inspeção encontrada"
+          description="Registre a primeira vistoria para iniciar o histórico técnico do andaime."
+          action={
+            canCreateInspection ? (
             <Link
               href="/inspecoes/nova"
               className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
@@ -165,8 +161,9 @@ export function InspecoesClient({
               <Plus className="w-3.5 h-3.5" />
               Nova Inspeção
             </Link>
-          )}
-        </div>
+            ) : null
+          }
+        />
       ) : (
         <div className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">

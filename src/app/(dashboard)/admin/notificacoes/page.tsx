@@ -11,7 +11,8 @@ import {
   getAdminNotificationData,
   resendNotificationEmail,
 } from "@/lib/actions/notification-actions";
-import { RefreshCw } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import { BellOff, RefreshCw } from "lucide-react";
 
 export default async function AdminNotificationsPage() {
   const data = await getAdminNotificationData();
@@ -64,9 +65,12 @@ export default async function AdminNotificationsPage() {
         </CardHeader>
         <CardContent>
           {data.latestFailures.length === 0 ? (
-            <div className="border border-dashed p-8 text-center text-sm text-muted-foreground">
-              Nenhuma falha de e-mail registrada.
-            </div>
+            <EmptyState
+              icon={BellOff}
+              title="Nenhuma falha de e-mail registrada"
+              description="Falhas de envio aparecerão aqui para revisão e reenvio administrativo."
+              className="border-dashed"
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-sm">

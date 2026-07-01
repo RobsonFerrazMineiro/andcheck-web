@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -706,12 +707,12 @@ export function AuditoriaClient({
             </div>
 
             {rows.length === 0 ? (
-              <div className="text-center py-12">
-                <FileClock className="w-10 h-10 mx-auto text-muted-foreground/20 mb-3" />
-                <p className={`text-muted-foreground ${typography.emptyState}`}>
-                  Nenhum evento encontrado
-                </p>
-              </div>
+              <EmptyState
+                icon={FileClock}
+                title="Nenhum evento encontrado"
+                description="Os eventos de auditoria aparecem aqui conforme as operacoes sao registradas no sistema."
+                className="border-0 border-b border-dashed"
+              />
             ) : (
               <div className="divide-y divide-border">
                 {rows.map((row, index) => (

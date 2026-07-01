@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   getNonConformityById,
   getNonConformityResponsibleOptions,
@@ -335,11 +336,12 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
       <Section title="Itens de Checklist Vinculados" icon={ClipboardCheck}>
         {nc.checklistItems.length === 0 ? (
-          <div className="px-4 py-5">
-            <p className="text-[11px] text-muted-foreground">
-              Nenhum item de checklist vinculado a esta NC.
-            </p>
-          </div>
+          <EmptyState
+            icon={ClipboardCheck}
+            title="Nenhum item de checklist vinculado"
+            description="Itens que originarem esta não conformidade aparecerão aqui."
+            className="border-0 border-b border-dashed py-8"
+          />
         ) : (
           <div className="divide-y divide-border">
             {nc.checklistItems.map((item) => (
@@ -424,11 +426,12 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
       <Section title="Histórico" icon={History}>
         {nc.history.length === 0 ? (
-          <div className="px-4 py-5">
-            <p className="text-[11px] text-muted-foreground">
-              Nenhum histórico registrado para esta NC.
-            </p>
-          </div>
+          <EmptyState
+            icon={History}
+            title="Nenhum histórico registrado"
+            description="As movimentações desta não conformidade serão registradas aqui."
+            className="border-0 border-b border-dashed py-8"
+          />
         ) : (
           <div className="divide-y divide-border">
             {nc.history.map((entry) => (

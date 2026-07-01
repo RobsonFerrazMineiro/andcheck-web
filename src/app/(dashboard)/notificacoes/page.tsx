@@ -1,3 +1,4 @@
+import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,9 +103,12 @@ export default async function NotificationsPage({
         </CardHeader>
         <CardContent className="space-y-3">
           {notifications.length === 0 ? (
-            <div className="border border-dashed p-8 text-center text-sm text-muted-foreground">
-              Nenhuma notificação encontrada para este filtro.
-            </div>
+            <EmptyState
+              icon={Bell}
+              title="Nenhuma notificação encontrada"
+              description="As notificações internas aparecem aqui conforme os eventos operacionais forem registrados no seu escopo."
+              className="border-dashed"
+            />
           ) : (
             notifications.map((notification) => (
               <div

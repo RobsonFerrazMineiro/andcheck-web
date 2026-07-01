@@ -23,6 +23,7 @@ import Link from "next/link";
 
 import { DashboardMapPreview } from "@/components/dashboard/dashboard-map-preview";
 import { InspectionPerformanceChart } from "@/components/dashboard/inspection-performance-chart";
+import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getDashboardMetrics } from "@/lib/dashboard-metrics";
@@ -271,34 +272,43 @@ export default async function DashboardPage() {
               </Link>
             }
           >
-            <div className="divide-y divide-border">
-              {scaffolds.slice(0, 10).map((s) => (
-                <Link
-                  key={s.id}
-                  href={"/andaimes/" + s.id}
-                  className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
-                >
-                  <p className={`${typography.code} uppercase text-foreground`}>
-                    {s.code}
-                  </p>
-                  <div className="min-w-0">
-                    {showResponsibleCompany && (
-                      <p
-                        className={`truncate text-muted-foreground/60 ${typography.metaStrong}`}
-                      >
-                        Empresa: {s.tenantCompany.name}
-                      </p>
-                    )}
-                    <p
-                      className={`${showResponsibleCompany ? "mt-0.5" : ""} ${typography.bodyMuted} truncate text-muted-foreground`}
-                    >
-                      {s.location} · {s.area}
+            {scaffolds.length === 0 ? (
+              <EmptyState
+                icon={Construction}
+                title="Nenhum andaime cadastrado"
+                description="Os andaimes ativos aparecerão aqui conforme forem cadastrados."
+                className="border-0 border-b border-dashed"
+              />
+            ) : (
+              <div className="divide-y divide-border">
+                {scaffolds.slice(0, 10).map((s) => (
+                  <Link
+                    key={s.id}
+                    href={"/andaimes/" + s.id}
+                    className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
+                  >
+                    <p className={`${typography.code} uppercase text-foreground`}>
+                      {s.code}
                     </p>
-                  </div>
-                  <StatusBadge status={s.status} />
-                </Link>
-              ))}
-            </div>
+                    <div className="min-w-0">
+                      {showResponsibleCompany && (
+                        <p
+                          className={`truncate text-muted-foreground/60 ${typography.metaStrong}`}
+                        >
+                          Empresa: {s.tenantCompany.name}
+                        </p>
+                      )}
+                      <p
+                        className={`${showResponsibleCompany ? "mt-0.5" : ""} ${typography.bodyMuted} truncate text-muted-foreground`}
+                      >
+                        {s.location} · {s.area}
+                      </p>
+                    </div>
+                    <StatusBadge status={s.status} />
+                  </Link>
+                ))}
+              </div>
+            )}
           </PanelBlock>
         </div>
 
@@ -309,14 +319,12 @@ export default async function DashboardPage() {
             icon={FileText}
           >
             {operationalMovements.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <FileText className="mx-auto h-8 w-8 text-muted-foreground/25" />
-                <p
-                  className={`mt-2 text-muted-foreground ${typography.emptyState}`}
-                >
-                  Nenhuma movimentacao operacional
-                </p>
-              </div>
+              <EmptyState
+                icon={FileText}
+                title="Nenhuma movimentação operacional"
+                description="As últimas alterações de andaimes, inspeções, NCs e documentos aparecerão aqui."
+                className="border-0 border-b border-dashed"
+              />
             ) : (
               <div className="divide-y divide-border">
                 {operationalMovements.map((movement) => (
@@ -497,12 +505,12 @@ function RankingPanel({
         </div>
       )}
       {items.length === 0 ? (
-        <div className="px-4 py-8 text-center">
-          <BarChart3 className="mx-auto h-8 w-8 text-muted-foreground/25" />
-          <p className={`mt-2 text-muted-foreground ${typography.emptyState}`}>
-            Sem dados históricos
-          </p>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="Sem dados históricos"
+          description="Os rankings serão exibidos conforme houver registros suficientes no período."
+          className="border-0 border-b border-dashed"
+        />
       ) : (
         <div className="max-h-46.5 overflow-y-auto divide-y divide-border">
           {items.map((item, index) => (

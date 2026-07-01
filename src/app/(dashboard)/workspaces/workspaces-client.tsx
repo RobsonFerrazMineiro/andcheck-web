@@ -38,6 +38,8 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { EmptyState } from "@/components/shared/empty-state";
+
 const LocationPicker = dynamic(
   () =>
     import("@/components/maps/location-picker").then(
@@ -349,9 +351,25 @@ export function WorkspacesClient({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-border bg-card p-10 text-center text-sm text-muted-foreground">
-          Nenhum workspace encontrado.
-        </div>
+        <EmptyState
+          icon={MapPin}
+          title="Nenhum workspace encontrado"
+          description="Ajuste os filtros ou cadastre um workspace para organizar as plantas operacionais."
+          action={
+            canManage ? (
+              <Button
+                type="button"
+                onClick={() => {
+                  setEditing(null);
+                  setCreating(true);
+                }}
+              >
+                <Plus />
+                Novo workspace
+              </Button>
+            ) : null
+          }
+        />
       ) : (
         <div className="space-y-3">
           <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -414,7 +432,10 @@ export function WorkspacesClient({
                     size="icon-sm"
                     title="Visualizar"
                   >
-                    <Link href={`/workspaces/${workspace.id}`}>
+                    <Link
+                      href={`/workspaces/${workspace.id}`}
+                      aria-label={`Visualizar workspace ${workspace.name}`}
+                    >
                       <Eye />
                     </Link>
                   </Button>
@@ -424,6 +445,7 @@ export function WorkspacesClient({
                         variant="outline"
                         size="icon-sm"
                         title="Editar"
+                        aria-label={`Editar workspace ${workspace.name}`}
                         onClick={() => {
                           setCreating(false);
                           setEditing(workspace);
@@ -435,6 +457,11 @@ export function WorkspacesClient({
                         variant="outline"
                         size="icon-sm"
                         title={workspace.active ? "Desativar" : "Ativar"}
+                        aria-label={
+                          workspace.active
+                            ? `Desativar workspace ${workspace.name}`
+                            : `Ativar workspace ${workspace.name}`
+                        }
                         onClick={() => toggleStatus(workspace)}
                         disabled={isPending}
                       >

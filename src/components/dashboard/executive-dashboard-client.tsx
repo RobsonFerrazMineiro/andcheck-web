@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/shared/empty-state";
 import { typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
 import {
@@ -429,7 +430,12 @@ function Ranking({
     <div className="flex flex-col gap-2 rounded-md border p-3">
       <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h3>
       {items.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Sem dados no período.</p>
+        <EmptyState
+          icon={BarChart3}
+          title="Sem dados no período"
+          description="Os itens deste ranking aparecerão conforme houver registros nos filtros aplicados."
+          className="border-0 py-8 shadow-none"
+        />
       ) : (
         items.slice(0, 5).map((item, index) => (
           <div key={`${title}-${item.name}`} className="flex flex-col gap-1">
@@ -581,10 +587,12 @@ function InsightsPanel({ data }: Props) {
 
 function EmptyChart({ label = "Sem dados para o período filtrado." }: { label?: string }) {
   return (
-    <div className="flex h-full min-h-44 flex-col items-center justify-center gap-2 rounded-md border border-dashed text-center text-muted-foreground">
-      <Activity className="size-6 opacity-50" />
-      <p className="text-sm font-medium">{label}</p>
-    </div>
+    <EmptyState
+      icon={Activity}
+      title={label}
+      description="Ajuste os filtros ou aguarde novos registros operacionais para compor este indicador."
+      className="flex h-full min-h-44 flex-col justify-center border-dashed shadow-none"
+    />
   );
 }
 
