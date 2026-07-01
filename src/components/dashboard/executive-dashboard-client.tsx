@@ -259,7 +259,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
               {chartTotals === 0 ? (
                 <EmptyChart />
               ) : (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={320}>
                   <ComposedChart data={data.series}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                     <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
@@ -286,7 +286,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           <CardContent>
             <div className="grid gap-4 lg:grid-cols-[160px_1fr] xl:grid-cols-1">
               <div className="h-44">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={176}>
                   <PieChart>
                     <Pie
                       data={data.statusDistribution}
@@ -477,7 +477,7 @@ function ProductivityPanel({ data }: Props) {
           {bars.length === 0 ? (
             <EmptyChart />
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={bars} layout="vertical" margin={{ left: 12, right: 12 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />

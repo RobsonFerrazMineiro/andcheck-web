@@ -142,6 +142,17 @@ function SectionTitle({ title, icon: Icon }: { title: string; icon: ElementType 
   );
 }
 
+function PrintEmptyState({ message }: { message: string }) {
+  return (
+    <div className="rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 px-4 py-8 text-center">
+      <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-500">
+        Sem dados
+      </p>
+      <p className="mt-1 text-[12px] font-semibold text-slate-600">{message}</p>
+    </div>
+  );
+}
+
 function KpiCard({ item }: { item: KpiItem }) {
   const Icon = item.icon;
   return (
@@ -274,6 +285,9 @@ function DonutCard({
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <SectionTitle title={title} icon={icon} />
+      {total === 0 ? (
+        <PrintEmptyState message="Nenhum registro encontrado para os filtros aplicados." />
+      ) : (
       <div className={`grid ${contentClassName} items-center gap-3 p-4`}>
         <DonutSvg
           items={items}
@@ -313,6 +327,7 @@ function DonutCard({
           )}
         </div>
       </div>
+      )}
     </section>
   );
 }
@@ -342,6 +357,7 @@ function NcEvolutionCard({
   rows: Array<{ label: string; abertas: number; encerradas: number }>;
 }) {
   const max = Math.max(1, ...rows.flatMap((item) => [item.abertas, item.encerradas]));
+  const hasData = rows.some((item) => item.abertas > 0 || item.encerradas > 0);
   const visibleInterval = Math.max(1, Math.ceil(rows.length / 7));
   const ticks = [max, Math.round(max / 2), 0].filter(
     (value, index, values) => values.indexOf(value) === index,
@@ -350,6 +366,9 @@ function NcEvolutionCard({
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <SectionTitle title="Evolução das NCs" icon={AlertTriangle} />
+      {!hasData ? (
+        <PrintEmptyState message="Nenhuma evolução de NC registrada no período selecionado." />
+      ) : (
       <div className="px-4 pb-12 pr-7 pt-4">
         <div className="mb-2 flex items-center gap-6">
           <Legend color="#be123c" label="NCs abertas" />
@@ -393,6 +412,7 @@ function NcEvolutionCard({
           </div>
         </div>
       </div>
+      )}
     </section>
   );
 }
@@ -442,6 +462,9 @@ function RankingTable({
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <SectionTitle title={title} icon={icon} />
+      {rows.length === 0 ? (
+        <PrintEmptyState message="Nenhum registro encontrado para este ranking." />
+      ) : (
       <table className="w-full border-collapse text-[10px]">
         <thead>
           <tr className="bg-slate-50 text-left uppercase tracking-widest text-slate-500">
@@ -474,6 +497,7 @@ function RankingTable({
           ))}
         </tbody>
       </table>
+      )}
     </section>
   );
 }
@@ -487,9 +511,7 @@ function TopNonConformitiesTable({
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <SectionTitle title="Top Não Conformidades" icon={AlertTriangle} />
       {rows.length === 0 ? (
-        <p className="px-4 py-6 text-center text-[12px] font-semibold text-slate-600">
-          Nenhuma não conformidade registrada no período.
-        </p>
+        <PrintEmptyState message="Nenhuma não conformidade registrada no período." />
       ) : (
         <table className="w-full border-collapse text-[11px]">
           <thead>
