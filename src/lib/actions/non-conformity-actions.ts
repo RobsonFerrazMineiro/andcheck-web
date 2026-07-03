@@ -8,6 +8,14 @@ import {
 } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
+import {
+  enumValue,
+  optionalDate,
+  optionalNumber,
+  optionalText,
+  requiredId,
+  requiredText,
+} from "@/lib/input-validation";
 import { sanitizeForLog } from "@/lib/safe-log";
 import {
   assertRecordInDataScope,
@@ -264,18 +272,6 @@ function assertAllowedTransition(
   }
 }
 
-function parseEvidenceType(value: string) {
-  if (
-    Object.values(NonConformityEvidenceType).includes(
-      value as NonConformityEvidenceType,
-    )
-  ) {
-    return value as NonConformityEvidenceType;
-  }
-
-  return NonConformityEvidenceType.OTHER;
-}
-
 function statusDescription(
   code: string,
   currentStatus: NonConformityStatus,
@@ -298,15 +294,16 @@ function statusDescription(
 
 export async function logNonConformityCreated(id: string) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
-    where: { id },
+    where: { id: nonConformityId },
     include: { scaffold: { select: { code: true, area: true } } },
   });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.CREATE,
     description: `Nao conformidade ${nc.code} criada`,
     newValue: toAuditValue(nc),
@@ -341,12 +338,15 @@ export async function logNonConformityUpdated({
   newValue: NonConformityAuditValue;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.UPDATE,
     description: `Nao conformidade ${nc.code} atualizada`,
     oldValue,
@@ -364,12 +364,15 @@ export async function logNonConformityClosed({
   newValue: NonConformityAuditValue;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.COMPLETE,
     description: `Nao conformidade ${nc.code} encerrada`,
     oldValue,
@@ -387,12 +390,15 @@ export async function logNonConformityStatusChanged({
   newStatus: string | null;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.STATUS_CHANGE,
     description: `Status da nao conformidade ${nc.code} alterado de ${oldStatus ?? "-"} para ${newStatus ?? "-"}`,
     oldValue: { status: oldStatus },
@@ -410,17 +416,21 @@ export async function logNonConformityEvidenceAdded({
   fileName: string;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
+  const safeFileName = requiredText(fileName, "Nome do arquivo", 240);
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.UPLOAD,
-    description: `Evidencia ${fileName} anexada a nao conformidade ${nc.code}`,
+    description: `Evidencia ${safeFileName} anexada a nao conformidade ${nc.code}`,
     newValue: {
       evidenceType,
-      fileName,
+      fileName: safeFileName,
     },
   });
 }
@@ -435,12 +445,15 @@ export async function logNonConformityResponsibleChanged({
   newResponsibleUserId: string | null;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.UPDATE,
     description: `Responsavel da nao conformidade ${nc.code} alterado`,
     oldValue: { responsibleUserId: oldResponsibleUserId },
@@ -458,12 +471,15 @@ export async function logNonConformityDueDateChanged({
   newDueDate: string | null;
 }) {
   await requireNonConformityAccess();
+  const nonConformityId = requiredId(id, "Nao conformidade");
 
-  const nc = await prisma.nonConformity.findUnique({ where: { id } });
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: nonConformityId },
+  });
   if (!nc) return;
 
   await writeNonConformityAudit({
-    id,
+    id: nonConformityId,
     action: AuditAction.UPDATE,
     description: `Prazo da nao conformidade ${nc.code} alterado`,
     oldValue: { dueDate: oldDueDate },
@@ -505,23 +521,13 @@ export async function getNonConformityResponsibleOptions() {
 
 export async function updateNonConformityStatus(formData: FormData) {
   const scope = await getDataScope();
-  const id = String(formData.get("id") ?? "").trim();
-  const nextStatus = String(formData.get("status") ?? "").trim();
-  const comment = String(formData.get("comment") ?? "").trim();
-
-  if (!id || !nextStatus) {
-    throw new Error("Nao conformidade e novo status sao obrigatorios.");
-  }
-
-  if (
-    !Object.values(NonConformityStatus).includes(
-      nextStatus as NonConformityStatus,
-    )
-  ) {
-    throw new Error("Status informado e invalido.");
-  }
-
-  const parsedNextStatus = nextStatus as NonConformityStatus;
+  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const parsedNextStatus = enumValue(
+    formData.get("status"),
+    Object.values(NonConformityStatus),
+    "Status informado",
+  );
+  const comment = optionalText(formData.get("comment"), "Comentario", 1000) ?? "";
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id },
@@ -687,23 +693,40 @@ export async function updateNonConformityResponsible(formData: FormData) {
   await requirePermission("non_conformities.update");
   const scope = await getDataScope();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const responsibleUserIdRaw = String(
-    formData.get("responsibleUserId") ?? "",
-  ).trim();
+  const id = requiredId(formData.get("id"), "Nao conformidade");
   const responsibleUserId =
-    responsibleUserIdRaw === "none" ? "" : responsibleUserIdRaw;
-
-  if (!id) throw new Error("Nao conformidade e obrigatoria.");
+    requiredId(formData.get("responsibleUserId"), "Responsavel");
 
   const [nc, responsible] = await Promise.all([
     prisma.nonConformity.findUnique({
       where: { id },
-      include: { responsibleUser: true },
+      select: {
+        id: true,
+        code: true,
+        title: true,
+        description: true,
+        classification: true,
+        status: true,
+        scaffoldId: true,
+        originInspectionId: true,
+        companyId: true,
+        workspaceId: true,
+        responsibleUserId: true,
+        dueDate: true,
+        closedAt: true,
+        responsibleUser: { select: { name: true } },
+      },
     }),
-    responsibleUserId
-      ? prisma.user.findUnique({ where: { id: responsibleUserId } })
-      : Promise.resolve(null),
+    prisma.user.findUnique({
+          where: { id: responsibleUserId },
+          select: {
+            id: true,
+            name: true,
+            companyId: true,
+            workspaceId: true,
+            company: true,
+          },
+        }),
   ]);
 
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
@@ -715,10 +738,6 @@ export async function updateNonConformityResponsible(formData: FormData) {
     throw new Error("Responsavel selecionado nao existe.");
   }
   if (responsible) assertRecordInDataScope(scope, responsible);
-  if (!responsibleUserId) {
-    throw new Error("Selecione um responsavel para iniciar a correcao.");
-  }
-
   const responsibleWithRole = await prisma.user.findFirst({
     where: {
       id: responsibleUserId,
@@ -794,19 +813,10 @@ export async function updateNonConformityDueDate(formData: FormData) {
   );
   const scope = await getDataScope();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const dueDateValue = String(formData.get("dueDate") ?? "").trim();
-  const reason = String(formData.get("reason") ?? "").trim();
-
-  if (!id || !dueDateValue) {
-    throw new Error("Nao conformidade e nova data limite sao obrigatorias.");
-  }
-  if (!reason) throw new Error("Informe o motivo da alteracao de prazo.");
-
-  const dueDate = new Date(`${dueDateValue}T12:00:00`);
-  if (Number.isNaN(dueDate.getTime())) {
-    throw new Error("Data limite invalida.");
-  }
+  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const dueDate = optionalDate(formData.get("dueDate"), "Data limite");
+  const reason = requiredText(formData.get("reason"), "Motivo", 500);
+  if (!dueDate) throw new Error("Nova data limite e obrigatoria.");
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
   if (!nc) throw new Error("Nao conformidade nao encontrada.");
@@ -838,20 +848,21 @@ export async function addNonConformityEvidence(formData: FormData) {
   await requirePermission("non_conformities.add_evidence");
   const scope = await getDataScope();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const evidenceType = parseEvidenceType(
-    String(formData.get("evidenceType") ?? "").trim(),
+  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const evidenceType = enumValue(
+    formData.get("evidenceType") ?? NonConformityEvidenceType.OTHER,
+    Object.values(NonConformityEvidenceType),
+    "Tipo da evidencia",
   );
-  const title = String(formData.get("title") ?? "").trim();
-  const fileUrl = String(formData.get("fileUrl") ?? "").trim();
-  const fileName = String(formData.get("fileName") ?? "").trim();
-  const fileSize = Number(String(formData.get("fileSize") ?? "0"));
-  const mimeType = String(formData.get("mimeType") ?? "").trim();
-  const observation = String(formData.get("observation") ?? "").trim();
-
-  if (!id || !title || !fileUrl || !fileName) {
-    throw new Error("Titulo e arquivo da evidencia sao obrigatorios.");
-  }
+  const title = requiredText(formData.get("title"), "Titulo", 180);
+  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
+  const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
+  const fileSize = optionalNumber(formData.get("fileSize"), "Tamanho do arquivo", {
+    min: 0,
+    max: 50 * 1024 * 1024,
+  });
+  const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
+  const observation = optionalText(formData.get("observation"), "Observacao", 1000);
   assertStoredFileReference(fileUrl, "Evidencia");
 
   const [nc, access] = await Promise.all([
@@ -871,9 +882,9 @@ export async function addNonConformityEvidence(formData: FormData) {
       title,
       fileUrl,
       fileName,
-      fileSize: Number.isFinite(fileSize) && fileSize > 0 ? fileSize : null,
-      mimeType: mimeType || null,
-      observation: observation || null,
+      fileSize,
+      mimeType,
+      observation,
       uploadedById: access?.userId ?? null,
       companyId: nc.companyId,
       workspaceId: nc.workspaceId,
@@ -903,23 +914,26 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   );
   const scope = await getDataScope();
 
-  const id = String(formData.get("id") ?? "").trim();
-  const nonConformityItemId = String(
-    formData.get("nonConformityItemId") ?? "",
-  ).trim();
-  const evidenceType = parseEvidenceType(
-    String(formData.get("evidenceType") ?? "").trim(),
+  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const nonConformityItemId = requiredId(
+    formData.get("nonConformityItemId"),
+    "Item de checklist",
   );
-  const fileUrl = String(formData.get("fileUrl") ?? "").trim();
-  const fileName = String(formData.get("fileName") ?? "").trim();
-  const title = String(formData.get("title") ?? "").trim() || fileName;
-  const fileSize = Number(String(formData.get("fileSize") ?? "0"));
-  const mimeType = String(formData.get("mimeType") ?? "").trim();
-  const observation = String(formData.get("observation") ?? "").trim();
-
-  if (!id || !nonConformityItemId || !fileUrl || !fileName) {
-    throw new Error("Item e arquivo da evidencia sao obrigatorios.");
-  }
+  const evidenceType = enumValue(
+    formData.get("evidenceType") ?? NonConformityEvidenceType.OTHER,
+    Object.values(NonConformityEvidenceType),
+    "Tipo da evidencia",
+  );
+  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
+  const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
+  const title =
+    optionalText(formData.get("title"), "Titulo", 180) ?? fileName;
+  const fileSize = optionalNumber(formData.get("fileSize"), "Tamanho do arquivo", {
+    min: 0,
+    max: 50 * 1024 * 1024,
+  });
+  const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
+  const observation = optionalText(formData.get("observation"), "Observacao", 1000);
   assertStoredFileReference(fileUrl, "Evidencia");
 
   const [nc, item, access] = await Promise.all([
@@ -957,9 +971,9 @@ export async function addNonConformityItemEvidence(formData: FormData) {
       title,
       fileUrl,
       fileName,
-      fileSize: Number.isFinite(fileSize) && fileSize > 0 ? fileSize : null,
-      mimeType: mimeType || null,
-      observation: observation || null,
+      fileSize,
+      mimeType,
+      observation,
       uploadedById: access?.userId ?? null,
       companyId: nc.companyId,
       workspaceId: nc.workspaceId,
@@ -987,12 +1001,8 @@ export async function addNonConformityItemEvidence(formData: FormData) {
 
 export async function addNonConformityComment(formData: FormData) {
   const scope = await getDataScope();
-  const id = String(formData.get("id") ?? "").trim();
-  const comment = String(formData.get("comment") ?? "").trim();
-
-  if (!id || !comment) {
-    throw new Error("Comentario e obrigatorio.");
-  }
+  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const comment = requiredText(formData.get("comment"), "Comentario", 1000);
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
   if (!nc) throw new Error("Nao conformidade nao encontrada.");

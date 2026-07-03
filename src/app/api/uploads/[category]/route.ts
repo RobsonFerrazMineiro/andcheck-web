@@ -4,7 +4,12 @@ import {
   UPLOAD_CATEGORIES,
   type UploadCategory,
 } from "@/lib/file-storage";
+import {
+  checkRequestRateLimit,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { validateUploadedFile } from "@/lib/upload-security";
 
 const MAX_FILE_SIZE: Record<UploadCategory, number> = {
   "company-logo": 2 * 1024 * 1024,
@@ -48,6 +53,12 @@ export async function POST(
   if (!allowed) {
     return Response.json({ error: "Nao autorizado." }, { status: 403 });
   }
+  const limit = checkRequestRateLimit(request, {
+    key: `upload:${category}`,
+    limit: 30,
+    windowMs: 10 * 60 * 1_000,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit.retryAfter);
 
   const formData = await request.formData();
   const file = formData.get("file");
@@ -57,34 +68,10 @@ export async function POST(
   if (file.size > MAX_FILE_SIZE[category]) {
     return Response.json({ error: "Arquivo excede o tamanho permitido." }, { status: 413 });
   }
-  if (category === "company-logo") {
-    const allowedTypes = new Set([
-      "image/png",
-      "image/jpeg",
-      "image/webp",
-    ]);
-    if (!allowedTypes.has(file.type)) {
-      return Response.json(
-        { error: "Formato de logo invalido. Use PNG, JPG ou WEBP." },
-        { status: 415 },
-      );
-    }
-  }
-  if (category === "documents") {
-    const allowedTypes = new Set([
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "image/png",
-      "image/jpeg",
-      "image/webp",
-    ]);
-    if (!allowedTypes.has(file.type)) {
-      return Response.json(
-        { error: "Formato invalido. Use PDF, DOCX, XLSX, PNG, JPG ou WEBP." },
-        { status: 415 },
-      );
-    }
+
+  const validation = await validateUploadedFile(file, category);
+  if (!validation.ok) {
+    return Response.json({ error: validation.message }, { status: 415 });
   }
 
   try {

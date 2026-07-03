@@ -333,7 +333,7 @@ export function OperationalMap({
       }
       mapRef.current = null;
     };
-  }, []); // Deps vazias intencionais: o mapa só é recriado quando o componente é remontado (via key prop no pai)
+  }, []); // Deps vazias intencionais: o mapa é criado uma vez; markers atualizam em outro effect.
 
   // ── Effect 2: atualiza markers quando dados mudam ─────────────────────
   useEffect(() => {

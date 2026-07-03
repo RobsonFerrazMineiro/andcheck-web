@@ -15,7 +15,6 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
-import { compressImageBlob } from "@/lib/compress-image";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
@@ -81,6 +80,7 @@ export default function ChecklistSection({
     const file = e.target.files?.[0];
     if (!file) return;
     try {
+      const { compressImageBlob } = await import("@/lib/compress-image");
       const compressed = await compressImageBlob(file);
       const uploaded = await uploadFile(compressed, {
         category: "checklist-photos",

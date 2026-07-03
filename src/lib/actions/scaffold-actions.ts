@@ -20,6 +20,14 @@ import {
   getDataScope,
   getOwnedCreationContext,
 } from "@/lib/data-scope";
+import {
+  enumValue,
+  optionalNumber,
+  optionalText,
+  requiredId,
+  requiredNumber,
+  requiredText,
+} from "@/lib/input-validation";
 import { createNotification } from "@/lib/notifications/service";
 import {
   ScaffoldStatus,
@@ -28,6 +36,47 @@ import {
   type NotificationSeverity,
   type NotificationType,
 } from "@prisma/client";
+
+const SCAFFOLD_TYPES = Object.values(ScaffoldType);
+const SCAFFOLD_STATUSES = Object.values(ScaffoldStatus);
+
+function parseScaffoldInput(data: {
+  type: ScaffoldType;
+  location: string;
+  area: string;
+  height: number;
+  width?: number;
+  length?: number;
+  max_load?: number;
+  responsible: string;
+  company?: string;
+  notes?: string;
+  latitude?: number;
+  longitude?: number;
+  location_description?: string;
+}) {
+  return {
+    type: enumValue(data.type, SCAFFOLD_TYPES, "Tipo do andaime"),
+    location: requiredText(data.location, "Localizacao", 180),
+    area: requiredText(data.area, "Area", 120),
+    height: requiredNumber(data.height, "Altura", { min: 0.1, max: 200 }),
+    width: optionalNumber(data.width, "Largura", { min: 0, max: 200 }) ?? undefined,
+    length:
+      optionalNumber(data.length, "Comprimento", { min: 0, max: 500 }) ??
+      undefined,
+    max_load:
+      optionalNumber(data.max_load, "Carga maxima", { min: 0, max: 100000 }) ??
+      undefined,
+    responsible: requiredText(data.responsible, "Responsavel tecnico", 140),
+    company: optionalText(data.company, "Empresa montadora", 160) ?? undefined,
+    notes: optionalText(data.notes, "Observacoes", 1000) ?? undefined,
+    latitude: optionalNumber(data.latitude, "Latitude", { min: -90, max: 90 }) ?? undefined,
+    longitude: optionalNumber(data.longitude, "Longitude", { min: -180, max: 180 }) ?? undefined,
+    location_description:
+      optionalText(data.location_description, "Descricao da localizacao", 240) ??
+      undefined,
+  };
+}
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
 export async function getScaffolds() {
@@ -43,6 +92,38 @@ export async function getScaffolds() {
     include: {
       tenantCompany: { select: { id: true, name: true } },
       _count: { select: { inspections: true } },
+      inspections: {
+        orderBy: { date: "desc" },
+        take: 1,
+        select: { date: true, result: true },
+      },
+    },
+  });
+}
+
+export async function getScaffoldMapData() {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
+
+  return prisma.scaffold.findMany({
+    where: {
+      ...dataScopeWhere(scope),
+      status: { not: "desmontado" },
+    },
+    orderBy: { code: "asc" },
+    select: {
+      id: true,
+      code: true,
+      location: true,
+      area: true,
+      status: true,
+      responsible: true,
+      companyId: true,
+      location_description: true,
+      validity_date: true,
+      latitude: true,
+      longitude: true,
+      tenantCompany: { select: { name: true } },
       inspections: {
         orderBy: { date: "desc" },
         take: 1,
@@ -206,9 +287,19 @@ export async function getArchivedScaffoldByTag(tag: string) {
 
 // ── Buscar por tag (QR) ───────────────────────────────────────────────────────
 export async function getScaffoldByTag(tag: string) {
+  const lookupTag = requiredId(tag, "Tag do andaime");
   const scaffold = await prisma.scaffold.findFirst({
-    where: { OR: [{ tag }, { code: tag }, { id: tag }] },
-    include: {
+    where: { OR: [{ tag: lookupTag }, { code: lookupTag }, { id: lookupTag }] },
+    select: {
+      id: true,
+      code: true,
+      tag: true,
+      type: true,
+      status: true,
+      location: true,
+      responsible: true,
+      company: true,
+      validity_date: true,
       inspections: {
         orderBy: { date: "desc" },
         take: 1,
@@ -243,7 +334,8 @@ export async function createScaffold(
 ): Promise<Awaited<ReturnType<typeof prisma.scaffold.create>>> {
   await requirePermission("scaffolds.create");
   const scope = await getDataScope();
-  const requestedCompany = data.company?.trim();
+  const input = parseScaffoldInput(data);
+  const requestedCompany = input.company?.trim();
   const selectedCompany =
     scope.isGlobal && requestedCompany
       ? await prisma.company.findFirst({
@@ -279,9 +371,9 @@ export async function createScaffold(
   try {
     const scaffold = await prisma.scaffold.create({
       data: {
-        ...data,
+        ...input,
         ...creationContext,
-        company: tenantCompany?.name ?? data.company,
+        company: tenantCompany?.name ?? input.company,
         code,
         tag: code, // QR Code usa o mesmo código fixo e legível
         status: "em_montagem",
@@ -323,15 +415,16 @@ export async function createScaffold(
       },
     });
     revalidatePath("/andaimes");
+    revalidatePath("/dashboard");
+    revalidatePath("/mapa");
     revalidatePath(`/andaimes/${scaffold.id}`);
-    revalidatePath("/", "layout");
     return scaffold;
   } catch (err: unknown) {
     // Conflito de unique constraint por concorrência → tenta novamente
     const isUniqueViolation =
       err instanceof Error && err.message.includes("Unique constraint");
     if (isUniqueViolation) {
-      return createScaffold(data, attempt + 1);
+      return createScaffold(input, attempt + 1);
     }
     throw err;
   }
@@ -378,9 +471,14 @@ const STATUS_NOTIFICATION: Partial<
 export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
   await requirePermission("scaffolds.update");
   const scope = await getDataScope();
-  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffoldId = requiredId(id, "Andaime");
+  const nextStatus = enumValue(status, SCAFFOLD_STATUSES, "Status do andaime");
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id: scaffoldId } });
   assertRecordInDataScope(scope, oldScaffold);
-  const scaffold = await prisma.scaffold.update({ where: { id }, data: { status } });
+  const scaffold = await prisma.scaffold.update({
+    where: { id: scaffoldId },
+    data: { status: nextStatus },
+  });
   await createAuditLog({
     entityType: AuditEntityType.SCAFFOLD,
     entityId: scaffold.id,
@@ -392,7 +490,7 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
-  const notification = STATUS_NOTIFICATION[status];
+  const notification = STATUS_NOTIFICATION[nextStatus];
   if (notification) {
     await createNotification({
       companyId: scaffold.companyId,
@@ -418,10 +516,11 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
 export async function completeAssembly(id: string) {
   await requirePermission("scaffolds.complete_assembly");
   const scope = await getDataScope();
-  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const scaffoldId = requiredId(id, "Andaime");
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id: scaffoldId } });
   assertRecordInDataScope(scope, oldScaffold);
   const scaffold = await prisma.scaffold.update({
-    where: { id },
+    where: { id: scaffoldId },
     data: {
       status: "pendente_liberacao",
       assembly_completed_at: new Date(),
@@ -476,8 +575,13 @@ export async function dismantleScaffold(
   input?: { reason?: string; reasonDescription?: string },
 ) {
   await requirePermission("scaffolds.dismantle");
-  const reason = input?.reason?.trim();
-  const reasonDescription = input?.reasonDescription?.trim();
+  const scaffoldId = requiredId(id, "Andaime");
+  const reason = optionalText(input?.reason, "Motivo da desmontagem", 80);
+  const reasonDescription = optionalText(
+    input?.reasonDescription,
+    "Descricao do motivo",
+    500,
+  );
   if (!reason || !DISMANTLE_REASONS.has(reason)) {
     throw new Error("Motivo da desmontagem obrigatorio.");
   }
@@ -486,10 +590,10 @@ export async function dismantleScaffold(
   }
 
   const scope = await getDataScope();
-  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id: scaffoldId } });
   assertRecordInDataScope(scope, oldScaffold);
   const scaffold = await prisma.scaffold.update({
-    where: { id },
+    where: { id: scaffoldId },
     data: {
       status: "desmontado",
       dismantled_at: new Date(),
@@ -534,8 +638,9 @@ export async function dismantleScaffold(
 // ── Deletar ───────────────────────────────────────────────────────────────────
 export async function deleteScaffold(id: string) {
   await requireRole("SUPER_ADMIN");
-  const oldScaffold = await prisma.scaffold.findUnique({ where: { id } });
-  const scaffold = await prisma.scaffold.delete({ where: { id } });
+  const scaffoldId = requiredId(id, "Andaime");
+  const oldScaffold = await prisma.scaffold.findUnique({ where: { id: scaffoldId } });
+  const scaffold = await prisma.scaffold.delete({ where: { id: scaffoldId } });
   await createAuditLog({
     entityType: AuditEntityType.SCAFFOLD,
     entityId: scaffold.id,

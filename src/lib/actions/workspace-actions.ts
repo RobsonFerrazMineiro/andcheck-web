@@ -10,6 +10,13 @@ import {
   requireRole,
 } from "@/lib/authz";
 import { WORKSPACE_CONTEXT_COOKIE } from "@/lib/data-scope";
+import {
+  enumValue,
+  optionalNumber as parseOptionalNumber,
+  optionalText,
+  requiredId,
+  requiredText,
+} from "@/lib/input-validation";
 import { prisma } from "@/lib/prisma";
 
 type WorkspaceSnapshot = {
@@ -73,39 +80,34 @@ async function generateWorkspaceCode(name: string) {
   return crypto.randomUUID();
 }
 
-function optionalNumber(formData: FormData, field: string) {
-  const raw = String(formData.get(field) ?? "").trim();
-  if (!raw) return null;
-  const value = Number(raw.replace(",", "."));
-  if (!Number.isFinite(value)) {
-    throw new Error(`${field === "latitude" ? "Latitude" : "Longitude"} invalida.`);
-  }
-  return value;
-}
-
 function parseWorkspaceForm(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
+  const name = requiredText(formData.get("name"), "Nome", 160);
   const requestedCode = normalizeCode(String(formData.get("code") ?? ""));
-  const ownerCompanyId = String(formData.get("ownerCompanyId") ?? "").trim();
-  const city = String(formData.get("city") ?? "").trim() || null;
-  const state = String(formData.get("state") ?? "").trim().toUpperCase() || null;
-  const address = String(formData.get("address") ?? "").trim() || null;
-  const latitude = optionalNumber(formData, "latitude");
-  const longitude = optionalNumber(formData, "longitude");
-  const active = String(formData.get("status") ?? "ACTIVE") === "ACTIVE";
-  const description = String(formData.get("description") ?? "").trim() || null;
+  const ownerCompanyId = requiredId(
+    formData.get("ownerCompanyId"),
+    "Empresa proprietaria",
+  );
+  const city = optionalText(formData.get("city"), "Cidade", 120);
+  const state = optionalText(formData.get("state"), "Estado", 2)?.toUpperCase() ?? null;
+  const address = optionalText(formData.get("address"), "Endereco", 240);
+  const latitude = parseOptionalNumber(formData.get("latitude"), "Latitude", {
+    min: -90,
+    max: 90,
+  });
+  const longitude = parseOptionalNumber(formData.get("longitude"), "Longitude", {
+    min: -180,
+    max: 180,
+  });
+  const status = enumValue(
+    formData.get("status") ?? "ACTIVE",
+    ["ACTIVE", "INACTIVE"] as const,
+    "Status do workspace",
+  );
+  const active = status === "ACTIVE";
+  const description = optionalText(formData.get("description"), "Descricao", 500);
 
-  if (!name || !ownerCompanyId) {
-    throw new Error("Nome e empresa proprietaria sao obrigatorios.");
-  }
   if (state && state.length !== 2) {
     throw new Error("Estado deve usar a sigla com 2 caracteres.");
-  }
-  if (latitude !== null && (latitude < -90 || latitude > 90)) {
-    throw new Error("Latitude deve estar entre -90 e 90.");
-  }
-  if (longitude !== null && (longitude < -180 || longitude > 180)) {
-    throw new Error("Longitude deve estar entre -180 e 180.");
   }
 
   return {
@@ -170,9 +172,10 @@ export async function getWorkspaceManagementData() {
 
 export async function getWorkspaceDetail(id: string) {
   await requireAnyPermission(["workspaces.manage", "workspaces.view"]);
+  const workspaceId = requiredId(id, "Workspace");
 
   return prisma.workspace.findUnique({
-    where: { id },
+    where: { id: workspaceId },
     include: {
       ownerCompany: { select: { id: true, name: true } },
       companyLinks: {
@@ -247,8 +250,7 @@ export async function createWorkspace(formData: FormData) {
 
 export async function updateWorkspace(formData: FormData) {
   await requireRole("SUPER_ADMIN");
-  const id = String(formData.get("workspaceId") ?? "").trim();
-  if (!id) throw new Error("Workspace nao informado.");
+  const id = requiredId(formData.get("workspaceId"), "Workspace");
 
   const input = parseWorkspaceForm(formData);
   await assertOwnerCompany(input.ownerCompanyId);
@@ -323,13 +325,14 @@ export async function updateWorkspace(formData: FormData) {
 
 export async function setWorkspaceActive(id: string, active: boolean) {
   await requireRole("SUPER_ADMIN");
-  const current = await prisma.workspace.findUnique({ where: { id } });
+  const workspaceId = requiredId(id, "Workspace");
+  const current = await prisma.workspace.findUnique({ where: { id: workspaceId } });
   if (!current) throw new Error("Workspace nao encontrado.");
   if (current.active === active) return;
-  if (!active) await assertWorkspaceCanBeDeactivated(id);
+  if (!active) await assertWorkspaceCanBeDeactivated(workspaceId);
 
   const workspace = await prisma.workspace.update({
-    where: { id },
+    where: { id: workspaceId },
     data: { active },
   });
 

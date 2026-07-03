@@ -60,7 +60,7 @@ function Kpi({
 }) {
   return (
     <div
-      className={`border border-l-4 bg-card rounded-lg p-4 shadow-sm ${className}`}
+      className={`andcheck-lift border border-l-4 bg-card rounded-lg p-4 shadow-sm ${className}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p
@@ -194,7 +194,7 @@ export function AcervoClient({
         </div>
       </div>
 
-      <div className="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           icon={Archive}
           label="Total de Andaimes"
@@ -356,7 +356,7 @@ export function AcervoClient({
               <Link
                 key={row.id}
                 href={`/acervo/${encodeURIComponent(row.code)}`}
-                className={`flex items-center px-4 py-3 transition-colors hover:bg-primary/5 group xl:grid xl:grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] xl:gap-4 ${
+                className={`group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 hover:bg-primary/5 xl:grid xl:grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] xl:gap-4 ${
                   index % 2 ? "bg-muted/20" : "bg-card"
                 }`}
               >

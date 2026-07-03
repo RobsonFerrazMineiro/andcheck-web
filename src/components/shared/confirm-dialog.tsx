@@ -1,9 +1,11 @@
 "use client";
 
 import { AlertTriangle, Loader2, X } from "lucide-react";
+import { useRef } from "react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
@@ -30,10 +32,15 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialogRef, open, pending ? undefined : onCancel);
+
   if (!open) return null;
 
   return (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"

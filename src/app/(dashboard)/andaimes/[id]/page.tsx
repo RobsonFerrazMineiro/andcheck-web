@@ -17,9 +17,11 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
-import { ScaffoldActionsBar } from "@/components/scaffold/actions-bar";
-import { ScaffoldDocumentSection } from "@/components/scaffold/document-section";
-import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
+import {
+  LazyScaffoldActionsBar,
+  LazyScaffoldDocumentSection,
+  LazyScaffoldQRCard,
+} from "@/components/scaffold/lazy-scaffold-panels";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
@@ -152,7 +154,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
             <span className="text-foreground">{scaffold.code}</span>
           </p>
         </div>
-        <ScaffoldActionsBar
+        <LazyScaffoldActionsBar
           scaffoldId={scaffold.id}
           scaffoldCode={scaffold.code}
           status={scaffold.status}
@@ -278,7 +280,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
         </TechCard>
       </div>
 
-      <ScaffoldDocumentSection
+      <LazyScaffoldDocumentSection
         scaffoldId={scaffold.id}
         initialDocuments={documents}
         canAddDocument={canAddDocument}
@@ -342,7 +344,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
         )}
       </TechCard>
 
-      <ScaffoldQRCard
+      <LazyScaffoldQRCard
         scaffoldCode={scaffold.code}
         tag={scaffold.tag}
         origin={origin}

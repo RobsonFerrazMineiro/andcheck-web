@@ -334,6 +334,10 @@ model Scaffold {
   @@index([companyId])
   @@index([workspaceId])
   @@index([workspaceId, companyId])
+  @@index([companyId, status, code])
+  @@index([workspaceId, status, code])
+  @@index([companyId, created_at])
+  @@index([workspaceId, created_at])
   @@map("scaffolds")
 }
 
@@ -363,6 +367,8 @@ model ScaffoldDocument {
 
   @@index([companyId])
   @@index([workspaceId])
+  @@index([companyId, expires_at])
+  @@index([workspaceId, expires_at])
   @@map("scaffold_documents")
 }
 
@@ -393,6 +399,8 @@ model Document {
   @@index([category])
   @@index([status])
   @@index([expiryDate])
+  @@index([companyId, status, expiryDate])
+  @@index([workspaceId, status, expiryDate])
   @@map("documents")
 }
 
@@ -429,6 +437,9 @@ model Inspection {
   @@index([companyId])
   @@index([workspaceId])
   @@index([workspaceId, companyId])
+  @@index([companyId, date])
+  @@index([workspaceId, date])
+  @@index([scaffold_id, date])
   @@map("inspections")
 }
 
@@ -498,6 +509,10 @@ model NonConformity {
   @@index([classification])
   @@index([status])
   @@index([dueDate])
+  @@index([companyId, createdAt])
+  @@index([workspaceId, createdAt])
+  @@index([companyId, status, closedAt])
+  @@index([workspaceId, status, closedAt])
   @@map("non_conformities")
 }
 
@@ -795,6 +810,8 @@ model Notification {
   @@index([severity])
   @@index([createdAt])
   @@index([companyId, userId, status])
+  @@index([userId, status, createdAt])
+  @@index([companyId, severity, createdAt])
   @@map("notifications")
 }
 
@@ -864,5 +881,7 @@ model AuditLog {
   @@index([userId])
   @@index([companyId])
   @@index([workspaceId])
+  @@index([companyId, createdAt])
+  @@index([workspaceId, createdAt])
   @@map("audit_logs")
 }

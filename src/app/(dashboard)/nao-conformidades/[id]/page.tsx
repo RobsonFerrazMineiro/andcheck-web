@@ -23,10 +23,10 @@ import {
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { roleHasPermission } from "@/lib/rbac";
 import {
-  NonConformityEvidencePreview,
   NonConformityItemEvidenceButton,
   NonConformityOperations,
 } from "./non-conformity-operations";
+import { LazyNonConformityEvidencePreview } from "./lazy-non-conformity-panels";
 import {
   nonConformityStatusTone,
   SEMANTIC_TONE_CLASSES,
@@ -78,7 +78,7 @@ const EVIDENCE_LABELS: Record<string, string> = {
   PHOTO: "Foto",
   PDF: "PDF",
   ART: "ART",
-  MEMORIAL_CALCULO: "Memorial de calculo",
+  MEMORIAL_CALCULO: "Memorial de cálculo",
   CROQUI: "Croqui",
   DOCUMENT: "Documento",
   OTHER: "Outro",
@@ -305,7 +305,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
           <DetailRow icon={Building2} label="Empresa" value={company} />
           <DetailRow
             icon={Calendar}
-            label="Ocorrencia"
+            label="Ocorrência"
             value={format(nc.originInspection.date, "dd/MM/yyyy HH:mm")}
           />
           <DetailRow
@@ -322,7 +322,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             label="Prazo"
             value={nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
           />
-          <DetailRow icon={FileText} label="Titulo" value={nc.title} />
+          <DetailRow icon={FileText} label="Título" value={nc.title} />
         </Section>
       </div>
 
@@ -370,7 +370,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
                       />
                     )}
                     {item.evidences.map((evidence) => (
-                      <NonConformityEvidencePreview
+                      <LazyNonConformityEvidencePreview
                         key={evidence.id}
                         id={evidence.id}
                         fileUrl={evidence.fileUrl}
@@ -407,7 +407,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                     {EVIDENCE_LABELS[evidence.type] ?? evidence.type} - {evidence.fileName}
                   </p>
-                  <NonConformityEvidencePreview
+                  <LazyNonConformityEvidencePreview
                     id={evidence.id}
                     fileUrl={evidence.fileUrl}
                     fileName={evidence.fileName}

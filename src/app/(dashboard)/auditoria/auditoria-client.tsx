@@ -18,7 +18,9 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
+import type { ComponentType } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { Badge } from "@/components/ui/badge";
@@ -35,8 +37,9 @@ import {
   type SemanticTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import type { AuditDetailDialogProps } from "./audit-detail-dialog";
 
-type AuditRow = {
+export type AuditRow = {
   id: string;
   userName: string | null;
   userRole: string | null;
@@ -134,100 +137,6 @@ const ENTITY_ARTICLES: Record<string, string> = {
   NON_CONFORMITY: "a não conformidade",
 };
 
-const FIELD_LABELS: Record<string, string> = {
-  area: "Área",
-  assembly_completed_at: "Montagem concluida em",
-  checklist_items: "Itens do checklist",
-  classification: "Classificação",
-  code: "Código",
-  company: "Empresa",
-  companyLogo: "Logo da empresa",
-  companyId: "Empresa",
-  closedAt: "Encerrada em",
-  createdById: "Criado por",
-  createdAt: "Data de criação",
-  department: "Departamento",
-  dismantled_at: "Desmontado em",
-  dismantleReason: "Motivo da desmontagem",
-  dismantleReasonDescription: "Descrição do motivo",
-  dueDate: "Prazo",
-  email: "E-mail",
-  evidenceType: "Tipo de evidência",
-  failed_items: "Itens reprovados",
-  fileName: "Arquivo",
-  file_name: "Arquivo",
-  inspection_id: "Inspeção",
-  inspection_result: "Resultado da inspeção",
-  inspector_name: "Inspetor",
-  is_active: "Status",
-  latitude: "Latitude",
-  location: "Local",
-  longitude: "Longitude",
-  name: "Nome",
-  originInspectionId: "Inspeção de origem",
-  position: "Cargo",
-  registration: "Matrícula",
-  released_at: "Liberado em",
-  responsibleUserId: "Responsável",
-  result: "Resultado",
-  role: "Perfil",
-  role_code: "Perfil",
-  scaffold_code: "Andaime",
-  scaffold_id: "Andaime",
-  signer_company: "Empresa do assinante",
-  signer_name: "Assinante",
-  signer_position: "Cargo do assinante",
-  status: "Status",
-  tag: "Tag",
-  title: "Titulo",
-  type: "Tipo",
-  updatedAt: "Última atualização",
-  validity_date: "Validade",
-  validity_days: "Validade em dias",
-  warning_items: "Itens com ressalva",
-  workspaceId: "Workspace",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  ADMIN_EMPRESA: "Admin Empresa",
-  AUDITOR: "Auditor",
-  HSE_EMPRESA: "HSE Empresa",
-  HSE_GERENCIADORA: "HSE Gerenciadora",
-  HSE_HYDRO: "HSE Hydro",
-  MONTADOR_LIDER: "Montador Lider",
-  PLANEJAMENTO: "Planejamento",
-  SUPERVISOR: "Supervisor",
-  ENCARREGADO: "Encarregado",
-  SUPER_ADMIN: "Super Admin",
-  SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  active: "Ativo",
-  cancelled: "Cancelada",
-  closed: "Encerrada",
-  critical: "Crítica",
-  aprovado: "Aprovado",
-  aprovado_com_ressalvas: "Aprovado com ressalvas",
-  cl_fail: "Reprovado",
-  cl_na: "Não aplicável",
-  cl_ok: "Conforme",
-  cl_warn: "Com ressalva",
-  desmontado: "Desmontado",
-  em_montagem: "Em montagem",
-  inactive: "Inativo",
-  in_progress: "Em tratamento",
-  interditado: "Interditado",
-  liberado: "Liberado",
-  low: "Baixa",
-  medium: "Média",
-  open: "Aberta",
-  pendente_liberacao: "Pendente de liberação",
-  pending_verification: "Aguardando verificação",
-  reprovado: "Reprovado",
-  high: "Alta",
-};
-
 const ACTION_FILTERS = [
   ["CREATE", "Criação"],
   ["UPDATE", "Atualização"],
@@ -244,6 +153,14 @@ const ACTION_FILTERS = [
 const AUDIT_TABLE_GRID =
   "grid-cols-[112px_130px_100px_165px_220px_minmax(280px,1fr)_175px]";
 
+const AuditDetailDialog = dynamic(
+  () =>
+    import("./audit-detail-dialog").then(
+      (mod) => mod.AuditDetailDialog as ComponentType<AuditDetailDialogProps>,
+    ),
+  { ssr: false },
+);
+
 function buildHref(filters: Filters, page: number) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
@@ -256,11 +173,6 @@ function buildHref(filters: Filters, page: number) {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function formatJson(value: unknown) {
-  if (value === null || value === undefined) return "-";
-  return JSON.stringify(value, null, 2);
 }
 
 function labelEntity(entityType: string) {
@@ -379,68 +291,6 @@ function entityDisplay(row: AuditRow) {
 function companyDisplay(row: AuditRow) {
   if (row.companyId && row.workspaceId) return `${row.companyId} / ${row.workspaceId}`;
   return row.companyId ?? row.workspaceId ?? "-";
-}
-
-function normalizeToken(value: string) {
-  return (
-    ROLE_LABELS[value] ??
-    STATUS_LABELS[value.toLowerCase()] ??
-    value.replaceAll("_", " ")
-  );
-}
-
-function formatValue(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "-";
-  if (typeof value === "boolean") return value ? "Ativo" : "Inativo";
-  if (typeof value === "number") return String(value);
-  if (typeof value === "string") {
-    if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
-      const date = new Date(value);
-      return Number.isNaN(date.getTime())
-        ? value
-        : format(date, "dd/MM/yyyy HH:mm");
-    }
-    return normalizeToken(value);
-  }
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "-";
-    if (value.every((item) => ["string", "number", "boolean"].includes(typeof item))) {
-      return value.map(formatValue).join(", ");
-    }
-    return `${value.length} registro(s)`;
-  }
-  if (isPlainObject(value)) {
-    const compact = Object.entries(value)
-      .filter(([, item]) => item !== null && item !== undefined && item !== "")
-      .slice(0, 3)
-      .map(([key, item]) => `${FIELD_LABELS[key] ?? key}: ${formatValue(item)}`);
-    return compact.length ? compact.join(" | ") : "-";
-  }
-  return String(value);
-}
-
-function comparisonRows(row: AuditRow) {
-  const oldObject = isPlainObject(row.oldValue) ? row.oldValue : {};
-  const newObject = isPlainObject(row.newValue) ? row.newValue : {};
-  const keys = Array.from(
-    new Set([...Object.keys(oldObject), ...Object.keys(newObject)]),
-  ).filter((key) => key !== "id");
-
-  if (keys.length === 0) {
-    return [
-      {
-        field: "Dados",
-        before: formatValue(row.oldValue),
-        after: formatValue(row.newValue),
-      },
-    ];
-  }
-
-  return keys.map((key) => ({
-    field: FIELD_LABELS[key] ?? key.replaceAll("_", " "),
-    before: formatValue(oldObject[key]),
-    after: formatValue(newObject[key]),
-  }));
 }
 
 function friendlyDescription(row: AuditRow) {
@@ -610,7 +460,7 @@ export function AuditoriaClient({
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span className={`${typography.action} text-muted-foreground`}>
-              Log Imutavel
+              Log Imutável
             </span>
           </div>
         </div>
@@ -710,7 +560,7 @@ export function AuditoriaClient({
               <EmptyState
                 icon={FileClock}
                 title="Nenhum evento encontrado"
-                description="Os eventos de auditoria aparecem aqui conforme as operacoes sao registradas no sistema."
+                description="Os eventos de auditoria aparecem aqui conforme as operações são registradas no sistema."
                 className="border-0 border-b border-dashed"
               />
             ) : (
@@ -777,132 +627,19 @@ export function AuditoriaClient({
       </div>
 
       {selected && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-5xl max-h-[88vh] overflow-auto">
-            <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border bg-primary">
-              <div>
-                <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
-                  Evento de Auditoria
-                </p>
-                <h2 className="mt-1 text-[15px] font-bold text-primary-foreground">
-                  {friendlyDescription(selected)}
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelected(null)}
-                className={`h-7 rounded-md border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
-              >
-                Fechar
-              </button>
-            </div>
-
-            <div className="p-5 border-b border-border">
-              <p className={`mb-3 text-muted-foreground ${typography.action}`}>
-                Resumo
-              </p>
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <EntityBadge row={selected} />
-                <ActionBadge row={selected} />
-              </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Detail label="Evento" value={friendlyDescription(selected)} />
-                <Detail label="Usuário" value={selected.userName ?? "Sistema"} />
-                <Detail label="Perfil" value={selected.userRole ?? "-"} />
-                <Detail
-                  label="Data/Hora"
-                  value={format(new Date(selected.createdAt), "dd/MM/yyyy HH:mm:ss")}
-                />
-                <Detail label="Empresa/Planta" value={companyDisplay(selected)} />
-                <Detail label="IP" value={selected.ipAddress ?? "-"} />
-                <Detail
-                  label="Dispositivo/Navegador"
-                  value={selected.userAgent ?? "-"}
-                />
-                <Detail label="Ação" value={labelAction(selected)} />
-                <Detail
-                  label="Entidade"
-                  value={`${labelEntity(selected.entityType)} · ${
-                    selected.entityLabel ?? selected.entityId ?? "-"
-                  }`}
-                />
-              </div>
-            </div>
-
-            <div className="p-5 border-b border-border">
-              <p className={`mb-3 text-muted-foreground ${typography.action}`}>
-                Alterações
-              </p>
-              <div className="overflow-x-auto border border-border">
-                <div className="min-w-[680px] grid grid-cols-[190px_1fr_1fr] bg-muted/50 border-b border-border">
-                  {["Campo", "Antes", "Depois"].map((header) => (
-                    <p
-                      key={header}
-                      className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
-                    >
-                      {header}
-                    </p>
-                  ))}
-                </div>
-                <div className="min-w-[680px] divide-y divide-border">
-                  {comparisonRows(selected).map((item) => (
-                    <div
-                      key={item.field}
-                      className="grid grid-cols-[190px_1fr_1fr]"
-                    >
-                      <p className="px-3 py-2 text-[11px] font-semibold text-foreground">
-                        {item.field}
-                      </p>
-                      <p className="px-3 py-2 text-[11px] text-muted-foreground break-words">
-                        {item.before}
-                      </p>
-                      <p className="px-3 py-2 text-[11px] text-foreground break-words">
-                        {item.after}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <details className="p-5">
-              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                Ver dados tecnicos
-              </summary>
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
-                <JsonBlock title="Valor anterior" value={selected.oldValue} />
-                <JsonBlock title="Valor novo" value={selected.newValue} />
-              </div>
-            </details>
-          </div>
-        </div>
+        <AuditDetailDialog
+          row={selected}
+          title={friendlyDescription(selected)}
+          companyLabel={companyDisplay(selected)}
+          actionLabel={labelAction(selected)}
+          entityLabel={`${labelEntity(selected.entityType)} · ${
+            selected.entityLabel ?? selected.entityId ?? "-"
+          }`}
+          entityBadge={<EntityBadge row={selected} />}
+          actionBadge={<ActionBadge row={selected} />}
+          onClose={() => setSelected(null)}
+        />
       )}
-    </div>
-  );
-}
-
-function Detail({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </p>
-      <p className="text-[12px] font-semibold text-foreground mt-1 break-words">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function JsonBlock({ title, value }: { title: string; value: unknown }) {
-  return (
-    <div>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
-        {title}
-      </p>
-      <pre className="bg-muted/40 rounded-lg border border-border p-3 text-[11px] font-mono whitespace-pre-wrap break-words max-h-72 overflow-auto">
-        {formatJson(value)}
-      </pre>
     </div>
   );
 }

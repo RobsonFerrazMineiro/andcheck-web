@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { getCurrentUserAccess } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { requiredText } from "@/lib/input-validation";
 
 export type PasswordChangeState = {
   status: "idle" | "success" | "error";
@@ -61,15 +62,29 @@ export async function changeMyPassword(
     return { status: "error", message: "Sessao expirada. Entre novamente." };
   }
 
-  const currentPassword = String(formData.get("currentPassword") ?? "");
-  const newPassword = String(formData.get("newPassword") ?? "");
-  const confirmPassword = String(formData.get("confirmPassword") ?? "");
-
-  if (!currentPassword || !newPassword || !confirmPassword) {
+  let currentPassword: string;
+  let newPassword: string;
+  let confirmPassword: string;
+  try {
+    currentPassword = requiredText(
+      formData.get("currentPassword"),
+      "Senha atual",
+      256,
+    );
+    newPassword = requiredText(formData.get("newPassword"), "Nova senha", 256);
+    confirmPassword = requiredText(
+      formData.get("confirmPassword"),
+      "Confirmacao da senha",
+      256,
+    );
+  } catch {
     return { status: "error", message: "Preencha todos os campos de senha." };
   }
   if (newPassword.length < 8) {
     return { status: "error", message: "A nova senha deve ter pelo menos 8 caracteres." };
+  }
+  if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+    return { status: "error", message: "A nova senha deve conter letras e numeros." };
   }
   if (newPassword !== confirmPassword) {
     return { status: "error", message: "A confirmacao nao confere com a nova senha." };

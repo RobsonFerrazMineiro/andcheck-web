@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   completeAssembly,
   dismantleScaffold,
@@ -27,7 +28,7 @@ const DISMANTLE_REASONS = [
   "Outros",
 ];
 
-interface Props {
+export interface ScaffoldActionsBarProps {
   scaffoldId: string;
   scaffoldCode: string;
   status: string;
@@ -45,9 +46,10 @@ export function ScaffoldActionsBar({
   hasActiveNonConformity,
   canCompleteAssembly,
   canDismantle,
-}: Props) {
+}: ScaffoldActionsBarProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [completeOpen, setCompleteOpen] = useState(false);
   const [dismantleOpen, setDismantleOpen] = useState(false);
   const [dismantleReason, setDismantleReason] = useState("");
   const [dismantleReasonDescription, setDismantleReasonDescription] =
@@ -125,10 +127,30 @@ export function ScaffoldActionsBar({
   if (status === "em_montagem") {
     return (
       <>
+        <ConfirmDialog
+          open={completeOpen}
+          title="Concluir montagem"
+          description="O andaime será movido para pendente de inspeção."
+          details={
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">{scaffoldCode}</p>
+              <p className="text-xs text-muted-foreground">
+                Após confirmar, será necessário realizar uma inspeção para liberar o andaime.
+              </p>
+            </div>
+          }
+          confirmLabel="Concluir montagem"
+          pending={isPending}
+          onCancel={() => setCompleteOpen(false)}
+          onConfirm={() => {
+            setCompleteOpen(false);
+            handleCompleteAssembly();
+          }}
+        />
         <div className="flex flex-wrap items-center gap-2">
           {canCompleteAssembly && (
             <button
-              onClick={handleCompleteAssembly}
+              onClick={() => setCompleteOpen(true)}
               disabled={isPending}
               className="inline-flex h-8 items-center gap-2 bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 disabled:opacity-60"
             >
@@ -260,17 +282,20 @@ function DismantleDialog({
   onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-xl border border-border bg-card shadow-xl">
-        <div className="border-b border-border bg-primary px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/50">
-            Registrar Desmontagem
-          </p>
-          <h2 className="mt-1 font-mono text-[15px] font-bold text-primary-foreground">
-            {scaffoldCode}
-          </h2>
-        </div>
-        <div className="space-y-4 p-4">
+    <ConfirmDialog
+      open
+      title="Registrar desmontagem"
+      description="Confirme a desmontagem do andaime e informe o motivo operacional."
+      details={
+        <div className="space-y-4">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              Andaime
+            </p>
+            <p className="mt-1 font-mono text-sm font-bold text-foreground">
+              {scaffoldCode}
+            </p>
+          </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Motivo da desmontagem *
@@ -309,28 +334,12 @@ function DismantleDialog({
             </p>
           )}
         </div>
-        <div className="flex justify-end gap-2 border-t border-border px-4 py-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isPending}
-            className="h-8 border border-border px-4 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted disabled:opacity-50"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isPending}
-            className="h-8 bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground disabled:opacity-50"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              {isPending ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              {isPending ? "Aguarde..." : "Confirmar Desmontagem"}
-            </span>
-          </button>
-        </div>
-      </div>
-    </div>
+      }
+      confirmLabel="Confirmar desmontagem"
+      destructive
+      pending={isPending}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+    />
   );
 }

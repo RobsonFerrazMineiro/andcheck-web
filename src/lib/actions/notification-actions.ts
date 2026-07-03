@@ -1,5 +1,6 @@
 "use server";
 
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { getCurrentUserAccess, requireAnyPermission } from "@/lib/authz";
 import {
   NOTIFICATION_ENTITY_GROUPS,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/notifications/catalog";
 import { sendNotificationEmail } from "@/lib/notifications/service";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
+import { enumValue, requiredId } from "@/lib/input-validation";
 import { prisma } from "@/lib/prisma";
 import {
   type NotificationType,
@@ -33,6 +35,17 @@ export type NotificationFilter =
   | "inspections"
   | "nonconformities"
   | "documents";
+
+const NOTIFICATION_FILTERS: NotificationFilter[] = [
+  "all",
+  "unread",
+  "critical",
+  "scaffolds",
+  "inspections",
+  "nonconformities",
+  "documents",
+];
+const NOTIFICATION_CHANNELS = ["internal", "email"] as const;
 
 export async function getNotificationBellData() {
   const access = await getCurrentUserAccess();
@@ -73,16 +86,30 @@ export async function getNotificationBellData() {
 export async function getNotifications(filter: NotificationFilter = "all") {
   const access = await getCurrentUserAccess();
   if (!access) return [];
+  const parsedFilter = enumValue(
+    filter,
+    NOTIFICATION_FILTERS,
+    "Filtro de notificacao",
+  );
 
   try {
     return await prisma.notification.findMany({
       where: {
         ...userNotificationWhere(access.userId),
-        ...filterWhere(filter),
+        ...filterWhere(parsedFilter),
       },
       orderBy: { createdAt: "desc" },
       take: 100,
-      include: {
+      select: {
+        id: true,
+        type: true,
+        severity: true,
+        title: true,
+        message: true,
+        status: true,
+        entityType: true,
+        entityId: true,
+        createdAt: true,
         company: { select: { name: true } },
         workspace: { select: { name: true } },
         emailDeliveryLogs: {
@@ -101,10 +128,11 @@ export async function getNotifications(filter: NotificationFilter = "all") {
 export async function markNotificationAsRead(id: string) {
   const access = await getCurrentUserAccess();
   if (!access) throw new Error("Usuario nao autenticado.");
+  const notificationId = requiredId(id, "Notificacao");
 
   try {
     await prisma.notification.updateMany({
-      where: { id, ...userNotificationWhere(access.userId) },
+      where: { id: notificationId, ...userNotificationWhere(access.userId) },
       data: { status: "READ", readAt: new Date() },
     });
   } catch (error) {
@@ -136,10 +164,11 @@ export async function markAllNotificationsAsRead() {
 export async function archiveNotification(id: string) {
   const access = await getCurrentUserAccess();
   if (!access) throw new Error("Usuario nao autenticado.");
+  const notificationId = requiredId(id, "Notificacao");
 
   try {
     await prisma.notification.updateMany({
-      where: { id, ...userNotificationWhere(access.userId) },
+      where: { id: notificationId, ...userNotificationWhere(access.userId) },
       data: { status: "ARCHIVED" },
     });
   } catch (error) {
@@ -188,10 +217,11 @@ export async function updateNotificationPreference(formData: FormData) {
   const access = await getCurrentUserAccess();
   if (!access) throw new Error("Usuario nao autenticado.");
 
-  const type = String(formData.get("type") ?? "") as NotificationType;
-  if (!notificationTypes().includes(type)) {
-    throw new Error("Tipo de notificacao invalido.");
-  }
+  const type = enumValue(
+    formData.get("type"),
+    notificationTypes(),
+    "Tipo de notificacao",
+  );
 
   const internal = formData.get("internal") === "on";
   const email = formData.get("email") === "on";
@@ -221,6 +251,21 @@ export async function updateNotificationPreference(formData: FormData) {
     if (!isMissingNotificationTables(error)) throw error;
   }
 
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: access.userId,
+    entityLabel: "notification-preference",
+    action: AuditAction.UPDATE,
+    description: "Preferencia de notificacao atualizada",
+    newValue: {
+      type,
+      internal: defaultCriticalTypes.has(type) ? true : internal,
+      email,
+    },
+    companyId: access.companyId,
+    workspaceId: access.workspaceId,
+  });
+
   revalidatePath("/notificacoes");
 }
 
@@ -231,12 +276,11 @@ export async function updateNotificationPreferenceValue(input: {
 }) {
   const access = await getCurrentUserAccess();
   if (!access) throw new Error("Usuario nao autenticado.");
-  if (!notificationTypes().includes(input.type)) {
-    throw new Error("Tipo de notificacao invalido.");
-  }
+  const type = enumValue(input.type, notificationTypes(), "Tipo de notificacao");
+  const channel = enumValue(input.channel, NOTIFICATION_CHANNELS, "Canal");
 
-  const critical = defaultCriticalTypes.has(input.type);
-  if (critical && input.channel === "internal" && !input.enabled) {
+  const critical = defaultCriticalTypes.has(type);
+  if (critical && channel === "internal" && !input.enabled) {
     throw new Error("Notificacoes criticas exigem canal interno.");
   }
 
@@ -246,7 +290,7 @@ export async function updateNotificationPreferenceValue(input: {
         userId_companyId_type: {
           userId: access.userId,
           companyId: access.companyId,
-          type: input.type,
+          type,
         },
       },
     })
@@ -256,11 +300,11 @@ export async function updateNotificationPreferenceValue(input: {
     });
 
   const internal =
-    input.channel === "internal"
+    channel === "internal"
       ? input.enabled
       : (current?.internal ?? true);
   const email =
-    input.channel === "email"
+    channel === "email"
       ? input.enabled
       : (current?.email ?? critical);
 
@@ -270,13 +314,13 @@ export async function updateNotificationPreferenceValue(input: {
         userId_companyId_type: {
           userId: access.userId,
           companyId: access.companyId,
-          type: input.type,
+          type,
         },
       },
       create: {
         userId: access.userId,
         companyId: access.companyId,
-        type: input.type,
+        type,
         internal: critical ? true : internal,
         email,
       },
@@ -289,6 +333,21 @@ export async function updateNotificationPreferenceValue(input: {
     if (!isMissingNotificationTables(error)) throw error;
   }
 
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: access.userId,
+    entityLabel: "notification-preference",
+    action: AuditAction.UPDATE,
+    description: "Preferencia de canal de notificacao atualizada",
+    newValue: {
+      type,
+      channel,
+      enabled: channel === "internal" && critical ? true : input.enabled,
+    },
+    companyId: access.companyId,
+    workspaceId: access.workspaceId,
+  });
+
   revalidatePath("/perfil/notificacoes");
   revalidatePath("/notificacoes");
 }
@@ -300,6 +359,7 @@ export async function updateNotificationPreferenceGroup(input: {
 }) {
   const access = await getCurrentUserAccess();
   if (!access) throw new Error("Usuario nao autenticado.");
+  const channel = enumValue(input.channel, NOTIFICATION_CHANNELS, "Canal");
 
   const types = notificationTypes().filter(
     (type) => NOTIFICATION_ENTITY_GROUPS[type] === input.group,
@@ -323,16 +383,16 @@ export async function updateNotificationPreferenceGroup(input: {
             companyId: access.companyId,
             type,
             internal:
-              input.channel === "internal"
+              channel === "internal"
                 ? critical || input.enabled
                 : true,
             email:
-              input.channel === "email"
+              channel === "email"
                 ? input.enabled
                 : critical,
           },
           update: {
-            ...(input.channel === "internal"
+            ...(channel === "internal"
               ? { internal: critical ? true : input.enabled }
               : { email: input.enabled }),
           },
@@ -342,6 +402,22 @@ export async function updateNotificationPreferenceGroup(input: {
   } catch (error) {
     if (!isMissingNotificationTables(error)) throw error;
   }
+
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: access.userId,
+    entityLabel: "notification-preference-group",
+    action: AuditAction.UPDATE,
+    description: "Preferencias de notificacao em grupo atualizadas",
+    newValue: {
+      group: input.group,
+      channel,
+      enabled: input.enabled,
+      affectedTypes: types.length,
+    },
+    companyId: access.companyId,
+    workspaceId: access.workspaceId,
+  });
 
   revalidatePath("/perfil/notificacoes");
 }
@@ -517,9 +593,10 @@ export async function resendNotificationEmail(notificationId: string) {
     throw new Error("Acesso restrito a administradores.");
   }
   const scope = await getDataScope();
+  const parsedNotificationId = requiredId(notificationId, "Notificacao");
 
   const notification = await prisma.notification.findFirst({
-    where: { id: notificationId, ...dataScopeWhere(scope) },
+    where: { id: parsedNotificationId, ...dataScopeWhere(scope) },
     include: {
       user: { select: { email: true } },
       company: { select: { name: true } },
@@ -532,6 +609,20 @@ export async function resendNotificationEmail(notificationId: string) {
   }
 
   await sendNotificationEmail(notification, notification.user.email);
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: notification.id,
+    entityLabel: "notification-email-resend",
+    action: AuditAction.UPDATE,
+    description: "E-mail de notificacao reenviado manualmente",
+    newValue: {
+      notificationId: notification.id,
+      recipientEmail: notification.user.email,
+      type: notification.type,
+    },
+    companyId: notification.companyId,
+    workspaceId: notification.workspaceId,
+  });
   revalidatePath("/admin/notificacoes");
 }
 

@@ -110,7 +110,7 @@ export function AndaimesClient({
         )}
       </div>
 
-      <div className="bg-card border border-border shadow-sm rounded-lg p-3 flex flex-col sm:flex-row gap-2">
+      <div className="grid gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-[1fr_180px_180px]">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
@@ -121,7 +121,7 @@ export function AndaimesClient({
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -135,7 +135,7 @@ export function AndaimesClient({
           </SelectContent>
         </Select>
         <Select value={expirationFilter} onValueChange={setExpirationFilter}>
-          <SelectTrigger className="w-full sm:w-48 h-8 text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Vencimento" />
           </SelectTrigger>
@@ -174,7 +174,7 @@ export function AndaimesClient({
         />
       ) : (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((scaffold) => {
               const tone =
                 SEMANTIC_TONE_CLASSES[scaffoldStatusTone(scaffold.status)];
@@ -182,7 +182,7 @@ export function AndaimesClient({
                 <Link
                   key={scaffold.id}
                   href={"/andaimes/" + scaffold.id}
-                  className={`group flex min-h-48 flex-col rounded-lg border border-border bg-card p-4 shadow-sm ring-1 transition-colors hover:bg-primary/5 ${tone.border}`}
+                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-48 flex-col rounded-lg border border-border bg-card p-4 shadow-sm ring-1 hover:bg-primary/5 ${tone.border}`}
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <div className="min-w-0">

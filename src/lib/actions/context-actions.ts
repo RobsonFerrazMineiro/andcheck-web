@@ -1,5 +1,6 @@
 "use server";
 
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { AuthorizationError, getCurrentUserAccess } from "@/lib/authz";
 import {
   ALL_COMPANIES_CONTEXT,
@@ -7,7 +8,9 @@ import {
   getContextCapabilities,
   WORKSPACE_CONTEXT_COOKIE,
 } from "@/lib/data-scope";
+import { requiredId } from "@/lib/input-validation";
 import { prisma } from "@/lib/prisma";
+import { assertSameOriginRequest } from "@/lib/request-security";
 import { cookies } from "next/headers";
 
 const COOKIE_OPTIONS = {
@@ -22,6 +25,7 @@ export async function updateActiveContext(input: {
   companyId: string;
   workspaceId: string;
 }) {
+  await assertSameOriginRequest();
   const access = await getCurrentUserAccess();
   if (!access) {
     throw new AuthorizationError("Troca de contexto nao permitida.");
@@ -32,26 +36,28 @@ export async function updateActiveContext(input: {
     throw new AuthorizationError("Troca de contexto nao permitida.");
   }
 
+  const workspaceId = requiredId(input.workspaceId, "Workspace");
   const allCompaniesSelected = input.companyId === ALL_COMPANIES_CONTEXT;
+  const companyId = allCompaniesSelected
+    ? ALL_COMPANIES_CONTEXT
+    : requiredId(input.companyId, "Empresa");
   if (allCompaniesSelected && !capabilities.canUseAllCompanies) {
     throw new AuthorizationError("Escopo de todas as empresas nao permitido.");
   }
 
   const workspace = await prisma.workspace.findFirst({
-      where: {
-        id: input.workspaceId,
-        active: true,
-        ...(!capabilities.canSwitchWorkspace
-          ? { id: access.workspaceId }
-          : {}),
-      },
-      select: { id: true },
-    });
+    where: {
+      id: workspaceId,
+      active: true,
+      ...(!capabilities.canSwitchWorkspace ? { id: access.workspaceId } : {}),
+    },
+    select: { id: true },
+  });
   const company =
     !allCompaniesSelected && workspace
       ? await prisma.company.findFirst({
           where: {
-            id: input.companyId,
+            id: companyId,
             active: true,
             type: "SCAFFOLD_COMPANY",
             workspaceLinks: {
@@ -79,4 +85,18 @@ export async function updateActiveContext(input: {
     COOKIE_OPTIONS,
   );
   cookieStore.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, COOKIE_OPTIONS);
+
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: access.userId,
+    entityLabel: "context-switcher",
+    action: AuditAction.UPDATE,
+    description: "Contexto ativo alterado",
+    newValue: {
+      companyId: useAllCompanies ? ALL_COMPANIES_CONTEXT : company!.id,
+      workspaceId: workspace.id,
+    },
+    companyId: useAllCompanies ? access.companyId : company!.id,
+    workspaceId: workspace.id,
+  });
 }

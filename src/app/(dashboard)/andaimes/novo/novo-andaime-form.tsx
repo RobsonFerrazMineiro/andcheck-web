@@ -297,9 +297,10 @@ export default function NovoAndaimePage() {
               type="button"
               variant="outline"
               className="rounded-md text-[11px] uppercase tracking-widest h-9"
-              asChild
+              disabled={saving}
+              onClick={() => router.push("/andaimes")}
             >
-              <Link href="/andaimes">Cancelar</Link>
+              Cancelar
             </Button>
             <Button
               type="submit"

@@ -73,7 +73,6 @@ export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
 
   return (
     <OperationalMap
-      key={pins.map((pin) => pin.id).join("|")}
       scaffolds={pins}
       height="100%"
       showCompanyName={showCompanyName}

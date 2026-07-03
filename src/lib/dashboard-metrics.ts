@@ -251,7 +251,18 @@ export async function getDashboardMetrics() {
     prisma.scaffold.findMany({
       where: activeScaffoldWhere,
       orderBy: { created_at: "desc" },
-      include: {
+      select: {
+        id: true,
+        code: true,
+        status: true,
+        location: true,
+        area: true,
+        responsible: true,
+        companyId: true,
+        validity_date: true,
+        latitude: true,
+        longitude: true,
+        location_description: true,
         tenantCompany: { select: { id: true, name: true } },
         _count: { select: { inspections: true } },
         inspections: {
@@ -417,7 +428,10 @@ export async function getDashboardMetrics() {
   return {
     operational: {
       scaffolds,
-      inspections,
+      inspections: inspections.map((inspection) => ({
+        date: inspection.date,
+        result: inspection.result,
+      })),
     },
     historical: {
       averageOperationDays:

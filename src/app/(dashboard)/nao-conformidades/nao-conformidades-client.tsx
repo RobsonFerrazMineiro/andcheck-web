@@ -246,7 +246,7 @@ export function NaoConformidadesClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {(
           [
             {
@@ -295,7 +295,7 @@ export function NaoConformidadesClient({
             <div
               key={card.label}
               className={
-                "bg-card border border-border rounded-lg p-4 shadow-sm " +
+                "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " +
                 card.border
               }
             >
@@ -317,7 +317,7 @@ export function NaoConformidadesClient({
         })}
       </div>
 
-      <div className="bg-card border border-border rounded-lg shadow-sm p-3 grid grid-cols-1 lg:grid-cols-[1.4fr_170px_170px_170px_170px_140px] gap-2">
+      <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
@@ -464,7 +464,7 @@ export function NaoConformidadesClient({
                   key={nc.id}
                   href={"/nao-conformidades/" + nc.id}
                   className={
-                    "flex xl:grid xl:grid-cols-12 xl:gap-4 items-center px-4 py-3 hover:bg-primary/5 transition-colors group " +
+                    "group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 hover:bg-primary/5 xl:grid xl:grid-cols-12 xl:gap-4 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >

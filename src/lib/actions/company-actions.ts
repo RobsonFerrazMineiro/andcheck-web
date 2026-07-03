@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache";
 
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { getCurrentUserAccess, requireAnyPermission, requireRole } from "@/lib/authz";
+import {
+  enumValue,
+  optionalId,
+  optionalText,
+  requiredId,
+  requiredText,
+} from "@/lib/input-validation";
 import { prisma } from "@/lib/prisma";
 import { CompanyType, CompanyWorkspaceRole } from "@prisma/client";
 
@@ -63,18 +70,24 @@ async function generateCompanyCode(name: string) {
 }
 
 function parseCompanyForm(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
+  const name = requiredText(formData.get("name"), "Nome", 160);
   const requestedCode = normalizeCode(String(formData.get("code") ?? ""));
-  const type = String(formData.get("type") ?? "") as CompanyType;
-  const workspaceValue = String(formData.get("workspaceId") ?? "").trim();
-  const workspaceId = workspaceValue === "none" ? "" : workspaceValue;
-  const active = String(formData.get("status") ?? "ACTIVE") === "ACTIVE";
-  const description = String(formData.get("description") ?? "").trim() || null;
-  const logoUrl = String(formData.get("logoUrl") ?? "").trim() || null;
+  const type = enumValue(
+    formData.get("type"),
+    [...COMPANY_TYPES],
+    "Tipo da empresa",
+  );
+  const workspaceId = optionalId(formData.get("workspaceId"), "Workspace") ?? "";
+  const status = enumValue(
+    formData.get("status") ?? "ACTIVE",
+    ["ACTIVE", "INACTIVE"] as const,
+    "Status da empresa",
+  );
+  const active = status === "ACTIVE";
+  const description = optionalText(formData.get("description"), "Descricao", 500);
+  const logoUrl = optionalText(formData.get("logoUrl"), "Logo", 500);
 
-  if (!name || !COMPANY_TYPES.has(type)) {
-    throw new Error("Nome e tipo sao obrigatorios.");
-  }
+  if (requestedCode && requestedCode.length < 2) throw new Error("Codigo da empresa invalido.");
 
   return { name, requestedCode, type, workspaceId, active, description, logoUrl };
 }
@@ -114,9 +127,10 @@ export async function getCompanyManagementData() {
 
 export async function getCompanyDetail(id: string) {
   await requireAnyPermission(["companies.manage", "companies.view"]);
+  const companyId = requiredId(id, "Empresa");
 
   return prisma.company.findUnique({
-    where: { id },
+    where: { id: companyId },
     include: {
       workspaceLinks: {
         orderBy: { workspace: { name: "asc" } },
@@ -183,8 +197,7 @@ export async function createCompany(formData: FormData) {
 export async function updateCompany(formData: FormData) {
   await requireRole("SUPER_ADMIN");
   const actor = await getCurrentUserAccess();
-  const id = String(formData.get("companyId") ?? "").trim();
-  if (!id) throw new Error("Empresa nao informada.");
+  const id = requiredId(formData.get("companyId"), "Empresa");
 
   const input = parseCompanyForm(formData);
   if (input.workspaceId) await assertWorkspace(input.workspaceId);
@@ -277,15 +290,16 @@ export async function updateCompany(formData: FormData) {
 export async function setCompanyActive(id: string, active: boolean) {
   await requireRole("SUPER_ADMIN");
   const actor = await getCurrentUserAccess();
-  const current = await prisma.company.findUnique({ where: { id } });
+  const companyId = requiredId(id, "Empresa");
+  const current = await prisma.company.findUnique({ where: { id: companyId } });
   if (!current) throw new Error("Empresa nao encontrada.");
-  if (!active && actor?.companyId === id) {
+  if (!active && actor?.companyId === companyId) {
     throw new Error("Nao e permitido desativar a empresa do usuario atual.");
   }
   if (current.active === active) return;
 
   const company = await prisma.company.update({
-    where: { id },
+    where: { id: companyId },
     data: { active },
   });
 

@@ -567,8 +567,31 @@ function incrementBucket(
   date: Date,
   key: keyof Omit<SeriesPoint, "label">,
 ) {
-  const bucket = buckets.find((item) => date >= item.start && date <= item.end);
-  if (bucket) bucket[key] += 1;
+  const bucketIndex = findBucketIndex(buckets, date);
+  if (bucketIndex >= 0) buckets[bucketIndex][key] += 1;
+}
+
+function findBucketIndex(
+  buckets: Array<{ start: Date; end: Date }>,
+  date: Date,
+) {
+  const time = date.getTime();
+  let low = 0;
+  let high = buckets.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const bucket = buckets[mid];
+    if (time < bucket.start.getTime()) {
+      high = mid - 1;
+    } else if (time > bucket.end.getTime()) {
+      low = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+
+  return -1;
 }
 
 function buildStatusDistribution(

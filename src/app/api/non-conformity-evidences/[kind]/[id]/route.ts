@@ -1,5 +1,6 @@
 import { getCurrentUserAccess } from "@/lib/authz";
 import { createStoredFileResponse } from "@/lib/file-response";
+import { enumValue, requiredId } from "@/lib/input-validation";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
@@ -28,7 +29,13 @@ export async function GET(
   }
   const scope = await getDataScope();
 
-  const { kind, id } = await context.params;
+  const { kind: rawKind, id: rawId } = await context.params;
+  const kind = enumValue(
+    rawKind,
+    ["item", "general"] as const,
+    "Tipo de evidencia",
+  );
+  const id = requiredId(rawId, "Evidencia");
   const evidence =
     kind === "item"
       ? await prisma.nonConformityItemEvidence.findFirst({

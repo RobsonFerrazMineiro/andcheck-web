@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { getScaffolds } from "@/lib/actions/scaffold-actions";
+import { getScaffoldMapData } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getContextCapabilities } from "@/lib/data-scope";
 import { typography } from "@/lib/design-system";
@@ -19,7 +19,7 @@ export default async function MapaPage() {
   const access = await getCurrentUserAccess();
   const [raw, canCreateScaffold, canCreateInspection, canFinalizeInspection] =
     await Promise.all([
-      getScaffolds(),
+      getScaffoldMapData(),
       canCurrentUser("scaffolds.create"),
       canCurrentUser("inspections.create"),
       canCurrentUser("inspections.finalize"),
@@ -160,7 +160,7 @@ export default async function MapaPage() {
           return (
             <div
               key={k.label}
-              className={`rounded-lg border border-border bg-card p-4 shadow-sm ${k.border}`}
+              className={`andcheck-lift rounded-lg border border-border bg-card p-4 shadow-sm ${k.border}`}
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <p

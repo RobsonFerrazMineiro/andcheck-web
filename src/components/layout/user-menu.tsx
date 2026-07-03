@@ -54,7 +54,8 @@ export function UserMenu({
         className="flex items-center gap-2.5 rounded px-2 py-1 text-left transition-colors hover:bg-muted"
         aria-expanded={open}
         aria-haspopup="dialog"
-        aria-label="Abrir perfil do usuário"
+        aria-controls="user-menu-panel"
+        aria-label={open ? "Fechar perfil do usuário" : "Abrir perfil do usuário"}
       >
         <div className="hidden min-w-0 max-w-44 text-right xl:block">
           <p className="truncate text-xs font-medium leading-none">{name}</p>
@@ -69,8 +70,10 @@ export function UserMenu({
 
       {open && (
         <div
+          id="user-menu-panel"
           role="dialog"
-          aria-label="Detalhes do perfil"
+          aria-modal="false"
+          aria-labelledby="user-menu-title"
           className="absolute right-0 top-12 z-50 w-80 border bg-popover text-popover-foreground shadow-lg"
         >
           <div className="border-b bg-muted/25 p-4">
@@ -79,7 +82,9 @@ export function UserMenu({
                 <User className="size-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{name}</p>
+                <p id="user-menu-title" className="truncate text-sm font-bold">
+                  {name}
+                </p>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {email}
                 </p>

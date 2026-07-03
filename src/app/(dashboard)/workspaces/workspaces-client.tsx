@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   createWorkspace,
   setWorkspaceActive,
@@ -93,6 +94,7 @@ export function WorkspacesClient({
   const [ownerCompanyId, setOwnerCompanyId] = useState("all");
   const [editing, setEditing] = useState<WorkspaceRow | null>(initialEditing);
   const [creating, setCreating] = useState(false);
+  const [statusTarget, setStatusTarget] = useState<WorkspaceRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
@@ -161,12 +163,42 @@ export function WorkspacesClient({
             ? error.message
             : "Não foi possível alterar o status.",
         );
+      } finally {
+        setStatusTarget(null);
       }
     });
   }
 
   return (
     <div className="space-y-5">
+      <ConfirmDialog
+        open={Boolean(statusTarget)}
+        title={statusTarget?.active ? "Desativar workspace" : "Ativar workspace"}
+        description={
+          statusTarget?.active
+            ? "O workspace será desativado e deixará de aparecer como ativo nas operações."
+            : "O workspace será reativado para uso operacional."
+        }
+        details={
+          statusTarget ? (
+            <div className="space-y-1">
+              <p className={`${typography.bodyStrong} text-foreground`}>
+                {statusTarget.name}
+              </p>
+              <p className={`${typography.codeMuted} text-muted-foreground`}>
+                {statusTarget.code}
+              </p>
+            </div>
+          ) : null
+        }
+        confirmLabel={statusTarget?.active ? "Desativar workspace" : "Ativar workspace"}
+        destructive={Boolean(statusTarget?.active)}
+        pending={isPending}
+        onCancel={() => setStatusTarget(null)}
+        onConfirm={() => {
+          if (statusTarget) toggleStatus(statusTarget);
+        }}
+      />
       <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -195,7 +227,7 @@ export function WorkspacesClient({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
         <Kpi
           icon={MapPin}
           label="Workspaces"
@@ -250,7 +282,7 @@ export function WorkspacesClient({
                 placeholder="Gerado automaticamente"
               />
               <SelectField
-                label="Empresa proprietaria"
+                label="Empresa proprietária"
                 name="ownerCompanyId"
                 defaultValue={editing?.ownerCompanyId ?? ownerCompanies[0]?.id}
                 options={ownerCompanies.map((company) => [
@@ -310,7 +342,12 @@ export function WorkspacesClient({
                 />
               </div>
               <div className="flex justify-end gap-2 lg:col-span-2">
-                <Button type="button" variant="outline" onClick={closeForm}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isPending}
+                  onClick={closeForm}
+                >
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -345,7 +382,7 @@ export function WorkspacesClient({
         <FilterSelect
           value={ownerCompanyId}
           onValueChange={setOwnerCompanyId}
-          placeholder="Todas as proprietarias"
+          placeholder="Todas as proprietárias"
           options={ownerCompanies.map((company) => [company.id, company.name])}
         />
       </div>
@@ -372,11 +409,11 @@ export function WorkspacesClient({
         />
       ) : (
         <div className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((workspace) => (
               <div
                 key={workspace.id}
-                className="flex min-h-56 flex-col rounded-lg border border-border bg-card p-4 shadow-sm"
+                className="andcheck-lift flex min-h-56 flex-col rounded-lg border border-border bg-card p-4 shadow-sm"
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -431,6 +468,7 @@ export function WorkspacesClient({
                     variant="outline"
                     size="icon-sm"
                     title="Visualizar"
+                    aria-label={`Visualizar workspace ${workspace.name}`}
                   >
                     <Link
                       href={`/workspaces/${workspace.id}`}
@@ -462,7 +500,7 @@ export function WorkspacesClient({
                             ? `Desativar workspace ${workspace.name}`
                             : `Ativar workspace ${workspace.name}`
                         }
-                        onClick={() => toggleStatus(workspace)}
+                        onClick={() => setStatusTarget(workspace)}
                         disabled={isPending}
                       >
                         <Power />
@@ -590,7 +628,7 @@ function WorkspaceLocationFields({
           </div>
         </div>
         <p className={`${typography.bodyMuted} text-muted-foreground`}>
-          Coordenadas opcionais. Use estes campos apenas para ajuste tecnico
+          Coordenadas opcionais. Use estes campos apenas para ajuste técnico
           fino.
         </p>
       </div>
@@ -650,7 +688,7 @@ function Kpi({
 }) {
   return (
     <div
-      className={`bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
+      className={`andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p

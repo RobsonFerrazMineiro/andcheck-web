@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   createCompany,
@@ -90,6 +91,7 @@ export function EmpresasClient({
   const [type, setType] = useState("all");
   const [editing, setEditing] = useState<CompanyRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [statusTarget, setStatusTarget] = useState<CompanyRow | null>(null);
   const [logoUploading, setLogoUploading] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -165,6 +167,8 @@ export function EmpresasClient({
             ? error.message
             : "Não foi possível alterar o status.",
         );
+      } finally {
+        setStatusTarget(null);
       }
     });
   }
@@ -173,6 +177,34 @@ export function EmpresasClient({
 
   return (
     <div className="space-y-5">
+      <ConfirmDialog
+        open={Boolean(statusTarget)}
+        title={statusTarget?.active ? "Desativar empresa" : "Ativar empresa"}
+        description={
+          statusTarget?.active
+            ? "A empresa será desativada e deixará de aparecer como ativa nas operações."
+            : "A empresa será reativada para uso operacional."
+        }
+        details={
+          statusTarget ? (
+            <div className="space-y-1">
+              <p className={`${typography.bodyStrong} text-foreground`}>
+                {statusTarget.name}
+              </p>
+              <p className={`${typography.codeMuted} text-muted-foreground`}>
+                {statusTarget.code}
+              </p>
+            </div>
+          ) : null
+        }
+        confirmLabel={statusTarget?.active ? "Desativar empresa" : "Ativar empresa"}
+        destructive={Boolean(statusTarget?.active)}
+        pending={isPending}
+        onCancel={() => setStatusTarget(null)}
+        onConfirm={() => {
+          if (statusTarget) toggleStatus(statusTarget);
+        }}
+      />
       <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -201,7 +233,7 @@ export function EmpresasClient({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
         <Kpi
           icon={Building2}
           label="Empresas"
@@ -302,6 +334,7 @@ export function EmpresasClient({
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={isPending || logoUploading}
                   onClick={() => {
                     setCreating(false);
                     setEditing(null);
@@ -434,6 +467,7 @@ export function EmpresasClient({
                   variant="outline"
                   size="icon-sm"
                   title="Visualizar"
+                  aria-label={`Visualizar empresa ${company.name}`}
                 >
                   <Link
                     href={`/empresas/${company.id}`}
@@ -466,7 +500,7 @@ export function EmpresasClient({
                         ? `Desativar empresa ${company.name}`
                         : `Ativar empresa ${company.name}`
                     }
-                    onClick={() => toggleStatus(company)}
+                    onClick={() => setStatusTarget(company)}
                     disabled={isPending}
                   >
                     <Power />
@@ -501,7 +535,7 @@ function Kpi({
 }) {
   return (
     <div
-      className={`bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
+      className={`andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p
@@ -620,7 +654,7 @@ function LogoUploadField({
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("A logo deve ter no maximo 2 MB.");
+      toast.error("A logo deve ter no máximo 2 MB.");
       event.target.value = "";
       return;
     }

@@ -22,8 +22,22 @@ import {
   DEFAULT_COMPANY_ID,
   DEFAULT_WORKSPACE_ID,
 } from "@/lib/multi-company";
+import {
+  optionalText,
+  requiredEmail,
+  requiredId,
+  requiredText,
+} from "@/lib/input-validation";
 
 const TEMPORARY_PASSWORD = "andcheck@2025";
+
+function parseUserStatus(value: FormDataEntryValue | null) {
+  const status = String(value ?? "active").trim();
+  if (!["active", "inactive"].includes(status)) {
+    throw new Error("Status do usuario invalido.");
+  }
+  return status === "active";
+}
 
 export async function getUserManagementData() {
   await requireAnyPermission(["users.manage_company", "users.create"]);
@@ -55,18 +69,14 @@ export async function createUser(formData: FormData) {
   await requirePermission("users.create");
   const scope = await getDataScope();
 
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const company = String(formData.get("company") ?? "").trim();
-  const registration = String(formData.get("registration") ?? "").trim();
-  const department = String(formData.get("department") ?? "").trim();
-  const position = String(formData.get("position") ?? "").trim();
-  const roleId = String(formData.get("role_id") ?? "").trim();
-  const isActive = String(formData.get("status") ?? "active") === "active";
-
-  if (!name || !email || !roleId) {
-    throw new Error("Nome, e-mail e perfil sao obrigatorios.");
-  }
+  const name = requiredText(formData.get("name"), "Nome", 120);
+  const email = requiredEmail(formData.get("email"));
+  const company = optionalText(formData.get("company"), "Empresa", 160) ?? "";
+  const registration = optionalText(formData.get("registration"), "Matricula", 80) ?? "";
+  const department = optionalText(formData.get("department"), "Departamento", 120) ?? "";
+  const position = optionalText(formData.get("position"), "Cargo", 120) ?? "";
+  const roleId = requiredId(formData.get("role_id"), "Perfil");
+  const isActive = parseUserStatus(formData.get("status"));
 
   const [passwordHash, role, selectedCompany] = await Promise.all([
     bcrypt.hash(TEMPORARY_PASSWORD, 12),
@@ -159,19 +169,15 @@ export async function updateUser(formData: FormData) {
   const currentAccess = await getCurrentUserAccess();
   const scope = await getDataScope();
 
-  const userId = String(formData.get("user_id") ?? "").trim();
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const company = String(formData.get("company") ?? "").trim();
-  const registration = String(formData.get("registration") ?? "").trim();
-  const department = String(formData.get("department") ?? "").trim();
-  const position = String(formData.get("position") ?? "").trim();
-  const roleId = String(formData.get("role_id") ?? "").trim();
-  const isActive = String(formData.get("status") ?? "active") === "active";
-
-  if (!userId || !name || !email || !roleId) {
-    throw new Error("Usuario, nome, e-mail e perfil sao obrigatorios.");
-  }
+  const userId = requiredId(formData.get("user_id"), "Usuario");
+  const name = requiredText(formData.get("name"), "Nome", 120);
+  const email = requiredEmail(formData.get("email"));
+  const company = optionalText(formData.get("company"), "Empresa", 160) ?? "";
+  const registration = optionalText(formData.get("registration"), "Matricula", 80) ?? "";
+  const department = optionalText(formData.get("department"), "Departamento", 120) ?? "";
+  const position = optionalText(formData.get("position"), "Cargo", 120) ?? "";
+  const roleId = requiredId(formData.get("role_id"), "Perfil");
+  const isActive = parseUserStatus(formData.get("status"));
 
   const [targetUser, role] = await Promise.all([
     prisma.user.findUnique({
@@ -289,9 +295,10 @@ export async function setUserActive(userId: string, isActive: boolean) {
   await requireAnyPermission(["users.deactivate", "users.update"]);
   const currentAccess = await getCurrentUserAccess();
   const scope = await getDataScope();
+  const parsedUserId = requiredId(userId, "Usuario");
 
   const targetUser = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: parsedUserId },
     include: { roles: { include: { role: true } } },
   });
 
@@ -304,12 +311,12 @@ export async function setUserActive(userId: string, isActive: boolean) {
     throw new Error("Voce nao tem permissao para alterar Super Admin.");
   }
 
-  if (!isActive && currentAccess?.userId === userId) {
+  if (!isActive && currentAccess?.userId === parsedUserId) {
     throw new Error("Voce nao pode desativar o proprio usuario.");
   }
 
   const user = await prisma.user.update({
-    where: { id: userId },
+    where: { id: parsedUserId },
     data: { is_active: isActive },
   });
   await createAuditLog({
@@ -330,13 +337,14 @@ export async function setUserActive(userId: string, isActive: boolean) {
 export async function deleteUser(userId: string) {
   await requirePermission("permissions.manage");
   const currentAccess = await getCurrentUserAccess();
+  const parsedUserId = requiredId(userId, "Usuario");
 
-  if (currentAccess?.userId === userId) {
+  if (currentAccess?.userId === parsedUserId) {
     throw new Error("Voce nao pode excluir o proprio usuario.");
   }
 
   const targetUser = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: parsedUserId },
     include: { roles: { include: { role: true } } },
   });
 
@@ -352,7 +360,7 @@ export async function deleteUser(userId: string) {
     throw new Error("Nao e permitido excluir usuarios administradores.");
   }
 
-  await prisma.user.delete({ where: { id: userId } });
+  await prisma.user.delete({ where: { id: parsedUserId } });
   await createAuditLog({
     entityType: AuditEntityType.USER,
     entityId: targetUser.id,

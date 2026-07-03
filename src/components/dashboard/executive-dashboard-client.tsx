@@ -43,22 +43,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import {
-  Area,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Legend,
-  Line,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 type Props = {
   data: ExecutiveDashboardData;
@@ -71,6 +55,30 @@ const OperationalMap = dynamic(
     ssr: false,
     loading: () => <EmptyChart label="Carregando mapa gerencial..." />,
   },
+);
+
+const OperationalSeriesChart = dynamic(
+  () =>
+    import("@/components/dashboard/executive-dashboard-charts").then(
+      (module) => module.OperationalSeriesChart,
+    ),
+  { loading: () => <EmptyChart label="Carregando indicadores..." /> },
+);
+
+const StatusDistributionChart = dynamic(
+  () =>
+    import("@/components/dashboard/executive-dashboard-charts").then(
+      (module) => module.StatusDistributionChart,
+    ),
+  { loading: () => <EmptyChart label="Carregando distribuição..." /> },
+);
+
+const InspectorProductivityChart = dynamic(
+  () =>
+    import("@/components/dashboard/executive-dashboard-charts").then(
+      (module) => module.InspectorProductivityChart,
+    ),
+  { loading: () => <EmptyChart label="Carregando produtividade..." /> },
 );
 
 const PERIODS = [
@@ -169,7 +177,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+          <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
             <FilterSelect
               label="Empresa"
               value={filters.companyId}
@@ -240,7 +248,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
         </CardContent>
       </Card>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {data.kpis.map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
         ))}
@@ -259,20 +267,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
               {chartTotals === 0 ? (
                 <EmptyChart />
               ) : (
-                <ResponsiveContainer width="100%" height={320}>
-                  <ComposedChart data={data.series}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                    <Tooltip contentStyle={tooltipStyle} />
-                    <Legend />
-                    <Bar dataKey="inspections" name="Inspeções" fill="#2563eb" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="nonConformities" name="NCs" fill="#d97706" radius={[4, 4, 0, 0]} />
-                    <Line type="monotone" dataKey="released" name="Liberados" stroke="#16a34a" strokeWidth={2} />
-                    <Line type="monotone" dataKey="interdictions" name="Interdições" stroke="#dc2626" strokeWidth={2} />
-                    <Area type="monotone" dataKey="criticalNotifications" name="Notif. críticas" fill="#7f1d1d" stroke="#7f1d1d" fillOpacity={0.18} />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                <OperationalSeriesChart data={data.series} />
               )}
             </div>
           </CardContent>
@@ -286,23 +281,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           <CardContent>
             <div className="grid gap-4 lg:grid-cols-[160px_1fr] xl:grid-cols-1">
               <div className="h-44">
-                <ResponsiveContainer width="100%" height={176}>
-                  <PieChart>
-                    <Pie
-                      data={data.statusDistribution}
-                      dataKey="total"
-                      nameKey="label"
-                      innerRadius={42}
-                      outerRadius={72}
-                      paddingAngle={2}
-                    >
-                      {data.statusDistribution.map((item) => (
-                        <Cell key={item.status} fill={STATUS_COLORS[item.status] ?? "#94a3b8"} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={tooltipStyle} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <StatusDistributionChart data={data.statusDistribution} />
               </div>
               <div className="flex flex-col gap-2">
                 {data.statusDistribution.map((item) => (
@@ -477,15 +456,7 @@ function ProductivityPanel({ data }: Props) {
           {bars.length === 0 ? (
             <EmptyChart />
           ) : (
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={bars} layout="vertical" margin={{ left: 12, right: 12 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="total" name="Inspeções" fill="#2563eb" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <InspectorProductivityChart data={bars} />
           )}
         </div>
       </CardContent>
@@ -520,7 +491,6 @@ function ManagementMap({ data }: Props) {
         <div className="relative min-h-96 overflow-hidden rounded-lg border">
           {pins.length > 0 ? (
             <OperationalMap
-              key={pins.map((pin) => pin.id).join(":")}
               scaffolds={pins}
               height="384px"
               interactive
@@ -710,10 +680,3 @@ function downloadBlob(blob: Blob, filename: string) {
   link.remove();
   URL.revokeObjectURL(url);
 }
-
-const tooltipStyle = {
-  background: "var(--card)",
-  border: "1px solid var(--border)",
-  borderRadius: "8px",
-  fontSize: "12px",
-};

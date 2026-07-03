@@ -2,7 +2,6 @@
 
 import { logInspectionPdfGenerated } from "@/lib/actions/audit-actions";
 import type { InspectionForPDF } from "@/lib/generate-inspection-pdf";
-import { sanitizeForLog } from "@/lib/safe-log";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -29,14 +28,10 @@ export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
       doc.save(`${inspection.scaffold_code}-${dateStr}.pdf`);
       try {
         await logInspectionPdfGenerated(inspection.id);
-      } catch (auditError) {
-        console.error(
-          "Erro ao registrar auditoria do PDF:",
-          sanitizeForLog(auditError),
-        );
+      } catch {
+        // A geração do PDF não deve falhar por indisponibilidade do log.
       }
-    } catch (err) {
-      console.error("Erro ao gerar PDF:", sanitizeForLog(err));
+    } catch {
       alert("Não foi possível gerar o PDF. Tente novamente.");
     } finally {
       setLoading(false);

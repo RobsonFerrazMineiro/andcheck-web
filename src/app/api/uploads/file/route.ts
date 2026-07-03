@@ -1,5 +1,10 @@
 import { getCurrentUserAccess } from "@/lib/authz";
 import { createStoredFileResponse } from "@/lib/file-response";
+import {
+  checkRequestRateLimit,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
+import { UPLOAD_CATEGORIES } from "@/lib/file-storage";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 
 const FILE_PERMISSIONS: PermissionCode[] = [
@@ -14,6 +19,9 @@ const FILE_PERMISSIONS: PermissionCode[] = [
   "non_conformities.view",
   "non_conformities.add_evidence",
 ];
+const ALLOWED_BLOB_PREFIXES = UPLOAD_CATEGORIES.map(
+  (category) => `vercel-blob:${category}/`,
+);
 
 export async function GET(request: Request) {
   const access = await getCurrentUserAccess();
@@ -23,9 +31,18 @@ export async function GET(request: Request) {
     ),
   );
   if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  const limit = checkRequestRateLimit(request, {
+    key: "upload-file-read",
+    limit: 180,
+    windowMs: 60 * 1_000,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit.retryAfter);
 
   const reference = new URL(request.url).searchParams.get("reference") ?? "";
-  if (!reference.startsWith("vercel-blob:")) {
+  if (
+    reference.length > 512 ||
+    !ALLOWED_BLOB_PREFIXES.some((prefix) => reference.startsWith(prefix))
+  ) {
     return new Response("Referencia de arquivo invalida.", { status: 422 });
   }
 

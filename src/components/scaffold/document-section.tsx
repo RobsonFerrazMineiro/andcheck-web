@@ -19,11 +19,11 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { EmptyState } from "@/components/shared/empty-state";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   addScaffoldDocument,
   deleteScaffoldDocument,
 } from "@/lib/actions/document-actions";
-import { compressImageBlob } from "@/lib/compress-image";
 import {
   downloadDocumentFile,
   getDocumentExtension,
@@ -60,7 +60,7 @@ const DOC_TYPES = [
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx";
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
-type ScaffoldDocumentMetadata = {
+export type ScaffoldDocumentMetadata = {
   id: string;
   scaffold_id: string;
   type: DocumentType;
@@ -118,6 +118,8 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialogRef, true, saving ? undefined : onClose);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -138,7 +140,9 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
     try {
       // Comprime imagens antes de enviar; o banco recebe apenas a referência.
       const uploadBody = file.type.startsWith("image/")
-        ? await compressImageBlob(file)
+        ? await import("@/lib/compress-image").then((mod) =>
+            mod.compressImageBlob(file),
+          )
         : file;
       const uploaded = await uploadFile(uploadBody, {
         category: "scaffold-documents",
@@ -169,21 +173,32 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-document-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    >
       <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg">
         {/* Header do modal */}
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p
+              id="add-document-title"
+              className="text-[10px] font-bold uppercase tracking-widest text-foreground"
+            >
               Adicionar Documento Técnico
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
+            disabled={saving}
             aria-label="Fechar modal de documento"
-            className="p-1 hover:bg-muted transition-colors"
+            className="p-1 hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
@@ -192,10 +207,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* Tipo */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-type"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Tipo de Documento *
             </label>
             <select
+              id="document-type"
               value={type}
               onChange={(e) => setType(e.target.value)}
               className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
@@ -210,10 +229,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Título */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-title"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Título / Nome (opcional)
             </label>
             <input
+              id="document-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -224,15 +247,27 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Arquivo */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-file"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Arquivo *{" "}
               <span className="normal-case font-normal text-muted-foreground/60">
                 (PDF, JPG, PNG, WEBP, DOC — máx. 5 MB)
               </span>
             </label>
             <div
+              role="button"
+              tabIndex={0}
+              aria-controls="document-file"
               className="border border-dashed border-border bg-muted/20 px-4 py-4 cursor-pointer hover:bg-muted/40 transition-colors text-center"
               onClick={() => fileRef.current?.click()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  fileRef.current?.click();
+                }
+              }}
             >
               {file ? (
                 <p className="text-[11px] text-foreground font-semibold truncate">
@@ -245,9 +280,11 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               )}
             </div>
             <input
+              id="document-file"
               ref={fileRef}
               type="file"
               accept={ACCEPT}
+              required
               className="hidden"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
@@ -255,10 +292,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Responsável */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-uploaded-by"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Responsável pelo Upload *
             </label>
             <input
+              id="document-uploaded-by"
               type="text"
               value={uploadedBy}
               onChange={(e) => setUploadedBy(e.target.value)}
@@ -270,10 +311,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Validade */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-expires-at"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Validade / Revisão (opcional)
             </label>
             <input
+              id="document-expires-at"
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
@@ -283,10 +328,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Observação */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label
+              htmlFor="document-observation"
+              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
               Observação (opcional)
             </label>
             <textarea
+              id="document-observation"
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
               rows={2}
@@ -299,7 +348,8 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="h-9 px-4 border border-border text-[11px] font-bold uppercase tracking-widest hover:bg-muted transition-colors"
+              disabled={saving}
+              className="h-9 px-4 border border-border text-[11px] font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -323,7 +373,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 }
 
 // ── Componente principal ──────────────────────────────────────────────────────
-interface Props {
+export interface ScaffoldDocumentSectionProps {
   scaffoldId: string;
   initialDocuments: ScaffoldDocumentMetadata[];
   canAddDocument?: boolean;
@@ -335,7 +385,7 @@ export function ScaffoldDocumentSection({
   initialDocuments,
   canAddDocument = false,
   canDeleteDocument = false,
-}: Props) {
+}: ScaffoldDocumentSectionProps) {
   const router = useRouter();
   const [removedDocumentIds, setRemovedDocumentIds] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);

@@ -71,7 +71,7 @@ export default async function WorkspaceDetailPage({
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Info label="Nome" value={workspace.name} />
           <Info label="Código" value={workspace.code} mono />
-          <Info label="Empresa proprietaria" value={workspace.ownerCompany.name} />
+          <Info label="Empresa proprietária" value={workspace.ownerCompany.name} />
           <Info label="Status" value={workspace.active ? "Ativo" : "Inativo"} />
           <Info label="Cidade / Estado" value={[workspace.city, workspace.state].filter(Boolean).join(" / ") || "Não informado"} />
           <Info label="Endereço" value={workspace.address ?? "Não informado"} />
@@ -94,9 +94,9 @@ export default async function WorkspaceDetailPage({
           ) : (
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {workspace.companyLinks.map(({ company, role }) => (
-                <Link key={company.id} href={`/empresas/${company.id}`} className="flex items-center justify-between gap-3 border bg-muted/15 p-3 transition-colors hover:bg-muted/40">
+                <Link key={company.id} href={`/empresas/${company.id}`} className="andcheck-lift flex items-center justify-between gap-3 border bg-muted/15 p-3 hover:bg-muted/40">
                   <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
-                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietaria" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
+                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietária" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
                 </Link>
               ))}
             </div>

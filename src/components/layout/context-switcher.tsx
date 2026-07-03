@@ -1,6 +1,7 @@
 "use client";
 
 import { updateActiveContext } from "@/lib/actions/context-actions";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   Select,
   SelectContent,
@@ -16,7 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type ContextOption = {
@@ -174,12 +175,15 @@ export function MobileContextSwitcher({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const panelRef = useRef<HTMLDivElement>(null);
   const selectedCompany = context.companies.find(
     (company) => company.id === context.selectedCompanyId,
   );
   const selectedWorkspace = context.workspaces.find(
     (workspace) => workspace.id === context.selectedWorkspaceId,
   );
+
+  useDialogFocus(panelRef, open, () => setOpen(false));
 
   function changeContext(next: { companyId?: string; workspaceId?: string }) {
     startTransition(async () => {
@@ -217,6 +221,8 @@ export function MobileContextSwitcher({
         onClick={() => setOpen((current) => !current)}
         className="flex w-full min-w-0 items-center justify-between gap-2 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5 text-left"
         aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-controls="mobile-context-panel"
         aria-label="Alterar contexto ativo"
       >
         <div className="min-w-0">
@@ -243,7 +249,15 @@ export function MobileContextSwitcher({
       </button>
 
       {open && (
-        <div className="fixed inset-x-0 top-14 z-50 border-b border-border bg-background p-4 shadow-lg">
+        <div
+          ref={panelRef}
+          id="mobile-context-panel"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="false"
+          aria-label="Selecionar contexto ativo"
+          className="fixed inset-x-0 top-14 z-50 border-b border-border bg-background p-4 shadow-lg"
+        >
           <div className="mx-auto grid max-w-md gap-4">
             {context.canSwitchCompany && (
               <div>

@@ -12,6 +12,13 @@ import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
 import { assertStoredFileReference } from "@/lib/file-storage-reference";
 import { ACTIVE_NON_CONFORMITY_STATUSES } from "@/lib/non-conformity-status";
 import {
+  enumValue,
+  optionalText,
+  requiredId,
+  requiredNumber,
+  requiredText,
+} from "@/lib/input-validation";
+import {
   assertRecordInDataScope,
   dataScopeWhere,
   getDataScope,
@@ -22,6 +29,7 @@ import {
   hasCriticalChecklistFailure,
 } from "@/lib/inspection-outcome";
 import {
+  ChecklistValue,
   InspectionResult,
   NonConformityClassification,
   NonConformityStatus,
@@ -34,6 +42,85 @@ import { resolveInspectionSignaturePolicyForScaffold } from "./signature-policy-
 import { createNotification } from "@/lib/notifications/service";
 
 const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
+const CHECKLIST_VALUES = Object.values(ChecklistValue);
+const INSPECTION_RESULTS = Object.values(InspectionResult);
+
+function parseInspectionInput(data: {
+  scaffold_id: string;
+  scaffold_code: string;
+  inspector_name: string;
+  result: InspectionResult;
+  validity_days: number;
+  notes?: string;
+  photos?: string[];
+  signature?: string;
+  signatures?: {
+    role_code: string;
+    signer_name: string;
+    signer_company?: string;
+    signer_position?: string;
+    signature_data?: string;
+  }[];
+  checklist: {
+    item_id: string;
+    item_label: string;
+    category: string;
+    value: "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA";
+    critical: boolean;
+    observation?: string;
+    photo?: string;
+  }[];
+}) {
+  if (!Array.isArray(data.checklist) || data.checklist.length === 0) {
+    throw new Error("Checklist da inspecao e obrigatorio.");
+  }
+  if (data.checklist.length > 250) {
+    throw new Error("Checklist da inspecao excede o limite permitido.");
+  }
+  if ((data.photos?.length ?? 0) > 30) {
+    throw new Error("Quantidade de fotos da inspecao excede o limite permitido.");
+  }
+  if ((data.signatures?.length ?? 0) > 20) {
+    throw new Error("Quantidade de assinaturas excede o limite permitido.");
+  }
+
+  return {
+    scaffold_id: requiredId(data.scaffold_id, "Andaime"),
+    scaffold_code: requiredText(data.scaffold_code, "Codigo do andaime", 80),
+    inspector_name: requiredText(data.inspector_name, "Inspetor", 140),
+    result: enumValue(data.result, INSPECTION_RESULTS, "Resultado da inspecao"),
+    validity_days: requiredNumber(data.validity_days, "Validade", {
+      min: 0,
+      max: 365,
+    }),
+    notes: optionalText(data.notes, "Observacoes", 2000) ?? undefined,
+    photos: (data.photos ?? []).map((photo) =>
+      requiredText(photo, "Foto da inspecao", 500),
+    ),
+    signature: optionalText(data.signature, "Assinatura da inspecao", 500) ?? undefined,
+    signatures: (data.signatures ?? []).map((signature) => ({
+      role_code: requiredId(signature.role_code, "Perfil da assinatura"),
+      signer_name: requiredText(signature.signer_name, "Nome do assinante", 140),
+      signer_company:
+        optionalText(signature.signer_company, "Empresa do assinante", 160) ??
+        undefined,
+      signer_position:
+        optionalText(signature.signer_position, "Cargo do assinante", 120) ??
+        undefined,
+      signature_data:
+        optionalText(signature.signature_data, "Assinatura", 500) ?? undefined,
+    })),
+    checklist: data.checklist.map((item) => ({
+      item_id: requiredId(item.item_id, "Item do checklist"),
+      item_label: requiredText(item.item_label, "Descricao do item", 240),
+      category: requiredText(item.category, "Categoria do item", 120),
+      value: enumValue(item.value, CHECKLIST_VALUES, "Valor do checklist"),
+      critical: Boolean(item.critical),
+      observation: optionalText(item.observation, "Observacao do item", 1000) ?? undefined,
+      photo: optionalText(item.photo, "Foto do checklist", 500) ?? undefined,
+    })),
+  };
+}
 
 const INSPECTION_RESULT_NOTIFICATION: Record<
   InspectionResult,
@@ -158,9 +245,10 @@ export async function getInspections() {
 export async function getInspectionById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
   const scope = await getDataScope();
+  const inspectionId = requiredId(id, "Inspecao");
 
   const inspection = await prisma.inspection.findFirst({
-    where: { id, ...dataScopeWhere(scope) },
+    where: { id: inspectionId, ...dataScopeWhere(scope) },
     select: {
       id: true,
       scaffold_id: true,
@@ -241,9 +329,10 @@ export async function getInspectionById(id: string) {
 export async function getInspectionsByScaffold(scaffold_id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
   const scope = await getDataScope();
+  const scaffoldId = requiredId(scaffold_id, "Andaime");
 
   return prisma.inspection.findMany({
-    where: { scaffold_id, ...dataScopeWhere(scope) },
+    where: { scaffold_id: scaffoldId, ...dataScopeWhere(scope) },
     orderBy: { date: "desc" },
     select: {
       id: true,
@@ -432,40 +521,41 @@ export async function createInspection(data: {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
   await assertActiveCompanyForCreation("inspections.create");
   const scope = await getDataScope();
+  const input = parseInspectionInput(data);
   const oldScaffold = await prisma.scaffold.findUnique({
-    where: { id: data.scaffold_id },
+    where: { id: input.scaffold_id },
   });
   assertRecordInDataScope(scope, oldScaffold);
 
-  const activeNonConformity = await findActiveNonConformity(data.scaffold_id);
+  const activeNonConformity = await findActiveNonConformity(input.scaffold_id);
   if (activeNonConformity) {
     throw new Error(
       "Não é possível iniciar nova inspeção enquanto houver não conformidade ativa para este andaime.",
     );
   }
 
-  data.photos?.forEach((photo) =>
+  input.photos?.forEach((photo) =>
     assertStoredFileReference(photo, "Foto da inspecao"),
   );
-  if (data.signature) {
-    assertStoredFileReference(data.signature, "Assinatura da inspecao");
+  if (input.signature) {
+    assertStoredFileReference(input.signature, "Assinatura da inspecao");
   }
-  data.signatures?.forEach((signature) => {
+  input.signatures?.forEach((signature) => {
     if (signature.signature_data) {
       assertStoredFileReference(signature.signature_data, "Assinatura");
     }
   });
-  data.checklist.forEach((item) => {
+  input.checklist.forEach((item) => {
     if (item.photo) {
       assertStoredFileReference(item.photo, "Foto do checklist");
     }
   });
   const currentAccess = await getCurrentUserAccess();
 
-  const { checklist, signatures, ...inspectionData } = data;
+  const { checklist, signatures, ...inspectionData } = input;
   const calculatedResult = calculateInspectionResult(checklist);
   const policy = await resolveInspectionSignaturePolicyForScaffold(
-    data.scaffold_id,
+    input.scaffold_id,
   );
   const requiredSignatures =
     policy?.requirements.filter((requirement) => requirement.is_required) ?? [];
@@ -497,7 +587,7 @@ export async function createInspection(data: {
       workspaceId: oldScaffold?.workspaceId,
       result: calculatedResult,
       validity_days:
-        calculatedResult === "reprovado" ? 0 : data.validity_days,
+        calculatedResult === "reprovado" ? 0 : input.validity_days,
       signatures: {
         create: providedSignatures.map((signature) => ({
           role_code: signature.role_code,
@@ -533,8 +623,8 @@ export async function createInspection(data: {
 
   // Atualizar status e validade do andaime conforme resultado
   const validityDate =
-    calculatedResult !== "reprovado" && data.validity_days > 0
-      ? new Date(Date.now() + data.validity_days * 86_400_000)
+    calculatedResult !== "reprovado" && input.validity_days > 0
+      ? new Date(Date.now() + input.validity_days * 86_400_000)
       : null;
 
   // Se há item crítico reprovado → INTERDITADO; reprovado simples → REPROVADO; aprovado → LIBERADO
@@ -542,7 +632,7 @@ export async function createInspection(data: {
   const newStatus = calculateScaffoldStatus(calculatedResult, checklist);
 
   const scaffold = await prisma.scaffold.update({
-    where: { id: data.scaffold_id },
+    where: { id: input.scaffold_id },
     data: {
       status: newStatus,
       validity_date: validityDate,

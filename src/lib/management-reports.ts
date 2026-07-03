@@ -397,8 +397,27 @@ function buildTimeBuckets(from: Date, to: Date) {
   return { buckets, granularity };
 }
 
-function inBucket(date: Date, bucket: { from: Date; to: Date }) {
-  return date >= bucket.from && date <= bucket.to;
+function findBucketIndex(
+  buckets: Array<{ from: Date; to: Date }>,
+  date: Date,
+) {
+  const time = date.getTime();
+  let low = 0;
+  let high = buckets.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const bucket = buckets[mid];
+    if (time < bucket.from.getTime()) {
+      high = mid - 1;
+    } else if (time > bucket.to.getTime()) {
+      low = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+
+  return -1;
 }
 
 function formatDateIso(date: Date) {
@@ -872,25 +891,39 @@ export async function getManagementReportData(
   const { buckets, granularity } = buildTimeBuckets(from, to);
   const inspectionTrend = buckets.map((bucket) => ({
     label: bucket.label,
-    aprovadas: inspections.filter(
-      (item) => item.result === "aprovado" && inBucket(item.date, bucket),
-    ).length,
-    reprovadas: inspections.filter(
-      (item) => item.result === "reprovado" && inBucket(item.date, bucket),
-    ).length,
-    ressalvas: inspections.filter(
-      (item) =>
-        item.result === "aprovado_com_ressalvas" && inBucket(item.date, bucket),
-    ).length,
+    aprovadas: 0,
+    reprovadas: 0,
+    ressalvas: 0,
   }));
   const nonConformityTrend = buckets.map((bucket) => ({
     label: bucket.label,
-    abertas: nonConformities.filter((item) => inBucket(item.createdAt, bucket))
-      .length,
-    encerradas: nonConformities.filter(
-      (item) => item.closedAt && inBucket(item.closedAt, bucket),
-    ).length,
+    abertas: 0,
+    encerradas: 0,
   }));
+
+  for (const inspection of inspections) {
+    const index = findBucketIndex(buckets, inspection.date);
+    if (index < 0) continue;
+    if (inspection.result === "aprovado") inspectionTrend[index].aprovadas += 1;
+    if (inspection.result === "reprovado") {
+      inspectionTrend[index].reprovadas += 1;
+    }
+    if (inspection.result === "aprovado_com_ressalvas") {
+      inspectionTrend[index].ressalvas += 1;
+    }
+  }
+
+  for (const nonConformity of nonConformities) {
+    const openedIndex = findBucketIndex(buckets, nonConformity.createdAt);
+    if (openedIndex >= 0) nonConformityTrend[openedIndex].abertas += 1;
+
+    if (nonConformity.closedAt) {
+      const closedIndex = findBucketIndex(buckets, nonConformity.closedAt);
+      if (closedIndex >= 0) {
+        nonConformityTrend[closedIndex].encerradas += 1;
+      }
+    }
+  }
 
   const companyRank = new Map<
     string,

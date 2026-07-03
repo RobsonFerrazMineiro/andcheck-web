@@ -193,7 +193,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
             · {report.periodLabel}
           </span>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
           <FilterSelect
             label="Empresa"
             name="companyId"
@@ -686,7 +686,7 @@ function RankingPanel({
       {rows.length > 5 && (
         <Link
           href={href}
-          className="block border-t border-border px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-muted/40"
+          className="andcheck-motion block border-t border-border px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-muted/40"
         >
           Ver ranking completo →
         </Link>

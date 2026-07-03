@@ -3,22 +3,19 @@
 import {
   CalendarClock,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
   MessageSquare,
   Plus,
   Send,
   UserRound,
   XCircle,
 } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
-import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   Select,
   SelectContent,
@@ -34,12 +31,6 @@ import {
   updateNonConformityResponsible,
   updateNonConformityStatus,
 } from "@/lib/actions/non-conformity-actions";
-import {
-  getDocumentExtension,
-  getDocumentFileName,
-  getDocumentViewUrl,
-  isImageDocument,
-} from "@/lib/document-view";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
@@ -63,14 +54,6 @@ type Props = {
   canChangeDueDate: boolean;
   canComment: boolean;
   canCancel: boolean;
-};
-
-type EvidencePreviewItem = {
-  id: string;
-  fileUrl: string;
-  fileName: string;
-  mimeType: string | null;
-  observation: string | null;
 };
 
 type Modal =
@@ -97,16 +80,31 @@ function ModalShell({
   children: React.ReactNode;
   onClose: () => void;
 }) {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialogRef, true, onClose);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    >
       <div className="w-full max-w-lg bg-card border border-border shadow-xl">
         <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
-          <p className="text-[10px] font-bold uppercase tracking-widest">
+          <p
+            id={titleId}
+            className="text-[10px] font-bold uppercase tracking-widest"
+          >
             {title}
           </p>
           <button
             type="button"
             onClick={onClose}
+            aria-label={`Fechar ${title}`}
             className="text-primary-foreground/70 hover:text-primary-foreground"
           >
             <XCircle className="w-4 h-4" />
@@ -285,7 +283,12 @@ export function NonConformityOperations({
               </SelectContent>
             </Select>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>Salvar</Button>
@@ -303,21 +306,36 @@ export function NonConformityOperations({
             }}
             className="space-y-3"
           >
-            <Input
-              name="dueDate"
-              type="date"
-              defaultValue={dueDate ? dueDate.slice(0, 10) : ""}
-              className="rounded-md"
-              required
-            />
-            <Textarea
-              name="reason"
-              placeholder="Motivo da alteração"
-              className="rounded-md text-[12px]"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-due-date">Novo prazo *</Label>
+              <Input
+                id="nc-due-date"
+                name="dueDate"
+                type="date"
+                defaultValue={dueDate ? dueDate.slice(0, 10) : ""}
+                className="rounded-md"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-due-date-reason">
+                Motivo da alteração *
+              </Label>
+              <Textarea
+                id="nc-due-date-reason"
+                name="reason"
+                placeholder="Motivo da alteração"
+                className="rounded-md text-[12px]"
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>Salvar</Button>
@@ -335,14 +353,23 @@ export function NonConformityOperations({
             }}
             className="space-y-3"
           >
-            <Textarea
-              name="comment"
-              placeholder="Comentário operacional"
-              className="rounded-md text-[12px]"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-comment">Comentário *</Label>
+              <Textarea
+                id="nc-comment"
+                name="comment"
+                placeholder="Comentário operacional"
+                className="rounded-md text-[12px]"
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>Salvar</Button>
@@ -359,14 +386,25 @@ export function NonConformityOperations({
             }}
             className="space-y-3"
           >
-            <Textarea
-              name="comment"
-              placeholder="Comentário de encerramento"
-              className="rounded-md text-[12px]"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-accept-comment">
+                Comentário de encerramento *
+              </Label>
+              <Textarea
+                id="nc-accept-comment"
+                name="comment"
+                placeholder="Comentário de encerramento"
+                className="rounded-md text-[12px]"
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>Aceitar e Encerrar</Button>
@@ -383,14 +421,23 @@ export function NonConformityOperations({
             }}
             className="space-y-3"
           >
-            <Textarea
-              name="comment"
-              placeholder="Motivo da rejeicao"
-              className="rounded-md text-[12px]"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-reject-comment">Motivo da rejeição *</Label>
+              <Textarea
+                id="nc-reject-comment"
+                name="comment"
+                placeholder="Motivo da rejeição"
+                className="rounded-md text-[12px]"
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Voltar
               </Button>
               <Button type="submit" variant="destructive" disabled={isPending}>
@@ -409,14 +456,25 @@ export function NonConformityOperations({
             }}
             className="space-y-3"
           >
-            <Textarea
-              name="comment"
-              placeholder="Motivo do cancelamento"
-              className="rounded-md text-[12px]"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-cancel-comment">
+                Motivo do cancelamento *
+              </Label>
+              <Textarea
+                id="nc-cancel-comment"
+                name="comment"
+                placeholder="Motivo do cancelamento"
+                className="rounded-md text-[12px]"
+                required
+              />
+            </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setModal(null)}>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setModal(null)}
+              >
                 Voltar
               </Button>
               <Button type="submit" variant="destructive" disabled={isPending}>
@@ -502,22 +560,33 @@ export function NonConformityItemEvidenceButton({
             {error && (
               <p className="text-[11px] font-medium text-red-700">{error}</p>
             )}
-            <Input
-              name="file"
-              type="file"
-              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
-              className="rounded-md"
-              required
-            />
-            <Textarea
-              name="observation"
-              placeholder="Comentário opcional"
-              className="rounded-md text-[12px]"
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-evidence-file">Arquivo *</Label>
+              <Input
+                id="nc-evidence-file"
+                name="file"
+                type="file"
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                className="rounded-md"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="nc-evidence-observation">
+                Comentário opcional
+              </Label>
+              <Textarea
+                id="nc-evidence-observation"
+                name="observation"
+                placeholder="Comentário opcional"
+                className="rounded-md text-[12px]"
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
+                disabled={isPending}
                 onClick={() => setOpen(false)}
               >
                 Cancelar
@@ -528,198 +597,6 @@ export function NonConformityItemEvidenceButton({
             </div>
           </form>
         </ModalShell>
-      )}
-    </>
-  );
-}
-
-export function NonConformityEvidencePreview({
-  id,
-  fileUrl,
-  fileName,
-  mimeType,
-  observation,
-  galleryItems,
-}: {
-  id?: string;
-  fileUrl: string;
-  fileName: string;
-  mimeType: string | null;
-  observation: string | null;
-  galleryItems?: EvidencePreviewItem[];
-}) {
-  const [open, setOpen] = useState(false);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const document = { fileUrl, fileName, mimeType };
-  const viewUrl = getDocumentViewUrl(document);
-  const isImage = isImageDocument(document);
-  const extension = getDocumentExtension(document);
-  const galleryImages =
-    galleryItems?.filter((item) =>
-      isImageDocument({
-        fileUrl: item.fileUrl,
-        fileName: item.fileName,
-        mimeType: item.mimeType,
-      }),
-    ) ?? [];
-  const currentImageIndex = Math.max(
-    0,
-    galleryImages.findIndex((item) => item.id === id),
-  );
-  const activeImage = galleryImages[activeImageIndex] ?? {
-    id: id ?? fileUrl,
-    fileUrl,
-    fileName,
-    mimeType,
-    observation,
-  };
-  const hasGalleryNavigation = galleryImages.length > 1;
-
-  function openPreview() {
-    if (!viewUrl) {
-      toast.error("Arquivo indisponível ou URL inválida.");
-      return;
-    }
-    if (isImage) {
-      setActiveImageIndex(currentImageIndex);
-    }
-    setOpen(true);
-  }
-
-  function showPreviousImage() {
-    setActiveImageIndex((current) =>
-      current === 0 ? galleryImages.length - 1 : current - 1,
-    );
-  }
-
-  function showNextImage() {
-    setActiveImageIndex((current) =>
-      current === galleryImages.length - 1 ? 0 : current + 1,
-    );
-  }
-
-  if (!isImage) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={openPreview}
-          className="flex min-h-16 min-w-40 items-start gap-2 bg-transparent p-0 text-left hover:opacity-80 transition-opacity"
-        >
-          <span className="flex h-16 w-16 items-center justify-center border border-dashed border-border bg-muted/20">
-            <span className="flex flex-col items-center gap-0.5">
-              <FileText className="h-6 w-6 text-muted-foreground" />
-              <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
-                {extension}
-              </span>
-            </span>
-          </span>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-foreground">
-              {getDocumentFileName(document)}
-            </p>
-            {observation && (
-              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">
-                {observation}
-              </p>
-            )}
-          </div>
-        </button>
-
-        {open && (
-          <DocumentPreviewModal
-            document={document}
-            title={getDocumentFileName(document)}
-            onClose={() => setOpen(false)}
-          />
-        )}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={openPreview}
-        className="flex min-h-16 items-start gap-2 bg-transparent p-0 text-left hover:opacity-80 transition-opacity"
-      >
-        <Image
-          src={fileUrl}
-          alt="Evidência anexada"
-          width={64}
-          height={64}
-          unoptimized
-          className="h-16 w-16 object-cover"
-        />
-        {observation && (
-          <p className="text-[10px] text-muted-foreground line-clamp-3">
-            {observation}
-          </p>
-        )}
-      </button>
-
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
-            <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
-              <p className="text-[10px] font-bold uppercase tracking-widest">
-                Evidência
-              </p>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="text-primary-foreground/70 hover:text-primary-foreground"
-              >
-                <XCircle className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="relative p-4">
-              {hasGalleryNavigation && (
-                <>
-                  <button
-                    type="button"
-                    onClick={showPreviousImage}
-                    className="absolute left-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center border border-border bg-card/90 hover:bg-muted"
-                    aria-label="Imagem anterior"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={showNextImage}
-                    className="absolute right-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center border border-border bg-card/90 hover:bg-muted"
-                    aria-label="Proxima imagem"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              )}
-              <Image
-                src={activeImage.fileUrl}
-                alt={activeImage.fileName || "Evidência anexada"}
-                width={1200}
-                height={800}
-                unoptimized
-                className="mx-auto max-h-[72vh] w-auto max-w-full object-contain"
-              />
-              <div className="mt-3 flex items-start justify-between gap-3">
-                {activeImage.observation ? (
-                  <p className="text-[12px] text-muted-foreground">
-                    {activeImage.observation}
-                  </p>
-                ) : (
-                  <span />
-                )}
-                {hasGalleryNavigation && (
-                  <p className="shrink-0 text-[10px] font-mono text-muted-foreground">
-                    {activeImageIndex + 1}/{galleryImages.length}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       )}
     </>
   );

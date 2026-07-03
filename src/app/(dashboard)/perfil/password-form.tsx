@@ -55,7 +55,7 @@ export function PasswordForm() {
       </div>
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] text-muted-foreground">
-          Minimo de 8 caracteres. A senha atual nunca e exibida ou registrada.
+          Mínimo de 8 caracteres. A senha atual nunca é exibida ou registrada.
         </p>
         <Button type="submit" disabled={pending}>
           {pending ? <Loader2 className="animate-spin" /> : <KeyRound />}

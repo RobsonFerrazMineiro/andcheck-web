@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/shared/empty-state";
+import { NotificationListActions } from "@/components/notifications/notification-list-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,15 +10,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  archiveNotification,
   getNotifications,
   markAllNotificationsAsRead,
-  markNotificationAsRead,
   type NotificationFilter,
 } from "@/lib/actions/notification-actions";
 import { typography } from "@/lib/design-system";
 import { NOTIFICATION_ENTITY_GROUPS } from "@/lib/notifications/catalog";
-import { Archive, Bell, Check, ExternalLink } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import Link from "next/link";
 
 const FILTERS: { value: NotificationFilter; label: string }[] = [
@@ -38,16 +37,6 @@ export default async function NotificationsPage({
   const query = await searchParams;
   const filter = parseFilter(query.filter);
   const notifications = await getNotifications(filter);
-
-  async function markReadAction(formData: FormData) {
-    "use server";
-    await markNotificationAsRead(String(formData.get("id") ?? ""));
-  }
-
-  async function archiveAction(formData: FormData) {
-    "use server";
-    await archiveNotification(String(formData.get("id") ?? ""));
-  }
 
   return (
     <div className="space-y-5">
@@ -147,44 +136,12 @@ export default async function NotificationsPage({
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                  <Button
-                    asChild
-                    size="sm"
-                    className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
-                  >
-                    <Link href={entityPath(notification)}>
-                      <ExternalLink className="size-3.5" />
-                      Abrir
-                    </Link>
-                  </Button>
-                  {notification.status !== "READ" && (
-                    <form action={markReadAction}>
-                      <input type="hidden" name="id" value={notification.id} />
-                      <Button
-                        type="submit"
-                        variant="ghost"
-                        size="sm"
-                        className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
-                      >
-                        <Check className="size-3.5" />
-                        Lida
-                      </Button>
-                    </form>
-                  )}
-                  <form action={archiveAction}>
-                    <input type="hidden" name="id" value={notification.id} />
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
-                    >
-                      <Archive className="size-3.5" />
-                      Arquivar
-                    </Button>
-                  </form>
-                </div>
+                <NotificationListActions
+                  id={notification.id}
+                  title={notification.title}
+                  href={entityPath(notification)}
+                  status={notification.status}
+                />
               </div>
             ))
           )}

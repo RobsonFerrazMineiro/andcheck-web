@@ -93,6 +93,13 @@
   --sidebar-ring: #ea6a12;
 
   --radius: 0.25rem;
+
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --ease-enterprise: cubic-bezier(0.2, 0, 0, 1);
+  --shadow-interactive: 0 8px 18px rgb(15 23 42 / 0.08);
+  --shadow-interactive-strong: 0 12px 28px rgb(15 23 42 / 0.12);
 }
 
 @layer base {
@@ -356,6 +363,61 @@
     stroke-linejoin: round;
     stroke-width: 2;
     width: 11px;
+  }
+}
+
+@layer utilities {
+  .andcheck-motion {
+    transition-duration: var(--motion-base);
+    transition-property: background-color, border-color, box-shadow, color,
+      opacity, transform;
+    transition-timing-function: var(--ease-enterprise);
+  }
+
+  .andcheck-lift {
+    transition-duration: var(--motion-base);
+    transition-property: background-color, border-color, box-shadow, transform;
+    transition-timing-function: var(--ease-enterprise);
+  }
+
+  .andcheck-lift:hover {
+    box-shadow: var(--shadow-interactive);
+    transform: translateY(-1px);
+  }
+
+  .andcheck-lift:active {
+    box-shadow: none;
+    transform: translateY(0);
+  }
+
+  .andcheck-icon-nudge:hover svg:last-child {
+    transform: translateX(2px);
+  }
+
+  .andcheck-icon-nudge svg:last-child {
+    transition: transform var(--motion-fast) var(--ease-enterprise);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .andcheck-motion,
+    .andcheck-lift,
+    .andcheck-icon-nudge svg:last-child,
+    [data-slot="button"],
+    [data-slot="card"],
+    [data-slot="input"],
+    [data-slot="textarea"],
+    [data-slot="select-trigger"],
+    [data-slot="select-item"] {
+      transition-duration: 0.01ms !important;
+      transition-property: none !important;
+    }
+
+    .andcheck-lift:hover,
+    .andcheck-lift:active,
+    .andcheck-icon-nudge:hover svg:last-child {
+      box-shadow: inherit;
+      transform: none !important;
+    }
   }
 }
 

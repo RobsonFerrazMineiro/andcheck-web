@@ -21,11 +21,13 @@ interface Inspection {
   result: string;
 }
 
-interface Props {
+export interface InspectionPerformanceChartProps {
   inspections: Inspection[];
 }
 
-export function InspectionPerformanceChart({ inspections }: Props) {
+export function InspectionPerformanceChart({
+  inspections,
+}: InspectionPerformanceChartProps) {
   const chartData = useMemo(() => {
     const last7 = Array.from({ length: 7 }, (_, i) => {
       const date = subDays(new Date(), 6 - i);

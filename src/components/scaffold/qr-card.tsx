@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Download, Printer, QrCode } from "lucide-react";
 
-interface ScaffoldQRCardProps {
+export interface ScaffoldQRCardProps {
   scaffoldCode: string;
   tag: string;
   origin: string;

@@ -2,8 +2,10 @@
 
 import { Download, ExternalLink, FileText, X } from "lucide-react";
 import Image from "next/image";
+import { useRef } from "react";
 import { toast } from "sonner";
 
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   downloadDocumentFile,
   getDocumentFileName,
@@ -35,6 +37,7 @@ export function DocumentPreviewModal({
   title,
   onClose,
 }: DocumentPreviewModalProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
   const modalTitle =
     title ?? document.title ?? getDocumentFileName(document) ?? "Documento";
   const viewUrl = getDocumentViewUrl(document);
@@ -42,6 +45,7 @@ export function DocumentPreviewModal({
   const isImage = isImageDocument(document);
   const isPdf = isPdfDocument(document);
   const canOpenInTab = isBrowserViewableDocument(document) && Boolean(safeOpenUrl);
+  useDialogFocus(dialogRef, true, onClose);
 
   function handleDownload() {
     if (!downloadDocumentFile(document)) {
@@ -58,12 +62,22 @@ export function DocumentPreviewModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="document-preview-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+    >
       <div className="w-full max-w-5xl rounded-xl bg-card border border-border shadow-xl">
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
           <div className="flex min-w-0 items-center gap-2">
             <FileText className="h-4 w-4 shrink-0 text-muted-foreground/70" />
-            <p className="truncate text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p
+              id="document-preview-title"
+              className="truncate text-[10px] font-bold uppercase tracking-widest text-foreground"
+            >
               {modalTitle}
             </p>
           </div>

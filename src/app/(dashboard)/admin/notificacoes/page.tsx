@@ -45,7 +45,7 @@ export default async function AdminNotificationsPage() {
         </p>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {metrics.map((metric) => (
           <Card key={metric.label} size="sm">
             <CardHeader>

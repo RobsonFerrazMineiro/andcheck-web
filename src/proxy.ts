@@ -1,13 +1,39 @@
 import { auth } from "@/auth";
+import { checkRequestRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
+
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+function isCrossOriginRequest(req: { headers: Headers; nextUrl: URL }) {
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+
+  try {
+    return new URL(origin).origin !== req.nextUrl.origin;
+  } catch {
+    return true;
+  }
+}
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
-  // Rotas públicas que não precisam de autenticação
+  if (MUTATING_METHODS.has(req.method) && isCrossOriginRequest(req)) {
+    return new NextResponse(null, { status: 403 });
+  }
+
+  if (pathname.startsWith("/qr")) {
+    const limit = checkRequestRateLimit(req, {
+      key: "qr-public",
+      limit: 120,
+      windowMs: 60 * 1_000,
+    });
+    if (!limit.allowed) return rateLimitResponse(limit.retryAfter);
+  }
+
   const publicPaths = ["/login", "/logout", "/api/auth", "/qr"];
-  const isPublic = publicPaths.some((p) => pathname.startsWith(p));
+  const isPublic = publicPaths.some((path) => pathname.startsWith(path));
 
   if (!isLoggedIn && !isPublic) {
     const loginUrl = new URL("/login", req.nextUrl.origin);

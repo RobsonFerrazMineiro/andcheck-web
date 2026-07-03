@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
+import { assertSameOriginRequest } from "@/lib/request-security";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -78,6 +79,7 @@ export async function canCurrentUser(permission: PermissionCode) {
 }
 
 export async function requirePermission(permission: PermissionCode) {
+  await assertSameOriginRequest();
   const state = await getCurrentUserAccessState();
   if (
     state.access?.roleCodes.some((roleCode) =>
@@ -155,6 +157,7 @@ export async function assertActiveWorkspaceForCreation(
 }
 
 export async function requireAnyPermission(permissions: PermissionCode[]) {
+  await assertSameOriginRequest();
   const state = await getCurrentUserAccessState();
   const access = state.access;
   if (
@@ -179,6 +182,7 @@ export async function requireAnyPermission(permissions: PermissionCode[]) {
 }
 
 export async function requireRole(roleCode: string) {
+  await assertSameOriginRequest();
   const state = await getCurrentUserAccessState();
   const access = state.access;
   if (access?.roleCodes.includes(roleCode)) return;

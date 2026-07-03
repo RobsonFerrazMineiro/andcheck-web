@@ -64,8 +64,10 @@ export function NotificationBell({
         variant="ghost"
         size="icon"
         className="relative"
-        aria-label="Abrir notificações"
+        aria-label={open ? "Fechar notificações" : "Abrir notificações"}
         aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-controls="notification-bell-panel"
         onClick={() => setOpen((current) => !current)}
       >
         <Bell className="size-4" />
@@ -77,10 +79,18 @@ export function NotificationBell({
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 w-96 border bg-popover text-popover-foreground shadow-lg">
+        <div
+          id="notification-bell-panel"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="notification-bell-title"
+          className="absolute right-0 top-10 z-50 w-96 border bg-popover text-popover-foreground shadow-lg"
+        >
           <div className="flex items-center justify-between border-b p-3">
             <div>
-              <p className="text-sm font-semibold">Notificações</p>
+              <p id="notification-bell-title" className="text-sm font-semibold">
+                Notificações
+              </p>
               <p className="text-xs text-muted-foreground">
                 {unreadCount} não lida(s)
               </p>

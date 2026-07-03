@@ -1,7 +1,5 @@
 import "server-only";
 
-import { sanitizeForLog } from "@/lib/safe-log";
-
 export type SendEmailInput = {
   to: string;
   subject: string;
@@ -16,24 +14,14 @@ export type SendEmailResult = {
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const provider = process.env.EMAIL_PROVIDER || "mock";
+  void input;
 
-  if (provider !== "mock") {
-    console.warn(
-      `EMAIL_PROVIDER=${provider} ainda nao esta implementado. Usando mock para ${input.to}.`,
-    );
-  }
-
-  try {
-    return {
-      provider: "mock",
-      providerMessageId: `mock_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2)}`,
-    };
-  } catch (error) {
-    console.error("Falha no mock de e-mail:", sanitizeForLog(error));
-    throw error;
-  }
+  return {
+    provider: provider === "mock" ? "mock" : `mock:${provider}`,
+    providerMessageId: `mock_${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2)}`,
+  };
 }
 
 export function renderNotificationEmail({

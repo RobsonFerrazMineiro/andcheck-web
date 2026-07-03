@@ -17,6 +17,14 @@ import {
   getDataScope,
 } from "@/lib/data-scope";
 import { getCurrentUserAccess } from "@/lib/authz";
+import {
+  enumValue,
+  optionalDate,
+  optionalNumber,
+  optionalText,
+  requiredId,
+  requiredText,
+} from "@/lib/input-validation";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 import { createNotification } from "@/lib/notifications/service";
 
@@ -95,37 +103,25 @@ function calculateDocumentStatus(
   return expiry < today ? DocumentStatus.EXPIRED : DocumentStatus.ACTIVE;
 }
 
-function parseOptionalDate(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
-  return raw ? new Date(`${raw}T00:00:00`) : null;
-}
-
 function parseDocumentForm(formData: FormData) {
-  const title = String(formData.get("title") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim() as DocumentCategory;
-  const description = String(formData.get("description") ?? "").trim() || null;
-  const companyId = String(formData.get("companyId") ?? "").trim();
-  const workspaceId = String(formData.get("workspaceId") ?? "").trim();
-  const issueDate = parseOptionalDate(formData.get("issueDate"));
-  const expiryDate = parseOptionalDate(formData.get("expiryDate"));
-  const fileUrl = String(formData.get("fileUrl") ?? "").trim();
-  const fileName = String(formData.get("fileName") ?? "").trim();
-  const mimeType = String(formData.get("mimeType") ?? "").trim() || null;
-  const fileSizeRaw = String(formData.get("fileSize") ?? "").trim();
-  const fileSize = fileSizeRaw ? Number(fileSizeRaw) : null;
-
-  if (!title || !category || !companyId || !workspaceId) {
-    throw new Error("Titulo, categoria, empresa e workspace sao obrigatorios.");
-  }
-  if (!Object.values(DocumentCategory).includes(category)) {
-    throw new Error("Categoria tecnica invalida.");
-  }
-  if (!fileUrl || !fileName) {
-    throw new Error("Arquivo tecnico obrigatorio.");
-  }
-  if (fileSize !== null && (!Number.isFinite(fileSize) || fileSize < 0)) {
-    throw new Error("Tamanho do arquivo invalido.");
-  }
+  const title = requiredText(formData.get("title"), "Titulo", 180);
+  const category = enumValue(
+    formData.get("category"),
+    Object.values(DocumentCategory),
+    "Categoria tecnica",
+  );
+  const description = optionalText(formData.get("description"), "Descricao", 1000);
+  const companyId = requiredId(formData.get("companyId"), "Empresa");
+  const workspaceId = requiredId(formData.get("workspaceId"), "Workspace");
+  const issueDate = optionalDate(formData.get("issueDate"), "Data de emissao");
+  const expiryDate = optionalDate(formData.get("expiryDate"), "Data de validade");
+  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo tecnico", 500);
+  const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
+  const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
+  const fileSize = optionalNumber(formData.get("fileSize"), "Tamanho do arquivo", {
+    min: 0,
+    max: 50 * 1024 * 1024,
+  });
 
   return {
     title,
@@ -385,10 +381,11 @@ export async function createDocument(formData: FormData) {
 
 export async function getDocumentDetail(id: string) {
   await requireAnyPermission(DOCUMENT_VIEW_PERMISSIONS);
+  const documentId = requiredId(id, "Documento");
   const where = await documentDataScopeWhere();
 
   const document = await prisma.document.findFirst({
-    where: { id, ...where },
+    where: { id: documentId, ...where },
     include: {
       company: { select: { id: true, name: true } },
       workspace: { select: { id: true, name: true } },
@@ -429,13 +426,16 @@ export async function getDocumentDetail(id: string) {
 
 export async function archiveDocument(id: string) {
   await requirePermission("documents.archive");
+  const documentId = requiredId(id, "Documento");
   const where = await documentDataScopeWhere();
-  const current = await prisma.document.findFirst({ where: { id, ...where } });
+  const current = await prisma.document.findFirst({
+    where: { id: documentId, ...where },
+  });
   if (!current) throw new Error("Documento nao encontrado.");
   if (current.status === DocumentStatus.ARCHIVED) return;
 
   const document = await prisma.document.update({
-    where: { id },
+    where: { id: documentId },
     data: { status: DocumentStatus.ARCHIVED },
   });
 
@@ -455,13 +455,14 @@ export async function archiveDocument(id: string) {
 }
 
 export async function assertCanReadDocumentFile(id: string) {
+  const documentId = requiredId(id, "Documento");
   const access = await getCurrentUserAccess();
   if (!hasAnyAccessPermission(access, DOCUMENT_VIEW_PERMISSIONS)) {
     return null;
   }
   const where = await documentDataScopeWhere();
   return prisma.document.findFirst({
-    where: { id, ...where },
+    where: { id: documentId, ...where },
     select: {
       id: true,
       title: true,
@@ -511,9 +512,10 @@ export async function getScaffoldDocuments(scaffold_id: string) {
     "read.own_company",
   ]);
   const scope = await getDataScope();
+  const scaffoldId = requiredId(scaffold_id, "Andaime");
 
   const documents = await prisma.scaffoldDocument.findMany({
-    where: { scaffold_id, ...dataScopeWhere(scope) },
+    where: { scaffold_id: scaffoldId, ...dataScopeWhere(scope) },
     orderBy: { created_at: "desc" },
     select: {
       id: true,
@@ -552,10 +554,26 @@ export async function addScaffoldDocument(data: {
 }) {
   await requirePermission("documents.create");
   const scope = await getDataScope();
-  assertStoredFileReference(data.file_url, "Documento");
+  const input = {
+    scaffold_id: requiredId(data.scaffold_id, "Andaime"),
+    type: enumValue(data.type, Object.values(DocumentType), "Tipo de documento"),
+    title: requiredText(data.title, "Titulo", 180),
+    file_url: requiredText(data.file_url, "Arquivo", 500),
+    file_name: requiredText(data.file_name, "Nome do arquivo", 240),
+    file_size:
+      optionalNumber(data.file_size, "Tamanho do arquivo", {
+        min: 0,
+        max: 50 * 1024 * 1024,
+      }) ?? undefined,
+    mime_type: optionalText(data.mime_type, "Tipo do arquivo", 160) ?? undefined,
+    uploaded_by: requiredText(data.uploaded_by, "Responsavel pelo upload", 140),
+    expires_at: data.expires_at,
+    observation: optionalText(data.observation, "Observacao", 1000) ?? undefined,
+  };
+  assertStoredFileReference(input.file_url, "Documento");
 
   const scaffold = await prisma.scaffold.findUnique({
-    where: { id: data.scaffold_id },
+    where: { id: input.scaffold_id },
   });
   if (!scaffold) throw new Error("Andaime nao encontrado.");
   assertRecordInDataScope(scope, scaffold);
@@ -563,6 +581,7 @@ export async function addScaffoldDocument(data: {
   const doc = await prisma.scaffoldDocument.create({
     data: {
       ...data,
+      ...input,
       companyId: scaffold.companyId,
       workspaceId: scaffold.workspaceId,
     },
@@ -603,15 +622,17 @@ export async function addScaffoldDocument(data: {
       documentTitle: doc.title,
     },
   });
-  revalidatePath(`/andaimes/${data.scaffold_id}`);
+  revalidatePath(`/andaimes/${input.scaffold_id}`);
   return { id: doc.id };
 }
 
 // ── Deletar documento ─────────────────────────────────────────────────────────
 export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
   await requireRole("SUPER_ADMIN");
+  const documentId = requiredId(id, "Documento");
+  const scaffoldId = requiredId(scaffold_id, "Andaime");
   const oldDocument = await prisma.scaffoldDocument.findUnique({
-    where: { id },
+    where: { id: documentId },
     select: {
       id: true,
       scaffold_id: true,
@@ -628,13 +649,13 @@ export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
       },
     },
   });
-  await prisma.scaffoldDocument.delete({ where: { id } });
+  await prisma.scaffoldDocument.delete({ where: { id: documentId } });
   await createAuditLog({
     entityType: AuditEntityType.DOCUMENT,
-    entityId: id,
-    entityLabel: oldDocument?.title ?? id,
+    entityId: documentId,
+    entityLabel: oldDocument?.title ?? documentId,
     action: AuditAction.DELETE,
-    description: `Documento ${oldDocument?.type ?? ""} removido do andaime ${oldDocument?.scaffold.code ?? scaffold_id}`,
+    description: `Documento ${oldDocument?.type ?? ""} removido do andaime ${oldDocument?.scaffold.code ?? scaffoldId}`,
     oldValue: oldDocument
       ? {
           scaffold_id: oldDocument.scaffold_id,
@@ -650,5 +671,5 @@ export async function deleteScaffoldDocument(id: string, scaffold_id: string) {
     companyId: oldDocument?.companyId,
     workspaceId: oldDocument?.workspaceId,
   });
-  revalidatePath(`/andaimes/${scaffold_id}`);
+  revalidatePath(`/andaimes/${scaffoldId}`);
 }

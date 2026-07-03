@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAnyPermission } from "@/lib/authz";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
+import { requiredId } from "@/lib/input-validation";
 
 const policyInclude = {
   requirements: {
@@ -33,9 +34,10 @@ export async function resolveInspectionSignaturePolicyForScaffold(
     "signature_policies.manage",
   ]);
   const scope = await getDataScope();
+  const parsedScaffoldId = requiredId(scaffoldId, "Andaime");
 
   const scaffold = await prisma.scaffold.findFirst({
-    where: { id: scaffoldId, ...dataScopeWhere(scope) },
+    where: { id: parsedScaffoldId, ...dataScopeWhere(scope) },
     select: {
       company: true,
       area: true,

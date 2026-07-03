@@ -52,7 +52,7 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   RRT: "RRT",
   PROJETO: "Projeto Estrutural",
   PROJETO_ESTRUTURAL: "Projeto Estrutural",
-  MEMORIAL_CALCULO: "Memorial de Calculo",
+  MEMORIAL_CALCULO: "Memorial de Cálculo",
   CROQUI: "Croqui",
   CERTIFICADO: "Certificado Técnico",
   PLANO_MONTAGEM: "Plano de Montagem",
@@ -172,7 +172,7 @@ function operationalTimelineLabel(log: {
     return "Andaime criado";
   }
   if (log.action === "COMPLETE" && log.entityType === "SCAFFOLD") {
-    return "Montagem concluida";
+    return "Montagem concluída";
   }
   if (log.action === "STATUS_CHANGE" && status === "liberado") {
     return "Primeira liberação";
@@ -261,7 +261,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="mb-1 text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40">
-              ACERVO HISTORICO DO ANDAIME
+              ACERVO HISTÓRICO DO ANDAIME
             </p>
             <h1 className="font-mono text-[22px] font-bold tracking-tight text-primary-foreground">
               {scaffold.code}
@@ -340,7 +340,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           />
           <ArchiveRow
             icon={FileClock}
-            label="Ultimo Status Operacional"
+            label="Último Status Operacional"
             value={lastOperationalStatus}
           />
           <ArchiveRow
@@ -582,7 +582,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         scaffoldCode={scaffold.code}
         tag={scaffold.tag}
         origin={origin}
-        title="CONSULTA PUBLICA"
+        title="CONSULTA PÚBLICA"
         helperText="Ao escanear, será exibido o registro histórico do andaime desmontado, incluindo status, validade final, inspeções e documentação disponível."
       />
     </div>

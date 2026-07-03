@@ -124,6 +124,7 @@ export function UsuariosClient({
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
+  const [statusTarget, setStatusTarget] = useState<UserRow | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const users = initialData;
@@ -199,6 +200,7 @@ export function UsuariosClient({
       try {
         await setUserActive(userId, isActive);
         toast.success(isActive ? "Usuário ativado." : "Usuário desativado.");
+        setStatusTarget(null);
       } catch {
         toast.error("Não foi possível alterar o status.");
       }
@@ -245,6 +247,38 @@ export function UsuariosClient({
           if (deleteTarget) handleDelete(deleteTarget);
         }}
       />
+      <ConfirmDialog
+        open={Boolean(statusTarget)}
+        title={
+          statusTarget?.is_active ? "Desativar usuário" : "Ativar usuário"
+        }
+        description={
+          statusTarget?.is_active
+            ? "O usuário perderá o acesso operacional ao sistema."
+            : "O usuário voltará a ter acesso operacional ao sistema."
+        }
+        details={
+          statusTarget ? (
+            <div className="space-y-1">
+              <p className={`${typography.bodyStrong} text-foreground`}>
+                {statusTarget.name}
+              </p>
+              <p className={`${typography.bodyMuted} text-muted-foreground`}>
+                {statusTarget.email}
+              </p>
+            </div>
+          ) : null
+        }
+        confirmLabel={
+          statusTarget?.is_active ? "Desativar usuário" : "Ativar usuário"
+        }
+        destructive={Boolean(statusTarget?.is_active)}
+        pending={isPending}
+        onCancel={() => setStatusTarget(null)}
+        onConfirm={() => {
+          if (statusTarget) handleStatus(statusTarget.id, !statusTarget.is_active);
+        }}
+      />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -271,7 +305,7 @@ export function UsuariosClient({
         </button>
       </div>
 
-      <div className="grid min-w-0 grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4">
         {(
           [
             {
@@ -320,7 +354,7 @@ export function UsuariosClient({
             <div
               key={card.label}
               className={
-                "bg-card border border-border rounded-lg p-4 shadow-sm " +
+                "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " +
                 card.border
               }
             >
@@ -444,11 +478,12 @@ export function UsuariosClient({
           <div className="flex justify-end gap-2 border-t border-border pt-3">
             <button
               type="button"
+              disabled={isPending}
               onClick={() => {
                 setShowForm(false);
                 setEditingUser(null);
               }}
-              className="h-8 rounded-md px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted"
+              className="h-8 rounded-md px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -603,7 +638,7 @@ export function UsuariosClient({
                     <button
                       type="button"
                       disabled={isPending || isCurrentUser}
-                      onClick={() => handleStatus(user.id, !user.is_active)}
+                      onClick={() => setStatusTarget(user)}
                       aria-label={
                         user.is_active
                           ? `Desativar usuário ${user.name}`
@@ -668,10 +703,14 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[10px] uppercase tracking-wider font-bold">
+      <Label
+        htmlFor={name}
+        className="text-[10px] uppercase tracking-wider font-bold"
+      >
         {label}
       </Label>
       <Input
+        id={name}
         name={name}
         placeholder={placeholder}
         defaultValue={defaultValue}

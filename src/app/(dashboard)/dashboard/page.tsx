@@ -21,8 +21,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { DashboardMapPreview } from "@/components/dashboard/dashboard-map-preview";
-import { InspectionPerformanceChart } from "@/components/dashboard/inspection-performance-chart";
+import {
+  LazyDashboardMapPreview,
+  LazyInspectionPerformanceChart,
+} from "@/components/dashboard/lazy-dashboard-panels";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
@@ -121,7 +123,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <KpiCard
           label="Andaimes Montados"
           value={scaffolds.length}
@@ -250,8 +252,8 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-4 min-h-96">
-        <InspectionPerformanceChart inspections={inspections} />
-        <DashboardMapPreview
+        <LazyInspectionPerformanceChart inspections={inspections} />
+        <LazyDashboardMapPreview
           scaffolds={scaffolds}
           showCompanyName={showResponsibleCompany}
         />
@@ -457,7 +459,7 @@ function ExecutiveKpiCard({
   return (
     <div
       className={
-        "bg-card border border-border rounded-lg p-4 shadow-sm " + t.border
+        "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " + t.border
       }
     >
       <div className="mb-3 flex items-start justify-between gap-3">
@@ -599,7 +601,7 @@ function KpiCard({
       className={
         "bg-card " +
         t.borderLeft +
-        " border border-border rounded-lg p-4 shadow-sm"
+        " andcheck-lift border border-border rounded-lg p-4 shadow-sm"
       }
     >
       <div className="flex items-start justify-between mb-2">

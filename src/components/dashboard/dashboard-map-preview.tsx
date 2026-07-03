@@ -42,7 +42,7 @@ interface RawScaffold {
   inspections?: Array<{ date: Date; result: string }>;
 }
 
-interface Props {
+export interface DashboardMapPreviewProps {
   scaffolds: RawScaffold[];
   showCompanyName?: boolean;
 }
@@ -50,7 +50,7 @@ interface Props {
 export function DashboardMapPreview({
   scaffolds,
   showCompanyName = true,
-}: Props) {
+}: DashboardMapPreviewProps) {
   const pins: ScaffoldPin[] = scaffolds
     .filter((s) => s.latitude != null && s.longitude != null)
     .map((s) => ({

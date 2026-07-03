@@ -14,11 +14,11 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import ChecklistSection from "@/components/inspection/checklist-section";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,9 +33,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
-import { compressImageBlob } from "@/lib/compress-image";
 import { calculateInspectionResult } from "@/lib/inspection-outcome";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
+
+const ChecklistSection = dynamic(
+  () => import("@/components/inspection/checklist-section"),
+  {
+    loading: () => (
+      <div className="bg-card border border-border shadow-sm p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          Carregando checklist...
+        </p>
+      </div>
+    ),
+  },
+);
 
 type ScaffoldOption = {
   id: string;
@@ -180,6 +192,8 @@ export function NovaInspecaoForm({
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
       try {
+        const { compressImageBlob } = await import("@/lib/compress-image");
+
         for (const file of files) {
           const compressed = await compressImageBlob(file);
           const uploaded = await uploadFile(compressed, {
@@ -324,7 +338,7 @@ export function NovaInspecaoForm({
     }
 
     if (!signerName.trim()) {
-      toast.error("Informe o nome de quem esta assinando.");
+      toast.error("Informe o nome de quem está assinando.");
       return;
     }
 
@@ -631,6 +645,7 @@ export function NovaInspecaoForm({
                     setPhotos((prev) => prev.filter((_, j) => j !== i))
                   }
                   className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remover foto"
                   title="Remover foto"
                 >
                   <Trash2 className="w-3 h-3" />
@@ -663,6 +678,7 @@ export function NovaInspecaoForm({
                     {/* Botão remover */}
                     <button
                       type="button"
+                      aria-label="Remover foto"
                       title="Remover foto"
                       onClick={() => {
                         const updated = checklistValues.map((c) => [...c]);
@@ -709,7 +725,7 @@ export function NovaInspecaoForm({
       <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2">
           <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Assinaturas obrigatorias
+            Assinaturas obrigatórias
           </h3>
           <button
             type="button"
@@ -723,7 +739,7 @@ export function NovaInspecaoForm({
 
         <div className="space-y-2">
           <p className="text-[11px] text-muted-foreground">
-            Politica:{" "}
+            Política:{" "}
             <span className="font-semibold text-foreground">
               {selectedPolicy?.name ?? "Nenhuma política ativa"}
             </span>
@@ -833,7 +849,7 @@ export function NovaInspecaoForm({
           </div>
           <div className="space-y-1.5">
             <Label className="text-[10px] uppercase tracking-wider font-bold">
-              Cargo / funcao
+              Cargo / função
             </Label>
             <Input
               value={signerPosition}
@@ -916,7 +932,10 @@ export function NovaInspecaoForm({
       <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
         <Link
           href="/inspecoes"
-          className="inline-flex items-center justify-center h-8 px-5 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+          aria-disabled={submitting}
+          className={`inline-flex items-center justify-center h-8 px-5 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors ${
+            submitting ? "pointer-events-none opacity-50" : ""
+          }`}
         >
           Cancelar
         </Link>
