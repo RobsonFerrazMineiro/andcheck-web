@@ -5,6 +5,8 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
+
 interface UserMenuProps {
   name: string;
   email: string;
@@ -24,6 +26,9 @@ export function UserMenu({
 }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useDialogFocus(panelRef, open, () => setOpen(false));
 
   useEffect(() => {
     if (!open) return;
@@ -70,7 +75,9 @@ export function UserMenu({
 
       {open && (
         <div
+          ref={panelRef}
           id="user-menu-panel"
+          tabIndex={-1}
           role="dialog"
           aria-modal="false"
           aria-labelledby="user-menu-title"

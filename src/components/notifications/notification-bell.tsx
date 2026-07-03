@@ -11,6 +11,8 @@ import { Bell, Check, ExternalLink, Settings } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
+
 type BellNotification = {
   id: string;
   title: string;
@@ -32,6 +34,9 @@ export function NotificationBell({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useDialogFocus(panelRef, open, () => setOpen(false));
 
   useEffect(() => {
     if (!open) return;
@@ -80,7 +85,9 @@ export function NotificationBell({
 
       {open && (
         <div
+          ref={panelRef}
           id="notification-bell-panel"
+          tabIndex={-1}
           role="dialog"
           aria-modal="false"
           aria-labelledby="notification-bell-title"
