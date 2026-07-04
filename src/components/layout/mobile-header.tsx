@@ -87,9 +87,6 @@ export function MobileHeader({
             <span className="font-bold text-[12px] tracking-widest uppercase text-sidebar-foreground">
               AndCheck
             </span>
-            <span className="text-[9px] text-sidebar-foreground/35 ml-1.5 tracking-wider uppercase">
-              SST
-            </span>
           </div>
         </Link>
 
@@ -100,13 +97,19 @@ export function MobileHeader({
           size="icon"
           onClick={() => setOpen(!open)}
           className="text-sidebar-foreground w-8 h-8 hover:bg-sidebar-accent"
+          aria-label={open ? "Fechar menu principal" : "Abrir menu principal"}
+          aria-expanded={open}
+          aria-controls="mobile-main-navigation"
         >
           {open ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </Button>
       </div>
 
       {open && (
-        <nav className="px-2 pb-3 space-y-px border-t border-sidebar-border">
+        <nav
+          id="mobile-main-navigation"
+          className="px-2 pb-3 space-y-px border-t border-sidebar-border"
+        >
           {navItems
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
             .filter((item) => item.path !== "/auditoria" || canViewAudit)

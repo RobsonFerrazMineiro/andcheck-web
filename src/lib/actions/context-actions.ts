@@ -79,9 +79,12 @@ export async function updateActiveContext(input: {
   }
 
   const cookieStore = await cookies();
+  const previousCompanyId = cookieStore.get(COMPANY_CONTEXT_COOKIE)?.value;
+  const previousWorkspaceId = cookieStore.get(WORKSPACE_CONTEXT_COOKIE)?.value;
+  const nextCompanyId = useAllCompanies ? ALL_COMPANIES_CONTEXT : company!.id;
   cookieStore.set(
     COMPANY_CONTEXT_COOKIE,
-    useAllCompanies ? ALL_COMPANIES_CONTEXT : company!.id,
+    nextCompanyId,
     COOKIE_OPTIONS,
   );
   cookieStore.set(WORKSPACE_CONTEXT_COOKIE, workspace.id, COOKIE_OPTIONS);
@@ -92,8 +95,12 @@ export async function updateActiveContext(input: {
     entityLabel: "context-switcher",
     action: AuditAction.UPDATE,
     description: "Contexto ativo alterado",
+    oldValue: {
+      companyId: previousCompanyId ?? null,
+      workspaceId: previousWorkspaceId ?? null,
+    },
     newValue: {
-      companyId: useAllCompanies ? ALL_COMPANIES_CONTEXT : company!.id,
+      companyId: nextCompanyId,
       workspaceId: workspace.id,
     },
     companyId: useAllCompanies ? access.companyId : company!.id,

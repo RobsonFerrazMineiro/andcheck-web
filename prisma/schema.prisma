@@ -92,6 +92,7 @@ enum AuditEntityType {
   QR_CODE
   SETTINGS
   NON_CONFORMITY
+  NOTIFICATION
 }
 
 enum AuditAction {
@@ -123,6 +124,17 @@ enum AuditAction {
   DOCUMENT_VIEWED
   DOCUMENT_ARCHIVED
   DOCUMENT_DOWNLOADED
+  NOTIFICATION_CREATED
+  NOTIFICATION_READ
+  NOTIFICATION_ARCHIVED
+  NOTIFICATION_EMAIL_RESENT
+}
+
+enum AuditRetentionPeriod {
+  ONE_YEAR
+  THREE_YEARS
+  FIVE_YEARS
+  PERMANENT
 }
 
 enum NonConformityClassification {
@@ -269,9 +281,23 @@ model Workspace {
   nonConformityItemEvidences NonConformityItemEvidence[]
   inspectionSignatures       InspectionSignature[]
   companyLinks               CompanyWorkspace[]
+  auditRetentionPolicy       AuditRetentionPolicy?
 
   @@index([ownerCompanyId, active])
   @@map("workspaces")
+}
+
+model AuditRetentionPolicy {
+  id          String               @id @default(cuid())
+  workspace   Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId String               @unique
+  period      AuditRetentionPeriod @default(PERMANENT)
+  notes       String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([period])
+  @@map("audit_retention_policies")
 }
 
 model CompanyWorkspace {
@@ -860,6 +886,7 @@ model AuditLog {
   userId        String?
   userName      String?
   userRole      String?
+  sessionId     String?
   entityType    AuditEntityType
   entityId      String?
   entityLabel   String?
@@ -869,6 +896,9 @@ model AuditLog {
   newValue      Json?
   ipAddress     String?
   userAgent     String?
+  browserName   String?
+  osName        String?
+  deviceType    String?
   workspace     Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
   workspaceId   String          @default("workspace-hydro-murucupi")
   tenantCompany Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
@@ -879,9 +909,13 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([action])
   @@index([userId])
+  @@index([sessionId])
   @@index([companyId])
   @@index([workspaceId])
   @@index([companyId, createdAt])
   @@index([workspaceId, createdAt])
+  @@index([companyId, entityType, createdAt])
+  @@index([workspaceId, entityType, createdAt])
+  @@index([entityType, action, createdAt])
   @@map("audit_logs")
 }

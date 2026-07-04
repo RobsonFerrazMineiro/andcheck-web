@@ -1,4 +1,5 @@
-﻿@import "tailwindcss";
+﻿@import "@fontsource-variable/inter";
+@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -7,9 +8,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
-  --font-heading: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-heading:
+    "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -67,7 +69,7 @@
   --muted: #e7e9ec;
   --muted-foreground: hsl(215 18% 42%);
 
-  --accent: #ea6a12;
+  --accent: #c84f0a;
   --accent-foreground: #ffffff;
 
   --destructive: hsl(0 72% 42%);
@@ -85,12 +87,12 @@
 
   --sidebar: #171b22;
   --sidebar-foreground: hsl(214 28% 88%);
-  --sidebar-primary: #ea6a12;
+  --sidebar-primary: #c84f0a;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #232933;
   --sidebar-accent-foreground: hsl(214 28% 88%);
   --sidebar-border: #2d3440;
-  --sidebar-ring: #ea6a12;
+  --sidebar-ring: #c84f0a;
 
   --radius: 0.25rem;
 
@@ -369,8 +371,8 @@
 @layer utilities {
   .andcheck-motion {
     transition-duration: var(--motion-base);
-    transition-property: background-color, border-color, box-shadow, color,
-      opacity, transform;
+    transition-property:
+      background-color, border-color, box-shadow, color, opacity, transform;
     transition-timing-function: var(--ease-enterprise);
   }
 
@@ -396,6 +398,11 @@
 
   .andcheck-icon-nudge svg:last-child {
     transition: transform var(--motion-fast) var(--ease-enterprise);
+  }
+
+  .andcheck-long-list > * {
+    content-visibility: auto;
+    contain-intrinsic-size: 220px;
   }
 
   @media (prefers-reduced-motion: reduce) {

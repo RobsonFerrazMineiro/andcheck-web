@@ -166,7 +166,7 @@ export function InspecoesClient({
         />
       ) : (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="andcheck-long-list grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((insp) => {
               const tone =
                 SEMANTIC_TONE_CLASSES[inspectionResultTone(insp.result)];

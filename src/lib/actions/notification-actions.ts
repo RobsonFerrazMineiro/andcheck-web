@@ -131,10 +131,47 @@ export async function markNotificationAsRead(id: string) {
   const notificationId = requiredId(id, "Notificacao");
 
   try {
-    await prisma.notification.updateMany({
+    const current = await prisma.notification.findFirst({
+      where: { id: notificationId, ...userNotificationWhere(access.userId) },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        severity: true,
+        status: true,
+        companyId: true,
+        workspaceId: true,
+        readAt: true,
+      },
+    });
+    if (!current) return;
+
+    const result = await prisma.notification.updateMany({
       where: { id: notificationId, ...userNotificationWhere(access.userId) },
       data: { status: "READ", readAt: new Date() },
     });
+    if (result.count > 0 && current.status !== "READ") {
+      await createAuditLog({
+        entityType: AuditEntityType.NOTIFICATION,
+        entityId: current.id,
+        entityLabel: current.title,
+        action: AuditAction.NOTIFICATION_READ,
+        description: `Notificacao ${current.title} marcada como lida`,
+        oldValue: {
+          type: current.type,
+          severity: current.severity,
+          status: current.status,
+          readAt: current.readAt?.toISOString() ?? null,
+        },
+        newValue: {
+          type: current.type,
+          severity: current.severity,
+          status: "READ",
+        },
+        companyId: current.companyId,
+        workspaceId: current.workspaceId,
+      });
+    }
   } catch (error) {
     if (!isMissingNotificationTables(error)) throw error;
   }
@@ -147,13 +184,28 @@ export async function markAllNotificationsAsRead() {
   if (!access) throw new Error("Usuario nao autenticado.");
 
   try {
-    await prisma.notification.updateMany({
+    const result = await prisma.notification.updateMany({
       where: {
         ...userNotificationWhere(access.userId),
         status: { notIn: ["READ", "ARCHIVED"] },
       },
       data: { status: "READ", readAt: new Date() },
     });
+    if (result.count > 0) {
+      await createAuditLog({
+        entityType: AuditEntityType.NOTIFICATION,
+        entityId: access.userId,
+        entityLabel: "bulk-read",
+        action: AuditAction.NOTIFICATION_READ,
+        description: `${result.count} notificacao(oes) marcadas como lidas`,
+        newValue: {
+          count: result.count,
+          status: "READ",
+        },
+        companyId: access.companyId,
+        workspaceId: access.workspaceId,
+      });
+    }
   } catch (error) {
     if (!isMissingNotificationTables(error)) throw error;
   }
@@ -167,10 +219,45 @@ export async function archiveNotification(id: string) {
   const notificationId = requiredId(id, "Notificacao");
 
   try {
-    await prisma.notification.updateMany({
+    const current = await prisma.notification.findFirst({
+      where: { id: notificationId, ...userNotificationWhere(access.userId) },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        severity: true,
+        status: true,
+        companyId: true,
+        workspaceId: true,
+      },
+    });
+    if (!current) return;
+
+    const result = await prisma.notification.updateMany({
       where: { id: notificationId, ...userNotificationWhere(access.userId) },
       data: { status: "ARCHIVED" },
     });
+    if (result.count > 0 && current.status !== "ARCHIVED") {
+      await createAuditLog({
+        entityType: AuditEntityType.NOTIFICATION,
+        entityId: current.id,
+        entityLabel: current.title,
+        action: AuditAction.NOTIFICATION_ARCHIVED,
+        description: `Notificacao ${current.title} arquivada`,
+        oldValue: {
+          type: current.type,
+          severity: current.severity,
+          status: current.status,
+        },
+        newValue: {
+          type: current.type,
+          severity: current.severity,
+          status: "ARCHIVED",
+        },
+        companyId: current.companyId,
+        workspaceId: current.workspaceId,
+      });
+    }
   } catch (error) {
     if (!isMissingNotificationTables(error)) throw error;
   }
@@ -225,6 +312,21 @@ export async function updateNotificationPreference(formData: FormData) {
 
   const internal = formData.get("internal") === "on";
   const email = formData.get("email") === "on";
+  const current = await prisma.notificationPreference
+    .findUnique({
+      where: {
+        userId_companyId_type: {
+          userId: access.userId,
+          companyId: access.companyId,
+          type,
+        },
+      },
+    })
+    .catch((error: unknown) => {
+      if (isMissingNotificationTables(error)) return null;
+      throw error;
+    });
+  const nextInternal = defaultCriticalTypes.has(type) ? true : internal;
 
   try {
     await prisma.notificationPreference.upsert({
@@ -239,11 +341,11 @@ export async function updateNotificationPreference(formData: FormData) {
         userId: access.userId,
         companyId: access.companyId,
         type,
-        internal: defaultCriticalTypes.has(type) ? true : internal,
+        internal: nextInternal,
         email,
       },
       update: {
-        internal: defaultCriticalTypes.has(type) ? true : internal,
+        internal: nextInternal,
         email,
       },
     });
@@ -257,9 +359,14 @@ export async function updateNotificationPreference(formData: FormData) {
     entityLabel: "notification-preference",
     action: AuditAction.UPDATE,
     description: "Preferencia de notificacao atualizada",
+    oldValue: {
+      type,
+      internal: current?.internal ?? true,
+      email: current?.email ?? defaultCriticalTypes.has(type),
+    },
     newValue: {
       type,
-      internal: defaultCriticalTypes.has(type) ? true : internal,
+      internal: nextInternal,
       email,
     },
     companyId: access.companyId,
@@ -307,6 +414,7 @@ export async function updateNotificationPreferenceValue(input: {
     channel === "email"
       ? input.enabled
       : (current?.email ?? critical);
+  const nextInternal = critical ? true : internal;
 
   try {
     await prisma.notificationPreference.upsert({
@@ -321,11 +429,11 @@ export async function updateNotificationPreferenceValue(input: {
         userId: access.userId,
         companyId: access.companyId,
         type,
-        internal: critical ? true : internal,
+        internal: nextInternal,
         email,
       },
       update: {
-        internal: critical ? true : internal,
+        internal: nextInternal,
         email,
       },
     });
@@ -339,10 +447,17 @@ export async function updateNotificationPreferenceValue(input: {
     entityLabel: "notification-preference",
     action: AuditAction.UPDATE,
     description: "Preferencia de canal de notificacao atualizada",
+    oldValue: {
+      type,
+      internal: current?.internal ?? true,
+      email: current?.email ?? critical,
+    },
     newValue: {
       type,
       channel,
       enabled: channel === "internal" && critical ? true : input.enabled,
+      internal: nextInternal,
+      email,
     },
     companyId: access.companyId,
     workspaceId: access.workspaceId,
@@ -365,6 +480,19 @@ export async function updateNotificationPreferenceGroup(input: {
     (type) => NOTIFICATION_ENTITY_GROUPS[type] === input.group,
   );
   if (types.length === 0) throw new Error("Grupo de notificacao invalido.");
+  const currentPreferences = await prisma.notificationPreference
+    .findMany({
+      where: {
+        userId: access.userId,
+        companyId: access.companyId,
+        type: { in: types },
+      },
+      select: { type: true, internal: true, email: true },
+    })
+    .catch((error: unknown) => {
+      if (isMissingNotificationTables(error)) return [];
+      throw error;
+    });
 
   try {
     await prisma.$transaction(
@@ -409,6 +537,20 @@ export async function updateNotificationPreferenceGroup(input: {
     entityLabel: "notification-preference-group",
     action: AuditAction.UPDATE,
     description: "Preferencias de notificacao em grupo atualizadas",
+    oldValue: {
+      group: input.group,
+      channel,
+      preferences: types.map((type) => {
+        const current = currentPreferences.find(
+          (preference) => preference.type === type,
+        );
+        return {
+          type,
+          internal: current?.internal ?? true,
+          email: current?.email ?? defaultCriticalTypes.has(type),
+        };
+      }),
+    },
     newValue: {
       group: input.group,
       channel,
@@ -610,10 +752,10 @@ export async function resendNotificationEmail(notificationId: string) {
 
   await sendNotificationEmail(notification, notification.user.email);
   await createAuditLog({
-    entityType: AuditEntityType.SETTINGS,
+    entityType: AuditEntityType.NOTIFICATION,
     entityId: notification.id,
-    entityLabel: "notification-email-resend",
-    action: AuditAction.UPDATE,
+    entityLabel: notification.title,
+    action: AuditAction.NOTIFICATION_EMAIL_RESENT,
     description: "E-mail de notificacao reenviado manualmente",
     newValue: {
       notificationId: notification.id,

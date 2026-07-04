@@ -29,7 +29,7 @@ export function LoginForm() {
         redirect: false,
       });
       if (result?.error) {
-        setError("E-mail ou senha inválidos.");
+        setError("E-mail ou senha invalidos.");
       } else {
         router.push(callbackUrl);
         router.refresh();
@@ -69,7 +69,7 @@ export function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="********"
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm
                        placeholder:text-muted-foreground focus:outline-none focus:ring-2
                        focus:ring-ring focus:border-transparent transition"

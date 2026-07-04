@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import {
   AlertTriangle,
+  Bell,
   Building2,
   ChevronLeft,
   ChevronRight,
@@ -52,6 +53,10 @@ export type AuditRow = {
   newValue: unknown;
   ipAddress: string | null;
   userAgent: string | null;
+  sessionId: string | null;
+  browserName: string | null;
+  osName: string | null;
+  deviceType: string | null;
   workspaceId: string | null;
   companyId: string | null;
   createdAt: string;
@@ -63,8 +68,12 @@ type Filters = {
   entityType: string;
   user: string;
   company: string;
+  workspace: string;
+  status: string;
+  scaffoldTag: string;
   dateFrom: string;
   dateTo: string;
+  order: "asc" | "desc";
 };
 
 const ENTITY_LABELS: Record<string, string> = {
@@ -79,6 +88,7 @@ const ENTITY_LABELS: Record<string, string> = {
   QR_CODE: "Status do andaime",
   SETTINGS: "Configuração",
   NON_CONFORMITY: "Não conformidade",
+  NOTIFICATION: "Notificação",
 };
 
 const ENTITY_BADGE_LABELS: Record<string, string> = {
@@ -93,6 +103,7 @@ const ENTITY_BADGE_LABELS: Record<string, string> = {
   QR_CODE: "CONSULTA",
   SETTINGS: "CONFIGURAÇÃO",
   NON_CONFORMITY: "NÃO CONFORMIDADE",
+  NOTIFICATION: "NOTIFICAÇÃO",
 };
 
 const ENTITY_ICONS: Record<string, React.ElementType> = {
@@ -106,6 +117,7 @@ const ENTITY_ICONS: Record<string, React.ElementType> = {
   QR_CODE: Construction,
   SETTINGS: ShieldCheck,
   NON_CONFORMITY: AlertTriangle,
+  NOTIFICATION: Bell,
   WORKSPACE: MapPinned,
 };
 
@@ -120,6 +132,7 @@ const AUDIT_GROUPS = [
   { value: "INSPECTION", label: "Inspeções" },
   { value: "NON_CONFORMITY", label: "Não Conformidades" },
   { value: "DOCUMENT", label: "Documentação" },
+  { value: "NOTIFICATION", label: "Notificações" },
   { value: "QR_CODE", label: "Consultas" },
 ];
 
@@ -135,6 +148,7 @@ const ENTITY_ARTICLES: Record<string, string> = {
   QR_CODE: "o status do andaime",
   SETTINGS: "a configuração",
   NON_CONFORMITY: "a não conformidade",
+  NOTIFICATION: "a notificação",
 };
 
 const ACTION_FILTERS = [
@@ -148,6 +162,10 @@ const ACTION_FILTERS = [
   ["GENERATE_PDF", "Geração de PDF"],
   ["VIEW_QR", "Consulta"],
   ["DELETE", "Remoção"],
+  ["NOTIFICATION_CREATED", "Notificação gerada"],
+  ["NOTIFICATION_READ", "Notificação lida"],
+  ["NOTIFICATION_ARCHIVED", "Notificação arquivada"],
+  ["NOTIFICATION_EMAIL_RESENT", "Reenvio de e-mail"],
 ] as const;
 
 const AUDIT_TABLE_GRID =
@@ -198,6 +216,18 @@ function getEventMeta(row: AuditRow): {
   }
   if (row.action === "ROLE_CHANGE") {
     return { label: "Alterou perfil", shortLabel: "ALTERAÇÃO DE PERFIL", tone: "warning" };
+  }
+  if (row.action === "NOTIFICATION_CREATED") {
+    return { label: "Gerou notificação", shortLabel: "NOTIFICAÇÃO", tone: "neutral" };
+  }
+  if (row.action === "NOTIFICATION_READ") {
+    return { label: "Leu notificação", shortLabel: "LEITURA", tone: "success" };
+  }
+  if (row.action === "NOTIFICATION_ARCHIVED") {
+    return { label: "Arquivou notificação", shortLabel: "ARQUIVAMENTO", tone: "disabled" };
+  }
+  if (row.action === "NOTIFICATION_EMAIL_RESENT") {
+    return { label: "Reenviou e-mail", shortLabel: "REENVIO", tone: "warning" };
   }
   if (row.action === "STATUS_CHANGE") {
     if (newStatus === "desmontado") {
@@ -281,6 +311,8 @@ function entityDisplay(row: AuditRow) {
       return `Status do andaime ${label}`;
     case "NON_CONFORMITY":
       return `Não conformidade ${label}`;
+    case "NOTIFICATION":
+      return `Notificação ${label}`;
     case "SETTINGS":
       return `Configuração ${label}`;
     default:
@@ -335,6 +367,14 @@ function friendlyDescription(row: AuditRow) {
       return row.userName
         ? `${actor} consultou o status do andaime ${entityLabel}.`
         : `Consulta publica ao status do andaime ${entityLabel}.`;
+    case "NOTIFICATION_CREATED":
+      return `${actor} gerou a notificação ${entityLabel}.`;
+    case "NOTIFICATION_READ":
+      return `${actor} marcou a notificação ${entityLabel} como lida.`;
+    case "NOTIFICATION_ARCHIVED":
+      return `${actor} arquivou a notificação ${entityLabel}.`;
+    case "NOTIFICATION_EMAIL_RESENT":
+      return `${actor} reenviou e-mail da notificação ${entityLabel}.`;
     case "LOGIN":
       return `${actor} entrou no sistema.`;
     case "LOGOUT":
@@ -375,11 +415,15 @@ function EntityBadge({ row }: { row: AuditRow }) {
   );
 }
 
-function csvEscape(value: string) {
-  return `"${value.replaceAll('"', '""')}"`;
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
-function exportRowsToCsv(rows: AuditRow[]) {
+function exportRowsToExcel(rows: AuditRow[]) {
   const headers = [
     "Data/Hora",
     "Usuário",
@@ -389,29 +433,101 @@ function exportRowsToCsv(rows: AuditRow[]) {
     "Descrição",
     "Empresa",
     "Workspace",
+    "IP",
+    "Sessão",
+    "Navegador",
+    "Sistema Operacional",
+    "Dispositivo",
   ];
-  const lines = rows.map((row) =>
-    [
-      format(new Date(row.createdAt), "dd/MM/yyyy HH:mm"),
-      row.userName ?? "Sistema",
-      row.userRole ?? "-",
-      labelAction(row),
-      entityDisplay(row),
-      friendlyDescription(row),
-      row.companyId ?? "-",
-      row.workspaceId ?? "-",
-    ]
-      .map(csvEscape)
-      .join(","),
-  );
-  const csv = [headers.map(csvEscape).join(","), ...lines].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const body = rows
+    .map((row) =>
+      [
+        format(new Date(row.createdAt), "dd/MM/yyyy HH:mm:ss"),
+        row.userName ?? "Sistema",
+        row.userRole ?? "-",
+        labelAction(row),
+        entityDisplay(row),
+        friendlyDescription(row),
+        row.companyId ?? "-",
+        row.workspaceId ?? "-",
+        row.ipAddress ?? "-",
+        row.sessionId ? row.sessionId.slice(0, 12) : "-",
+        row.browserName ?? "-",
+        row.osName ?? "-",
+        row.deviceType ?? "-",
+      ]
+        .map((cell) => `<td>${escapeHtml(cell)}</td>`)
+        .join(""),
+    )
+    .map((cells) => `<tr>${cells}</tr>`)
+    .join("");
+  const html = `<!doctype html><html><head><meta charset="utf-8" /></head><body><table><thead><tr>${headers
+    .map((header) => `<th>${escapeHtml(header)}</th>`)
+    .join("")}</tr></thead><tbody>${body}</tbody></table></body></html>`;
+  const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `auditoria-${format(new Date(), "yyyyMMdd-HHmm")}.csv`;
+  link.download = `auditoria-${format(new Date(), "yyyyMMdd-HHmm")}.xls`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function exportRowsToPdf(rows: AuditRow[]) {
+  const body = rows
+    .map(
+      (row) => `
+        <tr>
+          <td>${escapeHtml(format(new Date(row.createdAt), "dd/MM/yyyy HH:mm"))}</td>
+          <td>${escapeHtml(row.userName ?? "Sistema")}</td>
+          <td>${escapeHtml(labelAction(row))}</td>
+          <td>${escapeHtml(entityDisplay(row))}</td>
+          <td>${escapeHtml(friendlyDescription(row))}</td>
+          <td>${escapeHtml(companyDisplay(row))}</td>
+        </tr>
+      `,
+    )
+    .join("");
+  const printWindow = window.open("", "_blank", "noopener,noreferrer");
+  if (!printWindow) return;
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Auditoria AndCheck</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #111827; margin: 24px; }
+          h1 { font-size: 20px; margin: 0 0 4px; }
+          p { margin: 0 0 16px; color: #4b5563; font-size: 12px; }
+          table { width: 100%; border-collapse: collapse; font-size: 10px; }
+          th { text-align: left; background: #f3f4f6; border: 1px solid #d1d5db; padding: 6px; }
+          td { vertical-align: top; border: 1px solid #e5e7eb; padding: 6px; }
+        </style>
+      </head>
+      <body>
+        <h1>Auditoria AndCheck</h1>
+        <p>${rows.length} evento(s) exportados em ${escapeHtml(format(new Date(), "dd/MM/yyyy HH:mm"))}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Usuário</th>
+              <th>Ação</th>
+              <th>Entidade</th>
+              <th>Descrição</th>
+              <th>Empresa/Workspace</th>
+            </tr>
+          </thead>
+          <tbody>${body}</tbody>
+        </table>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
 }
 
 export function AuditoriaClient({
@@ -451,11 +567,19 @@ export function AuditoriaClient({
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => exportRowsToCsv(exportRows)}
+            onClick={() => exportRowsToExcel(exportRows)}
             className={`inline-flex h-8 items-center gap-2 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
           >
             <Download className="h-3.5 w-3.5" />
-            Exportar CSV
+            Excel
+          </button>
+          <button
+            type="button"
+            onClick={() => exportRowsToPdf(exportRows)}
+            className={`inline-flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
+          >
+            <Download className="h-3.5 w-3.5" />
+            PDF
           </button>
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
@@ -468,7 +592,7 @@ export function AuditoriaClient({
 
       <form
         action="/auditoria"
-        className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.3fr_170px_170px_150px_150px_130px_130px_auto]"
+        className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_150px_150px_135px_135px_135px_125px_125px_135px_auto]"
       >
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
@@ -518,6 +642,24 @@ export function AuditoriaClient({
           className="h-8 text-[11px] rounded-md border-border"
         />
         <Input
+          name="workspace"
+          defaultValue={filters.workspace}
+          placeholder="Workspace"
+          className="h-8 text-[11px] rounded-md border-border"
+        />
+        <Input
+          name="status"
+          defaultValue={filters.status}
+          placeholder="Status"
+          className="h-8 text-[11px] rounded-md border-border"
+        />
+        <Input
+          name="scaffoldTag"
+          defaultValue={filters.scaffoldTag}
+          placeholder="TAG"
+          className="h-8 text-[11px] rounded-md border-border"
+        />
+        <Input
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
@@ -529,6 +671,15 @@ export function AuditoriaClient({
           defaultValue={filters.dateTo}
           className="h-8 text-[11px] rounded-md border-border"
         />
+        <Select name="order" defaultValue={filters.order}>
+          <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectValue placeholder="Ordenação" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="desc">Mais recentes</SelectItem>
+            <SelectItem value="asc">Mais antigos</SelectItem>
+          </SelectContent>
+        </Select>
         <button className="h-8 rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
           Filtrar
         </button>

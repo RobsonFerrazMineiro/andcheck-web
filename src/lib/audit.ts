@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { resolveAuditRequestContext } from "@/lib/audit-context";
 import { requireAnyPermission } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 import {
@@ -9,7 +10,6 @@ import {
 import { sanitizeForLog } from "@/lib/safe-log";
 import { dataScopeWhere, getDataScope } from "@/lib/data-scope";
 import { AuditAction, AuditEntityType, Prisma } from "@prisma/client";
-import { headers } from "next/headers";
 
 type AuditUser = {
   id?: string | null;
@@ -122,25 +122,21 @@ async function resolveAuditUser(user?: AuditUser | null) {
 
 export async function createAuditLog(input: CreateAuditLogInput) {
   try {
-    const [user, hdrs, tenantContext] = await Promise.all([
+    const [user, requestContext, tenantContext] = await Promise.all([
       resolveAuditUser(input.user),
-      headers(),
+      resolveAuditRequestContext(),
       resolveTenantContext({
         company: input.companyId,
         workspace: input.workspaceId,
       }),
     ]);
-    const ipAddress =
-      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      hdrs.get("x-real-ip") ??
-      null;
-    const userAgent = hdrs.get("user-agent");
 
     await prisma.auditLog.create({
       data: {
         userId: user?.id ?? null,
         userName: user?.name ?? null,
         userRole: user?.role ?? null,
+        sessionId: requestContext.sessionId,
         entityType: input.entityType,
         entityId: input.entityId ?? null,
         entityLabel: input.entityLabel ?? null,
@@ -148,8 +144,11 @@ export async function createAuditLog(input: CreateAuditLogInput) {
         description: input.description,
         oldValue: sanitizeAuditValue(input.oldValue) ?? Prisma.JsonNull,
         newValue: sanitizeAuditValue(input.newValue) ?? Prisma.JsonNull,
-        ipAddress,
-        userAgent,
+        ipAddress: requestContext.ipAddress,
+        userAgent: requestContext.userAgent,
+        browserName: requestContext.browserName,
+        osName: requestContext.osName,
+        deviceType: requestContext.deviceType,
         workspaceId: tenantContext.workspaceId,
         companyId: tenantContext.companyId,
       },
@@ -166,15 +165,13 @@ export async function logScaffoldStatusConsultation(scaffold: {
   company: string | null;
 }) {
   try {
-    const [user, hdrs] = await Promise.all([resolveAuditUser(), headers()]);
-    const ipAddress =
-      hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      hdrs.get("x-real-ip") ??
-      null;
-    const userAgent = hdrs.get("user-agent");
+    const [user, requestContext] = await Promise.all([
+      resolveAuditUser(),
+      resolveAuditRequestContext(),
+    ]);
     const identityKey = user?.id
       ? `user:${user.id}`
-      : `ip:${ipAddress ?? "unknown"}`;
+      : `ip:${requestContext.ipAddress ?? "unknown"}`;
     const lockKey = `scaffold-status:${scaffold.id}:${identityKey}`;
     const createdAfter = new Date(
       Date.now() - STATUS_CONSULTATION_DEDUPLICATION_MS,
@@ -193,7 +190,7 @@ export async function logScaffoldStatusConsultation(scaffold: {
           createdAt: { gte: createdAfter },
           ...(user?.id
             ? { userId: user.id }
-            : { userId: null, ipAddress }),
+            : { userId: null, ipAddress: requestContext.ipAddress }),
         },
         select: { id: true },
       });
@@ -204,6 +201,7 @@ export async function logScaffoldStatusConsultation(scaffold: {
           userId: user?.id ?? null,
           userName: user?.name ?? null,
           userRole: user?.role ?? null,
+          sessionId: requestContext.sessionId,
           entityType: AuditEntityType.QR_CODE,
           entityId: scaffold.id,
           entityLabel: scaffold.code,
@@ -216,8 +214,11 @@ export async function logScaffoldStatusConsultation(scaffold: {
             code: scaffold.code,
             status: scaffold.status,
           },
-          ipAddress,
-          userAgent,
+          ipAddress: requestContext.ipAddress,
+          userAgent: requestContext.userAgent,
+          browserName: requestContext.browserName,
+          osName: requestContext.osName,
+          deviceType: requestContext.deviceType,
           workspaceId: DEFAULT_WORKSPACE_ID,
           companyId: DEFAULT_COMPANY_ID,
         },
@@ -237,8 +238,12 @@ export async function getAuditLogs({
   entityType,
   user,
   company,
+  workspace,
+  status,
+  scaffoldTag,
   dateFrom,
   dateTo,
+  order = "desc",
   page = 1,
   pageSize = 25,
 }: {
@@ -247,8 +252,12 @@ export async function getAuditLogs({
   entityType?: string;
   user?: string;
   company?: string;
+  workspace?: string;
+  status?: string;
+  scaffoldTag?: string;
   dateFrom?: string;
   dateTo?: string;
+  order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
 }) {
@@ -256,6 +265,7 @@ export async function getAuditLogs({
   const scope = await getDataScope();
 
   const where: Prisma.AuditLogWhereInput = dataScopeWhere(scope);
+  const andConditions: Prisma.AuditLogWhereInput[] = [];
 
   if (action) where.action = action as AuditAction;
   if (entityType) where.entityType = entityType as AuditEntityType;
@@ -265,20 +275,51 @@ export async function getAuditLogs({
       name: { contains: company, mode: "insensitive" },
     };
   }
+  if (workspace) {
+    where.workspace = {
+      name: { contains: workspace, mode: "insensitive" },
+    };
+  }
   if (dateFrom || dateTo) {
     where.createdAt = {
       ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
       ...(dateTo ? { lte: new Date(dateTo) } : {}),
     };
   }
-  if (search) {
-    where.OR = [
-      { description: { contains: search, mode: "insensitive" } },
-      { entityLabel: { contains: search, mode: "insensitive" } },
-      { userName: { contains: search, mode: "insensitive" } },
-      { userRole: { contains: search, mode: "insensitive" } },
-    ];
+  if (status) {
+    andConditions.push({
+      OR: [
+        { description: { contains: status, mode: "insensitive" } },
+        { oldValue: { path: ["status"], equals: status } },
+        { newValue: { path: ["status"], equals: status } },
+        { oldValue: { path: ["result"], equals: status } },
+        { newValue: { path: ["result"], equals: status } },
+      ],
+    });
   }
+  if (scaffoldTag) {
+    andConditions.push({
+      OR: [
+        { entityLabel: { contains: scaffoldTag, mode: "insensitive" } },
+        { description: { contains: scaffoldTag, mode: "insensitive" } },
+        { oldValue: { path: ["scaffold_code"], equals: scaffoldTag } },
+        { newValue: { path: ["scaffold_code"], equals: scaffoldTag } },
+        { oldValue: { path: ["code"], equals: scaffoldTag } },
+        { newValue: { path: ["code"], equals: scaffoldTag } },
+      ],
+    });
+  }
+  if (search) {
+    andConditions.push({
+      OR: [
+        { description: { contains: search, mode: "insensitive" } },
+        { entityLabel: { contains: search, mode: "insensitive" } },
+        { userName: { contains: search, mode: "insensitive" } },
+        { userRole: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+  if (andConditions.length > 0) where.AND = andConditions;
 
   const skip = Math.max(page - 1, 0) * pageSize;
   const [items, total] = await Promise.all([
@@ -288,7 +329,7 @@ export async function getAuditLogs({
         tenantCompany: { select: { name: true } },
         workspace: { select: { name: true } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: order },
       take: pageSize,
       skip,
     }),
@@ -307,6 +348,76 @@ export async function getAuditLogs({
     page,
     pageSize,
   };
+}
+
+export async function getEntityAuditTimeline({
+  entityType,
+  entityId,
+  limit = 40,
+}: {
+  entityType: AuditEntityType;
+  entityId: string;
+  limit?: number;
+}) {
+  await requireAnyPermission(["read.all", "read.own_company"]);
+  const scope = await getDataScope();
+
+  const items = await prisma.auditLog.findMany({
+    where: {
+      ...dataScopeWhere(scope),
+      entityType,
+      entityId,
+    },
+    include: {
+      tenantCompany: { select: { name: true } },
+      workspace: { select: { name: true } },
+    },
+    orderBy: { createdAt: "asc" },
+    take: limit,
+  });
+
+  return items.map((item) => ({
+    id: item.id,
+    action: item.action,
+    entityType: item.entityType,
+    entityLabel: item.entityLabel,
+    description: item.description,
+    userName: item.userName,
+    userRole: item.userRole,
+    oldValue: sanitizeAuditValue(item.oldValue) ?? null,
+    newValue: sanitizeAuditValue(item.newValue) ?? null,
+    ipAddress: item.ipAddress,
+    browserName: item.browserName,
+    osName: item.osName,
+    deviceType: item.deviceType,
+    companyName: item.tenantCompany.name,
+    workspaceName: item.workspace.name,
+    createdAt: item.createdAt,
+  }));
+}
+
+export async function getAuditRetentionPolicies() {
+  await requireAnyPermission(["audit.view", "logs.view", "permissions.manage"]);
+  const scope = await getDataScope();
+
+  const workspaces = await prisma.workspace.findMany({
+    where: {
+      ...(scope.workspaceIds ? { id: { in: scope.workspaceIds } } : {}),
+      active: true,
+    },
+    include: {
+      auditRetentionPolicy: true,
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return workspaces.map((workspace) => ({
+    workspaceId: workspace.id,
+    workspaceName: workspace.name,
+    period: workspace.auditRetentionPolicy?.period ?? "PERMANENT",
+    notes: workspace.auditRetentionPolicy?.notes ?? null,
+    configuredAt: workspace.auditRetentionPolicy?.updatedAt ?? null,
+  }));
 }
 
 export { AuditAction, AuditEntityType };

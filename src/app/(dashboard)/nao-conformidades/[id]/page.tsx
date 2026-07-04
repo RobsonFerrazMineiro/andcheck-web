@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AuditTimeline } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   getNonConformityById,
@@ -31,6 +32,7 @@ import {
   nonConformityStatusTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -172,6 +174,10 @@ export default async function NonConformityDetailPage({ params }: Props) {
   const { id } = await params;
   const nc = await getNonConformityById(id);
   if (!nc) notFound();
+  const auditTimeline = await getEntityAuditTimeline({
+    entityType: AuditEntityType.NON_CONFORMITY,
+    entityId: nc.id,
+  });
 
   const company = nc.tenantCompany.name ?? nc.scaffold.company ?? "-";
   const responsible = nc.responsibleUser?.name ?? "-";
@@ -455,6 +461,8 @@ export default async function NonConformityDetailPage({ params }: Props) {
           </div>
         )}
       </Section>
+
+      <AuditTimeline items={auditTimeline} />
 
       <div className="flex gap-3">
         <Link

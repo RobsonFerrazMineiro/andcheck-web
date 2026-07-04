@@ -16,9 +16,11 @@ import {
   DocumentStatusBadge,
   formatDocumentFileSize,
 } from "@/components/document/document-ui";
+import { AuditTimeline } from "@/components/shared/audit-timeline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDocumentDetail } from "@/lib/actions/document-actions";
+import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -58,6 +60,10 @@ export default async function DocumentoDetalhePage({ params }: Props) {
   if (!result) notFound();
 
   const { document } = result;
+  const auditTimeline = await getEntityAuditTimeline({
+    entityType: AuditEntityType.DOCUMENT,
+    entityId: document.id,
+  });
 
   return (
     <div className="space-y-5">
@@ -182,6 +188,8 @@ export default async function DocumentoDetalhePage({ params }: Props) {
           </CardContent>
         </Card>
       </div>
+
+      <AuditTimeline items={auditTimeline} />
     </div>
   );
 }

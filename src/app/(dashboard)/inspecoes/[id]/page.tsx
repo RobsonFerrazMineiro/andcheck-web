@@ -22,6 +22,7 @@ import { notFound } from "next/navigation";
 
 import { PdfDownloadButton } from "@/components/inspection/pdf-download-button";
 import { PrintButton } from "@/components/inspection/print-button";
+import { AuditTimeline } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
@@ -30,6 +31,7 @@ import {
 } from "@/lib/semantic-tones";
 import { Badge } from "@/components/ui/badge";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
+import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { ChecklistValue } from "@prisma/client";
 
 interface Props {
@@ -140,6 +142,10 @@ export default async function InspectionDetailPage({ params }: Props) {
   const { id } = await params;
   const inspection = await getInspectionById(id);
   if (!inspection) notFound();
+  const auditTimeline = await getEntityAuditTimeline({
+    entityType: AuditEntityType.INSPECTION,
+    entityId: inspection.id,
+  });
 
   const scaffold = inspection.scaffold;
   const checklist = inspection.checklist;
@@ -638,6 +644,8 @@ export default async function InspectionDetailPage({ params }: Props) {
           </Link>
         </div>
       )}
+
+      <AuditTimeline items={auditTimeline} />
 
       <div className="flex gap-3">
         <Link

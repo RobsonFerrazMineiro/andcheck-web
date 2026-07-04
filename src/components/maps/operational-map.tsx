@@ -353,8 +353,18 @@ export function OperationalMap({
     // Adiciona novos markers
     scaffolds.forEach((scaffold) => {
       const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
+      const statusLabel =
+        STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
+      const markerLabel = `${scaffold.code} - ${statusLabel} - ${scaffold.area}`;
       const marker = L.marker([scaffold.latitude, scaffold.longitude], {
         icon: createPin(color),
+        title: markerLabel,
+        alt: markerLabel,
+      });
+      marker.on("add", () => {
+        marker
+          .getElement()
+          ?.setAttribute("aria-label", `Abrir detalhes do andaime ${markerLabel}`);
       });
       marker.bindPopup(buildPopup(scaffold, showCompanyName, variant), {
         autoPanPadding: variant === "compact" ? [16, 16] : [28, 28],

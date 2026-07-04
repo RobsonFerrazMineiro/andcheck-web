@@ -173,6 +173,10 @@ export function AuditDetailDialog({
             <Detail label="Usuário" value={row.userName ?? "Sistema"} />
             <Detail label="Perfil" value={row.userRole ?? "-"} />
             <Detail
+              label="Sessão"
+              value={row.sessionId ? row.sessionId.slice(0, 12) : "-"}
+            />
+            <Detail
               label="Data/Hora"
               value={format(new Date(row.createdAt), "dd/MM/yyyy HH:mm:ss")}
             />
@@ -180,8 +184,13 @@ export function AuditDetailDialog({
             <Detail label="IP" value={row.ipAddress ?? "-"} />
             <Detail
               label="Dispositivo/Navegador"
-              value={row.userAgent ?? "-"}
+              value={
+                [row.deviceType, row.osName, row.browserName]
+                  .filter(Boolean)
+                  .join(" / ") || "-"
+              }
             />
+            <Detail label="User Agent" value={row.userAgent ?? "-"} />
             <Detail label="Ação" value={actionLabel} />
             <Detail label="Entidade" value={entityLabel} />
           </div>

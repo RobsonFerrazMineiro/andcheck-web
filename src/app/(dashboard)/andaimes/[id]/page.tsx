@@ -22,6 +22,7 @@ import {
   LazyScaffoldDocumentSection,
   LazyScaffoldQRCard,
 } from "@/components/scaffold/lazy-scaffold-panels";
+import { AuditTimeline } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
@@ -30,6 +31,7 @@ import {
 } from "@/lib/semantic-tones";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
+import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
 
@@ -114,6 +116,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canAddDocument,
     canDeleteDocument,
     access,
+    auditTimeline,
   ] = await Promise.all([
     getScaffoldDocuments(id),
     canCurrentUser("inspections.create"),
@@ -122,6 +125,10 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canCurrentUser("documents.create"),
     canCurrentUser("permissions.manage"),
     getCurrentUserAccess(),
+    getEntityAuditTimeline({
+      entityType: AuditEntityType.SCAFFOLD,
+      entityId: scaffold.id,
+    }),
   ]);
   const canActOnNonConformity = Boolean(
     access?.roleCodes.some(
@@ -349,6 +356,8 @@ export default async function AndaimeDetailPage({ params }: Props) {
         tag={scaffold.tag}
         origin={origin}
       />
+
+      <AuditTimeline items={auditTimeline} />
 
       <TechCard
         title="Histórico de Inspeções"

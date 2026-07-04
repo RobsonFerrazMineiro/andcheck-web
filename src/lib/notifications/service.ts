@@ -6,6 +6,7 @@ import {
   normalizeChannels,
   notificationEntityPath,
 } from "@/lib/notifications/catalog";
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { renderNotificationEmail, sendEmail } from "@/lib/notifications/email";
 import { prisma } from "@/lib/prisma";
 import { sanitizeForLog } from "@/lib/safe-log";
@@ -112,6 +113,25 @@ export async function createNotification(input: CreateNotificationInput) {
       });
       if (!notificationWithContext) continue;
       created.push(notificationWithContext);
+
+      await createAuditLog({
+        entityType: AuditEntityType.NOTIFICATION,
+        entityId: notificationWithContext.id,
+        entityLabel: notificationWithContext.title,
+        action: AuditAction.NOTIFICATION_CREATED,
+        description: `Notificacao ${notificationWithContext.title} gerada`,
+        newValue: {
+          type: notificationWithContext.type,
+          severity: notificationWithContext.severity,
+          status: notificationWithContext.status,
+          entityType: notificationWithContext.entityType,
+          entityId: notificationWithContext.entityId,
+          channels: notificationWithContext.channels,
+          recipientUserId: notificationWithContext.userId,
+        },
+        companyId: notificationWithContext.companyId,
+        workspaceId: notificationWithContext.workspaceId,
+      });
 
       if (shouldSendEmail) {
         await sendNotificationEmail(notificationWithContext, recipient.email);

@@ -17,6 +17,10 @@ function filterValue(value: string | string[] | undefined) {
   return result === "all" ? undefined : result;
 }
 
+function sortOrder(value: string | string[] | undefined): "asc" | "desc" {
+  return single(value) === "asc" ? "asc" : "desc";
+}
+
 type AuditLogItem = Awaited<ReturnType<typeof getAuditLogs>>["items"][number];
 
 function mapAuditRow(item: AuditLogItem) {
@@ -33,6 +37,10 @@ function mapAuditRow(item: AuditLogItem) {
     newValue: item.newValue,
     ipAddress: item.ipAddress,
     userAgent: item.userAgent,
+    sessionId: item.sessionId,
+    browserName: item.browserName,
+    osName: item.osName,
+    deviceType: item.deviceType,
     workspaceId: item.workspaceId,
     companyId: item.companyId,
     createdAt: item.createdAt.toISOString(),
@@ -55,8 +63,12 @@ export default async function AuditoriaPage({ searchParams }: Props) {
     entityType: filterValue(params.entityType),
     user: single(params.user),
     company: single(params.company),
+    workspace: single(params.workspace),
+    status: single(params.status),
+    scaffoldTag: single(params.scaffoldTag),
     dateFrom: single(params.dateFrom),
     dateTo: single(params.dateTo),
+    order: sortOrder(params.order),
   };
   const currentPage = Number.isFinite(page) && page > 0 ? page : 1;
   const [result, exportResult] = await Promise.all([
@@ -88,8 +100,12 @@ export default async function AuditoriaPage({ searchParams }: Props) {
         entityType: filterValue(params.entityType) ?? "",
         user: single(params.user) ?? "",
         company: single(params.company) ?? "",
+        workspace: single(params.workspace) ?? "",
+        status: single(params.status) ?? "",
+        scaffoldTag: single(params.scaffoldTag) ?? "",
         dateFrom: single(params.dateFrom) ?? "",
         dateTo: single(params.dateTo) ?? "",
+        order: sortOrder(params.order),
       }}
     />
   );

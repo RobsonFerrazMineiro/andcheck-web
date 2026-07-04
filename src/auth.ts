@@ -1,4 +1,5 @@
 import { DEFAULT_COMPANY_ID, DEFAULT_WORKSPACE_ID } from "@/lib/multi-company";
+import { resolveAuditRequestContext } from "@/lib/audit-context";
 import { prisma } from "@/lib/prisma";
 import { AuditAction, AuditEntityType } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -70,6 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   events: {
     async signIn({ user }) {
       try {
+        const requestContext = await resolveAuditRequestContext();
         const authUser = user as typeof user & {
           companyId?: string;
           workspaceId?: string;
@@ -80,11 +82,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             userId: user.id ?? null,
             userName: user.name ?? user.email ?? null,
             userRole: authUser.role ?? null,
+            sessionId: requestContext.sessionId,
             entityType: AuditEntityType.USER,
             entityId: user.id ?? null,
             entityLabel: user.email ?? user.name ?? null,
             action: AuditAction.LOGIN,
             description: `${user.email ?? user.name ?? "Usuario"} acessou o AndCheck`,
+            ipAddress: requestContext.ipAddress,
+            userAgent: requestContext.userAgent,
+            browserName: requestContext.browserName,
+            osName: requestContext.osName,
+            deviceType: requestContext.deviceType,
             companyId: authUser.companyId ?? DEFAULT_COMPANY_ID,
             workspaceId: authUser.workspaceId ?? DEFAULT_WORKSPACE_ID,
           },
@@ -95,6 +103,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async signOut(message) {
       try {
+        const requestContext = await resolveAuditRequestContext();
         const token = "token" in message ? message.token : null;
         await prisma.auditLog.create({
           data: {
@@ -104,13 +113,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 ? token.name
                 : typeof token?.email === "string"
                   ? token.email
-                  : null,
+                : null,
             userRole: typeof token?.role === "string" ? token.role : null,
+            sessionId: requestContext.sessionId,
             entityType: AuditEntityType.USER,
             entityId: typeof token?.id === "string" ? token.id : null,
             entityLabel: typeof token?.email === "string" ? token.email : null,
             action: AuditAction.LOGOUT,
             description: "Usuario encerrou a sessao no AndCheck",
+            ipAddress: requestContext.ipAddress,
+            userAgent: requestContext.userAgent,
+            browserName: requestContext.browserName,
+            osName: requestContext.osName,
+            deviceType: requestContext.deviceType,
             companyId:
               typeof token?.companyId === "string"
                 ? token.companyId

@@ -1,7 +1,5 @@
 "use client";
 
-import { updateActiveContext } from "@/lib/actions/context-actions";
-import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   Select,
   SelectContent,
@@ -9,13 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Building2,
-  ChevronDown,
-  Loader2,
-  MapPin,
-  X,
-} from "lucide-react";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { updateActiveContext } from "@/lib/actions/context-actions";
+import { Building2, ChevronDown, Loader2, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -40,7 +34,12 @@ export type ContextSwitcherData = {
 };
 
 function shortWorkspaceName(name: string) {
-  return name.split(/\s[-\u2013\u2014]\s/).at(-1)?.trim() || name;
+  return (
+    name
+      .split(/\s[-\u2013\u2014]\s/)
+      .at(-1)
+      ?.trim() || name
+  );
 }
 
 function ContextField({
@@ -59,7 +58,9 @@ function ContextField({
         <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
           {label}
         </p>
-        <p className="truncate text-xs font-semibold text-foreground">{value}</p>
+        <p className="truncate text-xs font-semibold text-foreground">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -182,6 +183,10 @@ export function MobileContextSwitcher({
   const selectedWorkspace = context.workspaces.find(
     (workspace) => workspace.id === context.selectedWorkspaceId,
   );
+  const selectedCompanyName = selectedCompany?.name ?? "-";
+  const selectedWorkspaceName = selectedWorkspace
+    ? shortWorkspaceName(selectedWorkspace.name)
+    : "-";
 
   useDialogFocus(panelRef, open, () => setOpen(false));
 
@@ -223,20 +228,22 @@ export function MobileContextSwitcher({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls="mobile-context-panel"
-        aria-label="Alterar contexto ativo"
+        aria-label={
+          context.canSwitchCompany
+            ? `${selectedCompanyName} ${selectedWorkspaceName} — alterar contexto ativo`
+            : `${selectedWorkspaceName} — alterar contexto ativo`
+        }
       >
         <div className="min-w-0">
           {context.canSwitchCompany && (
             <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
-              {selectedCompany?.name ?? "-"}
+              {selectedCompanyName}
             </p>
           )}
           <p
-            className={`truncate text-sidebar-foreground/45 ${context.canSwitchCompany ? "text-[9px]" : "text-[10px] font-semibold"}`}
+            className={`truncate text-sidebar-foreground/80 ${context.canSwitchCompany ? "text-[9px]" : "text-[10px] font-semibold"}`}
           >
-            {selectedWorkspace
-              ? shortWorkspaceName(selectedWorkspace.name)
-              : "-"}
+            {selectedWorkspaceName}
           </p>
         </div>
         {isPending ? (

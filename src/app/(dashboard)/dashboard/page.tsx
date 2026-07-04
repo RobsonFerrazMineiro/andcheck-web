@@ -295,7 +295,7 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       {showResponsibleCompany && (
                         <p
-                          className={`truncate text-muted-foreground/60 ${typography.metaStrong}`}
+                          className={`truncate text-muted-foreground ${typography.metaStrong}`}
                         >
                           Empresa: {s.tenantCompany.name}
                         </p>
@@ -345,7 +345,7 @@ export default async function DashboardPage() {
                         {movement.title}
                       </p>
                       <p
-                        className={`mt-0.5 truncate text-muted-foreground/60 ${typography.panelSubtitle}`}
+                        className={`mt-0.5 truncate text-muted-foreground ${typography.panelSubtitle}`}
                       >
                         {movement.subtitle}
                       </p>
@@ -364,13 +364,13 @@ export default async function DashboardPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border">
-        <span className={`${typography.sectionLabel} text-muted-foreground/40`}>
+        <span className={`${typography.sectionLabel} text-muted-foreground`}>
           Conformidade:
         </span>
         {NORMS.map((n) => (
           <span
             key={n}
-            className={`${typography.codeMuted} rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground/50`}
+            className={`${typography.codeMuted} rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground`}
           >
             {n}
           </span>
@@ -501,7 +501,7 @@ function RankingPanel({
     <PanelBlock title={title} subtitle={subtitle} icon={icon}>
       {description && (
         <div className="border-b border-border px-4 py-2">
-          <p className={`${typography.metaStrong} text-muted-foreground/60`}>
+          <p className={`${typography.metaStrong} text-muted-foreground`}>
             {description}
           </p>
         </div>
@@ -521,7 +521,7 @@ function RankingPanel({
               className="flex items-center gap-2 px-4 py-2.5"
             >
               <span
-                className={`w-5 shrink-0 text-muted-foreground/60 ${typography.rankingIndex}`}
+                className={`w-5 shrink-0 text-muted-foreground ${typography.rankingIndex}`}
               >
                 {index + 1}.
               </span>
@@ -626,7 +626,7 @@ function KpiCard({
             />
           </div>
         )}
-        <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+        <p className={`${typography.panelSubtitle} text-muted-foreground`}>
           {showPct && showBar ? `${pct}% do inventário` : hint}
         </p>
       </div>

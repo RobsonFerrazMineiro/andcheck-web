@@ -412,6 +412,14 @@ export async function getDocumentDetail(id: string) {
     entityLabel: document.title,
     action: AuditAction.DOCUMENT_VIEWED,
     description: `Documento ${document.title} visualizado`,
+    newValue: {
+      title: document.title,
+      category: document.category,
+      status: document.status,
+      fileName: document.fileName,
+      companyId: document.companyId,
+      workspaceId: document.workspaceId,
+    },
     companyId: document.companyId,
     workspaceId: document.workspaceId,
   });

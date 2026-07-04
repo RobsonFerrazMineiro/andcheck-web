@@ -36,15 +36,25 @@ interface RawScaffold {
   companyId: string;
   tenantCompany: { name: string };
   location_description?: string | null;
-  validity_date?: Date | null;
+  validity_date?: Date | string | null;
   latitude?: number | null;
   longitude?: number | null;
-  inspections?: Array<{ date: Date; result: string }>;
+  inspections?: Array<{ date: Date | string; result: string }>;
 }
 
 export interface DashboardMapPreviewProps {
   scaffolds: RawScaffold[];
   showCompanyName?: boolean;
+}
+
+function toIsoDate(value: Date | string | null | undefined) {
+  if (!value) return null;
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function toDate(value: Date | string | null | undefined) {
+  if (!value) return null;
+  return value instanceof Date ? value : new Date(value);
 }
 
 export function DashboardMapPreview({
@@ -63,16 +73,18 @@ export function DashboardMapPreview({
       companyId: s.companyId,
       companyName: s.tenantCompany.name,
       locationDescription: s.location_description,
-      validity_date: s.validity_date ? s.validity_date.toISOString() : null,
+      validity_date: toIsoDate(s.validity_date),
       latitude: s.latitude as number,
       longitude: s.longitude as number,
       effectiveStatus:
-        s.status === "liberado" && s.validity_date && isPast(s.validity_date)
+        s.status === "liberado" &&
+        s.validity_date &&
+        isPast(toDate(s.validity_date) ?? new Date())
           ? "vencido"
           : s.status,
       lastInspection: s.inspections?.[0]
         ? {
-            date: s.inspections[0].date.toISOString(),
+            date: toIsoDate(s.inspections[0].date) ?? "",
             result: s.inspections[0].result,
           }
         : null,

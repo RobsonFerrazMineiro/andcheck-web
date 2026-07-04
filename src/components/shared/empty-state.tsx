@@ -29,7 +29,7 @@ export function EmptyState({
       </div>
       <p className={`text-foreground ${typography.emptyState}`}>{title}</p>
       <p
-        className={`mx-auto mt-1 max-w-md text-muted-foreground/70 ${typography.bodyMuted}`}
+        className={`mx-auto mt-1 max-w-md text-muted-foreground ${typography.bodyMuted}`}
       >
         {description}
       </p>
