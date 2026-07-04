@@ -592,9 +592,9 @@ export function AuditoriaClient({
 
       <form
         action="/auditoria"
-        className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_150px_150px_135px_135px_135px_125px_125px_135px_auto]"
+        className="flex min-w-0 flex-wrap items-start gap-2 rounded-lg border border-border bg-card p-3 shadow-sm"
       >
-        <div className="relative">
+        <div className="relative min-w-[180px] flex-1 md:max-w-[260px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             name="search"
@@ -618,7 +618,7 @@ export function AuditoriaClient({
           </SelectContent>
         </Select>
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-[108px] text-[11px] rounded-md">
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
@@ -633,46 +633,46 @@ export function AuditoriaClient({
           name="user"
           defaultValue={filters.user}
           placeholder="Usuário"
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[150px] text-[11px] rounded-md border-border"
         />
         <Input
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[150px] text-[11px] rounded-md border-border"
         />
         <Input
           name="workspace"
           defaultValue={filters.workspace}
           placeholder="Workspace"
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[150px] text-[11px] rounded-md border-border"
         />
         <Input
           name="status"
           defaultValue={filters.status}
           placeholder="Status"
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[135px] text-[11px] rounded-md border-border"
         />
         <Input
           name="scaffoldTag"
           defaultValue={filters.scaffoldTag}
           placeholder="TAG"
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[125px] text-[11px] rounded-md border-border"
         />
         <Input
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[154px] text-[11px] rounded-md border-border"
         />
         <Input
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
-          className="h-8 text-[11px] rounded-md border-border"
+          className="h-8 w-[154px] text-[11px] rounded-md border-border"
         />
         <Select name="order" defaultValue={filters.order}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-[132px] text-[11px] rounded-md">
             <SelectValue placeholder="Ordenação" />
           </SelectTrigger>
           <SelectContent>
@@ -680,7 +680,7 @@ export function AuditoriaClient({
             <SelectItem value="asc">Mais antigos</SelectItem>
           </SelectContent>
         </Select>
-        <button className="h-8 rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
+        <button className="h-8 w-full rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest sm:w-[170px]">
           Filtrar
         </button>
       </form>
