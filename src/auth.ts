@@ -72,32 +72,42 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user }) {
       try {
         const requestContext = await resolveAuditRequestContext();
-        const authUser = user as typeof user & {
-          companyId?: string;
-          workspaceId?: string;
-          role?: string;
-        };
+        const dbUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              ...(user.id ? [{ id: user.id }] : []),
+              ...(user.email ? [{ email: user.email }] : []),
+            ],
+          },
+          include: {
+            roles: {
+              include: { role: true },
+              orderBy: { assigned_at: "asc" },
+            },
+          },
+        });
         await prisma.auditLog.create({
           data: {
-            userId: user.id ?? null,
-            userName: user.name ?? user.email ?? null,
-            userRole: authUser.role ?? null,
+            userId: dbUser?.id ?? user.id ?? null,
+            userName: dbUser?.name ?? user.name ?? user.email ?? null,
+            userRole: dbUser?.roles[0]?.role.code ?? null,
             sessionId: requestContext.sessionId,
             entityType: AuditEntityType.USER,
-            entityId: user.id ?? null,
-            entityLabel: user.email ?? user.name ?? null,
+            entityId: dbUser?.id ?? user.id ?? null,
+            entityLabel: dbUser?.email ?? user.email ?? user.name ?? null,
             action: AuditAction.LOGIN,
-            description: `${user.email ?? user.name ?? "Usuario"} acessou o AndCheck`,
+            description: `${dbUser?.email ?? user.email ?? user.name ?? "Usuario"} acessou o AndCheck`,
             ipAddress: requestContext.ipAddress,
             userAgent: requestContext.userAgent,
             browserName: requestContext.browserName,
             osName: requestContext.osName,
             deviceType: requestContext.deviceType,
-            companyId: authUser.companyId ?? DEFAULT_COMPANY_ID,
-            workspaceId: authUser.workspaceId ?? DEFAULT_WORKSPACE_ID,
+            companyId: dbUser?.companyId ?? DEFAULT_COMPANY_ID,
+            workspaceId: dbUser?.workspaceId ?? DEFAULT_WORKSPACE_ID,
           },
         });
-      } catch {
+      } catch (error) {
+        console.error("Login audit failed:", error);
         // Login nao deve falhar se a auditoria estiver indisponivel.
       }
     },

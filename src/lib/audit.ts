@@ -15,6 +15,8 @@ type AuditUser = {
   id?: string | null;
   name?: string | null;
   role?: string | null;
+  companyId?: string | null;
+  workspaceId?: string | null;
 };
 
 type AuditValue = Prisma.InputJsonValue | null | undefined;
@@ -117,19 +119,21 @@ async function resolveAuditUser(user?: AuditUser | null) {
     id: dbUser?.id ?? sessionUser.id,
     name: dbUser?.name ?? sessionUser.name ?? sessionUser.email,
     role: dbUser?.roles[0]?.role.code ?? sessionUser.role,
+    companyId: dbUser?.companyId,
+    workspaceId: dbUser?.workspaceId,
   };
 }
 
 export async function createAuditLog(input: CreateAuditLogInput) {
   try {
-    const [user, requestContext, tenantContext] = await Promise.all([
+    const [user, requestContext] = await Promise.all([
       resolveAuditUser(input.user),
       resolveAuditRequestContext(),
-      resolveTenantContext({
-        company: input.companyId,
-        workspace: input.workspaceId,
-      }),
     ]);
+    const tenantContext = await resolveTenantContext({
+      company: input.companyId ?? user?.companyId,
+      workspace: input.workspaceId ?? user?.workspaceId,
+    });
 
     await prisma.auditLog.create({
       data: {

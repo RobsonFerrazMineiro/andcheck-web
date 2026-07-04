@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 import { getAuditLogs } from "@/lib/audit";
 import { canCurrentUser } from "@/lib/authz";
@@ -48,6 +49,8 @@ function mapAuditRow(item: AuditLogItem) {
 }
 
 export default async function AuditoriaPage({ searchParams }: Props) {
+  await connection();
+
   const canViewAudit =
     (await canCurrentUser("audit.view")) ||
     (await canCurrentUser("logs.view")) ||

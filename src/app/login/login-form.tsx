@@ -23,16 +23,25 @@ export function LoginForm() {
     e.preventDefault();
     setError("");
     startTransition(async () => {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (result?.error) {
-        setError("E-mail ou senha invalidos.");
-      } else {
-        router.push(callbackUrl);
-        router.refresh();
+      try {
+        const absoluteCallbackUrl = new URL(
+          callbackUrl,
+          window.location.origin,
+        ).toString();
+        const result = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+          callbackUrl: absoluteCallbackUrl,
+        });
+        if (result?.error) {
+          setError("E-mail ou senha invalidos.");
+        } else {
+          router.push(callbackUrl);
+          router.refresh();
+        }
+      } catch {
+        setError("Nao foi possivel iniciar a sessao. Tente novamente.");
       }
     });
   }
