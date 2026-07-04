@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { FormModal } from "@/components/shared/form-modal";
 import {
   createWorkspace,
   setWorkspaceActive,
@@ -262,9 +262,17 @@ export function WorkspacesClient({
         />
       </div>
 
-      {(creating || editing) && canManage && (
-        <Card className="rounded-lg border-primary/20">
-          <CardContent>
+      {canManage && (
+        <FormModal
+          open={creating || Boolean(editing)}
+          title={editing ? "Editar workspace" : "Novo workspace"}
+          description="Cadastre a planta operacional e sua localização aproximada."
+          maxWidth="max-w-5xl"
+          onClose={() => {
+            if (isPending) return;
+            closeForm();
+          }}
+        >
             <form action={submit} className="grid gap-4 lg:grid-cols-2">
               {editing && (
                 <input type="hidden" name="workspaceId" value={editing.id} />
@@ -356,8 +364,7 @@ export function WorkspacesClient({
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+        </FormModal>
       )}
 
       <div className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">

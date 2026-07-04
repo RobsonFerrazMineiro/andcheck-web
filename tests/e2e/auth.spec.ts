@@ -16,6 +16,40 @@ test("redirects protected routes to login", async ({ page }) => {
   await expect(page).toHaveURL(/\/login/);
 });
 
+test("opens admin creation forms in modals", async ({ page }) => {
+  await login(page);
+
+  for (const item of [
+    {
+      route: "/usuarios",
+      button: /Novo Usuário/i,
+      title: /Cadastro de Usuário/i,
+    },
+    {
+      route: "/empresas",
+      button: /Nova empresa/i,
+      title: /Nova empresa/i,
+    },
+    {
+      route: "/workspaces",
+      button: /Novo workspace/i,
+      title: /Novo workspace/i,
+    },
+  ]) {
+    await page.goto(item.route);
+    await page.getByRole("button", { name: item.button }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole("heading", { name: item.title }),
+    ).toBeVisible();
+
+    await dialog.getByRole("button", { name: "Fechar modal" }).click();
+    await expect(dialog).toBeHidden();
+  }
+});
+
 test("rejects invalid credentials", async ({ page }) => {
   await page.goto("/login");
   await page.getByLabel("E-mail").fill("invalid@example.com");

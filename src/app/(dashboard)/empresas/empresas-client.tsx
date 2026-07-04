@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -15,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FormModal } from "@/components/shared/form-modal";
 import {
   createCompany,
   setCompanyActive,
@@ -268,9 +268,18 @@ export function EmpresasClient({
         />
       </div>
 
-      {(creating || editing) && canManage && (
-        <Card className="rounded-lg border-primary/20">
-          <CardContent>
+      {canManage && (
+        <FormModal
+          open={creating || Boolean(editing)}
+          title={editing ? "Editar empresa" : "Nova empresa"}
+          description="Mantenha o cadastro administrativo e os vínculos operacionais da empresa."
+          maxWidth="max-w-4xl"
+          onClose={() => {
+            if (isPending || logoUploading) return;
+            setCreating(false);
+            setEditing(null);
+          }}
+        >
             <form action={submit} className="grid gap-4 lg:grid-cols-2">
               {formCompany && (
                 <input type="hidden" name="companyId" value={formCompany.id} />
@@ -350,8 +359,7 @@ export function EmpresasClient({
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+        </FormModal>
       )}
 
       <div className="space-y-3 rounded-lg border border-border bg-card p-3">

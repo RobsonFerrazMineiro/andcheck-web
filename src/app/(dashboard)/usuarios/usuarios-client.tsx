@@ -20,6 +20,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FormModal } from "@/components/shared/form-modal";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -376,11 +377,24 @@ export function UsuariosClient({
         })}
       </div>
 
-      {(showForm || editingUser) && (
+      <FormModal
+        open={showForm || Boolean(editingUser)}
+        title={editingUser ? "Edição de Usuário" : "Cadastro de Usuário"}
+        description={
+          editingUser
+            ? "Atualize os dados operacionais e o perfil de acesso."
+            : "Cadastre o usuário e defina o perfil inicial de acesso."
+        }
+        maxWidth="max-w-5xl"
+        onClose={() => {
+          setShowForm(false);
+          setEditingUser(null);
+        }}
+      >
         <form
           key={editingUser?.id ?? "new-user"}
           action={editingUser ? handleUpdateUser : handleCreateUser}
-          className="bg-card border border-border rounded-lg shadow-sm p-4 space-y-4"
+          className="space-y-4"
         >
           {editingUser && (
             <input type="hidden" name="user_id" value={editingUser.id} />
@@ -497,7 +511,7 @@ export function UsuariosClient({
             </button>
           </div>
         </form>
-      )}
+      </FormModal>
 
       <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
