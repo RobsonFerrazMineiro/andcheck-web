@@ -122,7 +122,7 @@ export default async function DashboardLayout({
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-background">
       <Sidebar
         canManageUsers={canManageUsers}
         canViewAudit={canViewAudit}
@@ -141,7 +141,7 @@ export default async function DashboardLayout({
         context={contextSwitcher}
       />
 
-      <main className="flex-1 lg:ml-56 pt-14 lg:pt-0 min-h-screen flex flex-col">
+      <main className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden pt-14 lg:ml-56 lg:pt-0">
         {/* Topbar — apenas desktop */}
         <div className="hidden lg:flex items-center justify-between bg-card border-b border-border px-6 py-2.5 shrink-0">
           <div
@@ -195,7 +195,7 @@ export default async function DashboardLayout({
         </div>
 
         {/* Page content */}
-        <div className="flex-1 p-4 md:p-6 max-w-7xl mx-auto w-full">
+        <div className="mx-auto w-full max-w-7xl min-w-0 flex-1 overflow-hidden p-4 md:p-6">
           {children}
         </div>
         <Toaster richColors position="top-right" closeButton />

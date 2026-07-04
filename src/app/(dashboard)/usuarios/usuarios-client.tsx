@@ -299,14 +299,14 @@ export function UsuariosClient({
             setEditingUser(null);
             setShowForm((current) => !current);
           }}
-          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
+          className="inline-flex h-8 w-full shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90 sm:w-auto"
         >
           <UserPlus className="w-3.5 h-3.5" />
           Novo Usuário
         </button>
       </div>
 
-      <div className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">
         {(
           [
             {
@@ -355,7 +355,7 @@ export function UsuariosClient({
             <div
               key={card.label}
               className={
-                "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " +
+                "andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 " +
                 card.border
               }
             >
@@ -597,11 +597,11 @@ export function UsuariosClient({
                 <div
                   key={user.id}
                   className={
-                    "flex lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 items-center px-4 py-3 " +
+                    "flex flex-col gap-3 sm:flex-row sm:items-center lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 px-4 py-3 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
-                  <div className="flex items-center gap-3 flex-1 lg:contents">
+                  <div className="flex w-full min-w-0 items-center gap-3 sm:flex-1 lg:contents">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
                       <span className={typography.action}>
                         {initials(user.name)}
@@ -632,7 +632,7 @@ export function UsuariosClient({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 shrink-0">
+                  <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:shrink-0">
                     <div className="lg:hidden">
                       <StatusPill active={user.is_active} />
                     </div>

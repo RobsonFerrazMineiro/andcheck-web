@@ -81,9 +81,9 @@ export default async function MapaPage() {
   ).length;
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 space-y-5 overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
-        <div>
+        <div className="min-w-0">
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <MapPin className="size-4" />
             AndCheck • Mapa Operacional
@@ -91,28 +91,26 @@ export default async function MapaPage() {
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
             Mapa Operacional
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            {total} andaimes cadastrados · {comCoords} georreferênciados
+          <p className="mt-0.5 flex min-w-0 flex-wrap gap-x-1 text-[11px] text-muted-foreground">
+            <span>{total} andaimes cadastrados</span>
+            <span>· {comCoords} georreferênciados</span>
             {semCoords > 0 && (
-              <span className="text-amber-600">
-                {" "}
-                · {semCoords} sem coordenadas
-              </span>
+              <span className="text-amber-600">· {semCoords} sem coordenadas</span>
             )}
           </p>
         </div>
         {canCreateScaffold && (
           <Link
             href="/andaimes/novo"
-            className="inline-flex items-center gap-1.5 rounded-md bg-accent hover:bg-accent/90 text-accent-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4 shrink-0"
+            className="inline-flex h-8 w-full min-w-0 shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90 sm:w-auto"
           >
-            <Construction className="w-3.5 h-3.5" />
-            Novo Andaime
+            <Construction className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Novo Andaime</span>
           </Link>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-5">
         {[
           {
             label: "Liberados",
@@ -160,11 +158,11 @@ export default async function MapaPage() {
           return (
             <div
               key={k.label}
-              className={`andcheck-lift rounded-lg border border-border bg-card p-4 shadow-sm ${k.border}`}
+              className={`andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 ${k.border}`}
             >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <p
-                  className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+                  className={`${typography.sectionLabel} min-w-0 break-words leading-tight text-muted-foreground`}
                 >
                   {k.label}
                 </p>

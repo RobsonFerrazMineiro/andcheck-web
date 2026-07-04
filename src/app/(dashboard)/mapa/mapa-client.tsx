@@ -207,19 +207,21 @@ export function MapaOperacionalClient({
   ).length;
 
   return (
-    <>
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <div className="min-w-0 space-y-5 overflow-hidden">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div
-          className={`flex flex-col justify-between gap-2 sm:flex-row sm:items-center ${surface.panelHeader}`}
+          className={`flex min-w-0 flex-col justify-between gap-2 sm:flex-row sm:items-center ${surface.panelHeader}`}
         >
-          <div className="flex items-center gap-2">
-            <MapPin className={surface.panelHeaderIcon} />
-            <span className={surface.panelHeaderTitle}>Mapa de Satélite</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <MapPin className={`${surface.panelHeaderIcon} shrink-0`} />
+            <span className={`${surface.panelHeaderTitle} min-w-0 truncate`}>
+              Mapa de Satélite
+            </span>
             <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
               · {comCoords} andaimes georreferênciados
             </span>
           </div>
-          <p className={`${typography.panelSubtitle} text-slate-400`}>
+          <p className={`${typography.panelSubtitle} min-w-0 break-words text-slate-400`}>
             Filtro: {filterLabel(activeStatus)}
             {activeCompanyId !== "all" &&
               ` · ${
@@ -237,23 +239,23 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card p-0">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card p-0">
         <div
-          className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${surface.panelHeader}`}
+          className={`flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${surface.panelHeader}`}
         >
-          <div className="flex items-center gap-2">
-            <Construction className={surface.panelHeaderIcon} />
-            <span className={surface.panelHeaderTitle}>
+          <div className="flex min-w-0 items-center gap-2">
+            <Construction className={`${surface.panelHeaderIcon} shrink-0`} />
+            <span className={`${surface.panelHeaderTitle} min-w-0 truncate`}>
               Filtros Operacionais
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {canFilterCompany && companies.length > 1 && (
               <Select
                 value={activeCompanyId}
                 onValueChange={setActiveCompanyId}
               >
-                <SelectTrigger className="h-8 w-52 rounded-md text-[10px]">
+                <SelectTrigger className="h-8 w-full min-w-0 rounded-md text-[10px] sm:w-52">
                   <SelectValue placeholder="Todas as empresas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +269,7 @@ export function MapaOperacionalClient({
               </Select>
             )}
             <Select value={dueFilter} onValueChange={setDueFilter}>
-              <SelectTrigger className="h-8 w-52 rounded-md text-[10px]">
+              <SelectTrigger className="h-8 w-full min-w-0 rounded-md text-[10px] sm:w-52">
                 <SelectValue placeholder="Vencimento" />
               </SelectTrigger>
               <SelectContent>
@@ -296,7 +298,7 @@ export function MapaOperacionalClient({
             )}
           </div>
         </div>
-        <div className="p-4 flex flex-wrap gap-2">
+        <div className="flex min-w-0 flex-wrap gap-2 p-3 sm:p-4">
           {LEGEND_FILTERS.map((item) => {
             const count = scaffolds.filter(
               (scaffold) =>
@@ -313,7 +315,7 @@ export function MapaOperacionalClient({
                 type="button"
                 onClick={() => setActiveStatus(active ? null : item.status)}
                 className={
-                  "inline-flex h-8 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
+                  "inline-flex h-8 min-w-0 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
                   (active
                     ? "border-accent bg-accent/10 text-foreground"
                     : "border-border text-muted-foreground hover:bg-muted/60")
@@ -321,7 +323,7 @@ export function MapaOperacionalClient({
                 aria-pressed={active}
               >
                 <span className={"size-3 rounded-full " + item.dot} />
-                <span>{item.label}</span>
+                <span className="truncate">{item.label}</span>
                 <span className="font-mono text-[10px] text-muted-foreground/70">
                   {count}
                 </span>
@@ -331,18 +333,20 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div
-          className={`flex items-center justify-between gap-3 ${surface.panelHeader}`}
+          className={`flex min-w-0 items-center justify-between gap-3 ${surface.panelHeader}`}
         >
-          <div className="flex items-center gap-2">
-            <Construction className={surface.panelHeaderIcon} />
-            <span className={surface.panelHeaderTitle}>Andaimes</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <Construction className={`${surface.panelHeaderIcon} shrink-0`} />
+            <span className={`${surface.panelHeaderTitle} min-w-0 truncate`}>
+              Andaimes
+            </span>
             <span className={`hidden sm:inline ${surface.panelHeaderSubtitle}`}>
               · Listagem
             </span>
           </div>
-          <span className={`${typography.panelSubtitle} text-slate-400`}>
+          <span className={`${typography.panelSubtitle} shrink-0 text-slate-400`}>
             {filteredScaffolds.length} de {scaffolds.length} registros
           </span>
         </div>
@@ -358,7 +362,7 @@ export function MapaOperacionalClient({
             filteredScaffolds.map((scaffold) => (
               <div
                 key={scaffold.id}
-                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/30"
+                className="flex min-w-0 items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/30 sm:px-4"
               >
                 <div
                   className={
@@ -384,7 +388,9 @@ export function MapaOperacionalClient({
                     )}
                   </p>
                 </div>
-                <StatusBadge status={scaffold.effectiveStatus} />
+                <div className="hidden shrink-0 sm:block">
+                  <StatusBadge status={scaffold.effectiveStatus} />
+                </div>
                 <div className="flex shrink-0 gap-1.5">
                   <Link
                     href={`/andaimes/${scaffold.id}`}
@@ -418,6 +424,6 @@ export function MapaOperacionalClient({
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

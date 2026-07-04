@@ -18,6 +18,7 @@ import {
   MapPinned,
   Menu,
   Shield,
+  User,
   Users,
   Building2,
   X,
@@ -39,6 +40,7 @@ const navItems = [
   { path: "/relatorios", label: "Relatórios Gerenciais", icon: BarChart3 },
   { path: "/empresas", label: "Empresas", icon: Building2 },
   { path: "/workspaces", label: "Workspaces", icon: MapPinned },
+  { path: "/perfil", label: "Meu Perfil", icon: User },
 ];
 
 export function MobileHeader({
@@ -67,11 +69,11 @@ export function MobileHeader({
   };
 
   return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-sidebar border-b border-sidebar-border">
-      <div className="flex items-center justify-between px-4 py-3">
+    <div className="fixed inset-x-0 top-0 z-40 w-screen max-w-[100vw] overflow-hidden border-b border-sidebar-border bg-sidebar lg:hidden">
+      <div className="flex w-full max-w-full min-w-0 items-center gap-2 overflow-hidden px-4 py-3">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2.5"
+          className="flex shrink-0 items-center gap-2.5"
           onClick={() => setOpen(false)}
         >
           <div
@@ -83,7 +85,7 @@ export function MobileHeader({
           >
             <Shield className="w-3.5 h-3.5 text-white" />
           </div>
-          <div>
+          <div className="hidden min-[520px]:block">
             <span className="font-bold text-[12px] tracking-widest uppercase text-sidebar-foreground">
               AndCheck
             </span>
@@ -93,10 +95,25 @@ export function MobileHeader({
         {context && <MobileContextSwitcher context={context} />}
 
         <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
+        >
+          <Link
+            href="/perfil"
+            onClick={() => setOpen(false)}
+            aria-label="Abrir meu perfil"
+          >
+            <User className="h-4 w-4" />
+          </Link>
+        </Button>
+
+        <Button
           variant="ghost"
           size="icon"
           onClick={() => setOpen(!open)}
-          className="text-sidebar-foreground w-8 h-8 hover:bg-sidebar-accent"
+          className="h-8 w-8 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
           aria-label={open ? "Fechar menu principal" : "Abrir menu principal"}
           aria-expanded={open}
           aria-controls="mobile-main-navigation"

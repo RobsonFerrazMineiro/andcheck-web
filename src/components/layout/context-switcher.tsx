@@ -207,7 +207,7 @@ export function MobileContextSwitcher({
 
   if (!context.canSwitch) {
     return (
-      <div className="min-w-0 flex-1 px-3">
+      <div className="w-0 min-w-0 flex-1 px-2">
         <div className="min-w-0 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5">
           <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
             {selectedWorkspace
@@ -220,7 +220,7 @@ export function MobileContextSwitcher({
   }
 
   return (
-    <div className="relative min-w-0 flex-1 px-3">
+    <div className="relative w-0 min-w-0 flex-1 px-2">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}

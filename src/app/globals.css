@@ -136,6 +136,11 @@
     font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   }
 
+  .leaflet-container {
+    overscroll-behavior: contain;
+    touch-action: none;
+  }
+
   .leaflet-popup-content-wrapper {
     border-radius: var(--radius);
   }

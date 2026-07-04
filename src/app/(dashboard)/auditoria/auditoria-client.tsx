@@ -564,7 +564,7 @@ export function AuditoriaClient({
             {total} evento(s) registrados
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="hidden flex-wrap items-center gap-2 md:flex">
           <button
             type="button"
             onClick={() => exportRowsToExcel(exportRows)}
@@ -590,11 +590,28 @@ export function AuditoriaClient({
         </div>
       </div>
 
+      <div className="rounded-lg border border-border bg-card p-4 shadow-sm md:hidden">
+        <div className="flex items-start gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+            <FileClock className="size-4 text-muted-foreground" />
+          </div>
+          <div className="min-w-0">
+            <p className={`${typography.bodyStrong} text-foreground`}>
+              Auditoria disponível em telas maiores
+            </p>
+            <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>
+              Esta visualização exige mais colunas e contexto. Acesse por tablet
+              ou desktop para filtrar, exportar e revisar os eventos.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <form
         action="/auditoria"
-        className="flex min-w-0 flex-wrap items-start gap-2 rounded-lg border border-border bg-card p-3 shadow-sm"
+        className="hidden min-w-0 flex-wrap items-start gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:flex"
       >
-        <div className="relative min-w-[180px] flex-1 md:max-w-[260px]">
+        <div className="relative w-full sm:min-w-[180px] sm:flex-1 md:max-w-[260px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             name="search"
@@ -604,7 +621,7 @@ export function AuditoriaClient({
           />
         </div>
         <Select name="action" defaultValue={filters.action || "all"}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[150px]">
             <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Ação" />
           </SelectTrigger>
@@ -618,7 +635,7 @@ export function AuditoriaClient({
           </SelectContent>
         </Select>
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
-          <SelectTrigger className="h-8 w-[108px] text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[108px]">
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
@@ -633,46 +650,46 @@ export function AuditoriaClient({
           name="user"
           defaultValue={filters.user}
           placeholder="Usuário"
-          className="h-8 w-[150px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
         <Input
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
-          className="h-8 w-[150px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
         <Input
           name="workspace"
           defaultValue={filters.workspace}
           placeholder="Workspace"
-          className="h-8 w-[150px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
         <Input
           name="status"
           defaultValue={filters.status}
           placeholder="Status"
-          className="h-8 w-[135px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[135px]"
         />
         <Input
           name="scaffoldTag"
           defaultValue={filters.scaffoldTag}
           placeholder="TAG"
-          className="h-8 w-[125px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[125px]"
         />
         <Input
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
-          className="h-8 w-[154px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
         />
         <Input
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
-          className="h-8 w-[154px] text-[11px] rounded-md border-border"
+          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
         />
         <Select name="order" defaultValue={filters.order}>
-          <SelectTrigger className="h-8 w-[132px] text-[11px] rounded-md">
+          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[132px]">
             <SelectValue placeholder="Ordenação" />
           </SelectTrigger>
           <SelectContent>
@@ -685,8 +702,54 @@ export function AuditoriaClient({
         </button>
       </form>
 
-      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
-        <div className="overflow-x-auto">
+      <div className="hidden min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm md:block">
+        <div className="divide-y divide-border md:hidden">
+          {rows.length === 0 ? (
+            <EmptyState
+              icon={FileClock}
+              title="Nenhum evento encontrado"
+              description="Os eventos de auditoria aparecem aqui conforme as operações são registradas no sistema."
+              className="border-0 border-b border-dashed"
+            />
+          ) : (
+            rows.map((row, index) => (
+              <button
+                key={row.id}
+                type="button"
+                onClick={() => setSelected(row)}
+                className={
+                  "block w-full px-4 py-3 text-left hover:bg-muted/40 " +
+                  (index % 2 === 1 ? "bg-muted/20" : "bg-card")
+                }
+              >
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className={`text-muted-foreground ${typography.code}`}>
+                      {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
+                    </p>
+                    <p className={`mt-1 truncate text-foreground ${typography.bodyStrong}`}>
+                      {row.userName ?? "Sistema"}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <ActionBadge row={row} />
+                  </div>
+                </div>
+                <p className={`truncate text-muted-foreground ${typography.codeMuted}`}>
+                  {row.userRole ?? "-"} · {entityDisplay(row)}
+                </p>
+                <p className={`mt-1 line-clamp-2 text-foreground ${typography.sectionDescription}`}>
+                  {friendlyDescription(row)}
+                </p>
+                <p className={`mt-2 truncate text-muted-foreground ${typography.bodyMuted}`}>
+                  {companyDisplay(row)}
+                </p>
+              </button>
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
           <div className="min-w-[1180px]">
             <div className={`grid ${AUDIT_TABLE_GRID} gap-3 border-b border-border ${surface.tableHeader}`}>
               {[

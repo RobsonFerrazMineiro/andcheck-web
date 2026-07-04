@@ -172,7 +172,71 @@ export function NotificationPreferencesClient({
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="grid gap-3 p-3 md:hidden">
+            {group.items.map((preference) => (
+              <div
+                key={preference.type}
+                className="rounded-md border border-border bg-background p-3"
+              >
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {preference.label}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {preference.groupLabel}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={preference.critical ? "destructive" : "outline"}
+                    className="shrink-0"
+                  >
+                    {preference.critical && <ShieldAlert className="size-3" />}
+                    {preference.severityLabel}
+                  </Badge>
+                </div>
+                <div className="grid gap-2">
+                  <label className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-xs text-muted-foreground">
+                    <span>{preference.critical ? "Interna fixa" : "Interna"}</span>
+                    <input
+                      type="checkbox"
+                      checked={preference.internal}
+                      disabled={isPending || preference.critical}
+                      className="size-4"
+                      onChange={(event) =>
+                        savePreference(
+                          preference.type,
+                          "internal",
+                          event.currentTarget.checked,
+                        )
+                      }
+                    />
+                  </label>
+                  <label
+                    className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-xs text-muted-foreground"
+                    title={!emailStatus.available ? emailStatus.detail : undefined}
+                  >
+                    <span>E-mail opcional</span>
+                    <input
+                      type="checkbox"
+                      checked={preference.email}
+                      disabled={isPending || !emailStatus.available}
+                      className="size-4"
+                      onChange={(event) =>
+                        savePreference(
+                          preference.type,
+                          "email",
+                          event.currentTarget.checked,
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
