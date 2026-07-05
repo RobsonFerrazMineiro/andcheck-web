@@ -32,11 +32,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
-import { ChecklistValue, InspectionResult } from "@prisma/client";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
+
+type ChecklistValueCode = "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA";
+type InspectionResultCode =
+  | "aprovado"
+  | "aprovado_com_ressalvas"
+  | "reprovado";
 
 type InspectionDetail = {
   id: string;
@@ -44,7 +49,7 @@ type InspectionDetail = {
   scaffold_code: string;
   date: Date;
   inspector_name: string;
-  result: InspectionResult;
+  result: InspectionResultCode;
   validity_days: number;
   notes: string | null;
   photos: string[];
@@ -66,7 +71,7 @@ type InspectionDetail = {
     item_id: string;
     item_label: string;
     category: string;
-    value: ChecklistValue;
+    value: ChecklistValueCode;
     critical: boolean;
     observation: string | null;
     photo: string | null;
@@ -89,7 +94,7 @@ type InspectionDetail = {
 };
 
 function valueToStatus(
-  v: ChecklistValue,
+  v: ChecklistValueCode,
 ): "conforme" | "nao_conforme" | "nao_aplicavel" {
   if (v === "CL_OK") return "conforme";
   if (v === "CL_FAIL" || v === "CL_WARN") return "nao_conforme";
