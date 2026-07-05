@@ -15,7 +15,6 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -78,8 +77,8 @@ type ArchivedAuditLog = {
   action: string;
   description: string;
   userName: string | null;
-  oldValue: Prisma.JsonValue | null;
-  newValue: Prisma.JsonValue | null;
+  oldValue: unknown;
+  newValue: unknown;
   createdAt: Date;
 };
 
