@@ -1,13 +1,24 @@
 import { getInspections } from "@/lib/actions/inspection-actions";
 import { canCurrentUser } from "@/lib/authz";
-import { InspecoesClient } from "./inspecoes-client";
+import { InspecoesClient, type InspectionRow } from "./inspecoes-client";
+
+type InspectionRecord = {
+  id: string;
+  scaffold_id: string;
+  scaffold_code: string;
+  date: Date;
+  inspector_name: string;
+  result: string;
+  validity_days: number;
+  notes: string | null;
+};
 
 export default async function InspecoesPage() {
   const [raw, canCreateInspection] = await Promise.all([
     getInspections(),
     canCurrentUser("inspections.create"),
   ]);
-  const inspections = raw.map((i) => ({
+  const inspections: InspectionRow[] = (raw as InspectionRecord[]).map((i) => ({
     id: i.id,
     scaffold_id: i.scaffold_id,
     scaffold_code: i.scaffold_code,

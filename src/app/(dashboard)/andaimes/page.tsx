@@ -1,13 +1,26 @@
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser } from "@/lib/authz";
-import { AndaimesClient } from "./andaimes-client";
+import { AndaimesClient, type ScaffoldRow } from "./andaimes-client";
+
+type ScaffoldRecord = {
+  id: string;
+  code: string;
+  type: string;
+  status: string;
+  location: string;
+  area: string;
+  height: number;
+  responsible: string;
+  validity_date: Date | null;
+  _count: { inspections: number };
+};
 
 export default async function AndaimesPage() {
   const [raw, canCreateScaffold] = await Promise.all([
     getScaffolds(),
     canCurrentUser("scaffolds.create"),
   ]);
-  const scaffolds = raw.map((s) => ({
+  const scaffolds: ScaffoldRow[] = (raw as ScaffoldRecord[]).map((s) => ({
     id: s.id,
     code: s.code,
     type: s.type as string,

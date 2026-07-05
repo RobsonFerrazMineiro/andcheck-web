@@ -96,10 +96,46 @@ function NcBadge({ value }: { value: string }) {
 
 type Props = { params: Promise<{ id: string }> };
 
+type ScaffoldDetail = {
+  id: string;
+  code: string;
+  tag: string;
+  type: string;
+  status: string;
+  location: string;
+  area: string;
+  height: number;
+  max_load: number | null;
+  responsible: string;
+  company: string | null;
+  validity_date: Date | null;
+  notes: string | null;
+  inspections: Array<{
+    id: string;
+    date: Date;
+    inspector_name: string;
+    result: string;
+    validity_days: number;
+  }>;
+  nonConformities: Array<{
+    id: string;
+    code: string;
+    status: string;
+    classification: string;
+    dueDate: Date | null;
+    responsibleUser: {
+      id: string;
+      name: string;
+      company: string | null;
+    } | null;
+  }>;
+};
+
 export default async function AndaimeDetailPage({ params }: Props) {
   const { id } = await params;
-  const scaffold = await getScaffoldById(id);
-  if (!scaffold) notFound();
+  const scaffoldResult = await getScaffoldById(id);
+  if (!scaffoldResult) notFound();
+  const scaffold = scaffoldResult as ScaffoldDetail;
   if (scaffold.status === "desmontado") {
     redirect(`/acervo/${encodeURIComponent(scaffold.code)}`);
   }

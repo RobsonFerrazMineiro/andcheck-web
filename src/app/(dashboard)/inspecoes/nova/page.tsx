@@ -13,6 +13,43 @@ type Props = {
   searchParams: Promise<{ scaffold_id?: string }>;
 };
 
+type InspectionScaffoldOptionRecord = {
+  id: string;
+  code: string;
+  location: string;
+  area: string;
+  company: string | null;
+  type: string;
+};
+
+type ActiveNonConformityRecord = {
+  id: string;
+  code: string;
+  scaffoldId: string;
+  status: string;
+};
+
+type SignaturePolicyRecord = {
+  id: string;
+  name: string;
+  company: string | null;
+  area: string | null;
+  scaffold_type: string | null;
+  is_default: boolean;
+  requirements: Array<{
+    id: string;
+    role_code: string;
+    label: string | null;
+    min_count: number;
+    is_required: boolean;
+    sort_order: number;
+    role: {
+      code: string;
+      name: string;
+    };
+  }>;
+};
+
 export default async function NovaInspecaoPage({ searchParams }: Props) {
   const canCreateInspection =
     (await canCurrentUser("inspections.create")) ||
@@ -25,11 +62,17 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
     getInspectionSignaturePolicies(),
     getActiveNonConformitiesForInspection(),
   ]);
+  const scaffoldRecords = raw as InspectionScaffoldOptionRecord[];
+  const signaturePolicyRecords = rawPolicies as SignaturePolicyRecord[];
+  const activeNonConformityRecords =
+    activeNonConformities as ActiveNonConformityRecord[];
   const activeScaffoldIds = new Set(
-    activeNonConformities.map((nc) => nc.scaffoldId),
+    activeNonConformityRecords.map((nc) => nc.scaffoldId),
   );
   const blockedNonConformity = selectedScaffoldId
-    ? activeNonConformities.find((nc) => nc.scaffoldId === selectedScaffoldId)
+    ? activeNonConformityRecords.find(
+        (nc) => nc.scaffoldId === selectedScaffoldId,
+      )
     : undefined;
 
   if (blockedNonConformity && selectedScaffoldId) {
@@ -65,15 +108,17 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
     );
   }
 
-  const scaffolds = raw.filter((s) => !activeScaffoldIds.has(s.id)).map((s) => ({
-    id: s.id,
-    code: s.code,
-    location: s.location,
-    area: s.area,
-    company: s.company,
-    type: s.type,
-  }));
-  const signaturePolicies = rawPolicies.map((policy) => ({
+  const scaffolds = scaffoldRecords
+    .filter((s) => !activeScaffoldIds.has(s.id))
+    .map((s) => ({
+      id: s.id,
+      code: s.code,
+      location: s.location,
+      area: s.area,
+      company: s.company,
+      type: s.type,
+    }));
+  const signaturePolicies = signaturePolicyRecords.map((policy) => ({
     id: policy.id,
     name: policy.name,
     company: policy.company,

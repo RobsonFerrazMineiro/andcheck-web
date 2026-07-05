@@ -29,6 +29,20 @@ const FILTERS: { value: NotificationFilter; label: string }[] = [
   { value: "documents", label: "Documentos" },
 ];
 
+type NotificationRecord = {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  status: string;
+  type: keyof typeof NOTIFICATION_ENTITY_GROUPS;
+  entityType: string | null;
+  entityId: string | null;
+  createdAt: Date;
+  company: { name: string };
+  workspace: { name: string } | null;
+};
+
 export default async function NotificationsPage({
   searchParams,
 }: {
@@ -36,7 +50,7 @@ export default async function NotificationsPage({
 }) {
   const query = await searchParams;
   const filter = parseFilter(query.filter);
-  const notifications = await getNotifications(filter);
+  const notifications = (await getNotifications(filter)) as NotificationRecord[];
 
   return (
     <div className="space-y-5">

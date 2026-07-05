@@ -25,6 +25,8 @@ import {
   LazyDashboardMapPreview,
   LazyInspectionPerformanceChart,
 } from "@/components/dashboard/lazy-dashboard-panels";
+import type { DashboardMapPreviewProps } from "@/components/dashboard/dashboard-map-preview";
+import type { InspectionPerformanceChartProps } from "@/components/dashboard/inspection-performance-chart";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
@@ -46,6 +48,27 @@ const NORMS = [
   "ISO 9001:2015",
 ];
 
+type DashboardScaffold = DashboardMapPreviewProps["scaffolds"][number] & {
+  _count: { inspections: number };
+};
+
+type DashboardInspection = InspectionPerformanceChartProps["inspections"][number];
+
+type OperationalMovement = {
+  id: string;
+  badge: string;
+  subtitle: string;
+  title: string;
+  tone: MovementTone;
+  createdAt: Date;
+};
+
+type DashboardRankingItem = {
+  id?: string;
+  name: string;
+  total: number;
+};
+
 export default async function DashboardPage() {
   const access = await getCurrentUserAccess();
   const [dashboardMetrics, canCreateScaffold, canCreateInspection] =
@@ -54,8 +77,15 @@ export default async function DashboardPage() {
       canCurrentUser("scaffolds.create"),
       canCurrentUser("inspections.create"),
     ]);
-  const { scaffolds, inspections } = dashboardMetrics.operational;
-  const { historical, operationalMovements, rankings } = dashboardMetrics;
+  const scaffolds = dashboardMetrics.operational.scaffolds as DashboardScaffold[];
+  const inspections = dashboardMetrics.operational.inspections as DashboardInspection[];
+  const operationalMovements =
+    dashboardMetrics.operationalMovements as OperationalMovement[];
+  const rankings = dashboardMetrics.rankings as {
+    companies: DashboardRankingItem[];
+    areas: DashboardRankingItem[];
+  };
+  const { historical } = dashboardMetrics;
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&

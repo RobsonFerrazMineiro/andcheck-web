@@ -1,7 +1,17 @@
 import { getUserManagementData } from "@/lib/actions/user-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { redirect } from "next/navigation";
-import { UsuariosClient } from "./usuarios-client";
+import {
+  UsuariosClient,
+  type RoleOption,
+  type UserRow,
+} from "./usuarios-client";
+
+type UserManagementRecord = Omit<UserRow, "roles"> & {
+  roles: Array<{
+    role: RoleOption;
+  }>;
+};
 
 export default async function UsuariosPage() {
   const canManageUsers =
@@ -15,7 +25,10 @@ export default async function UsuariosPage() {
     getUserManagementData(),
   ]);
 
-  const rows = users.map((user) => ({
+  const typedUsers = users as UserManagementRecord[];
+  const typedRoles = roles as RoleOption[];
+
+  const rows: UserRow[] = typedUsers.map((user) => ({
     id: user.id,
     name: user.name,
     email: user.email,
@@ -31,7 +44,7 @@ export default async function UsuariosPage() {
     })),
   }));
 
-  const roleOptions = roles.map((role) => ({
+  const roleOptions: RoleOption[] = typedRoles.map((role) => ({
     id: role.id,
     code: role.code,
     name: role.name,

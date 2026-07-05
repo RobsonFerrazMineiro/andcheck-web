@@ -1,11 +1,22 @@
 import { getWorkspaceManagementData } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { redirect } from "next/navigation";
-import { WorkspacesClient } from "./workspaces-client";
+import { WorkspacesClient, type WorkspaceRow } from "./workspaces-client";
 
 type Props = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+type WorkspaceManagementRecord = Omit<
+  WorkspaceRow,
+  "ownerCompanyName" | "companies" | "scaffolds"
+> & {
+  ownerCompany: { name: string };
+  companyLinks: unknown[];
+  _count: { scaffolds: number };
+};
+
+type OwnerCompanyOption = { id: string; name: string };
 
 export default async function WorkspacesPage({ searchParams }: Props) {
   const [canManage, canView] = await Promise.all([
@@ -21,13 +32,15 @@ export default async function WorkspacesPage({ searchParams }: Props) {
   ]);
   const editValue = params.edit;
   const initialEditingId = Array.isArray(editValue) ? editValue[0] : editValue;
+  const typedWorkspaces = workspaces as WorkspaceManagementRecord[];
+  const typedOwnerCompanies = ownerCompanies as OwnerCompanyOption[];
 
   return (
     <WorkspacesClient
       canManage={canManage}
       initialEditingId={initialEditingId}
-      ownerCompanies={ownerCompanies}
-      initialWorkspaces={workspaces.map((workspace) => ({
+      ownerCompanies={typedOwnerCompanies}
+      initialWorkspaces={typedWorkspaces.map((workspace) => ({
         id: workspace.id,
         name: workspace.name,
         code: workspace.code,

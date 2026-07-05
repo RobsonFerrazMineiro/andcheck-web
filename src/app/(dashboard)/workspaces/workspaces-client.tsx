@@ -57,7 +57,7 @@ const LocationPicker = dynamic(
   },
 );
 
-type WorkspaceRow = {
+export type WorkspaceRow = {
   id: string;
   name: string;
   code: string;

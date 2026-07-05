@@ -32,6 +32,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import {
   getManagementReportData,
   type KpiTrend,
+  type ManagementReportData,
 } from "@/lib/management-reports";
 import { surface, typography } from "@/lib/design-system";
 import { ReportExportActions } from "./report-export-actions";
@@ -88,7 +89,9 @@ function getTrend(trend: KpiTrend) {
 
 export default async function RelatoriosPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
-  const report = await getManagementReportData(params);
+  const report = (await getManagementReportData(
+    params,
+  )) as ManagementReportData;
   const { filters } = report;
   const rankingQuery = {
     companyId: filters.companyId,

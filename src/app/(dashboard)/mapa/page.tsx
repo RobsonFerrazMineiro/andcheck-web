@@ -15,6 +15,25 @@ import { getContextCapabilities } from "@/lib/data-scope";
 import { typography } from "@/lib/design-system";
 import { MapaOperacionalClient } from "./mapa-client";
 
+type ScaffoldMapRecord = {
+  id: string;
+  code: string;
+  location: string;
+  area: string;
+  status: string;
+  responsible: string;
+  companyId: string;
+  tenantCompany: { name: string };
+  location_description: string | null;
+  validity_date: Date | null;
+  latitude: number | null;
+  longitude: number | null;
+  inspections: Array<{
+    date: Date;
+    result: string;
+  }>;
+};
+
 export default async function MapaPage() {
   const access = await getCurrentUserAccess();
   const [raw, canCreateScaffold, canCreateInspection, canFinalizeInspection] =
@@ -33,7 +52,7 @@ export default async function MapaPage() {
   );
 
   const canInspect = canCreateInspection || canFinalizeInspection;
-  const scaffolds = raw.map((s) => ({
+  const scaffolds = (raw as ScaffoldMapRecord[]).map((s) => ({
     id: s.id,
     code: s.code,
     location: s.location,
@@ -44,8 +63,8 @@ export default async function MapaPage() {
     companyName: s.tenantCompany.name,
     locationDescription: s.location_description,
     validity_date: s.validity_date ? s.validity_date.toISOString() : null,
-    latitude: (s as { latitude?: number | null }).latitude ?? null,
-    longitude: (s as { longitude?: number | null }).longitude ?? null,
+    latitude: s.latitude,
+    longitude: s.longitude,
     effectiveStatus:
       s.status === "liberado" && s.validity_date && isPast(s.validity_date)
         ? ("vencido" as string)

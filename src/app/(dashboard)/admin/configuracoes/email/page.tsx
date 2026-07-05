@@ -9,8 +9,17 @@ import {
 import { getEmailTechnicalConfiguration } from "@/lib/actions/notification-actions";
 import { CheckCircle2, Mail, XCircle } from "lucide-react";
 
+type EmailTechnicalConfiguration = {
+  status: { label: string; detail: string };
+  provider: string;
+  from: string;
+  variables: Array<{ name: string; configured: boolean }>;
+  plannedProviders: string[];
+};
+
 export default async function AdminEmailConfigurationPage() {
-  const config = await getEmailTechnicalConfiguration();
+  const config =
+    (await getEmailTechnicalConfiguration()) as EmailTechnicalConfiguration;
 
   return (
     <div className="space-y-6">

@@ -8,6 +8,21 @@ type Props = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type InspectorRankingItem = {
+  name: string;
+  inspections: number;
+  aprovadas: number;
+  reprovadas: number;
+  ressalvas: number;
+  approvalRate: number;
+};
+
+type InspectorRankingReport = {
+  periodLabel: string;
+  filters: Record<string, string>;
+  rankings: { inspectors: InspectorRankingItem[] };
+};
+
 function buildBackHref(filters: Record<string, string>) {
   const params = new URLSearchParams(filters);
   return `/relatorios?${params.toString()}`;
@@ -15,7 +30,8 @@ function buildBackHref(filters: Record<string, string>) {
 
 export default async function RankingInspetoresPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
-  const report = await getManagementReportData(params);
+  const report =
+    (await getManagementReportData(params)) as InspectorRankingReport;
 
   return (
     <RankingDetailPage

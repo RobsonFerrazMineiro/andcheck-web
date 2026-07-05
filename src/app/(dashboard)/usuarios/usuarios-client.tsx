@@ -39,7 +39,7 @@ import {
 } from "@/lib/actions/user-actions";
 import { typography } from "@/lib/design-system";
 
-type UserRow = {
+export type UserRow = {
   id: string;
   name: string;
   email: string;
@@ -55,7 +55,7 @@ type UserRow = {
   }>;
 };
 
-type RoleOption = {
+export type RoleOption = {
   id: string;
   code: string;
   name: string;

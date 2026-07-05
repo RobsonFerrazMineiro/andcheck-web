@@ -1,10 +1,29 @@
 import { getNonConformities } from "@/lib/actions/non-conformity-actions";
-import { NaoConformidadesClient } from "./nao-conformidades-client";
+import {
+  NaoConformidadesClient,
+  type NonConformityRow,
+} from "./nao-conformidades-client";
+
+type NonConformityRecord = Omit<
+  NonConformityRow,
+  "dueDate" | "closedAt" | "createdAt" | "originInspection"
+> & {
+  dueDate: Date | null;
+  closedAt: Date | null;
+  createdAt: Date;
+  tenantCompany: { name: string };
+  originInspection: {
+    id: string;
+    date: Date;
+    result: string;
+    inspector_name: string;
+  };
+};
 
 export default async function NaoConformidadesPage() {
-  const raw = await getNonConformities();
+  const raw = (await getNonConformities()) as NonConformityRecord[];
 
-  const rows = raw.map((nc) => ({
+  const rows: NonConformityRow[] = raw.map((nc) => ({
     id: nc.id,
     code: nc.code,
     title: nc.title,

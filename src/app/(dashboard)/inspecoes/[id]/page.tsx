@@ -32,11 +32,61 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
-import { ChecklistValue } from "@prisma/client";
+import { ChecklistValue, InspectionResult } from "@prisma/client";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
+
+type InspectionDetail = {
+  id: string;
+  scaffold_id: string;
+  scaffold_code: string;
+  date: Date;
+  inspector_name: string;
+  result: InspectionResult;
+  validity_days: number;
+  notes: string | null;
+  photos: string[];
+  signature: string | null;
+  scaffold: {
+    id: string;
+    code: string;
+    location: string;
+    area: string;
+    type: string;
+    status: string;
+    height: number;
+    max_load: number | null;
+    responsible: string;
+    company: string | null;
+  } | null;
+  checklist: Array<{
+    id: string;
+    item_id: string;
+    item_label: string;
+    category: string;
+    value: ChecklistValue;
+    critical: boolean;
+    observation: string | null;
+    photo: string | null;
+  }>;
+  signatures: Array<{
+    id: string;
+    role_code: string;
+    signer_name: string;
+    signer_company: string | null;
+    signed_at: Date;
+    role: { code: string; name: string };
+  }>;
+  nonConformities: Array<{
+    id: string;
+    code: string;
+    status: string;
+    classification: string;
+    dueDate: Date | null;
+  }>;
+};
 
 function valueToStatus(
   v: ChecklistValue,
@@ -140,8 +190,9 @@ function TechRow({
 
 export default async function InspectionDetailPage({ params }: Props) {
   const { id } = await params;
-  const inspection = await getInspectionById(id);
-  if (!inspection) notFound();
+  const inspectionResult = await getInspectionById(id);
+  if (!inspectionResult) notFound();
+  const inspection = inspectionResult as InspectionDetail;
   const auditTimeline = await getEntityAuditTimeline({
     entityType: AuditEntityType.INSPECTION,
     entityId: inspection.id,

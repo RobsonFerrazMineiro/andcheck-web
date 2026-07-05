@@ -42,8 +42,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-type CompanyType = "CLIENT" | "HSE_MANAGER" | "SCAFFOLD_COMPANY" | "CONTRACTOR";
-type CompanyRow = {
+export type CompanyType = "CLIENT" | "HSE_MANAGER" | "SCAFFOLD_COMPANY" | "CONTRACTOR";
+export type CompanyRow = {
   id: string;
   name: string;
   code: string;

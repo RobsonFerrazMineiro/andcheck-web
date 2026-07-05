@@ -8,6 +8,20 @@ type Props = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
+type CompanyRankingItem = {
+  name: string;
+  scaffolds: number;
+  inspections: number;
+  ncs: number;
+  approvalRate: number;
+};
+
+type CompanyRankingReport = {
+  periodLabel: string;
+  filters: Record<string, string>;
+  rankings: { companies: CompanyRankingItem[] };
+};
+
 function buildBackHref(filters: Record<string, string>) {
   const params = new URLSearchParams(filters);
   return `/relatorios?${params.toString()}`;
@@ -15,7 +29,7 @@ function buildBackHref(filters: Record<string, string>) {
 
 export default async function RankingEmpresasPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
-  const report = await getManagementReportData(params);
+  const report = (await getManagementReportData(params)) as CompanyRankingReport;
 
   return (
     <RankingDetailPage

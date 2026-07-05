@@ -14,8 +14,22 @@ import {
 import { EmptyState } from "@/components/shared/empty-state";
 import { BellOff, RefreshCw } from "lucide-react";
 
+type AdminNotificationFailure = {
+  id: string;
+  recipientEmail: string;
+  error: string | null;
+  notification: {
+    id: string;
+    title: string;
+    type: string;
+    company: { name: string };
+    workspace: { name: string } | null;
+  };
+};
+
 export default async function AdminNotificationsPage() {
   const data = await getAdminNotificationData();
+  const latestFailures = data.latestFailures as AdminNotificationFailure[];
 
   async function resendAction(formData: FormData) {
     "use server";
@@ -64,7 +78,7 @@ export default async function AdminNotificationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {data.latestFailures.length === 0 ? (
+          {latestFailures.length === 0 ? (
             <EmptyState
               icon={BellOff}
               title="Nenhuma falha de e-mail registrada"
@@ -84,7 +98,7 @@ export default async function AdminNotificationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.latestFailures.map((log) => (
+                  {latestFailures.map((log) => (
                     <tr key={log.id} className="border-b last:border-0">
                       <td className="py-3 pr-4">
                         <div className="font-medium">

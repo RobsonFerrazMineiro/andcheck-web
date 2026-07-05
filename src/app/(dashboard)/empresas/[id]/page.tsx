@@ -14,10 +14,32 @@ const TYPE_LABELS = {
   CONTRACTOR: "Contratada",
 };
 
+type CompanyDetail = {
+  id: string;
+  name: string;
+  code: string;
+  type: keyof typeof TYPE_LABELS;
+  active: boolean;
+  createdAt: Date;
+  description: string | null;
+  logoUrl: string | null;
+  workspaceLinks: Array<{
+    active: boolean;
+    workspace: { id: string; name: string; code: string; active: boolean };
+  }>;
+  _count: {
+    users: number;
+    scaffolds: number;
+    inspections: number;
+    nonConformities: number;
+  };
+};
+
 export default async function EmpresaDetalhePage({ params }: PageProps<"/empresas/[id]">) {
   const { id } = await params;
-  const company = await getCompanyDetail(id);
-  if (!company) notFound();
+  const result = await getCompanyDetail(id);
+  if (!result) notFound();
+  const company = result as CompanyDetail;
 
   const indicators = [
     { label: "Usuários", value: company._count.users, icon: Users },

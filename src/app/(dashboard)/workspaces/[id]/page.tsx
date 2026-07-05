@@ -26,17 +26,51 @@ const TYPE_LABELS = {
   CONTRACTOR: "Contratada",
 };
 
+type WorkspaceDetail = {
+  id: string;
+  name: string;
+  code: string;
+  active: boolean;
+  city: string | null;
+  state: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  description: string | null;
+  createdAt: Date;
+  ownerCompany: { id: string; name: string };
+  companyLinks: Array<{
+    role: string;
+    company: {
+      id: string;
+      name: string;
+      code: string;
+      type: keyof typeof TYPE_LABELS;
+      active: boolean;
+    };
+  }>;
+  _count: {
+    companyLinks: number;
+    users: number;
+    scaffolds: number;
+    inspections: number;
+    nonConformities: number;
+    scaffoldDocuments: number;
+  };
+};
+
 export default async function WorkspaceDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [workspace, canManage] = await Promise.all([
+  const [workspaceResult, canManage] = await Promise.all([
     getWorkspaceDetail(id),
     canCurrentUser("workspaces.manage"),
   ]);
-  if (!workspace) notFound();
+  if (!workspaceResult) notFound();
+  const workspace = workspaceResult as WorkspaceDetail;
 
   const indicators = [
     { label: "Empresas", value: workspace._count.companyLinks, icon: Building2 },

@@ -38,6 +38,82 @@ type Props = {
   params: Promise<{ id: string }>;
 };
 
+type NonConformityDetail = {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  classification: string;
+  status: string;
+  responsibleUserId: string | null;
+  dueDate: Date | null;
+  tenantCompany: { name: string | null };
+  scaffold: {
+    id: string;
+    code: string;
+    area: string;
+    location: string;
+    company: string | null;
+    responsible: string;
+    status: string;
+  };
+  originInspection: {
+    id: string;
+    date: Date;
+    result: string;
+    inspector_name: string;
+    scaffold_code: string;
+  };
+  responsibleUser: {
+    id: string;
+    name: string;
+    email: string;
+    company: string | null;
+    department: string | null;
+    position: string | null;
+  } | null;
+  checklistItems: Array<{
+    id: string;
+    checklistEntry: {
+      id: string;
+      item_label: string;
+      category: string;
+      value: string;
+      critical: boolean;
+      observation: string | null;
+    };
+    evidences: Array<{
+      id: string;
+      type: string;
+      title: string;
+      fileName: string;
+      fileSize: number | null;
+      mimeType: string | null;
+      observation: string | null;
+      createdAt: Date;
+      fileUrl: string;
+    }>;
+  }>;
+  evidences: Array<{
+    id: string;
+    type: string;
+    title: string;
+    fileName: string;
+    fileSize: number | null;
+    mimeType: string | null;
+    observation: string | null;
+    createdAt: Date;
+    fileUrl: string;
+  }>;
+  history: Array<{
+    id: string;
+    action: string;
+    description: string;
+    createdAt: Date;
+    user: { id: string; name: string; email: string } | null;
+  }>;
+};
+
 const CLASSIFICATION_LABELS: Record<string, string> = {
   LOW: "Baixa",
   MEDIUM: "Média",
@@ -172,8 +248,9 @@ function Section({
 
 export default async function NonConformityDetailPage({ params }: Props) {
   const { id } = await params;
-  const nc = await getNonConformityById(id);
-  if (!nc) notFound();
+  const ncResult = await getNonConformityById(id);
+  if (!ncResult) notFound();
+  const nc = ncResult as NonConformityDetail;
   const auditTimeline = await getEntityAuditTimeline({
     entityType: AuditEntityType.NON_CONFORMITY,
     entityId: nc.id,
