@@ -15,6 +15,7 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Prisma } from "@prisma/client";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -69,6 +70,17 @@ const NC_STATUS_LABELS: Record<string, string> = {
   CLOSED: "Encerrada",
   REJECTED: "Rejeitada",
   CANCELLED: "Cancelada",
+};
+
+type ArchivedAuditLog = {
+  id: string;
+  entityType: string;
+  action: string;
+  description: string;
+  userName: string | null;
+  oldValue: Prisma.JsonValue | null;
+  newValue: Prisma.JsonValue | null;
+  createdAt: Date;
 };
 
 function formatDate(value: Date | null | undefined) {
@@ -202,7 +214,8 @@ export default async function AcervoDetalhePage({ params }: Props) {
   const data = await getArchivedScaffoldByTag(decodeURIComponent(tag));
   if (!data) notFound();
 
-  const { scaffold, auditLogs } = data;
+  const { scaffold } = data;
+  const auditLogs = data.auditLogs as ArchivedAuditLog[];
   if (scaffold.status !== "desmontado") {
     redirect(`/andaimes/${scaffold.id}`);
   }

@@ -120,6 +120,10 @@ export default async function DashboardLayout({
     access?.roleCodes ?? [],
     (user as { role?: string } | undefined)?.role,
   );
+  const activeWorkspaceName =
+    contextSwitcher?.workspaces.find(
+      (workspace) => workspace.id === contextSwitcher.selectedWorkspaceId,
+    )?.name ?? "NÃ£o informado";
 
   return (
     <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-background">
@@ -139,6 +143,18 @@ export default async function DashboardLayout({
         canViewWorkspaces={canViewWorkspaces || canManagePermissions}
         canViewDocuments={canAccessDocuments}
         context={contextSwitcher}
+        userProfile={
+          user
+            ? {
+                name: user.name ?? "UsuÃ¡rio",
+                email: user.email ?? "",
+                roleLabel: userRoleLabel,
+                companyName: authenticatedCompany?.name ?? "AndCheck",
+                workspaceName: activeWorkspaceName,
+                sessionStatus: "Ativa",
+              }
+            : null
+        }
       />
 
       <main className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden pt-14 lg:ml-56 lg:pt-0">

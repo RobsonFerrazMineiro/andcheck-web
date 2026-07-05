@@ -5,27 +5,31 @@ import {
   MobileContextSwitcher,
   type ContextSwitcherData,
 } from "@/components/layout/context-switcher";
+import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   Archive,
   BarChart3,
+  Building2,
   BriefcaseBusiness,
   ClipboardCheck,
   ClipboardList,
   Construction,
   FileClock,
   LayoutDashboard,
+  LogOut,
   Map,
   MapPinned,
   Menu,
   Shield,
+  ShieldCheck,
   User,
   Users,
-  Building2,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   { path: "/dashboard", label: "Painel Operacional", icon: LayoutDashboard },
@@ -40,8 +44,16 @@ const navItems = [
   { path: "/relatorios", label: "Relatórios Gerenciais", icon: BarChart3 },
   { path: "/empresas", label: "Empresas", icon: Building2 },
   { path: "/workspaces", label: "Workspaces", icon: MapPinned },
-  { path: "/perfil", label: "Meu Perfil", icon: User },
 ];
+
+type MobileUserProfile = {
+  name: string;
+  email: string;
+  roleLabel: string;
+  companyName: string;
+  workspaceName: string;
+  sessionStatus: string;
+};
 
 export function MobileHeader({
   canManageUsers = false,
@@ -51,6 +63,7 @@ export function MobileHeader({
   canViewWorkspaces = false,
   canViewDocuments = false,
   context,
+  userProfile,
 }: {
   canManageUsers?: boolean;
   canViewAudit?: boolean;
@@ -59,6 +72,7 @@ export function MobileHeader({
   canViewWorkspaces?: boolean;
   canViewDocuments?: boolean;
   context: ContextSwitcherData | null;
+  userProfile: MobileUserProfile | null;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -69,7 +83,7 @@ export function MobileHeader({
   };
 
   return (
-    <div className="fixed inset-x-0 top-0 z-40 w-screen max-w-[100vw] overflow-hidden border-b border-sidebar-border bg-sidebar lg:hidden">
+    <div className="fixed inset-x-0 top-0 z-40 w-screen max-w-[100vw] overflow-x-hidden border-b border-sidebar-border bg-sidebar lg:hidden">
       <div className="flex w-full max-w-full min-w-0 items-center gap-2 overflow-hidden px-4 py-3">
         <Link
           href="/dashboard"
@@ -94,20 +108,12 @@ export function MobileHeader({
 
         {context && <MobileContextSwitcher context={context} />}
 
-        <Button
-          asChild
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
-        >
-          <Link
-            href="/perfil"
-            onClick={() => setOpen(false)}
-            aria-label="Abrir meu perfil"
-          >
-            <User className="h-4 w-4" />
-          </Link>
-        </Button>
+        {userProfile && (
+          <MobileUserMenu
+            profile={userProfile}
+            onNavigate={() => setOpen(false)}
+          />
+        )}
 
         <Button
           variant="ghost"
@@ -154,6 +160,162 @@ export function MobileHeader({
           ))}
         </nav>
       )}
+    </div>
+  );
+}
+
+function MobileUserMenu({
+  profile,
+  onNavigate,
+}: {
+  profile: MobileUserProfile;
+  onNavigate: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useDialogFocus(panelRef, open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen((current) => !current)}
+        className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+        aria-label={open ? "Fechar perfil do usuário" : "Abrir perfil do usuário"}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-controls="mobile-user-menu-panel"
+      >
+        <User className="h-4 w-4" />
+      </Button>
+
+      {open && (
+        <div
+          ref={panelRef}
+          id="mobile-user-menu-panel"
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="mobile-user-menu-title"
+          className="fixed right-2 top-14 z-50 w-[min(20rem,calc(100vw-1rem))] border border-border bg-popover text-popover-foreground shadow-lg"
+        >
+          <div className="border-b bg-muted/25 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
+                <User className="size-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p
+                  id="mobile-user-menu-title"
+                  className="truncate text-sm font-bold"
+                >
+                  {profile.name}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {profile.email}
+                </p>
+                <span className="mt-2 inline-flex rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {profile.roleLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3 p-4">
+            <MobileProfileRow
+              icon={Building2}
+              label="Empresa"
+              value={profile.companyName}
+            />
+            <MobileProfileRow
+              icon={MapPinned}
+              label="Workspace atual"
+              value={profile.workspaceName}
+            />
+            <MobileProfileRow
+              icon={ShieldCheck}
+              label="Sessão"
+              value={profile.sessionStatus}
+              status
+            />
+          </div>
+
+          <div className="border-t p-2">
+            <Link
+              href="/perfil"
+              onClick={() => {
+                setOpen(false);
+                onNavigate();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <User className="size-3.5" />
+              Meu Perfil
+            </Link>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <LogOut className="size-3.5" />
+              Sair do sistema
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MobileProfileRow({
+  icon: Icon,
+  label,
+  value,
+  status = false,
+}: {
+  icon: typeof Building2;
+  label: string;
+  value: string;
+  status?: boolean;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+      <div className="min-w-0">
+        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+          {label}
+        </p>
+        <p className="mt-0.5 truncate text-xs font-semibold">
+          {status && (
+            <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-500 align-middle" />
+          )}
+          {value}
+        </p>
+      </div>
     </div>
   );
 }
