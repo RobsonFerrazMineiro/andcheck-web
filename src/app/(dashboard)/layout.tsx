@@ -143,6 +143,7 @@ export default async function DashboardLayout({
         canViewWorkspaces={canViewWorkspaces || canManagePermissions}
         canViewDocuments={canAccessDocuments}
         context={contextSwitcher}
+        notificationBell={notificationBell}
         userProfile={
           user
             ? {

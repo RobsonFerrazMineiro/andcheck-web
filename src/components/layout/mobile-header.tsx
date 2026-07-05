@@ -5,6 +5,10 @@ import {
   MobileContextSwitcher,
   type ContextSwitcherData,
 } from "@/components/layout/context-switcher";
+import {
+  NotificationBell,
+  type BellNotification,
+} from "@/components/notifications/notification-bell";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   Archive,
@@ -63,6 +67,7 @@ export function MobileHeader({
   canViewWorkspaces = false,
   canViewDocuments = false,
   context,
+  notificationBell,
   userProfile,
 }: {
   canManageUsers?: boolean;
@@ -72,6 +77,10 @@ export function MobileHeader({
   canViewWorkspaces?: boolean;
   canViewDocuments?: boolean;
   context: ContextSwitcherData | null;
+  notificationBell: {
+    unreadCount: number;
+    latest: BellNotification[];
+  };
   userProfile: MobileUserProfile | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -107,6 +116,14 @@ export function MobileHeader({
         </Link>
 
         {context && <MobileContextSwitcher context={context} />}
+
+        <NotificationBell
+          unreadCount={notificationBell.unreadCount}
+          latest={notificationBell.latest}
+          className="shrink-0"
+          buttonClassName="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+          panelClassName="right-2"
+        />
 
         {userProfile && (
           <MobileUserMenu

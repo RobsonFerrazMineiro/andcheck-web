@@ -7,13 +7,14 @@ import {
   notificationSeverityTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { cn } from "@/lib/utils";
 import { Bell, Check, ExternalLink, Settings } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 
-type BellNotification = {
+export type BellNotification = {
   id: string;
   title: string;
   message: string;
@@ -27,9 +28,15 @@ type BellNotification = {
 export function NotificationBell({
   unreadCount,
   latest,
+  className,
+  buttonClassName,
+  panelClassName,
 }: {
   unreadCount: number;
   latest: BellNotification[];
+  className?: string;
+  buttonClassName?: string;
+  panelClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -63,12 +70,12 @@ export function NotificationBell({
   }, [open]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={cn("relative", className)}>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        className="relative"
+        className={cn("relative", buttonClassName)}
         aria-label={open ? "Fechar notificações" : "Abrir notificações"}
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -91,7 +98,10 @@ export function NotificationBell({
           role="dialog"
           aria-modal="false"
           aria-labelledby="notification-bell-title"
-          className="absolute right-0 top-10 z-50 w-96 border bg-popover text-popover-foreground shadow-lg"
+          className={cn(
+            "fixed right-2 top-14 z-50 w-[min(24rem,calc(100vw-1rem))] border bg-popover text-popover-foreground shadow-lg sm:absolute sm:right-0 sm:top-10 sm:w-96",
+            panelClassName,
+          )}
         >
           <div className="flex items-center justify-between border-b p-3">
             <div>
