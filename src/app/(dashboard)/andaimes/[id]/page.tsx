@@ -168,7 +168,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
   ]);
   const canActOnNonConformity = Boolean(
     access?.roleCodes.some(
-      (roleCode) =>
+      (roleCode: string) =>
         roleCode === "SUPER_ADMIN" ||
         NC_RESPONSIBLE_ROLE_CODES.includes(roleCode),
     ),

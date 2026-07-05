@@ -173,7 +173,8 @@ const FINAL_STATUSES = ["CLOSED", "CANCELLED"];
 
 function hasAnyRole(roleCodes: string[], allowed: string[]) {
   return roleCodes.some(
-    (roleCode) => roleCode === "SUPER_ADMIN" || allowed.includes(roleCode),
+    (roleCode: string) =>
+      roleCode === "SUPER_ADMIN" || allowed.includes(roleCode),
   );
 }
 
@@ -262,9 +263,9 @@ export default async function NonConformityDetailPage({ params }: Props) {
     canCurrentUser("non_conformities.update"),
     getCurrentUserAccess(),
   ]);
-  const roleCodes = access?.roleCodes ?? [];
+  const roleCodes = (access?.roleCodes ?? []) as string[];
   const canStartInspection = roleCodes.some(
-    (roleCode) =>
+    (roleCode: string) =>
       roleHasPermission(roleCode, "inspections.create") ||
       roleHasPermission(roleCode, "inspections.finalize"),
   );

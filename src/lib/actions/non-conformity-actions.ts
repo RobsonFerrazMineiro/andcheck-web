@@ -52,7 +52,8 @@ function hasAnyRole(
 ) {
   return Boolean(
     access?.roleCodes.some(
-      (roleCode) => roleCode === "SUPER_ADMIN" || roles.includes(roleCode),
+      (roleCode: string) =>
+        roleCode === "SUPER_ADMIN" || roles.includes(roleCode),
     ),
   );
 }

@@ -15,7 +15,9 @@ const NC_PERMISSIONS: PermissionCode[] = [
 
 function canAccessNonConformities(roleCodes: string[]) {
   return NC_PERMISSIONS.some((permission) =>
-    roleCodes.some((roleCode) => roleHasPermission(roleCode, permission)),
+    roleCodes.some((roleCode: string) =>
+      roleHasPermission(roleCode, permission),
+    ),
   );
 }
 

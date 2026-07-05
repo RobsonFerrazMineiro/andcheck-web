@@ -46,7 +46,7 @@ type ScopedRecord = {
 type UserAccess = NonNullable<Awaited<ReturnType<typeof getCurrentUserAccess>>>;
 
 export const getContextCapabilities = cache(async (access: UserAccess) => {
-  const hasWorkspaceRole = access.roleCodes.some((roleCode) =>
+  const hasWorkspaceRole = access.roleCodes.some((roleCode: string) =>
     CONTEXT_SWITCHER_ROLES.has(roleCode),
   );
   const isAuditor = access.roleCodes.includes("AUDITOR");
@@ -66,7 +66,7 @@ export const getContextCapabilities = cache(async (access: UserAccess) => {
 
   return {
     canSwitchCompany: hasWorkspaceRole || auditorHasWorkspaceScope,
-    canSwitchWorkspace: access.roleCodes.some((roleCode) =>
+    canSwitchWorkspace: access.roleCodes.some((roleCode: string) =>
       GLOBAL_WORKSPACE_ROLES.has(roleCode),
     ),
     canUseAllCompanies: hasWorkspaceRole || auditorHasWorkspaceScope,

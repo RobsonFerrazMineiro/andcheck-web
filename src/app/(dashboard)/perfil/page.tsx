@@ -24,7 +24,7 @@ export default async function PerfilPage() {
   const roleLabels =
     profile.roleNames.length > 0
       ? profile.roleNames
-      : profile.roleCodes.map((roleCode) => getRoleLabel(roleCode));
+      : profile.roleCodes.map((roleCode: string) => getRoleLabel(roleCode));
 
   return (
     <div className="space-y-5">

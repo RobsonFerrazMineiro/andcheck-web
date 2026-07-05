@@ -35,7 +35,7 @@ const ROLE_LABELS: Record<string, string> = {
 const ROLE_PRIORITY = Object.keys(ROLE_LABELS);
 
 function getRoleLabel(roleCodes: string[], legacyRole?: string) {
-  const primaryRole = ROLE_PRIORITY.find((roleCode) =>
+  const primaryRole = ROLE_PRIORITY.find((roleCode: string) =>
     roleCodes.includes(roleCode),
   );
   if (primaryRole) return ROLE_LABELS[primaryRole];

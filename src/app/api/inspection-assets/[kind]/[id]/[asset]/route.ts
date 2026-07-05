@@ -18,7 +18,7 @@ export async function GET(
   context: { params: Promise<{ kind: string; id: string; asset: string }> },
 ) {
   const access = await getCurrentUserAccess();
-  const allowed = access?.roleCodes.some((roleCode) =>
+  const allowed = access?.roleCodes.some((roleCode: string) =>
     INSPECTION_PERMISSIONS.some((permission) =>
       roleHasPermission(roleCode, permission),
     ),

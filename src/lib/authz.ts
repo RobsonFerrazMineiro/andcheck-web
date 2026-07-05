@@ -19,12 +19,24 @@ function legacyRoleCodes(role?: string | null) {
   return ["AUDITOR"];
 }
 
-export async function getCurrentUserAccess() {
+export type CurrentUserAccess = {
+  userId: string;
+  email: string;
+  roleCodes: string[];
+  companyId: string;
+  workspaceId: string;
+};
+
+type CurrentUserAccessState =
+  | { status: "active"; access: CurrentUserAccess }
+  | { status: "inactive" | "unauthenticated"; access: null };
+
+export async function getCurrentUserAccess(): Promise<CurrentUserAccess | null> {
   const state = await getCurrentUserAccessState();
   return state.access;
 }
 
-const getCurrentUserAccessState = cache(async () => {
+const getCurrentUserAccessState = cache(async (): Promise<CurrentUserAccessState> => {
   const session = await auth();
   const sessionUser = session?.user as
     | { id?: string; email?: string | null; role?: string | null }
@@ -52,9 +64,11 @@ const getCurrentUserAccessState = cache(async () => {
     return { status: "inactive" as const, access: null };
   }
 
-  const roleCodes =
+  const roleCodes: string[] =
     user.roles.length > 0
-      ? user.roles.map((userRole) => userRole.role.code)
+      ? user.roles.map(
+          (userRole: { role: { code: string } }) => userRole.role.code,
+        )
       : legacyRoleCodes(user.role);
 
   return {
@@ -73,7 +87,7 @@ export async function canCurrentUser(permission: PermissionCode) {
   const access = await getCurrentUserAccess();
   if (!access) return false;
 
-  return access.roleCodes.some((roleCode) =>
+  return access.roleCodes.some((roleCode: string) =>
     roleHasPermission(roleCode, permission),
   );
 }
@@ -82,7 +96,7 @@ export async function requirePermission(permission: PermissionCode) {
   await assertSameOriginRequest();
   const state = await getCurrentUserAccessState();
   if (
-    state.access?.roleCodes.some((roleCode) =>
+    state.access?.roleCodes.some((roleCode: string) =>
       roleHasPermission(roleCode, permission),
     )
   ) {
@@ -163,7 +177,9 @@ export async function requireAnyPermission(permissions: PermissionCode[]) {
   if (
     access &&
     permissions.some((permission) =>
-      access.roleCodes.some((roleCode) => roleHasPermission(roleCode, permission)),
+      access.roleCodes.some((roleCode: string) =>
+        roleHasPermission(roleCode, permission),
+      ),
     )
   ) {
     const creationPermission = permissions.find((permission) =>

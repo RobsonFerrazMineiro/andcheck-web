@@ -89,7 +89,7 @@ export default async function DashboardPage() {
   const capabilities = access ? await getContextCapabilities(access) : null;
   const showResponsibleCompany = Boolean(
     capabilities?.canSwitchCompany &&
-    access?.roleCodes.some((roleCode) =>
+    access?.roleCodes.some((roleCode: string) =>
       ["SUPER_ADMIN", "HSE_HYDRO", "HSE_GERENCIADORA", "AUDITOR"].includes(
         roleCode,
       ),

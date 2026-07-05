@@ -25,7 +25,7 @@ const ALLOWED_BLOB_PREFIXES = UPLOAD_CATEGORIES.map(
 
 export async function GET(request: Request) {
   const access = await getCurrentUserAccess();
-  const allowed = access?.roleCodes.some((roleCode) =>
+  const allowed = access?.roleCodes.some((roleCode: string) =>
     FILE_PERMISSIONS.some((permission) =>
       roleHasPermission(roleCode, permission),
     ),

@@ -798,7 +798,9 @@ function filterWhere(filter: NotificationFilter): Prisma.NotificationWhereInput 
 }
 
 function isNotificationAdmin(roleCodes: string[]) {
-  return roleCodes.some((roleCode) => ADMIN_NOTIFICATION_ROLES.has(roleCode));
+  return roleCodes.some((roleCode: string) =>
+    ADMIN_NOTIFICATION_ROLES.has(roleCode),
+  );
 }
 
 const defaultCriticalTypes = new Set<NotificationType>([

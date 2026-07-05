@@ -45,7 +45,7 @@ export async function POST(
   }
 
   const access = await getCurrentUserAccess();
-  const allowed = access?.roleCodes.some((roleCode) =>
+  const allowed = access?.roleCodes.some((roleCode: string) =>
     CATEGORY_PERMISSIONS[category].some((permission) =>
       roleHasPermission(roleCode, permission),
     ),

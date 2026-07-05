@@ -53,7 +53,9 @@ function hasAccessPermission(
   permission: PermissionCode,
 ) {
   return Boolean(
-    access?.roleCodes.some((roleCode) => roleHasPermission(roleCode, permission)),
+    access?.roleCodes.some((roleCode: string) =>
+      roleHasPermission(roleCode, permission),
+    ),
   );
 }
 
@@ -62,7 +64,7 @@ function hasAnyAccessPermission(
   permissions: PermissionCode[],
 ) {
   return Boolean(
-    access?.roleCodes.some((roleCode) =>
+    access?.roleCodes.some((roleCode: string) =>
       permissions.some((permission) => roleHasPermission(roleCode, permission)),
     ),
   );

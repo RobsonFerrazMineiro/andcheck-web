@@ -282,7 +282,7 @@ function defaultEmailPreference(
   roleCodes: string[],
 ) {
   if (severity !== "CRITICAL") return false;
-  return roleCodes.some((roleCode) =>
+  return roleCodes.some((roleCode: string) =>
     CRITICAL_DEFAULT_EMAIL_ROLES.has(roleCode),
   );
 }
