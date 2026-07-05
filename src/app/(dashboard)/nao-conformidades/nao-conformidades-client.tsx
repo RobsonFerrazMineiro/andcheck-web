@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -317,86 +318,91 @@ export function NaoConformidadesClient({
         })}
       </div>
 
-      <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input
-            placeholder="Buscar por código, andaime, empresa ou responsável..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-md border-border"
-          />
+      <MobileFilterPanel
+        description="Busque e refine a lista de não conformidades."
+        summary={`${filtered.length}/${initialData.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? statusFilter} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? classificationFilter}`}
+      >
+        <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+            <Input
+              placeholder="Buscar por código, andaime, empresa ou responsável..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-8 text-[11px] rounded-md border-border"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos status</SelectItem>
+              {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectValue placeholder="Empresa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas empresas</SelectItem>
+              {companies.map((company) => (
+                <SelectItem key={company} value={company}>
+                  {company}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={classificationFilter}
+            onValueChange={setClassificationFilter}
+          >
+            <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectValue placeholder="Classificação" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas classes</SelectItem>
+              {Object.entries(CLASSIFICATION_LABELS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
+            <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectValue placeholder="Responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos responsaveis</SelectItem>
+              {responsibles.map((responsible) => (
+                <SelectItem key={responsible} value={responsible}>
+                  {responsible}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={dueFilter} onValueChange={setDueFilter}>
+            <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectValue placeholder="Vencimento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos prazos</SelectItem>
+              <SelectItem value="overdue">Vencidas</SelectItem>
+              <SelectItem value="expiring_soon">
+                Prestes a vencer (7 dias)
+              </SelectItem>
+              <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos status</SelectItem>
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Empresa" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas empresas</SelectItem>
-            {companies.map((company) => (
-              <SelectItem key={company} value={company}>
-                {company}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={classificationFilter}
-          onValueChange={setClassificationFilter}
-        >
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Classificação" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas classes</SelectItem>
-            {Object.entries(CLASSIFICATION_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                {label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Responsável" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos responsaveis</SelectItem>
-            {responsibles.map((responsible) => (
-              <SelectItem key={responsible} value={responsible}>
-                {responsible}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={dueFilter} onValueChange={setDueFilter}>
-          <SelectTrigger className="h-8 text-[11px] rounded-md">
-            <SelectValue placeholder="Vencimento" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos prazos</SelectItem>
-            <SelectItem value="overdue">Vencidas</SelectItem>
-            <SelectItem value="expiring_soon">
-              Prestes a vencer (7 dias)
-            </SelectItem>
-            <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      </MobileFilterPanel>
 
       {filtered.length !== initialData.length && (
         <p className={`${typography.panelSubtitle} text-muted-foreground`}>

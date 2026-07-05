@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -229,91 +230,96 @@ export function AcervoClient({
         />
       </div>
 
-      <div className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
+      <MobileFilterPanel
+        description="Busque e refine o acervo operacional."
+        summary={`${filtered.length}/${initialData.length} · ${companyFilter === "all" ? "Todas empresas" : companyFilter} · ${workspaceFilter === "all" ? "Todos workspaces" : workspaceFilter}`}
+      >
+        <div className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
+            <Input
+              placeholder="Buscar por TAG, área, empresa ou workspace..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="h-8 rounded-md border-border pl-9 text-[11px]"
+            />
+          </div>
+          <Select value={companyFilter} onValueChange={setCompanyFilter}>
+            <SelectTrigger className="h-8 rounded-md text-[11px]">
+              <Filter className="mr-1.5 size-3.5 text-muted-foreground/50" />
+              <SelectValue placeholder="Empresa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas empresas</SelectItem>
+              {companies.map((company) => (
+                <SelectItem key={company} value={company}>
+                  {company}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
+            <SelectTrigger className="h-8 rounded-md text-[11px]">
+              <SelectValue placeholder="Workspace" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos workspaces</SelectItem>
+              {workspaces.map((workspace) => (
+                <SelectItem key={workspace} value={workspace}>
+                  {workspace}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={areaFilter} onValueChange={setÁreaFilter}>
+            <SelectTrigger className="h-8 rounded-md text-[11px]">
+              <SelectValue placeholder="Área" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas Áreas</SelectItem>
+              {areas.map((area) => (
+                <SelectItem key={area} value={area}>
+                  {area}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Input
-            placeholder="Buscar por TAG, área, empresa ou workspace..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            className="h-8 rounded-md border-border pl-9 text-[11px]"
+            type="date"
+            aria-label="Periodo inicial"
+            value={periodStart}
+            onChange={(event) => setPeriodStart(event.target.value)}
+            className="h-8 rounded-md border-border text-[11px]"
           />
+          <Input
+            type="date"
+            aria-label="Periodo final"
+            value={periodEnd}
+            onChange={(event) => setPeriodEnd(event.target.value)}
+            className="h-8 rounded-md border-border text-[11px]"
+          />
+          <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
+            <SelectTrigger className="h-8 rounded-md text-[11px]">
+              <SelectValue placeholder="Possui NC" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">NCs: todos</SelectItem>
+              <SelectItem value="yes">Com NC</SelectItem>
+              <SelectItem value="no">Sem NC</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
+            <SelectTrigger className="h-8 rounded-md text-[11px]">
+              <SelectValue placeholder="Possui documentos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Documentos: todos</SelectItem>
+              <SelectItem value="yes">Com documentos</SelectItem>
+              <SelectItem value="no">Sem documentos</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={companyFilter} onValueChange={setCompanyFilter}>
-          <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <Filter className="mr-1.5 size-3.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Empresa" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas empresas</SelectItem>
-            {companies.map((company) => (
-              <SelectItem key={company} value={company}>
-                {company}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
-          <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <SelectValue placeholder="Workspace" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos workspaces</SelectItem>
-            {workspaces.map((workspace) => (
-              <SelectItem key={workspace} value={workspace}>
-                {workspace}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={areaFilter} onValueChange={setÁreaFilter}>
-          <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <SelectValue placeholder="Área" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas Áreas</SelectItem>
-            {areas.map((area) => (
-              <SelectItem key={area} value={area}>
-                {area}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="date"
-          aria-label="Periodo inicial"
-          value={periodStart}
-          onChange={(event) => setPeriodStart(event.target.value)}
-          className="h-8 rounded-md border-border text-[11px]"
-        />
-        <Input
-          type="date"
-          aria-label="Periodo final"
-          value={periodEnd}
-          onChange={(event) => setPeriodEnd(event.target.value)}
-          className="h-8 rounded-md border-border text-[11px]"
-        />
-        <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
-          <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <SelectValue placeholder="Possui NC" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">NCs: todos</SelectItem>
-            <SelectItem value="yes">Com NC</SelectItem>
-            <SelectItem value="no">Sem NC</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
-          <SelectTrigger className="h-8 rounded-md text-[11px]">
-            <SelectValue placeholder="Possui documentos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Documentos: todos</SelectItem>
-            <SelectItem value="yes">Com documentos</SelectItem>
-            <SelectItem value="no">Sem documentos</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      </MobileFilterPanel>
 
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div

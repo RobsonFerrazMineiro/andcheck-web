@@ -13,6 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { FormModal } from "@/components/shared/form-modal";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import {
   createWorkspace,
   setWorkspaceActive,
@@ -227,7 +228,7 @@ export function WorkspacesClient({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           icon={MapPin}
           label="Workspaces"
@@ -367,32 +368,37 @@ export function WorkspacesClient({
         </FormModal>
       )}
 
-      <div className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nome, código, cidade ou estado"
-            className="pl-8"
+      <MobileFilterPanel
+        description="Busque e refine a lista de workspaces."
+        summary={`${filtered.length}/${initialWorkspaces.length} · ${status === "all" ? "Todos status" : status === "active" ? "Ativos" : "Inativos"} · ${ownerCompanyId === "all" ? "Todas proprietárias" : ownerCompanies.find((company) => company.id === ownerCompanyId)?.name ?? "Proprietária"}`}
+      >
+        <div className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Buscar por nome, código, cidade ou estado"
+              className="pl-8"
+            />
+          </div>
+          <FilterSelect
+            value={status}
+            onValueChange={setStatus}
+            placeholder="Todos os status"
+            options={[
+              ["active", "Ativos"],
+              ["inactive", "Inativos"],
+            ]}
+          />
+          <FilterSelect
+            value={ownerCompanyId}
+            onValueChange={setOwnerCompanyId}
+            placeholder="Todas as proprietárias"
+            options={ownerCompanies.map((company) => [company.id, company.name])}
           />
         </div>
-        <FilterSelect
-          value={status}
-          onValueChange={setStatus}
-          placeholder="Todos os status"
-          options={[
-            ["active", "Ativos"],
-            ["inactive", "Inativos"],
-          ]}
-        />
-        <FilterSelect
-          value={ownerCompanyId}
-          onValueChange={setOwnerCompanyId}
-          placeholder="Todas as proprietárias"
-          options={ownerCompanies.map((company) => [company.id, company.name])}
-        />
-      </div>
+      </MobileFilterPanel>
 
       {filtered.length === 0 ? (
         <EmptyState
@@ -416,11 +422,11 @@ export function WorkspacesClient({
         />
       ) : (
         <div className="space-y-3">
-          <div className="andcheck-long-list grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="andcheck-long-list grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((workspace) => (
               <div
                 key={workspace.id}
-                className="andcheck-lift flex min-h-56 flex-col rounded-lg border border-border bg-card p-4 shadow-sm"
+                className="andcheck-lift flex min-h-56 flex-col rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4"
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -695,7 +701,7 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
+      className={`andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm sm:p-4 ${borderClass}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p

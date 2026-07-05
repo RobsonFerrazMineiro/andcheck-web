@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
 import {
@@ -169,6 +170,11 @@ export function ExecutiveDashboardClient({ data }: Props) {
         </div>
       </header>
 
+      <MobileFilterPanel
+        title="Filtros globais"
+        description="Todos os indicadores, rankings, mapa e exportações usam a mesma seleção."
+        summary={`${data.range.label} · ${filters.companyId === "all" ? "Todas empresas" : data.filterOptions.companies.find((item) => item.id === filters.companyId)?.name ?? "Empresa"} · ${filters.status === "all" ? "Todos status" : filters.status}`}
+      >
       <Card>
         <CardHeader>
           <CardTitle>Filtros globais</CardTitle>
@@ -247,8 +253,9 @@ export function ExecutiveDashboardClient({ data }: Props) {
           </div>
         </CardContent>
       </Card>
+      </MobileFilterPanel>
 
-      <section className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {data.kpis.map((kpi) => (
           <KpiCard key={kpi.id} kpi={kpi} />
         ))}

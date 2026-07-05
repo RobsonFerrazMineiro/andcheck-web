@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import {
   getManagementReportData,
   type KpiTrend,
@@ -183,6 +184,11 @@ export default async function RelatoriosPage({ searchParams }: Props) {
         <ReportExportActions report={report} />
       </div>
 
+      <MobileFilterPanel
+        title="Filtros globais"
+        description={`Período atual: ${report.periodLabel}`}
+        summary={`${report.periodLabel} · ${filters.companyId === "all" ? "Todas empresas" : "Empresa filtrada"} · ${filters.workspaceId === "all" ? "Todos workspaces" : "Workspace filtrado"}`}
+      >
       <form
         action="/relatorios"
         className="rounded-lg border border-border bg-card p-4 shadow-sm"
@@ -248,6 +254,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           </button>
         </div>
       </form>
+      </MobileFilterPanel>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <KpiPanel

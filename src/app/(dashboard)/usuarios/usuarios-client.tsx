@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FormModal } from "@/components/shared/form-modal";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -513,33 +514,38 @@ export function UsuariosClient({
         </form>
       </FormModal>
 
-      <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input
-            placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-md border-border"
-          />
+      <MobileFilterPanel
+        description="Busque usuários e filtre por status ou perfil."
+        summary={`${filtered.length}/${users.length} · ${statusFilter === "all" ? "Todos" : statusFilter === "active" ? "Ativos" : statusFilter === "inactive" ? "Inativos" : roles.find((role) => role.code === statusFilter)?.name ?? "Perfil"}`}
+      >
+        <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col gap-2 sm:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+            <Input
+              placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              className="pl-9 h-8 text-[11px] rounded-md border-border"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-md">
+              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+              <SelectValue placeholder="Filtro" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="active">Ativos</SelectItem>
+              <SelectItem value="inactive">Inativos</SelectItem>
+              {roles.map((role) => (
+                <SelectItem key={role.id} value={role.code}>
+                  {role.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-md">
-            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Filtro" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativos</SelectItem>
-            <SelectItem value="inactive">Inativos</SelectItem>
-            {roles.map((role) => (
-              <SelectItem key={role.id} value={role.code}>
-                {role.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      </MobileFilterPanel>
 
       <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
@@ -597,23 +603,29 @@ export function UsuariosClient({
                 <div
                   key={user.id}
                   className={
-                    "flex flex-col gap-3 sm:flex-row sm:items-center lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 px-4 py-3 " +
+                    "flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
-                  <div className="flex w-full min-w-0 items-center gap-3 sm:flex-1 lg:contents">
+                  <div className="min-w-0 flex-1 lg:contents">
+                    <div className="flex min-w-0 items-center gap-2">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
                       <span className={typography.action}>
                         {initials(user.name)}
                       </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-foreground truncate">
+                    <div className="min-w-0">
+                      <p
+                        className={`truncate text-foreground ${typography.bodyStrong}`}
+                      >
                         {user.name}
                       </p>
-                      <p className="text-[11px] text-muted-foreground truncate">
+                      <p
+                        className={`truncate text-muted-foreground ${typography.codeMuted}`}
+                      >
                         {user.email}
                       </p>
+                    </div>
                     </div>
                     <p className="hidden lg:block text-[11px] text-muted-foreground truncate">
                       {user.company ?? "-"}
@@ -632,7 +644,7 @@ export function UsuariosClient({
                     </div>
                   </div>
 
-                  <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto sm:shrink-0">
+                  <div className="flex shrink-0 items-center justify-end gap-1">
                     <div className="lg:hidden">
                       <StatusPill active={user.is_active} />
                     </div>

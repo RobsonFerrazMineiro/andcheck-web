@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FormModal } from "@/components/shared/form-modal";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import {
   createCompany,
   setCompanyActive,
@@ -233,7 +234,7 @@ export function EmpresasClient({
         )}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
           icon={Building2}
           label="Empresas"
@@ -362,48 +363,53 @@ export function EmpresasClient({
         </FormModal>
       )}
 
-      <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-        <div
-          className="flex flex-wrap gap-2"
-          aria-label="Filtros rapidos por tipo de empresa"
-        >
-          <TypeFilterButton
-            active={type === "all"}
-            label="Todas"
-            count={initialCompanies.length}
-            onClick={() => setType("all")}
-          />
-          {FORM_TYPE_OPTIONS.map(([value, label]) => (
+      <MobileFilterPanel
+        description="Busque e refine a lista de empresas."
+        summary={`${filtered.length}/${initialCompanies.length} · ${type === "all" ? "Todos tipos" : TYPE_LABELS[type as CompanyType] ?? type} · ${status === "all" ? "Todos status" : status === "active" ? "Ativas" : "Inativas"}`}
+      >
+        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
+          <div
+            className="flex flex-wrap gap-2"
+            aria-label="Filtros rapidos por tipo de empresa"
+          >
             <TypeFilterButton
-              key={value}
-              active={type === value}
-              label={label}
-              count={typeCounts[value as CompanyType]}
-              onClick={() => setType(value)}
+              active={type === "all"}
+              label="Todas"
+              count={initialCompanies.length}
+              onClick={() => setType("all")}
             />
-          ))}
-        </div>
-        <div className="grid gap-3 md:grid-cols-[1fr_190px]">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por nome, código ou workspace"
-              className="pl-8"
+            {FORM_TYPE_OPTIONS.map(([value, label]) => (
+              <TypeFilterButton
+                key={value}
+                active={type === value}
+                label={label}
+                count={typeCounts[value as CompanyType]}
+                onClick={() => setType(value)}
+              />
+            ))}
+          </div>
+          <div className="grid gap-3 md:grid-cols-[1fr_190px]">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar por nome, código ou workspace"
+                className="pl-8"
+              />
+            </div>
+            <FilterSelect
+              value={status}
+              onValueChange={setStatus}
+              placeholder="Todos os status"
+              options={[
+                ["active", "Ativas"],
+                ["inactive", "Inativas"],
+              ]}
             />
           </div>
-          <FilterSelect
-            value={status}
-            onValueChange={setStatus}
-            placeholder="Todos os status"
-            options={[
-              ["active", "Ativas"],
-              ["inactive", "Inativas"],
-            ]}
-          />
         </div>
-      </div>
+      </MobileFilterPanel>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div
@@ -543,7 +549,7 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm ${borderClass}`}
+      className={`andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm sm:p-4 ${borderClass}`}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
         <p

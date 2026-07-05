@@ -2,6 +2,7 @@
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   Select,
@@ -239,6 +240,11 @@ export function MapaOperacionalClient({
         </div>
       </div>
 
+      <MobileFilterPanel
+        title="Filtros operacionais"
+        description="Filtre o mapa por empresa, vencimento e status."
+        summary={`${filteredScaffolds.length}/${scaffolds.length} · ${filterLabel(activeStatus)}${activeCompanyId !== "all" ? ` · ${companies.find((company) => company.id === activeCompanyId)?.name ?? "Empresa"}` : ""}`}
+      >
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card p-0">
         <div
           className={`flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${surface.panelHeader}`}
@@ -332,6 +338,7 @@ export function MapaOperacionalClient({
           })}
         </div>
       </div>
+      </MobileFilterPanel>
 
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div

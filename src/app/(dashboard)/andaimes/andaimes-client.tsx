@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -110,44 +111,49 @@ export function AndaimesClient({
         )}
       </div>
 
-      <div className="grid gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-[1fr_180px_180px]">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-          <Input
-            placeholder="Buscar por TAG, localização ou área..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-8 text-[11px] rounded-md border-border"
-          />
+      <MobileFilterPanel
+        description="Busque e refine a lista de andaimes."
+        summary={`${filtered.length}/${scaffolds.length} · ${statusFilter === "all" ? "Todos status" : statusFilter} · ${expirationFilter === "all" ? "Todos vencimentos" : expirationFilter}`}
+      >
+        <div className="grid gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-[1fr_180px_180px]">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+            <Input
+              placeholder="Buscar por TAG, localização ou área..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-8 text-[11px] rounded-md border-border"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
+              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Status</SelectItem>
+              <SelectItem value="liberado">Liberado</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="reprovado">Reprovado</SelectItem>
+              <SelectItem value="vencido">Vencido</SelectItem>
+              <SelectItem value="em_montagem">Em Montagem</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={expirationFilter} onValueChange={setExpirationFilter}>
+            <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
+              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
+              <SelectValue placeholder="Vencimento" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os Vencimentos</SelectItem>
+              <SelectItem value="expiring_soon">
+                Prestes a vencer (7 dias)
+              </SelectItem>
+              <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
-            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os Status</SelectItem>
-            <SelectItem value="liberado">Liberado</SelectItem>
-            <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="reprovado">Reprovado</SelectItem>
-            <SelectItem value="vencido">Vencido</SelectItem>
-            <SelectItem value="em_montagem">Em Montagem</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={expirationFilter} onValueChange={setExpirationFilter}>
-          <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
-            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
-            <SelectValue placeholder="Vencimento" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos os Vencimentos</SelectItem>
-            <SelectItem value="expiring_soon">
-              Prestes a vencer (7 dias)
-            </SelectItem>
-            <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      </MobileFilterPanel>
 
       {filtered.length !== scaffolds.length && (
         <p className={`${typography.panelSubtitle} text-muted-foreground`}>
@@ -174,7 +180,7 @@ export function AndaimesClient({
         />
       ) : (
         <div className="space-y-3">
-          <div className="andcheck-long-list grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="andcheck-long-list grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {filtered.map((scaffold) => {
               const tone =
                 SEMANTIC_TONE_CLASSES[scaffoldStatusTone(scaffold.status)];
@@ -182,7 +188,7 @@ export function AndaimesClient({
                 <Link
                   key={scaffold.id}
                   href={"/andaimes/" + scaffold.id}
-                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-48 flex-col rounded-lg border border-border bg-card p-4 shadow-sm ring-1 hover:bg-primary/5 ${tone.border}`}
+                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-48 flex-col rounded-lg border border-border bg-card p-3 shadow-sm ring-1 hover:bg-primary/5 sm:p-4 ${tone.border}`}
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <div className="min-w-0">
