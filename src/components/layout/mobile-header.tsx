@@ -11,44 +11,24 @@ import {
 } from "@/components/notifications/notification-bell";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
-  Archive,
-  BarChart3,
   Building2,
-  BriefcaseBusiness,
-  ClipboardCheck,
-  ClipboardList,
-  Construction,
-  FileClock,
-  LayoutDashboard,
   LogOut,
-  Map,
   MapPinned,
   Menu,
   Shield,
   ShieldCheck,
   User,
-  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-
-const navItems = [
-  { path: "/dashboard", label: "Painel Operacional", icon: LayoutDashboard },
-  { path: "/dashboard-gerencial", label: "Dashboard Executivo", icon: BriefcaseBusiness },
-  { path: "/andaimes", label: "Andaimes", icon: Construction },
-  { path: "/inspecoes", label: "Inspeções", icon: ClipboardCheck },
-  { path: "/nao-conformidades", label: "Não Conformidades", icon: ClipboardList },
-  { path: "/acervo", label: "Acervo de Andaimes", icon: Archive },
-  { path: "/mapa", label: "Mapa Operacional", icon: Map },
-  { path: "/usuarios", label: "Usuários", icon: Users },
-  { path: "/auditoria", label: "Auditoria", icon: FileClock },
-  { path: "/relatorios", label: "Relatórios Gerenciais", icon: BarChart3 },
-  { path: "/empresas", label: "Empresas", icon: Building2 },
-  { path: "/workspaces", label: "Workspaces", icon: MapPinned },
-];
+import {
+  adminNavigationItems,
+  isVisibleOnDevice,
+  mainNavigationItems,
+} from "@/components/layout/navigation";
 
 type MobileUserProfile = {
   name: string;
@@ -150,7 +130,8 @@ export function MobileHeader({
           id="mobile-main-navigation"
           className="px-2 pb-3 space-y-px border-t border-sidebar-border"
         >
-          {navItems
+          {[...mainNavigationItems, ...adminNavigationItems]
+            .filter((item) => isVisibleOnDevice(item, "mobile"))
             .filter((item) => item.path !== "/usuarios" || canManageUsers)
             .filter((item) => item.path !== "/auditoria" || canViewAudit)
             .filter((item) => item.path !== "/empresas" || canViewCompanies)
@@ -336,3 +317,4 @@ function MobileProfileRow({
     </div>
   );
 }
+

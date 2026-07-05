@@ -1,101 +1,13 @@
 "use client";
 
-import {
-  Archive,
-  BarChart3,
-  BriefcaseBusiness,
-  ChevronRight,
-  ClipboardCheck,
-  ClipboardList,
-  Construction,
-  FileClock,
-  LayoutDashboard,
-  Map,
-  MapPinned,
-  Shield,
-  Building2,
-  Users,
-} from "lucide-react";
+import { ChevronRight, Shield } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const navItems = [
-  {
-    path: "/dashboard",
-    label: "Painel Operacional",
-    icon: LayoutDashboard,
-    desc: "Visão geral e KPIs",
-  },
-  {
-    path: "/dashboard-gerencial",
-    label: "Dashboard Executivo",
-    icon: BriefcaseBusiness,
-    desc: "Indicadores estratégicos e BI",
-  },
-  {
-    path: "/andaimes",
-    label: "Andaimes",
-    icon: Construction,
-    desc: "Registro de ativos",
-  },
-  {
-    path: "/inspecoes",
-    label: "Inspeções",
-    icon: ClipboardCheck,
-    desc: "Histórico técnico",
-  },
-  {
-    path: "/nao-conformidades",
-    label: "Não Conformidades",
-    icon: ClipboardList,
-    desc: "Controle de tratativas",
-  },
-  {
-    path: "/acervo",
-    label: "Acervo de Andaimes",
-    icon: Archive,
-    desc: "Histórico operacional",
-  },
-  {
-    path: "/mapa",
-    label: "Mapa Operacional",
-    icon: Map,
-    desc: "Localização de ativos",
-  },
-  {
-    path: "/usuarios",
-    label: "Usuários",
-    icon: Users,
-    desc: "Acessos e perfis",
-  },
-  {
-    path: "/auditoria",
-    label: "Auditoria",
-    icon: FileClock,
-    desc: "Logs e rastreabilidade",
-  },
-  {
-    path: "/relatorios",
-    label: "Relatórios Gerenciais",
-    icon: BarChart3,
-    desc: "Indicadores e exportações",
-  },
-];
-
-const adminItems = [
-  {
-    path: "/empresas",
-    label: "Empresas",
-    icon: Building2,
-    desc: "Cadastro corporativo",
-  },
-  {
-    path: "/workspaces",
-    label: "Workspaces",
-    icon: MapPinned,
-    desc: "Plantas operacionais",
-  },
-];
+import {
+  adminNavigationItems,
+  isVisibleOnDevice,
+  mainNavigationItems,
+} from "@/components/layout/navigation";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 
@@ -165,7 +77,8 @@ export function Sidebar({
 
       {/* Nav */}
       <nav className="flex-1 px-2 space-y-px">
-        {navItems
+        {mainNavigationItems
+          .filter((item) => isVisibleOnDevice(item, "desktop"))
           .filter((item) => item.path !== "/usuarios" || canManageUsers)
           .filter((item) => item.path !== "/auditoria" || canViewAudit)
           .filter(
@@ -214,7 +127,8 @@ export function Sidebar({
           <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">
             Administração
           </p>
-          {adminItems
+          {adminNavigationItems
+            .filter((item) => isVisibleOnDevice(item, "desktop"))
             .filter((item) => item.path !== "/empresas" || canViewCompanies)
             .filter((item) => item.path !== "/workspaces" || canViewWorkspaces)
             .map((item) => {
@@ -270,3 +184,4 @@ export function Sidebar({
     </aside>
   );
 }
+
