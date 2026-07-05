@@ -82,6 +82,57 @@ type ArchivedAuditLog = {
   createdAt: Date;
 };
 
+type ArchivedInspection = {
+  id: string;
+  date: Date;
+  inspector_name: string;
+  result: string;
+  validity_days: number | null;
+  notes: string | null;
+};
+
+type ArchivedDocument = {
+  id: string;
+  type: string;
+  title: string;
+  file_name: string;
+  file_size: number | null;
+  mime_type: string | null;
+  uploaded_by: string | null;
+  expires_at: Date | null;
+  observation: string | null;
+  created_at: Date;
+};
+
+type ArchivedNonConformity = {
+  id: string;
+  code: string;
+  title: string;
+  status: string;
+  dueDate: Date | null;
+  responsibleUser: { id: string; name: string | null; company: string | null } | null;
+};
+
+type ArchivedScaffold = {
+  id: string;
+  code: string;
+  tag: string;
+  type: string;
+  status: string;
+  location: string;
+  area: string;
+  company: string | null;
+  responsible: string;
+  released_at: Date | null;
+  assembly_completed_at: Date | null;
+  dismantled_at: Date | null;
+  tenantCompany: { id: string; name: string } | null;
+  workspace: { id: string; name: string } | null;
+  documents: ArchivedDocument[];
+  inspections: ArchivedInspection[];
+  nonConformities: ArchivedNonConformity[];
+};
+
 function formatDate(value: Date | null | undefined) {
   return value ? format(value, "dd/MM/yyyy") : "-";
 }
@@ -213,7 +264,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
   const data = await getArchivedScaffoldByTag(decodeURIComponent(tag));
   if (!data) notFound();
 
-  const { scaffold } = data;
+  const scaffold = data.scaffold as ArchivedScaffold;
   const auditLogs = data.auditLogs as ArchivedAuditLog[];
   if (scaffold.status !== "desmontado") {
     redirect(`/andaimes/${scaffold.id}`);
