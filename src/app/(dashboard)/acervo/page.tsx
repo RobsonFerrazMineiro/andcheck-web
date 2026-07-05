@@ -1,8 +1,23 @@
 import { AcervoClient, type ArchiveScaffoldRow } from "./acervo-client";
 import { getScaffoldArchive } from "@/lib/actions/scaffold-actions";
 
+type ArchiveScaffoldRecord = {
+  id: string;
+  code: string;
+  tag: string;
+  area: string;
+  company: string | null;
+  dismantled_at: Date | null;
+  tenantCompany: { name: string } | null;
+  workspace: { name: string } | null;
+  _count: {
+    documents: number;
+    nonConformities: number;
+  };
+};
+
 export default async function AcervoPage() {
-  const scaffolds = await getScaffoldArchive();
+  const scaffolds = (await getScaffoldArchive()) as ArchiveScaffoldRecord[];
 
   const rows: ArchiveScaffoldRow[] = scaffolds.map((scaffold) => ({
     id: scaffold.id,
