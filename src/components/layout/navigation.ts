@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Map,
   MapPinned,
+  RefreshCw,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -83,6 +84,12 @@ export const mainNavigationItems: NavigationItem[] = [
     label: "Mapa Operacional",
     icon: Map,
     desc: "Localização de ativos",
+  },
+  {
+    path: "/sincronizacao",
+    label: "Sincronizacao",
+    icon: RefreshCw,
+    desc: "Fila offline",
   },
   {
     path: "/usuarios",

@@ -5,6 +5,9 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { UserMenu } from "@/components/layout/user-menu";
 import { DesktopContextSwitcher } from "@/components/layout/context-switcher";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { ConnectivityIndicator } from "@/components/offline/connectivity-indicator";
+import { OfflineProvider } from "@/components/offline/offline-provider";
+import { ServiceWorkerRegister } from "@/components/offline/service-worker-register";
 import {
   canCurrentUser,
   getCurrentUserAccess,
@@ -126,7 +129,9 @@ export default async function DashboardLayout({
     )?.name ?? "NÃ£o informado";
 
   return (
-    <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-background">
+    <OfflineProvider>
+      <ServiceWorkerRegister />
+      <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-background">
       <Sidebar
         canManageUsers={canManageUsers}
         canViewAudit={canViewAudit}
@@ -211,12 +216,15 @@ export default async function DashboardLayout({
           </div>
         </div>
 
+        <ConnectivityIndicator />
+
         {/* Page content */}
         <div className="mx-auto w-full max-w-7xl min-w-0 flex-1 overflow-hidden p-4 md:p-6">
           {children}
         </div>
         <Toaster richColors position="top-right" closeButton />
       </main>
-    </div>
+      </div>
+    </OfflineProvider>
   );
 }
