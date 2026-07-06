@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
+import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import {
   inspectionResultTone,
   SEMANTIC_TONE_CLASSES,
@@ -51,8 +53,15 @@ export function InspecoesClient({
   const [search, setSearch] = useState("");
   const [resultFilter, setResultFilter] = useState("all");
   const [expirationFilter, setExpirationFilter] = useState("all");
+  const {
+    data: inspections,
+    isOfflineFallback,
+    lastCachedAt,
+  } = useOfflineEntityCache({
+    storeName: "inspections",
+    initialData,
+  });
 
-  const inspections = initialData;
   const today = new Date();
   const filtered = inspections.filter((i) => {
     const matchSearch =
@@ -102,6 +111,12 @@ export function InspecoesClient({
           </Link>
         )}
       </div>
+
+      <OfflineDataNotice
+        active={isOfflineFallback}
+        label="inspeções"
+        lastCachedAt={lastCachedAt}
+      />
 
       <MobileFilterPanel
         description="Busque e refine o histórico de inspeções."

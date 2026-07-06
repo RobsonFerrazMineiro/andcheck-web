@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
+import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import {
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
@@ -60,8 +62,15 @@ export function AndaimesClient({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [expirationFilter, setExpirationFilter] = useState("all");
+  const {
+    data: scaffolds,
+    isOfflineFallback,
+    lastCachedAt,
+  } = useOfflineEntityCache({
+    storeName: "scaffolds",
+    initialData,
+  });
 
-  const scaffolds = initialData;
   const today = new Date();
   const filtered = scaffolds.filter((s) => {
     const matchSearch =
@@ -110,6 +119,12 @@ export function AndaimesClient({
           </Link>
         )}
       </div>
+
+      <OfflineDataNotice
+        active={isOfflineFallback}
+        label="andaimes"
+        lastCachedAt={lastCachedAt}
+      />
 
       <MobileFilterPanel
         description="Busque e refine a lista de andaimes."

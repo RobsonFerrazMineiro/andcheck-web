@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { surface, typography } from "@/lib/design-system";
+import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 
 export type ArchiveScaffoldRow = {
   id: string;
@@ -113,30 +115,38 @@ export function AcervoClient({
   const [periodEnd, setPeriodEnd] = useState("");
   const [hasNcFilter, setHasNcFilter] = useState("all");
   const [hasDocsFilter, setHasDocsFilter] = useState("all");
+  const {
+    data: archiveRows,
+    isOfflineFallback,
+    lastCachedAt,
+  } = useOfflineSnapshotCache({
+    cacheKey: "archiveScaffolds:snapshot",
+    initialData,
+  });
 
   const companies = useMemo(
     () =>
-      Array.from(new Set(initialData.map((row) => row.companyName)))
+      Array.from(new Set(archiveRows.map((row) => row.companyName)))
         .filter(Boolean)
         .sort(),
-    [initialData],
+    [archiveRows],
   );
   const workspaces = useMemo(
     () =>
-      Array.from(new Set(initialData.map((row) => row.workspaceName)))
+      Array.from(new Set(archiveRows.map((row) => row.workspaceName)))
         .filter(Boolean)
         .sort(),
-    [initialData],
+    [archiveRows],
   );
   const areas = useMemo(
     () =>
-      Array.from(new Set(initialData.map((row) => row.area)))
+      Array.from(new Set(archiveRows.map((row) => row.area)))
         .filter(Boolean)
         .sort(),
-    [initialData],
+    [archiveRows],
   );
 
-  const filtered = initialData.filter((row) => {
+  const filtered = archiveRows.filter((row) => {
     const text = [
       row.code,
       row.tag,
@@ -168,11 +178,11 @@ export function AcervoClient({
     );
   });
 
-  const total = initialData.length;
-  const withNc = initialData.filter(
+  const total = archiveRows.length;
+  const withNc = archiveRows.filter(
     (row) => row.nonConformitiesCount > 0,
   ).length;
-  const withDocuments = initialData.filter(
+  const withDocuments = archiveRows.filter(
     (row) => row.documentsCount > 0,
   ).length;
 
@@ -194,6 +204,12 @@ export function AcervoClient({
           </p>
         </div>
       </div>
+
+      <OfflineDataNotice
+        active={isOfflineFallback}
+        label="acervo de andaimes"
+        lastCachedAt={lastCachedAt}
+      />
 
       <div className="grid min-w-0 grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi
@@ -232,7 +248,7 @@ export function AcervoClient({
 
       <MobileFilterPanel
         description="Busque e refine o acervo operacional."
-        summary={`${filtered.length}/${initialData.length} · ${companyFilter === "all" ? "Todas empresas" : companyFilter} · ${workspaceFilter === "all" ? "Todos workspaces" : workspaceFilter}`}
+        summary={`${filtered.length}/${archiveRows.length} · ${companyFilter === "all" ? "Todas empresas" : companyFilter} · ${workspaceFilter === "all" ? "Todos workspaces" : workspaceFilter}`}
       >
         <div className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
           <div className="relative">

@@ -23,6 +23,10 @@ const STORE_NAMES = [
 
 type OfflineStoreName = (typeof STORE_NAMES)[number];
 type OfflineRecord = { id: string; updatedAt?: string; [key: string]: unknown };
+export type OfflineEntityStoreName = Exclude<
+  OfflineStoreName,
+  "metadata" | "syncQueue"
+>;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
@@ -216,3 +220,28 @@ export const localDb = {
     },
   },
 };
+
+const entityStores = {
+  scaffolds: localDb.scaffolds,
+  inspections: localDb.inspections,
+  nonConformities: localDb.nonConformities,
+  documents: localDb.documents,
+} satisfies Record<OfflineEntityStoreName, ReturnType<typeof createEntityStore>>;
+
+export async function cacheOfflineRecords<T extends { id: string }>(
+  storeName: OfflineEntityStoreName,
+  records: T[],
+) {
+  const now = new Date().toISOString();
+  await entityStores[storeName].bulkPut(
+    records.map((record) => ({ ...record, updatedAt: now })),
+  );
+  await localDb.metadata.set(`${storeName}:lastCachedAt`, now);
+  return now;
+}
+
+export async function getOfflineRecords<T extends { id: string }>(
+  storeName: OfflineEntityStoreName,
+) {
+  return (await entityStores[storeName].all()) as T[];
+}

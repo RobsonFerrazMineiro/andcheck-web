@@ -2,6 +2,7 @@
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
 import { EmptyState } from "@/components/shared/empty-state";
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
@@ -24,6 +25,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { surface, typography } from "@/lib/design-system";
+import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
@@ -175,12 +177,20 @@ export function MapaOperacionalClient({
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
   const [activeCompanyId, setActiveCompanyId] = useState("all");
   const [dueFilter, setDueFilter] = useState("all");
+  const {
+    data: cachedScaffolds,
+    isOfflineFallback,
+    lastCachedAt,
+  } = useOfflineSnapshotCache({
+    cacheKey: "mapScaffolds:snapshot",
+    initialData: scaffolds,
+  });
 
   const companies = useMemo(
     () =>
       Array.from(
         new Map(
-          scaffolds.map((scaffold) => [
+          cachedScaffolds.map((scaffold) => [
             scaffold.companyId,
             scaffold.companyName,
           ]),
@@ -188,19 +198,19 @@ export function MapaOperacionalClient({
       )
         .map(([id, name]) => ({ id, name }))
         .sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
-    [scaffolds],
+    [cachedScaffolds],
   );
 
   const filteredScaffolds = useMemo(
     () =>
-      scaffolds.filter(
+      cachedScaffolds.filter(
         (scaffold) =>
           (!activeStatus || scaffold.effectiveStatus === activeStatus) &&
           (activeCompanyId === "all" ||
             scaffold.companyId === activeCompanyId) &&
           matchesDueFilter(scaffold.validity_date, dueFilter),
       ),
-    [activeCompanyId, activeStatus, dueFilter, scaffolds],
+    [activeCompanyId, activeStatus, cachedScaffolds, dueFilter],
   );
 
   const comCoords = filteredScaffolds.filter(
@@ -209,6 +219,12 @@ export function MapaOperacionalClient({
 
   return (
     <div className="min-w-0 space-y-5 overflow-hidden">
+      <OfflineDataNotice
+        active={isOfflineFallback}
+        label="mapa operacional"
+        lastCachedAt={lastCachedAt}
+      />
+
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
         <div
           className={`flex min-w-0 flex-col justify-between gap-2 sm:flex-row sm:items-center ${surface.panelHeader}`}
@@ -243,7 +259,7 @@ export function MapaOperacionalClient({
       <MobileFilterPanel
         title="Filtros operacionais"
         description="Filtre o mapa por empresa, vencimento e status."
-        summary={`${filteredScaffolds.length}/${scaffolds.length} · ${filterLabel(activeStatus)}${activeCompanyId !== "all" ? ` · ${companies.find((company) => company.id === activeCompanyId)?.name ?? "Empresa"}` : ""}`}
+        summary={`${filteredScaffolds.length}/${cachedScaffolds.length} · ${filterLabel(activeStatus)}${activeCompanyId !== "all" ? ` · ${companies.find((company) => company.id === activeCompanyId)?.name ?? "Empresa"}` : ""}`}
       >
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card p-0">
         <div
@@ -306,7 +322,7 @@ export function MapaOperacionalClient({
         </div>
         <div className="flex min-w-0 flex-wrap gap-2 p-3 sm:p-4">
           {LEGEND_FILTERS.map((item) => {
-            const count = scaffolds.filter(
+            const count = cachedScaffolds.filter(
               (scaffold) =>
                 scaffold.effectiveStatus === item.status &&
                 (activeCompanyId === "all" ||
@@ -354,7 +370,7 @@ export function MapaOperacionalClient({
             </span>
           </div>
           <span className={`${typography.panelSubtitle} shrink-0 text-slate-400`}>
-            {filteredScaffolds.length} de {scaffolds.length} registros
+            {filteredScaffolds.length} de {cachedScaffolds.length} registros
           </span>
         </div>
         <div className="divide-y divide-border">

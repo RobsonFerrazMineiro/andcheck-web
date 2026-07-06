@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { surface, typography } from "@/lib/design-system";
+import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import {
   nonConformityStatusTone,
   SEMANTIC_TONE_CLASSES,
@@ -141,32 +143,40 @@ export function NaoConformidadesClient({
   const [classificationFilter, setClassificationFilter] = useState("all");
   const [responsibleFilter, setResponsibleFilter] = useState("all");
   const [dueFilter, setDueFilter] = useState("all");
+  const {
+    data: nonConformities,
+    isOfflineFallback,
+    lastCachedAt,
+  } = useOfflineEntityCache({
+    storeName: "nonConformities",
+    initialData,
+  });
 
   const companies = useMemo(
     () =>
       Array.from(
         new Set(
-          initialData
+          nonConformities
             .map((nc) => nc.companyId ?? nc.scaffold.company)
             .filter((company): company is string => Boolean(company)),
         ),
       ).sort((a, b) => a.localeCompare(b)),
-    [initialData],
+    [nonConformities],
   );
 
   const responsibles = useMemo(
     () =>
       Array.from(
         new Set(
-          initialData
+          nonConformities
             .map((nc) => nc.responsibleUser?.name)
             .filter((name): name is string => Boolean(name)),
         ),
       ).sort((a, b) => a.localeCompare(b)),
-    [initialData],
+    [nonConformities],
   );
 
-  const filtered = initialData.filter((nc) => {
+  const filtered = nonConformities.filter((nc) => {
     const company = nc.companyId ?? nc.scaffold.company ?? "-";
     const responsible = nc.responsibleUser?.name ?? "-";
     const text = [
@@ -219,14 +229,14 @@ export function NaoConformidadesClient({
     );
   });
 
-  const abertas = initialData.filter((nc) => nc.status === "OPEN").length;
-  const emTratamento = initialData.filter((nc) =>
+  const abertas = nonConformities.filter((nc) => nc.status === "OPEN").length;
+  const emTratamento = nonConformities.filter((nc) =>
     ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status),
   ).length;
-  const criticas = initialData.filter(
+  const criticas = nonConformities.filter(
     (nc) => nc.classification === "CRITICAL",
   ).length;
-  const vencidas = initialData.filter(isOverdue).length;
+  const vencidas = nonConformities.filter(isOverdue).length;
 
   return (
     <div className="space-y-5">
@@ -242,10 +252,16 @@ export function NaoConformidadesClient({
           <p
             className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
           >
-            {initialData.length} registro(s) de NC no sistema
+            {nonConformities.length} registro(s) de NC no sistema
           </p>
         </div>
       </div>
+
+      <OfflineDataNotice
+        active={isOfflineFallback}
+        label="não conformidades"
+        lastCachedAt={lastCachedAt}
+      />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {(
@@ -320,7 +336,7 @@ export function NaoConformidadesClient({
 
       <MobileFilterPanel
         description="Busque e refine a lista de não conformidades."
-        summary={`${filtered.length}/${initialData.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? statusFilter} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? classificationFilter}`}
+        summary={`${filtered.length}/${nonConformities.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? statusFilter} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? classificationFilter}`}
       >
         <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]">
           <div className="relative">
@@ -404,7 +420,7 @@ export function NaoConformidadesClient({
         </div>
       </MobileFilterPanel>
 
-      {filtered.length !== initialData.length && (
+      {filtered.length !== nonConformities.length && (
         <p className={`${typography.panelSubtitle} text-muted-foreground`}>
           {filtered.length} resultado(s) filtrado(s)
         </p>
