@@ -94,6 +94,17 @@ export type OfflineAddNonConformityItemEvidencePayload = {
   observation?: string;
 };
 
+export type OfflineAddNonConformityCommentPayload = {
+  id: string;
+  comment: string;
+};
+
+export type OfflineUpdateNonConformityStatusPayload = {
+  id: string;
+  status: string;
+  comment?: string;
+};
+
 export type NewSyncQueueItem = Omit<
   SyncQueueItem,
   "id" | "status" | "attempts" | "createdAt" | "updatedAt"

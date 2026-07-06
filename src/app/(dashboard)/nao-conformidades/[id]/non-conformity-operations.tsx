@@ -161,12 +161,73 @@ export function NonConformityOperations({
     });
   }
 
+  function enqueueOfflineAction({
+    action,
+    payload,
+    successMessage,
+  }: {
+    action: string;
+    payload: Record<string, unknown>;
+    successMessage: string;
+  }) {
+    setError(null);
+    startTransition(async () => {
+      try {
+        await localDb.syncQueue.enqueue({
+          action,
+          entityType: "nonConformity",
+          entityId: id,
+          payload,
+          id: createOfflineId("nc"),
+        });
+        toast.success(successMessage);
+        setModal(null);
+        router.push("/sincronizacao");
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Não foi possível salvar a ação offline.",
+        );
+      }
+    });
+  }
+
   function submitStatus(nextStatus: string, comment = "") {
+    if (!browserIsOnline()) {
+      enqueueOfflineAction({
+        action: "nonConformity.status.update",
+        payload: {
+          id,
+          status: nextStatus,
+          comment: comment.trim() || undefined,
+        },
+        successMessage: "Alteração de status salva offline para sincronização.",
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.set("id", id);
     formData.set("status", nextStatus);
     formData.set("comment", comment);
     runAction(updateNonConformityStatus, formData);
+  }
+
+  function submitComment(formData: FormData) {
+    const comment = String(formData.get("comment") ?? "").trim();
+
+    if (!browserIsOnline()) {
+      enqueueOfflineAction({
+        action: "nonConformity.comment.add",
+        payload: { id, comment },
+        successMessage: "Comentário salvo offline para sincronização.",
+      });
+      return;
+    }
+
+    formData.set("id", id);
+    runAction(addNonConformityComment, formData);
   }
 
   const hasActions =
@@ -355,8 +416,7 @@ export function NonConformityOperations({
         <ModalShell title="Adicionar Comentário" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              formData.set("id", id);
-              runAction(addNonConformityComment, formData);
+              submitComment(formData);
             }}
             className="space-y-3"
           >

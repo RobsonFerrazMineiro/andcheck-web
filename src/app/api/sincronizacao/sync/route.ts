@@ -1,6 +1,10 @@
 import { getCurrentUserAccess } from "@/lib/authz";
 import { createInspection } from "@/lib/actions/inspection-actions";
-import { addNonConformityItemEvidence } from "@/lib/actions/non-conformity-actions";
+import {
+  addNonConformityComment,
+  addNonConformityItemEvidence,
+  updateNonConformityStatus,
+} from "@/lib/actions/non-conformity-actions";
 import { createScaffold } from "@/lib/actions/scaffold-actions";
 import {
   storeUploadedFile,
@@ -12,9 +16,11 @@ import {
 } from "@/lib/offline/offline-file-server";
 import {
   isSyncQueueStatus,
+  type OfflineAddNonConformityCommentPayload,
   type OfflineAddNonConformityItemEvidencePayload,
   type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
+  type OfflineUpdateNonConformityStatusPayload,
   type SyncQueueItem,
 } from "@/lib/offline/types";
 import { validateUploadedFile } from "@/lib/upload-security";
@@ -76,6 +82,22 @@ function isOfflineAddNonConformityItemEvidencePayload(
     typeof payload.fileName === "string" &&
     typeof payload.evidenceType === "string"
   );
+}
+
+function isOfflineAddNonConformityCommentPayload(
+  value: unknown,
+): value is OfflineAddNonConformityCommentPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineAddNonConformityCommentPayload>;
+  return typeof payload.id === "string" && typeof payload.comment === "string";
+}
+
+function isOfflineUpdateNonConformityStatusPayload(
+  value: unknown,
+): value is OfflineUpdateNonConformityStatusPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineUpdateNonConformityStatusPayload>;
+  return typeof payload.id === "string" && typeof payload.status === "string";
 }
 
 async function storeOfflineDataUrl(
@@ -170,6 +192,29 @@ async function syncNonConformityItemEvidence(
   }
 
   await addNonConformityItemEvidence(formData);
+}
+
+async function syncNonConformityComment(
+  payload: OfflineAddNonConformityCommentPayload,
+) {
+  const formData = new FormData();
+  formData.set("id", payload.id);
+  formData.set("comment", payload.comment);
+
+  await addNonConformityComment(formData);
+}
+
+async function syncNonConformityStatus(
+  payload: OfflineUpdateNonConformityStatusPayload,
+) {
+  const formData = new FormData();
+  formData.set("id", payload.id);
+  formData.set("status", payload.status);
+  if (payload.comment) {
+    formData.set("comment", payload.comment);
+  }
+
+  return updateNonConformityStatus(formData);
 }
 
 export async function POST(request: Request) {
@@ -289,6 +334,74 @@ export async function POST(request: Request) {
             error instanceof Error
               ? error.message
               : "Nao foi possivel sincronizar a evidencia da NC.",
+        },
+        { status: 422 },
+      );
+    }
+  }
+
+  if (payload.action === "nonConformity.comment.add") {
+    if (!isOfflineAddNonConformityCommentPayload(payload.payload)) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error: "Payload de comentario de NC offline invalido.",
+        },
+        { status: 422 },
+      );
+    }
+
+    try {
+      await syncNonConformityComment(payload.payload);
+      return Response.json({
+        id: payload.id,
+        status: "synced",
+        serverId: payload.payload.id,
+      });
+    } catch (error) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel sincronizar o comentario da NC.",
+        },
+        { status: 422 },
+      );
+    }
+  }
+
+  if (payload.action === "nonConformity.status.update") {
+    if (!isOfflineUpdateNonConformityStatusPayload(payload.payload)) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error: "Payload de status de NC offline invalido.",
+        },
+        { status: 422 },
+      );
+    }
+
+    try {
+      await syncNonConformityStatus(payload.payload);
+      return Response.json({
+        id: payload.id,
+        status: "synced",
+        serverId: payload.payload.id,
+      });
+    } catch (error) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel sincronizar o status da NC.",
         },
         { status: 422 },
       );
