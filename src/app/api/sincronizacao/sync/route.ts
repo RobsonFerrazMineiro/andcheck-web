@@ -1,4 +1,5 @@
 import { getCurrentUserAccess } from "@/lib/authz";
+import { addScaffoldDocument } from "@/lib/actions/document-actions";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import {
   addNonConformityComment,
@@ -18,6 +19,7 @@ import {
   isSyncQueueStatus,
   type OfflineAddNonConformityCommentPayload,
   type OfflineAddNonConformityItemEvidencePayload,
+  type OfflineAddScaffoldDocumentPayload,
   type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
   type OfflineUpdateNonConformityStatusPayload,
@@ -98,6 +100,21 @@ function isOfflineUpdateNonConformityStatusPayload(
   if (!value || typeof value !== "object") return false;
   const payload = value as Partial<OfflineUpdateNonConformityStatusPayload>;
   return typeof payload.id === "string" && typeof payload.status === "string";
+}
+
+function isOfflineAddScaffoldDocumentPayload(
+  value: unknown,
+): value is OfflineAddScaffoldDocumentPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineAddScaffoldDocumentPayload>;
+  return (
+    typeof payload.scaffold_id === "string" &&
+    typeof payload.type === "string" &&
+    typeof payload.title === "string" &&
+    typeof payload.file_url === "string" &&
+    typeof payload.file_name === "string" &&
+    typeof payload.uploaded_by === "string"
+  );
 }
 
 async function storeOfflineDataUrl(
@@ -215,6 +232,27 @@ async function syncNonConformityStatus(
   }
 
   return updateNonConformityStatus(formData);
+}
+
+async function syncScaffoldDocument(payload: OfflineAddScaffoldDocumentPayload) {
+  const fileUrl = await storeOfflineDataUrl(
+    payload.file_url,
+    "scaffold-documents",
+    payload.file_name,
+  );
+
+  return addScaffoldDocument({
+    scaffold_id: payload.scaffold_id,
+    type: payload.type as Parameters<typeof addScaffoldDocument>[0]["type"],
+    title: payload.title,
+    file_url: fileUrl ?? payload.file_url,
+    file_name: payload.file_name,
+    file_size: payload.file_size,
+    mime_type: payload.mime_type,
+    uploaded_by: payload.uploaded_by,
+    expires_at: payload.expires_at ? new Date(payload.expires_at) : undefined,
+    observation: payload.observation,
+  });
 }
 
 export async function POST(request: Request) {
@@ -402,6 +440,40 @@ export async function POST(request: Request) {
             error instanceof Error
               ? error.message
               : "Nao foi possivel sincronizar o status da NC.",
+        },
+        { status: 422 },
+      );
+    }
+  }
+
+  if (payload.action === "scaffold.document.add") {
+    if (!isOfflineAddScaffoldDocumentPayload(payload.payload)) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error: "Payload de documento de andaime offline invalido.",
+        },
+        { status: 422 },
+      );
+    }
+
+    try {
+      const created = await syncScaffoldDocument(payload.payload);
+      return Response.json({
+        id: payload.id,
+        status: "synced",
+        serverId: created.id,
+      });
+    } catch (error) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel sincronizar o documento do andaime.",
         },
         { status: 422 },
       );

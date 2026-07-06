@@ -105,6 +105,19 @@ export type OfflineUpdateNonConformityStatusPayload = {
   comment?: string;
 };
 
+export type OfflineAddScaffoldDocumentPayload = {
+  scaffold_id: string;
+  type: string;
+  title: string;
+  file_url: string;
+  file_name: string;
+  file_size?: number;
+  mime_type?: string;
+  uploaded_by: string;
+  expires_at?: string;
+  observation?: string;
+};
+
 export type NewSyncQueueItem = Omit<
   SyncQueueItem,
   "id" | "status" | "attempts" | "createdAt" | "updatedAt"

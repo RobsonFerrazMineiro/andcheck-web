@@ -24,6 +24,9 @@ import {
   addScaffoldDocument,
   deleteScaffoldDocument,
 } from "@/lib/actions/document-actions";
+import { localDb } from "@/lib/offline/local-db";
+import { fileToDataUrl } from "@/lib/offline/offline-file-client";
+import { createOfflineId } from "@/lib/offline/types";
 import {
   downloadDocumentFile,
   getDocumentExtension,
@@ -59,6 +62,10 @@ const DOC_TYPES = [
 
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx";
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+function browserIsOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine;
+}
 
 export type ScaffoldDocumentMetadata = {
   id: string;
@@ -110,6 +117,7 @@ interface ModalProps {
 }
 
 function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
+  const router = useRouter();
   const [type, setType] = useState("ART");
   const [title, setTitle] = useState("");
   const [uploadedBy, setUploadedBy] = useState("");
@@ -144,6 +152,34 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
             mod.compressImageBlob(file),
           )
         : file;
+
+      if (!browserIsOnline()) {
+        const offlineId = createOfflineId("scaffold_document");
+        await localDb.syncQueue.enqueue({
+          id: offlineId,
+          action: "scaffold.document.add",
+          entityType: "document",
+          entityId: offlineId,
+          payload: {
+            scaffold_id: scaffoldId,
+            type,
+            title: title.trim() || docTypeLabel(type),
+            file_url: await fileToDataUrl(uploadBody),
+            file_name: file.name,
+            file_size: uploadBody.size,
+            mime_type: uploadBody.type || file.type || undefined,
+            uploaded_by: uploadedBy.trim(),
+            expires_at: expiresAt || undefined,
+            observation: observation.trim() || undefined,
+          },
+        });
+
+        toast.success("Documento salvo offline para sincronizacao.");
+        onClose();
+        router.push("/sincronizacao");
+        return;
+      }
+
       const uploaded = await uploadFile(uploadBody, {
         category: "scaffold-documents",
         fileName: file.name,
