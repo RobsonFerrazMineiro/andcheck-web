@@ -31,6 +31,9 @@ import {
   updateNonConformityResponsible,
   updateNonConformityStatus,
 } from "@/lib/actions/non-conformity-actions";
+import { localDb } from "@/lib/offline/local-db";
+import { fileToDataUrl } from "@/lib/offline/offline-file-client";
+import { createOfflineId } from "@/lib/offline/types";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
@@ -69,6 +72,10 @@ function evidenceTypeFromFile(file: File) {
   if (file.type.startsWith("image/")) return "PHOTO";
   if (file.type === "application/pdf") return "PDF";
   return "DOCUMENT";
+}
+
+function browserIsOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
 function ModalShell({
@@ -511,7 +518,38 @@ export function NonConformityItemEvidenceButton({
 
     setError(null);
     startTransition(async () => {
+      const toastId = toast.loading("Preparando evidência...");
       try {
+        const evidenceType = evidenceTypeFromFile(file);
+        const observation = String(formData.get("observation") ?? "").trim();
+
+        if (!browserIsOnline()) {
+          const offlineFile = await fileToDataUrl(file);
+          await localDb.syncQueue.enqueue({
+            action: "nonConformity.itemEvidence.add",
+            entityType: "nonConformity",
+            entityId: id,
+            payload: {
+              id,
+              nonConformityItemId: itemId,
+              fileUrl: offlineFile,
+              fileName: file.name,
+              fileSize: file.size,
+              mimeType: file.type || undefined,
+              evidenceType,
+              observation: observation || undefined,
+            },
+            id: createOfflineId("nc_evidence"),
+          });
+
+          toast.success("Evidência salva offline para sincronização.", {
+            id: toastId,
+          });
+          setOpen(false);
+          router.push("/sincronizacao");
+          return;
+        }
+
         const uploaded = await uploadFile(file, {
           category: "non-conformity-evidence",
           fileName: file.name,
@@ -523,12 +561,19 @@ export function NonConformityItemEvidenceButton({
         formData.set("fileName", file.name);
         formData.set("fileSize", String(uploaded.size));
         formData.set("mimeType", uploaded.contentType);
-        formData.set("evidenceType", evidenceTypeFromFile(file));
+        formData.set("evidenceType", evidenceType);
 
         await addNonConformityItemEvidence(formData);
+        toast.success("Evidência anexada com sucesso.", { id: toastId });
         setOpen(false);
         router.refresh();
       } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Não foi possível anexar a evidência.",
+          { id: toastId },
+        );
         setError(
           err instanceof Error
             ? err.message

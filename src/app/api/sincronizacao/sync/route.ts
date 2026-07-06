@@ -1,5 +1,6 @@
 import { getCurrentUserAccess } from "@/lib/authz";
 import { createInspection } from "@/lib/actions/inspection-actions";
+import { addNonConformityItemEvidence } from "@/lib/actions/non-conformity-actions";
 import { createScaffold } from "@/lib/actions/scaffold-actions";
 import {
   storeUploadedFile,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/offline/offline-file-server";
 import {
   isSyncQueueStatus,
+  type OfflineAddNonConformityItemEvidencePayload,
   type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
   type SyncQueueItem,
@@ -59,6 +61,20 @@ function isOfflineCreateScaffoldPayload(
     typeof payload.area === "string" &&
     typeof payload.height === "number" &&
     typeof payload.responsible === "string"
+  );
+}
+
+function isOfflineAddNonConformityItemEvidencePayload(
+  value: unknown,
+): value is OfflineAddNonConformityItemEvidencePayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineAddNonConformityItemEvidencePayload>;
+  return (
+    typeof payload.id === "string" &&
+    typeof payload.nonConformityItemId === "string" &&
+    typeof payload.fileUrl === "string" &&
+    typeof payload.fileName === "string" &&
+    typeof payload.evidenceType === "string"
   );
 }
 
@@ -125,6 +141,35 @@ async function resolveInspectionOfflineFiles(
       })),
     ),
   };
+}
+
+async function syncNonConformityItemEvidence(
+  payload: OfflineAddNonConformityItemEvidencePayload,
+) {
+  const fileUrl = await storeOfflineDataUrl(
+    payload.fileUrl,
+    "non-conformity-evidence",
+    payload.fileName,
+  );
+
+  const formData = new FormData();
+  formData.set("id", payload.id);
+  formData.set("nonConformityItemId", payload.nonConformityItemId);
+  formData.set("fileUrl", fileUrl ?? payload.fileUrl);
+  formData.set("fileName", payload.fileName);
+  formData.set("evidenceType", payload.evidenceType);
+
+  if (typeof payload.fileSize === "number") {
+    formData.set("fileSize", String(payload.fileSize));
+  }
+  if (payload.mimeType) {
+    formData.set("mimeType", payload.mimeType);
+  }
+  if (payload.observation) {
+    formData.set("observation", payload.observation);
+  }
+
+  await addNonConformityItemEvidence(formData);
 }
 
 export async function POST(request: Request) {
@@ -210,6 +255,40 @@ export async function POST(request: Request) {
             error instanceof Error
               ? error.message
               : "Nao foi possivel sincronizar o andaime.",
+        },
+        { status: 422 },
+      );
+    }
+  }
+
+  if (payload.action === "nonConformity.itemEvidence.add") {
+    if (!isOfflineAddNonConformityItemEvidencePayload(payload.payload)) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error: "Payload de evidencia de NC offline invalido.",
+        },
+        { status: 422 },
+      );
+    }
+
+    try {
+      await syncNonConformityItemEvidence(payload.payload);
+      return Response.json({
+        id: payload.id,
+        status: "synced",
+        serverId: payload.payload.nonConformityItemId,
+      });
+    } catch (error) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel sincronizar a evidencia da NC.",
         },
         { status: 422 },
       );

@@ -83,6 +83,17 @@ export type OfflineCreateScaffoldPayload = {
   location_description?: string;
 };
 
+export type OfflineAddNonConformityItemEvidencePayload = {
+  id: string;
+  nonConformityItemId: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize?: number;
+  mimeType?: string;
+  evidenceType: "PHOTO" | "PDF" | "DOCUMENT" | "OTHER";
+  observation?: string;
+};
+
 export type NewSyncQueueItem = Omit<
   SyncQueueItem,
   "id" | "status" | "attempts" | "createdAt" | "updatedAt"
