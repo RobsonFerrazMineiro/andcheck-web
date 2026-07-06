@@ -1,6 +1,20 @@
-const CACHE_NAME = "andcheck-offline-v1";
+const CACHE_NAME = "andcheck-offline-v2";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
+const NAVIGATION_CACHE_PATHS = new Set(["/sincronizacao"]);
+
+function matchOfflineNavigation(request) {
+  const requestUrl = new URL(request.url);
+
+  return caches
+    .match(request)
+    .then(
+      (cached) =>
+        cached ||
+        caches.match(requestUrl.pathname).then((pathCached) => pathCached),
+    )
+    .then((cached) => cached || caches.match(OFFLINE_URL));
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -31,7 +45,22 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).catch(() => caches.match(OFFLINE_URL)),
+      fetch(request)
+        .then((response) => {
+          const requestUrl = new URL(request.url);
+          if (
+            response.ok &&
+            requestUrl.origin === self.location.origin &&
+            NAVIGATION_CACHE_PATHS.has(requestUrl.pathname)
+          ) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => matchOfflineNavigation(request)),
     );
     return;
   }
