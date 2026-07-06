@@ -34,6 +34,11 @@ export type SyncQueueItem = {
   createdAt: string;
   updatedAt: string;
   lastError?: string;
+  deviceInfo?: {
+    userAgent?: string;
+    platform?: string;
+    language?: string;
+  };
 };
 
 export type OfflineInspectionChecklistItem = {

@@ -1,7 +1,11 @@
 "use client";
 
 import { localDb } from "@/lib/offline/local-db";
-import type { SyncQueueItem, SyncQueueStatus } from "@/lib/offline/types";
+import {
+  isSyncQueueStatus,
+  type SyncQueueItem,
+  type SyncQueueStatus,
+} from "@/lib/offline/types";
 
 type ServerSyncResult = {
   id: string;
@@ -24,7 +28,7 @@ async function sendQueueItem(item: SyncQueueItem): Promise<ServerSyncResult> {
   if (!response.ok) {
     return {
       id: item.id,
-      status: "failed",
+      status: isSyncQueueStatus(result?.status) ? result.status : "failed",
       error: result?.error ?? "Falha ao enviar item para sincronizacao.",
     };
   }

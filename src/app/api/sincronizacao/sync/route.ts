@@ -1,4 +1,5 @@
 import { getCurrentUserAccess } from "@/lib/authz";
+import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { addScaffoldDocument } from "@/lib/actions/document-actions";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import {
@@ -15,6 +16,7 @@ import {
   dataUrlToFile,
   isOfflineFileReference,
 } from "@/lib/offline/offline-file-server";
+import { prisma } from "@/lib/prisma";
 import {
   isSyncQueueStatus,
   type OfflineAddNonConformityCommentPayload,
@@ -26,6 +28,10 @@ import {
   type SyncQueueItem,
 } from "@/lib/offline/types";
 import { validateUploadedFile } from "@/lib/upload-security";
+import type { Prisma } from "@prisma/client";
+
+type SyncResultStatus = "synced" | "failed" | "conflict";
+type SyncAccess = NonNullable<Awaited<ReturnType<typeof getCurrentUserAccess>>>;
 
 function isSyncQueueItemPayload(value: unknown): value is SyncQueueItem {
   if (!value || typeof value !== "object") return false;
@@ -234,6 +240,40 @@ async function syncNonConformityStatus(
   return updateNonConformityStatus(formData);
 }
 
+class OfflineSyncConflictError extends Error {
+  details: Prisma.InputJsonObject;
+
+  constructor(message: string, details: Prisma.InputJsonObject = {}) {
+    super(message);
+    this.name = "OfflineSyncConflictError";
+    this.details = details;
+  }
+}
+
+async function assertNoNonConformityStatusConflict(item: SyncQueueItem) {
+  if (!isOfflineUpdateNonConformityStatusPayload(item.payload)) return;
+
+  const nc = await prisma.nonConformity.findUnique({
+    where: { id: item.payload.id },
+    select: { code: true, status: true, updatedAt: true },
+  });
+
+  if (!nc) return;
+
+  const localCreatedAt = new Date(item.createdAt);
+  if (Number.isNaN(localCreatedAt.getTime())) return;
+
+  if (nc.updatedAt.getTime() > localCreatedAt.getTime()) {
+    throw new OfflineSyncConflictError(
+      `NC ${nc.code} foi alterada no servidor antes da sincronizacao.`,
+      {
+        serverStatus: nc.status,
+        serverUpdatedAt: nc.updatedAt.toISOString(),
+      },
+    );
+  }
+}
+
 async function syncScaffoldDocument(payload: OfflineAddScaffoldDocumentPayload) {
   const fileUrl = await storeOfflineDataUrl(
     payload.file_url,
@@ -253,6 +293,75 @@ async function syncScaffoldDocument(payload: OfflineAddScaffoldDocumentPayload) 
     expires_at: payload.expires_at ? new Date(payload.expires_at) : undefined,
     observation: payload.observation,
   });
+}
+
+async function logOfflineSyncEvent({
+  item,
+  status,
+  access,
+  serverId,
+  error,
+  details,
+}: {
+  item: SyncQueueItem;
+  status: SyncResultStatus;
+  access: SyncAccess;
+  serverId?: string;
+  error?: string;
+  details?: Prisma.InputJsonObject;
+}) {
+  await createAuditLog({
+    entityType: AuditEntityType.SETTINGS,
+    entityId: item.id,
+    entityLabel: item.action,
+    action: AuditAction.UPDATE,
+    description: `Sincronizacao offline ${status}: ${item.action}`,
+    newValue: {
+      queueId: item.id,
+      action: item.action,
+      entityType: item.entityType,
+      entityId: item.entityId,
+      status,
+      serverId: serverId ?? null,
+      error: error ?? null,
+      details: details ?? null,
+      localCreatedAt: item.createdAt,
+      localUpdatedAt: item.updatedAt,
+      syncedAt: new Date().toISOString(),
+      attempts: item.attempts,
+      deviceInfo: item.deviceInfo ?? null,
+    },
+    companyId: access.companyId,
+    workspaceId: access.workspaceId,
+  });
+}
+
+async function syncedResponse(
+  item: SyncQueueItem,
+  access: SyncAccess,
+  serverId?: string,
+) {
+  await logOfflineSyncEvent({ item, status: "synced", access, serverId });
+  return Response.json({ id: item.id, status: "synced", serverId });
+}
+
+async function conflictResponse(
+  item: SyncQueueItem,
+  access: SyncAccess,
+  error: string,
+  details?: Prisma.InputJsonObject,
+) {
+  await logOfflineSyncEvent({
+    item,
+    status: "conflict",
+    access,
+    error,
+    details,
+  });
+  return Response.json(
+    { id: item.id, status: "conflict", error },
+    { status: 409 },
+  );
 }
 
 export async function POST(request: Request) {
@@ -290,11 +399,7 @@ export async function POST(request: Request) {
         payload.payload,
       );
       const created = await createInspection(inspectionPayload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: created.id,
-      });
+      return syncedResponse(payload, access, created.id);
     } catch (error) {
       return Response.json(
         {
@@ -324,11 +429,7 @@ export async function POST(request: Request) {
 
     try {
       const created = await createScaffold(payload.payload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: created.id,
-      });
+      return syncedResponse(payload, access, created.id);
     } catch (error) {
       return Response.json(
         {
@@ -358,11 +459,11 @@ export async function POST(request: Request) {
 
     try {
       await syncNonConformityItemEvidence(payload.payload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: payload.payload.nonConformityItemId,
-      });
+      return syncedResponse(
+        payload,
+        access,
+        payload.payload.nonConformityItemId,
+      );
     } catch (error) {
       return Response.json(
         {
@@ -392,11 +493,7 @@ export async function POST(request: Request) {
 
     try {
       await syncNonConformityComment(payload.payload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: payload.payload.id,
-      });
+      return syncedResponse(payload, access, payload.payload.id);
     } catch (error) {
       return Response.json(
         {
@@ -425,13 +522,14 @@ export async function POST(request: Request) {
     }
 
     try {
+      await assertNoNonConformityStatusConflict(payload);
       await syncNonConformityStatus(payload.payload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: payload.payload.id,
-      });
+      return syncedResponse(payload, access, payload.payload.id);
     } catch (error) {
+      if (error instanceof OfflineSyncConflictError) {
+        return conflictResponse(payload, access, error.message, error.details);
+      }
+
       return Response.json(
         {
           id: payload.id,
@@ -460,11 +558,7 @@ export async function POST(request: Request) {
 
     try {
       const created = await syncScaffoldDocument(payload.payload);
-      return Response.json({
-        id: payload.id,
-        status: "synced",
-        serverId: created.id,
-      });
+      return syncedResponse(payload, access, created.id);
     } catch (error) {
       return Response.json(
         {

@@ -95,6 +95,16 @@ function emitQueueUpdated() {
   window.dispatchEvent(new Event("andcheck:sync-queue-updated"));
 }
 
+function getDeviceInfo() {
+  if (typeof navigator === "undefined") return undefined;
+
+  return {
+    userAgent: navigator.userAgent,
+    platform: navigator.platform,
+    language: navigator.language,
+  };
+}
+
 function createEntityStore<T extends OfflineRecord>(storeName: OfflineStoreName) {
   return {
     async all() {
@@ -179,6 +189,7 @@ export const localDb = {
         attempts: 0,
         createdAt: now,
         updatedAt: now,
+        deviceInfo: input.deviceInfo ?? getDeviceInfo(),
       };
       const { store, done } = await getStore("syncQueue", "readwrite");
       store.put(item);

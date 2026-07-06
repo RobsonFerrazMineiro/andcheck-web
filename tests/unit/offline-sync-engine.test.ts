@@ -173,6 +173,28 @@ describe("processSyncQueue", () => {
     expect(summary).toMatchObject({ failed: 1, total: 1 });
   });
 
+  it("marks an item as conflict when the server detects a version conflict", async () => {
+    state.items = [queueItem("queue-1", "pending")];
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse(
+        {
+          id: "queue-1",
+          status: "conflict",
+          error: "Registro alterado no servidor.",
+        },
+        { status: 409 },
+      ),
+    );
+
+    const summary = await processSyncQueue();
+
+    expect(state.items[0]).toMatchObject({
+      status: "conflict",
+      lastError: "Registro alterado no servidor.",
+    });
+    expect(summary).toMatchObject({ conflict: 1, total: 1 });
+  });
+
   it("marks an item as failed when the network request throws", async () => {
     state.items = [queueItem("queue-1", "pending")];
     vi.mocked(fetch).mockRejectedValueOnce(new Error("Sem conexao."));
