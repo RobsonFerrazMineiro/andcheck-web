@@ -10,7 +10,7 @@ import {
 } from "@/lib/offline/types";
 
 const DB_NAME = "andcheck-offline";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const STORE_NAMES = [
   "metadata",
@@ -18,6 +18,7 @@ const STORE_NAMES = [
   "inspections",
   "nonConformities",
   "documents",
+  "notifications",
   "syncQueue",
 ] as const;
 
@@ -142,6 +143,7 @@ export const localDb = {
   inspections: createEntityStore<OfflineRecord>("inspections"),
   nonConformities: createEntityStore<OfflineRecord>("nonConformities"),
   documents: createEntityStore<OfflineRecord>("documents"),
+  notifications: createEntityStore<OfflineRecord>("notifications"),
   metadata: {
     async get<T = unknown>(id: string) {
       const { store } = await getStore("metadata", "readonly");
@@ -226,6 +228,7 @@ const entityStores = {
   inspections: localDb.inspections,
   nonConformities: localDb.nonConformities,
   documents: localDb.documents,
+  notifications: localDb.notifications,
 } satisfies Record<OfflineEntityStoreName, ReturnType<typeof createEntityStore>>;
 
 export async function cacheOfflineRecords<T extends { id: string }>(

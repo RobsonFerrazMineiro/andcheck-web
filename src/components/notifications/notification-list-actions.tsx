@@ -19,11 +19,13 @@ export function NotificationListActions({
   title,
   href,
   status,
+  disabled = false,
 }: {
   id: string;
   title: string;
   href: string;
   status: string;
+  disabled?: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -93,7 +95,7 @@ export function NotificationListActions({
             type="button"
             variant="ghost"
             size="sm"
-            disabled={isPending}
+            disabled={isPending || disabled}
             onClick={markRead}
             className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
           >
@@ -105,7 +107,7 @@ export function NotificationListActions({
           type="button"
           variant="ghost"
           size="sm"
-          disabled={isPending}
+          disabled={isPending || disabled}
           onClick={() => setArchiveOpen(true)}
           className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
         >
