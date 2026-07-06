@@ -15,6 +15,7 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
+import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
@@ -82,14 +83,18 @@ export default function ChecklistSection({
     try {
       const { compressImageBlob } = await import("@/lib/compress-image");
       const compressed = await compressImageBlob(file);
-      const uploaded = await uploadFile(compressed, {
-        category: "checklist-photos",
-        fileName: file.name,
-      });
+      const photo = navigator.onLine
+        ? (
+            await uploadFile(compressed, {
+              category: "checklist-photos",
+              fileName: file.name,
+            })
+          ).reference
+        : await fileToDataUrl(compressed);
       const updated = [...values];
       updated[itemIndex] = {
         ...updated[itemIndex],
-        photo: uploaded.reference,
+        photo,
       };
       onChange(updated);
     } catch (error) {

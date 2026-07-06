@@ -36,6 +36,37 @@ export type SyncQueueItem = {
   lastError?: string;
 };
 
+export type OfflineInspectionChecklistItem = {
+  item_id: string;
+  item_label: string;
+  category: string;
+  value: "CL_OK" | "CL_FAIL" | "CL_WARN" | "CL_NA";
+  critical: boolean;
+  observation?: string;
+  photo?: string;
+};
+
+export type OfflineInspectionSignature = {
+  role_code: string;
+  signer_name: string;
+  signer_company?: string;
+  signer_position?: string;
+  signature_data?: string;
+};
+
+export type OfflineCreateInspectionPayload = {
+  scaffold_id: string;
+  scaffold_code: string;
+  inspector_name: string;
+  result: "aprovado" | "aprovado_com_ressalvas" | "reprovado";
+  validity_days: number;
+  notes?: string;
+  photos?: string[];
+  signature?: string;
+  signatures?: OfflineInspectionSignature[];
+  checklist: OfflineInspectionChecklistItem[];
+};
+
 export type NewSyncQueueItem = Omit<
   SyncQueueItem,
   "id" | "status" | "attempts" | "createdAt" | "updatedAt"

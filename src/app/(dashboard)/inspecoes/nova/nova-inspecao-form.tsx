@@ -34,6 +34,12 @@ import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
 import { calculateInspectionResult } from "@/lib/inspection-outcome";
+import { localDb } from "@/lib/offline/local-db";
+import { fileToDataUrl } from "@/lib/offline/offline-file-client";
+import {
+  createOfflineId,
+  type OfflineCreateInspectionPayload,
+} from "@/lib/offline/types";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 
 const ChecklistSection = dynamic(
@@ -106,6 +112,10 @@ function statusToPrisma(
   if (status === "conforme") return "CL_OK";
   if (status === "nao_conforme") return "CL_FAIL";
   return "CL_NA";
+}
+
+function browserIsOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
 export function NovaInspecaoForm({
@@ -196,11 +206,15 @@ export function NovaInspecaoForm({
 
         for (const file of files) {
           const compressed = await compressImageBlob(file);
-          const uploaded = await uploadFile(compressed, {
-            category: "inspection-photos",
-            fileName: file.name,
-          });
-          setPhotos((prev) => [...prev, uploaded.reference]);
+          const photo = browserIsOnline()
+            ? (
+                await uploadFile(compressed, {
+                  category: "inspection-photos",
+                  fileName: file.name,
+                })
+              ).reference
+            : await fileToDataUrl(compressed);
+          setPhotos((prev) => [...prev, photo]);
         }
       } catch (error) {
         toast.error(
@@ -350,10 +364,14 @@ export function NovaInspecaoForm({
     setRegisteringSignature(true);
     try {
       const signatureBlob = await canvasToBlob(canvasRef.current);
-      const uploaded = await uploadFile(signatureBlob, {
-        category: "inspection-signatures",
-        fileName: `assinatura-${requirement.role_code}.png`,
-      });
+      const signatureReference = browserIsOnline()
+        ? (
+            await uploadFile(signatureBlob, {
+              category: "inspection-signatures",
+              fileName: `assinatura-${requirement.role_code}.png`,
+            })
+          ).reference
+        : await fileToDataUrl(signatureBlob);
 
       setCollectedSignatures((current) => [
         ...current.filter(
@@ -365,7 +383,7 @@ export function NovaInspecaoForm({
           signer_name: signerName.trim(),
           signer_company: signerCompany.trim() || undefined,
           signer_position: signerPosition.trim() || undefined,
-          signature_data: uploaded.reference,
+          signature_data: signatureReference,
         },
       ]);
       setSignerName("");
@@ -405,7 +423,7 @@ export function NovaInspecaoForm({
           photo: checklistValues[ci][ii].photo || undefined,
         })),
       );
-      const created = await createInspection({
+      const payload: OfflineCreateInspectionPayload = {
         scaffold_id: selectedScaffold.id,
         scaffold_code: selectedScaffold.code,
         inspector_name: inspectorName.trim(),
@@ -425,7 +443,24 @@ export function NovaInspecaoForm({
           signature_data: signature.signature_data,
         })),
         checklist,
-      });
+      };
+
+      if (!browserIsOnline()) {
+        const offlineId = createOfflineId("inspection");
+        await localDb.syncQueue.enqueue({
+          action: "inspection.create",
+          entityType: "inspection",
+          entityId: offlineId,
+          payload,
+        });
+        toast.success("Inspeção salva offline para sincronização.", {
+          id: toastId,
+        });
+        router.replace("/sincronizacao");
+        return;
+      }
+
+      const created = await createInspection(payload);
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {
