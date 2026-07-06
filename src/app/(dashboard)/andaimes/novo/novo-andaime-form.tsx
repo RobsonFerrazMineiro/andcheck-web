@@ -19,6 +19,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createScaffold } from "@/lib/actions/scaffold-actions";
+import { localDb } from "@/lib/offline/local-db";
+import {
+  createOfflineId,
+  type OfflineCreateScaffoldPayload,
+} from "@/lib/offline/types";
+
+function browserIsOnline() {
+  return typeof navigator === "undefined" ? true : navigator.onLine;
+}
 
 const LocationPicker = dynamic(
   () =>
@@ -74,7 +83,7 @@ export default function NovoAndaimePage() {
 
     const toastId = toast.loading("Salvando andaime...");
     try {
-      const scaffold = await createScaffold({
+      const payload: OfflineCreateScaffoldPayload = {
         type: form.type as
           | "tubular"
           | "fachadeiro"
@@ -92,7 +101,24 @@ export default function NovoAndaimePage() {
         notes: form.notes.trim() || undefined,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
-      });
+      };
+
+      if (!browserIsOnline()) {
+        const offlineId = createOfflineId("scaffold");
+        await localDb.syncQueue.enqueue({
+          action: "scaffold.create",
+          entityType: "scaffold",
+          entityId: offlineId,
+          payload,
+        });
+        toast.success("Andaime salvo offline para sincronização.", {
+          id: toastId,
+        });
+        router.push("/sincronizacao");
+        return;
+      }
+
+      const scaffold = await createScaffold(payload);
       toast.success("Andaime cadastrado com sucesso.", { id: toastId });
       router.push("/andaimes/" + scaffold.id);
     } catch (err) {

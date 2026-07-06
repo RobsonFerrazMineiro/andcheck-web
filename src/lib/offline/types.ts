@@ -67,6 +67,22 @@ export type OfflineCreateInspectionPayload = {
   checklist: OfflineInspectionChecklistItem[];
 };
 
+export type OfflineCreateScaffoldPayload = {
+  type: "tubular" | "fachadeiro" | "multidirecional" | "suspenso" | "torre";
+  location: string;
+  area: string;
+  height: number;
+  width?: number;
+  length?: number;
+  max_load?: number;
+  responsible: string;
+  company?: string;
+  notes?: string;
+  latitude?: number;
+  longitude?: number;
+  location_description?: string;
+};
+
 export type NewSyncQueueItem = Omit<
   SyncQueueItem,
   "id" | "status" | "attempts" | "createdAt" | "updatedAt"

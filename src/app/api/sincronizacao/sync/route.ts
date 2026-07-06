@@ -1,5 +1,6 @@
 import { getCurrentUserAccess } from "@/lib/authz";
 import { createInspection } from "@/lib/actions/inspection-actions";
+import { createScaffold } from "@/lib/actions/scaffold-actions";
 import {
   storeUploadedFile,
   type UploadCategory,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/offline/offline-file-server";
 import {
   isSyncQueueStatus,
+  type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
   type SyncQueueItem,
 } from "@/lib/offline/types";
@@ -43,6 +45,20 @@ function isOfflineCreateInspectionPayload(
     typeof payload.result === "string" &&
     typeof payload.validity_days === "number" &&
     Array.isArray(payload.checklist)
+  );
+}
+
+function isOfflineCreateScaffoldPayload(
+  value: unknown,
+): value is OfflineCreateScaffoldPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineCreateScaffoldPayload>;
+  return (
+    typeof payload.type === "string" &&
+    typeof payload.location === "string" &&
+    typeof payload.area === "string" &&
+    typeof payload.height === "number" &&
+    typeof payload.responsible === "string"
   );
 }
 
@@ -160,6 +176,40 @@ export async function POST(request: Request) {
             error instanceof Error
               ? error.message
               : "Nao foi possivel sincronizar a inspeção.",
+        },
+        { status: 422 },
+      );
+    }
+  }
+
+  if (payload.action === "scaffold.create") {
+    if (!isOfflineCreateScaffoldPayload(payload.payload)) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error: "Payload de andaime offline invalido.",
+        },
+        { status: 422 },
+      );
+    }
+
+    try {
+      const created = await createScaffold(payload.payload);
+      return Response.json({
+        id: payload.id,
+        status: "synced",
+        serverId: created.id,
+      });
+    } catch (error) {
+      return Response.json(
+        {
+          id: payload.id,
+          status: "failed",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel sincronizar o andaime.",
         },
         { status: 422 },
       );
