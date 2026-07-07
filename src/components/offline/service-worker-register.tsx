@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-const OFFLINE_CACHE_NAME = "andcheck-offline-v3";
+const OFFLINE_CACHE_NAME = "andcheck-offline-v4";
+const STATIC_OFFLINE_ASSETS = ["/favicon.ico", "/manifest.webmanifest"];
 const OPERATIONAL_OFFLINE_ROUTES = [
   "/dashboard",
   "/andaimes",
@@ -23,7 +24,7 @@ async function preheatOperationalRoutesCache() {
 
   const cache = await caches.open(OFFLINE_CACHE_NAME);
   await Promise.allSettled(
-    OPERATIONAL_OFFLINE_ROUTES.map(async (route) => {
+    [...STATIC_OFFLINE_ASSETS, ...OPERATIONAL_OFFLINE_ROUTES].map(async (route) => {
       const response = await fetch(route, {
         credentials: "same-origin",
       });

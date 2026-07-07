@@ -1,6 +1,7 @@
-const CACHE_NAME = "andcheck-offline-v3";
+const CACHE_NAME = "andcheck-offline-v4";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
+const STATIC_CACHE_PATHS = [OFFLINE_URL, "/favicon.ico", "/manifest.webmanifest"];
 const NAVIGATION_CACHE_PATHS = new Set([
   "/dashboard",
   "/andaimes",
@@ -38,7 +39,7 @@ function shouldCacheNavigation(requestUrl) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll([OFFLINE_URL])),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_CACHE_PATHS)),
   );
   self.skipWaiting();
 });
@@ -101,7 +102,13 @@ self.addEventListener("fetch", (event) => {
           }
           return response;
         })
-        .catch(() => cached || Response.error());
+        .catch(() => {
+          if (cached) return cached;
+          if (request.destination === "image") {
+            return new Response(null, { status: 204 });
+          }
+          return new Response(null, { status: 503 });
+        });
 
       return cached || networkFetch;
     }),

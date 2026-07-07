@@ -28,11 +28,12 @@ test("queues a scaffold creation while offline", async ({ context, page }) => {
   await expect(page.getByPlaceholder(/Plataforma B/)).toBeVisible();
   await expect(page.getByPlaceholder("12.5")).toBeVisible();
   await page.waitForFunction(async () => {
-    const cache = await caches.open("andcheck-offline-v3");
+    const cache = await caches.open("andcheck-offline-v4");
     return Boolean(
       (await cache.match("/sincronizacao")) &&
         (await cache.match("/andaimes")) &&
-        (await cache.match("/inspecoes")),
+        (await cache.match("/inspecoes")) &&
+        (await cache.match("/favicon.ico")),
     );
   });
 
