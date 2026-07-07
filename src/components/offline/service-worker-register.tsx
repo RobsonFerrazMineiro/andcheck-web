@@ -2,19 +2,35 @@
 
 import { useEffect } from "react";
 
-const OFFLINE_CACHE_NAME = "andcheck-offline-v2";
-const SYNC_PAGE_URL = "/sincronizacao";
+const OFFLINE_CACHE_NAME = "andcheck-offline-v3";
+const OPERATIONAL_OFFLINE_ROUTES = [
+  "/dashboard",
+  "/andaimes",
+  "/andaimes/novo",
+  "/inspecoes",
+  "/inspecoes/nova",
+  "/nao-conformidades",
+  "/acervo",
+  "/mapa",
+  "/notificacoes",
+  "/perfil",
+  "/perfil/notificacoes",
+  "/sincronizacao",
+];
 
-async function preheatSyncPageCache() {
+async function preheatOperationalRoutesCache() {
   if (!navigator.onLine || !("caches" in window)) return;
 
-  const response = await fetch(SYNC_PAGE_URL, {
-    credentials: "same-origin",
-  });
-  if (!response.ok) return;
-
   const cache = await caches.open(OFFLINE_CACHE_NAME);
-  await cache.put(SYNC_PAGE_URL, response);
+  await Promise.allSettled(
+    OPERATIONAL_OFFLINE_ROUTES.map(async (route) => {
+      const response = await fetch(route, {
+        credentials: "same-origin",
+      });
+      if (!response.ok) return;
+      await cache.put(route, response);
+    }),
+  );
 }
 
 export function ServiceWorkerRegister() {
@@ -23,7 +39,11 @@ export function ServiceWorkerRegister() {
 
     void navigator.serviceWorker
       .register("/sw.js")
-      .then(() => preheatSyncPageCache())
+      .then(() => {
+        void preheatOperationalRoutesCache().catch((error) => {
+          console.error("Falha ao preparar rotas offline:", error);
+        });
+      })
       .catch((error) => {
         console.error("Falha ao registrar service worker:", error);
       });

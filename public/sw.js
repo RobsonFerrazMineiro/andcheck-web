@@ -1,7 +1,20 @@
-const CACHE_NAME = "andcheck-offline-v2";
+const CACHE_NAME = "andcheck-offline-v3";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
-const NAVIGATION_CACHE_PATHS = new Set(["/sincronizacao"]);
+const NAVIGATION_CACHE_PATHS = new Set([
+  "/dashboard",
+  "/andaimes",
+  "/andaimes/novo",
+  "/inspecoes",
+  "/inspecoes/nova",
+  "/nao-conformidades",
+  "/acervo",
+  "/mapa",
+  "/notificacoes",
+  "/perfil",
+  "/perfil/notificacoes",
+  "/sincronizacao",
+]);
 
 function matchOfflineNavigation(request) {
   const requestUrl = new URL(request.url);
@@ -14,6 +27,13 @@ function matchOfflineNavigation(request) {
         caches.match(requestUrl.pathname).then((pathCached) => pathCached),
     )
     .then((cached) => cached || caches.match(OFFLINE_URL));
+}
+
+function shouldCacheNavigation(requestUrl) {
+  return (
+    requestUrl.origin === self.location.origin &&
+    NAVIGATION_CACHE_PATHS.has(requestUrl.pathname)
+  );
 }
 
 self.addEventListener("install", (event) => {
@@ -48,11 +68,7 @@ self.addEventListener("fetch", (event) => {
       fetch(request)
         .then((response) => {
           const requestUrl = new URL(request.url);
-          if (
-            response.ok &&
-            requestUrl.origin === self.location.origin &&
-            NAVIGATION_CACHE_PATHS.has(requestUrl.pathname)
-          ) {
+          if (response.ok && shouldCacheNavigation(requestUrl)) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);
