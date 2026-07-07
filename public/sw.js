@@ -1,4 +1,4 @@
-const CACHE_NAME = "andcheck-offline-v4";
+const CACHE_NAME = "andcheck-offline-v5";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
 const STATIC_CACHE_PATHS = [OFFLINE_URL, "/favicon.ico", "/manifest.webmanifest"];
@@ -34,6 +34,15 @@ function shouldCacheNavigation(requestUrl) {
   return (
     requestUrl.origin === self.location.origin &&
     NAVIGATION_CACHE_PATHS.has(requestUrl.pathname)
+  );
+}
+
+function shouldHandleAsset(request, requestUrl) {
+  if (requestUrl.origin !== self.location.origin) return false;
+  if (requestUrl.pathname.includes("webpack-hmr")) return false;
+  return (
+    ASSET_DESTINATIONS.has(request.destination) ||
+    requestUrl.pathname.startsWith("/_next/")
   );
 }
 
@@ -83,10 +92,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   const requestUrl = new URL(request.url);
-  if (
-    requestUrl.origin !== self.location.origin ||
-    !ASSET_DESTINATIONS.has(request.destination)
-  ) {
+  if (!shouldHandleAsset(request, requestUrl)) {
     return;
   }
 
