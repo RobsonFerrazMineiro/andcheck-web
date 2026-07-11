@@ -1,6 +1,18 @@
 "use client";
 
+export const MAX_OFFLINE_FILE_BYTES = 8 * 1024 * 1024;
+
 export function fileToDataUrl(file: Blob) {
+  if (file.size === 0) {
+    return Promise.reject(new Error("Arquivo offline vazio."));
+  }
+
+  if (file.size > MAX_OFFLINE_FILE_BYTES) {
+    return Promise.reject(
+      new Error("Arquivo offline excede o limite de 8 MB."),
+    );
+  }
+
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {

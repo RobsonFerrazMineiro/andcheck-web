@@ -3,6 +3,10 @@
 import { localDb } from "@/lib/offline/local-db";
 import { processSyncQueue } from "@/lib/offline/sync-engine";
 import {
+  browserIsOnline,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
+import {
   EMPTY_SYNC_SUMMARY,
   type ConnectivityStatus,
   type SyncSummary,
@@ -27,9 +31,10 @@ type OfflineContextValue = {
 };
 
 const OfflineContext = createContext<OfflineContextValue | null>(null);
+const AUTO_SYNC_INTERVAL_MS = 30_000;
 
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
+function hasAutoSyncCandidates(summary: SyncSummary) {
+  return summary.pending > 0 || summary.syncing > 0;
 }
 
 export function OfflineProvider({ children }: { children: ReactNode }) {
@@ -40,6 +45,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
+      const connectivity = await checkServerConnectivity();
       const [nextSummary, nextLastSyncAt] = await Promise.all([
         localDb.syncQueue.summary(),
         localDb.metadata.get<string>("lastSyncAt"),
@@ -48,7 +54,9 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       setSummary(nextSummary);
       setLastSyncAt(nextLastSyncAt);
 
-      if (!browserIsOnline()) {
+      setIsOnline(connectivity === "online");
+
+      if (connectivity === "offline") {
         setStatus("offline");
       } else if (nextSummary.failed > 0 || nextSummary.conflict > 0) {
         setStatus("sync-error");
@@ -61,7 +69,8 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const syncNow = useCallback(async () => {
-    if (!browserIsOnline()) {
+    const connectivity = await checkServerConnectivity();
+    if (connectivity === "offline") {
       setIsOnline(false);
       setStatus("offline");
       return;
@@ -84,8 +93,30 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const autoSyncIfReady = useCallback(async () => {
+    try {
+      const [connectivity, nextSummary] = await Promise.all([
+        checkServerConnectivity(),
+        localDb.syncQueue.summary(),
+      ]);
+
+      if (connectivity === "online" && hasAutoSyncCandidates(nextSummary)) {
+        await syncNow();
+        return;
+      }
+
+      await refresh();
+    } catch {
+      setStatus(browserIsOnline() ? "sync-error" : "offline");
+    }
+  }, [refresh, syncNow]);
+
   useEffect(() => {
-    queueMicrotask(() => void refresh());
+    queueMicrotask(() => void autoSyncIfReady());
+    const interval = window.setInterval(
+      () => void autoSyncIfReady(),
+      AUTO_SYNC_INTERVAL_MS,
+    );
 
     function handleOnline() {
       setIsOnline(true);
@@ -100,14 +131,18 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-    window.addEventListener("andcheck:sync-queue-updated", refresh);
+    window.addEventListener("andcheck:sync-queue-updated", autoSyncIfReady);
 
     return () => {
+      window.clearInterval(interval);
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
-      window.removeEventListener("andcheck:sync-queue-updated", refresh);
+      window.removeEventListener(
+        "andcheck:sync-queue-updated",
+        autoSyncIfReady,
+      );
     };
-  }, [refresh, syncNow]);
+  }, [autoSyncIfReady, refresh, syncNow]);
 
   const value = useMemo(
     () => ({

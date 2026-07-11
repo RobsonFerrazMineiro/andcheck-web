@@ -1,3 +1,4 @@
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getUserManagementData } from "@/lib/actions/user-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { redirect } from "next/navigation";
@@ -51,11 +52,14 @@ export default async function UsuariosPage() {
   }));
 
   return (
-    <UsuariosClient
-      initialData={rows}
-      roles={roleOptions}
-      currentUserId={access?.userId ?? null}
-      canDeleteUsers={canDeleteUsers}
-    />
+    <div className="space-y-4">
+      <OnlineOnlyNotice moduleName="Usuarios administrativos" />
+      <UsuariosClient
+        initialData={rows}
+        roles={roleOptions}
+        currentUserId={access?.userId ?? null}
+        canDeleteUsers={canDeleteUsers}
+      />
+    </div>
   );
 }

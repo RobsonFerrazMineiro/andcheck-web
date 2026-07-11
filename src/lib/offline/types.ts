@@ -33,6 +33,8 @@ export type SyncQueueItem = {
   attempts: number;
   createdAt: string;
   updatedAt: string;
+  syncedAt?: string;
+  serverId?: string;
   lastError?: string;
   deviceInfo?: {
     userAgent?: string;
@@ -88,6 +90,16 @@ export type OfflineCreateScaffoldPayload = {
   location_description?: string;
 };
 
+export type OfflineCompleteScaffoldAssemblyPayload = {
+  id: string;
+};
+
+export type OfflineDismantleScaffoldPayload = {
+  id: string;
+  reason: string;
+  reasonDescription?: string;
+};
+
 export type OfflineAddNonConformityItemEvidencePayload = {
   id: string;
   nonConformityItemId: string;
@@ -102,6 +114,17 @@ export type OfflineAddNonConformityItemEvidencePayload = {
 export type OfflineAddNonConformityCommentPayload = {
   id: string;
   comment: string;
+};
+
+export type OfflineUpdateNonConformityResponsiblePayload = {
+  id: string;
+  responsibleUserId: string;
+};
+
+export type OfflineUpdateNonConformityDueDatePayload = {
+  id: string;
+  dueDate: string;
+  reason: string;
 };
 
 export type OfflineUpdateNonConformityStatusPayload = {

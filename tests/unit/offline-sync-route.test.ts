@@ -7,12 +7,16 @@ const mocks = vi.hoisted(() => ({
   addNonConformityComment: vi.fn(),
   addNonConformityItemEvidence: vi.fn(),
   addScaffoldDocument: vi.fn(),
+  completeAssembly: vi.fn(),
   createAuditLog: vi.fn(),
   createInspection: vi.fn(),
   createScaffold: vi.fn(),
+  dismantleScaffold: vi.fn(),
   getCurrentUserAccess: vi.fn(),
   nonConformityFindUnique: vi.fn(),
   storeUploadedFile: vi.fn(),
+  updateNonConformityDueDate: vi.fn(),
+  updateNonConformityResponsible: vi.fn(),
   updateNonConformityStatus: vi.fn(),
   validateUploadedFile: vi.fn(),
 }));
@@ -42,11 +46,15 @@ vi.mock("@/lib/actions/inspection-actions", () => ({
 vi.mock("@/lib/actions/non-conformity-actions", () => ({
   addNonConformityComment: mocks.addNonConformityComment,
   addNonConformityItemEvidence: mocks.addNonConformityItemEvidence,
+  updateNonConformityDueDate: mocks.updateNonConformityDueDate,
+  updateNonConformityResponsible: mocks.updateNonConformityResponsible,
   updateNonConformityStatus: mocks.updateNonConformityStatus,
 }));
 
 vi.mock("@/lib/actions/scaffold-actions", () => ({
+  completeAssembly: mocks.completeAssembly,
   createScaffold: mocks.createScaffold,
+  dismantleScaffold: mocks.dismantleScaffold,
 }));
 
 vi.mock("@/lib/file-storage", () => ({
@@ -104,6 +112,8 @@ describe("sync route", () => {
     });
     mocks.createInspection.mockResolvedValue({ id: "inspection-1" });
     mocks.createScaffold.mockResolvedValue({ id: "scaffold-1" });
+    mocks.completeAssembly.mockResolvedValue({ id: "scaffold-1" });
+    mocks.dismantleScaffold.mockResolvedValue({ id: "scaffold-1" });
     mocks.addScaffoldDocument.mockResolvedValue({ id: "document-1" });
     mocks.validateUploadedFile.mockResolvedValue({ ok: true });
     mocks.storeUploadedFile.mockResolvedValue({
@@ -159,6 +169,39 @@ describe("sync route", () => {
     );
   });
 
+  it("syncs an offline scaffold assembly completion", async () => {
+    const response = await postSync(
+      queueItem("scaffold.assembly.complete", {
+        id: "scaffold-1",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "synced",
+      serverId: "scaffold-1",
+    });
+    expect(mocks.completeAssembly).toHaveBeenCalledWith("scaffold-1");
+  });
+
+  it("syncs an offline scaffold dismantle", async () => {
+    const response = await postSync(
+      queueItem("scaffold.dismantle", {
+        id: "scaffold-1",
+        reason: "Finalizacao da atividade",
+        reasonDescription: "Atividade encerrada em campo.",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "synced",
+      serverId: "scaffold-1",
+    });
+    expect(mocks.dismantleScaffold).toHaveBeenCalledWith("scaffold-1", {
+      reason: "Finalizacao da atividade",
+      reasonDescription: "Atividade encerrada em campo.",
+    });
+  });
+
   it("syncs an offline nonconformity comment", async () => {
     const response = await postSync(
       queueItem("nonConformity.comment.add", {
@@ -176,6 +219,46 @@ describe("sync route", () => {
       | undefined;
     expect(formData?.get("id")).toBe("nc-1");
     expect(formData?.get("comment")).toBe("Acao realizada em campo.");
+  });
+
+  it("syncs an offline nonconformity responsible update", async () => {
+    const response = await postSync(
+      queueItem("nonConformity.responsible.update", {
+        id: "nc-1",
+        responsibleUserId: "user-2",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "synced",
+      serverId: "nc-1",
+    });
+    const formData = mocks.updateNonConformityResponsible.mock.calls[0]?.[0] as
+      | FormData
+      | undefined;
+    expect(formData?.get("id")).toBe("nc-1");
+    expect(formData?.get("responsibleUserId")).toBe("user-2");
+  });
+
+  it("syncs an offline nonconformity due date update", async () => {
+    const response = await postSync(
+      queueItem("nonConformity.dueDate.update", {
+        id: "nc-1",
+        dueDate: "2026-07-20",
+        reason: "Replanejamento em campo.",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "synced",
+      serverId: "nc-1",
+    });
+    const formData = mocks.updateNonConformityDueDate.mock.calls[0]?.[0] as
+      | FormData
+      | undefined;
+    expect(formData?.get("id")).toBe("nc-1");
+    expect(formData?.get("dueDate")).toBe("2026-07-20");
+    expect(formData?.get("reason")).toBe("Replanejamento em campo.");
   });
 
   it("syncs an offline nonconformity evidence", async () => {
@@ -250,6 +333,34 @@ describe("sync route", () => {
       expect.objectContaining({
         companyId: "company-1",
         workspaceId: "workspace-1",
+      }),
+    );
+  });
+
+  it("audits failed offline sync attempts", async () => {
+    mocks.createScaffold.mockRejectedValueOnce(new Error("Banco indisponivel."));
+
+    const response = await postSync(
+      queueItem("scaffold.create", {
+        type: "tubular",
+        location: "Area 5",
+        area: "Montagem",
+        height: 4,
+        responsible: "Equipe A",
+      }),
+    );
+
+    expect(response.status).toBe(422);
+    await expect(response.json()).resolves.toMatchObject({
+      status: "failed",
+      error: "Banco indisponivel.",
+    });
+    expect(mocks.createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newValue: expect.objectContaining({
+          status: "failed",
+          error: "Banco indisponivel.",
+        }),
       }),
     );
   });

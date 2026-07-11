@@ -145,7 +145,71 @@ function createEntityStore<T extends OfflineRecord>(storeName: OfflineStoreName)
       store.clear();
       await done;
     },
+    async replaceId(temporaryId: string, serverId: string) {
+      const { store, done } = await getStore(storeName, "readwrite");
+      const current = await requestToPromise<T | undefined>(
+        store.get(temporaryId),
+      );
+
+      if (!current) {
+        await done;
+        return null;
+      }
+
+      store.delete(temporaryId);
+      const next = {
+        ...current,
+        id: serverId,
+        offlineId: temporaryId,
+        serverId,
+        syncStatus: "synced",
+        updatedAt: new Date().toISOString(),
+      } as T;
+      store.put(next);
+      await done;
+      return next;
+    },
   };
+}
+
+function replaceReferenceValue(
+  value: unknown,
+  temporaryId: string,
+  serverId: string,
+): { value: unknown; changed: boolean } {
+  if (value === temporaryId) {
+    return { value: serverId, changed: true };
+  }
+
+  if (Array.isArray(value)) {
+    let changed = false;
+    const next = value.map((item) => {
+      const result = replaceReferenceValue(item, temporaryId, serverId);
+      changed ||= result.changed;
+      return result.value;
+    });
+    return { value: changed ? next : value, changed };
+  }
+
+  if (value && typeof value === "object") {
+    let changed = false;
+    const next: Record<string, unknown> = {};
+
+    for (const [key, item] of Object.entries(value)) {
+      if (key === "offlineId") {
+        next[key] = item;
+        continue;
+      }
+
+      const result = replaceReferenceValue(item, temporaryId, serverId);
+      changed ||= result.changed;
+      next[key] = result.value;
+    }
+
+    return { value: changed ? next : value, changed };
+  }
+
+  return { value, changed: false };
 }
 
 export const localDb = {
@@ -199,7 +263,18 @@ export const localDb = {
     },
     async update(
       id: string,
-      patch: Partial<Pick<SyncQueueItem, "status" | "attempts" | "lastError">>,
+      patch: Partial<
+        Pick<
+          SyncQueueItem,
+          | "status"
+          | "attempts"
+          | "lastError"
+          | "serverId"
+          | "syncedAt"
+          | "entityId"
+          | "payload"
+        >
+      >,
     ) {
       const current = (await this.all()).find((item) => item.id === id);
 
@@ -258,4 +333,42 @@ export async function getOfflineRecords<T extends { id: string }>(
   storeName: OfflineEntityStoreName,
 ) {
   return (await entityStores[storeName].all()) as T[];
+}
+
+export async function replaceOfflineRecordId(
+  storeName: OfflineEntityStoreName,
+  temporaryId: string,
+  serverId: string,
+) {
+  return entityStores[storeName].replaceId(temporaryId, serverId);
+}
+
+export async function replaceOfflineReferences(
+  temporaryId: string,
+  serverId: string,
+) {
+  for (const store of Object.values(entityStores)) {
+    const records = await store.all();
+    const changedRecords = records
+      .map((record) => replaceReferenceValue(record, temporaryId, serverId))
+      .filter((result) => result.changed)
+      .map((result) => result.value as OfflineRecord);
+
+    if (changedRecords.length > 0) {
+      await store.bulkPut(changedRecords);
+    }
+  }
+
+  const queueItems = await localDb.syncQueue.all();
+  for (const item of queueItems) {
+    const entityId = replaceReferenceValue(item.entityId, temporaryId, serverId);
+    const payload = replaceReferenceValue(item.payload, temporaryId, serverId);
+
+    if (entityId.changed || payload.changed) {
+      await localDb.syncQueue.update(item.id, {
+        entityId: entityId.value as string,
+        payload: payload.value,
+      });
+    }
+  }
 }

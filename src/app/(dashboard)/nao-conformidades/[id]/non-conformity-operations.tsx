@@ -31,6 +31,10 @@ import {
   updateNonConformityResponsible,
   updateNonConformityStatus,
 } from "@/lib/actions/non-conformity-actions";
+import {
+  canNavigateAfterOfflineWrite,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { createOfflineId } from "@/lib/offline/types";
@@ -68,14 +72,33 @@ type Modal =
   | "cancel"
   | null;
 
+type CachedNonConformity = Record<string, unknown> & {
+  id: string;
+  _count?: Record<string, number>;
+};
+
 function evidenceTypeFromFile(file: File) {
   if (file.type.startsWith("image/")) return "PHOTO";
   if (file.type === "application/pdf") return "PDF";
   return "DOCUMENT";
 }
 
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
+async function updateCachedNonConformity(
+  id: string,
+  patch:
+    | Partial<CachedNonConformity>
+    | ((current: CachedNonConformity) => Partial<CachedNonConformity>),
+) {
+  const current = await localDb.nonConformities.get(id);
+  if (!current) return;
+
+  const cached = current as CachedNonConformity;
+  const nextPatch = typeof patch === "function" ? patch(cached) : patch;
+  await localDb.nonConformities.put({
+    ...cached,
+    ...nextPatch,
+    syncStatus: "pending",
+  });
 }
 
 function ModalShell({
@@ -182,7 +205,9 @@ export function NonConformityOperations({
         });
         toast.success(successMessage);
         setModal(null);
-        router.push("/sincronizacao");
+        if (canNavigateAfterOfflineWrite()) {
+          router.push("/sincronizacao");
+        }
       } catch (err) {
         setError(
           err instanceof Error
@@ -193,8 +218,12 @@ export function NonConformityOperations({
     });
   }
 
-  function submitStatus(nextStatus: string, comment = "") {
-    if (!browserIsOnline()) {
+  async function submitStatus(nextStatus: string, comment = "") {
+    if ((await checkServerConnectivity()) === "offline") {
+      await updateCachedNonConformity(id, {
+        status: nextStatus,
+        closedAt: nextStatus === "CLOSED" ? new Date().toISOString() : null,
+      });
       enqueueOfflineAction({
         action: "nonConformity.status.update",
         payload: {
@@ -214,10 +243,10 @@ export function NonConformityOperations({
     runAction(updateNonConformityStatus, formData);
   }
 
-  function submitComment(formData: FormData) {
+  async function submitComment(formData: FormData) {
     const comment = String(formData.get("comment") ?? "").trim();
 
-    if (!browserIsOnline()) {
+    if ((await checkServerConnectivity()) === "offline") {
       enqueueOfflineAction({
         action: "nonConformity.comment.add",
         payload: { id, comment },
@@ -228,6 +257,55 @@ export function NonConformityOperations({
 
     formData.set("id", id);
     runAction(addNonConformityComment, formData);
+  }
+
+  async function submitResponsible(formData: FormData) {
+    const responsibleUserId = String(
+      formData.get("responsibleUserId") ?? "",
+    ).trim();
+
+    if ((await checkServerConnectivity()) === "offline") {
+      const responsible = responsibleOptions.find(
+        (option) => option.id === responsibleUserId,
+      );
+      await updateCachedNonConformity(id, {
+        responsibleUserId,
+        responsibleUser: responsible
+          ? {
+              id: responsible.id,
+              name: responsible.name,
+              company: responsible.company,
+            }
+          : null,
+      });
+      enqueueOfflineAction({
+        action: "nonConformity.responsible.update",
+        payload: { id, responsibleUserId },
+        successMessage: "Responsável salvo offline para sincronização.",
+      });
+      return;
+    }
+
+    formData.set("id", id);
+    runAction(updateNonConformityResponsible, formData);
+  }
+
+  async function submitDueDate(formData: FormData) {
+    const dueDate = String(formData.get("dueDate") ?? "").trim();
+    const reason = String(formData.get("reason") ?? "").trim();
+
+    if ((await checkServerConnectivity()) === "offline") {
+      await updateCachedNonConformity(id, { dueDate });
+      enqueueOfflineAction({
+        action: "nonConformity.dueDate.update",
+        payload: { id, dueDate, reason },
+        successMessage: "Prazo salvo offline para sincronização.",
+      });
+      return;
+    }
+
+    formData.set("id", id);
+    runAction(updateNonConformityDueDate, formData);
   }
 
   const hasActions =
@@ -287,7 +365,7 @@ export function NonConformityOperations({
             type="button"
             size="sm"
             disabled={isPending}
-            onClick={() => submitStatus("PENDING_VERIFICATION")}
+            onClick={() => void submitStatus("PENDING_VERIFICATION")}
           >
             <Send className="w-3.5 h-3.5" /> Solicitar Verificação
           </Button>
@@ -330,8 +408,7 @@ export function NonConformityOperations({
         <ModalShell title="Atribuir Responsável" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              formData.set("id", id);
-              runAction(updateNonConformityResponsible, formData);
+              void submitResponsible(formData);
             }}
             className="space-y-3"
           >
@@ -369,8 +446,7 @@ export function NonConformityOperations({
         <ModalShell title="Alterar Prazo" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              formData.set("id", id);
-              runAction(updateNonConformityDueDate, formData);
+              void submitDueDate(formData);
             }}
             className="space-y-3"
           >
@@ -416,7 +492,7 @@ export function NonConformityOperations({
         <ModalShell title="Adicionar Comentário" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              submitComment(formData);
+              void submitComment(formData);
             }}
             className="space-y-3"
           >
@@ -449,7 +525,7 @@ export function NonConformityOperations({
         <ModalShell title="Aceitar Correção" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              submitStatus("CLOSED", String(formData.get("comment") ?? ""));
+              void submitStatus("CLOSED", String(formData.get("comment") ?? ""));
             }}
             className="space-y-3"
           >
@@ -484,7 +560,7 @@ export function NonConformityOperations({
         <ModalShell title="Rejeitar Correção" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              submitStatus("REJECTED", String(formData.get("comment") ?? ""));
+              void submitStatus("REJECTED", String(formData.get("comment") ?? ""));
             }}
             className="space-y-3"
           >
@@ -519,7 +595,7 @@ export function NonConformityOperations({
         <ModalShell title="Cancelar NC" onClose={() => setModal(null)}>
           <form
             action={(formData) => {
-              submitStatus("CANCELLED", String(formData.get("comment") ?? ""));
+              void submitStatus("CANCELLED", String(formData.get("comment") ?? ""));
             }}
             className="space-y-3"
           >
@@ -583,8 +659,14 @@ export function NonConformityItemEvidenceButton({
         const evidenceType = evidenceTypeFromFile(file);
         const observation = String(formData.get("observation") ?? "").trim();
 
-        if (!browserIsOnline()) {
+        if ((await checkServerConnectivity()) === "offline") {
           const offlineFile = await fileToDataUrl(file);
+          await updateCachedNonConformity(id, (current) => ({
+            _count: {
+              ...current._count,
+              evidences: (current._count?.evidences ?? 0) + 1,
+            },
+          }));
           await localDb.syncQueue.enqueue({
             action: "nonConformity.itemEvidence.add",
             entityType: "nonConformity",
@@ -606,7 +688,9 @@ export function NonConformityItemEvidenceButton({
             id: toastId,
           });
           setOpen(false);
-          router.push("/sincronizacao");
+          if (canNavigateAfterOfflineWrite()) {
+            router.push("/sincronizacao");
+          }
           return;
         }
 

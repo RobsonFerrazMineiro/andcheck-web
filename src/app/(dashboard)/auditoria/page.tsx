@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getAuditLogs } from "@/lib/audit";
 import { canCurrentUser } from "@/lib/authz";
 import { AuditoriaClient } from "./auditoria-client";
@@ -91,25 +92,28 @@ export default async function AuditoriaPage({ searchParams }: Props) {
   const exportRows = exportResult.items.map(mapAuditRow);
 
   return (
-    <AuditoriaClient
-      rows={rows}
-      exportRows={exportRows}
-      total={result.total}
-      page={result.page}
-      pageSize={result.pageSize}
-      filters={{
-        search: single(params.search) ?? "",
-        action: filterValue(params.action) ?? "",
-        entityType: filterValue(params.entityType) ?? "",
-        user: single(params.user) ?? "",
-        company: single(params.company) ?? "",
-        workspace: single(params.workspace) ?? "",
-        status: single(params.status) ?? "",
-        scaffoldTag: single(params.scaffoldTag) ?? "",
-        dateFrom: single(params.dateFrom) ?? "",
-        dateTo: single(params.dateTo) ?? "",
-        order: sortOrder(params.order),
-      }}
-    />
+    <div className="space-y-4">
+      <OnlineOnlyNotice moduleName="Auditoria" />
+      <AuditoriaClient
+        rows={rows}
+        exportRows={exportRows}
+        total={result.total}
+        page={result.page}
+        pageSize={result.pageSize}
+        filters={{
+          search: single(params.search) ?? "",
+          action: filterValue(params.action) ?? "",
+          entityType: filterValue(params.entityType) ?? "",
+          user: single(params.user) ?? "",
+          company: single(params.company) ?? "",
+          workspace: single(params.workspace) ?? "",
+          status: single(params.status) ?? "",
+          scaffoldTag: single(params.scaffoldTag) ?? "",
+          dateFrom: single(params.dateFrom) ?? "",
+          dateTo: single(params.dateTo) ?? "",
+          order: sortOrder(params.order),
+        }}
+      />
+    </div>
   );
 }

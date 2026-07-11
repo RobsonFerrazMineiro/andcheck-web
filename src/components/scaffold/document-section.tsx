@@ -24,6 +24,10 @@ import {
   addScaffoldDocument,
   deleteScaffoldDocument,
 } from "@/lib/actions/document-actions";
+import {
+  canNavigateAfterOfflineWrite,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { createOfflineId } from "@/lib/offline/types";
@@ -62,10 +66,6 @@ const DOC_TYPES = [
 
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx";
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
-}
 
 export type ScaffoldDocumentMetadata = {
   id: string;
@@ -153,7 +153,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           )
         : file;
 
-      if (!browserIsOnline()) {
+      if ((await checkServerConnectivity()) === "offline") {
         const offlineId = createOfflineId("scaffold_document");
         await localDb.syncQueue.enqueue({
           id: offlineId,
@@ -176,7 +176,9 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
         toast.success("Documento salvo offline para sincronizacao.");
         onClose();
-        router.push("/sincronizacao");
+        if (canNavigateAfterOfflineWrite()) {
+          router.push("/sincronizacao");
+        }
         return;
       }
 

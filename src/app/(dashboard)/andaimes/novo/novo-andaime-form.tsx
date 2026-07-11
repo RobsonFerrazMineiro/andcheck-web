@@ -19,15 +19,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createScaffold } from "@/lib/actions/scaffold-actions";
+import {
+  canNavigateAfterOfflineWrite,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import {
   createOfflineId,
   type OfflineCreateScaffoldPayload,
 } from "@/lib/offline/types";
-
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
-}
 
 const LocationPicker = dynamic(
   () =>
@@ -103,8 +103,22 @@ export default function NovoAndaimePage() {
         longitude: longitude ?? undefined,
       };
 
-      if (!browserIsOnline()) {
+      if ((await checkServerConnectivity()) === "offline") {
         const offlineId = createOfflineId("scaffold");
+        await localDb.scaffolds.put({
+          id: offlineId,
+          code: "Pendente de sincronização",
+          type: payload.type,
+          status: "em_montagem",
+          location: payload.location,
+          area: payload.area,
+          height: payload.height,
+          responsible: payload.responsible,
+          validity_date: null,
+          _count: { inspections: 0 },
+          syncStatus: "pending",
+          createdAt: new Date().toISOString(),
+        });
         await localDb.syncQueue.enqueue({
           action: "scaffold.create",
           entityType: "scaffold",
@@ -114,7 +128,12 @@ export default function NovoAndaimePage() {
         toast.success("Andaime salvo offline para sincronização.", {
           id: toastId,
         });
-        router.push("/sincronizacao");
+        if (canNavigateAfterOfflineWrite()) {
+          router.push("/sincronizacao");
+        } else {
+          savingRef.current = false;
+          setSaving(false);
+        }
         return;
       }
 

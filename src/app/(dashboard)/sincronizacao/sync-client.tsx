@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock3,
   CloudOff,
+  ShieldCheck,
   RefreshCw,
   RotateCcw,
 } from "lucide-react";
@@ -56,6 +57,25 @@ export function SyncClient() {
     await Promise.all([refresh(), loadItems()]);
   }
 
+  async function handleRetryItem(item: SyncQueueItem) {
+    await localDb.syncQueue.update(item.id, {
+      status: "pending",
+      lastError: undefined,
+    });
+    await handleSyncNow();
+  }
+
+  async function handleKeepServerVersion(item: SyncQueueItem) {
+    await localDb.syncQueue.update(item.id, {
+      status: "synced",
+      lastError: undefined,
+      syncedAt: new Date().toISOString(),
+    });
+    await Promise.all([refresh(), loadItems()]);
+  }
+
+  const conflictItems = items.filter((item) => item.status === "conflict");
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 border-b-2 border-border pb-4 md:flex-row md:items-start md:justify-between">
@@ -91,6 +111,22 @@ export function SyncClient() {
         <SyncMetric label="Conflitos" value={summary.conflict} tone="slate" />
       </div>
 
+      {conflictItems.length > 0 && (
+        <div className="border border-slate-300 bg-slate-50 p-4 text-sm text-slate-800">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 size-4 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-semibold">Conflito de sincronizacao</p>
+              <p className="text-xs leading-5 text-slate-600">
+                O registro foi alterado no servidor antes do envio offline. A
+                versao do servidor foi preservada e nenhuma alteracao local foi
+                aplicada automaticamente.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -122,7 +158,9 @@ export function SyncClient() {
                     <th className="px-4 py-3">Entidade</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Tentativas</th>
+                    <th className="px-4 py-3">Servidor</th>
                     <th className="px-4 py-3">Erro</th>
+                    <th className="px-4 py-3">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,8 +179,37 @@ export function SyncClient() {
                         <StatusBadge item={item} />
                       </td>
                       <td className="px-4 py-3">{item.attempts}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                        {item.serverId ?? "-"}
+                      </td>
                       <td className="max-w-80 px-4 py-3 text-xs text-muted-foreground">
                         {item.lastError ?? "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {item.status === "failed" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void handleRetryItem(item)}
+                            disabled={status === "offline" || status === "syncing"}
+                          >
+                            <RotateCcw className="size-3" />
+                            Tentar novamente
+                          </Button>
+                        )}
+                        {item.status === "conflict" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => void handleKeepServerVersion(item)}
+                            disabled={status === "syncing"}
+                          >
+                            <ShieldCheck className="size-3" />
+                            Manter servidor
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}

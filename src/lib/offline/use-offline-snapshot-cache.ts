@@ -1,16 +1,13 @@
 "use client";
 
 import { localDb } from "@/lib/offline/local-db";
+import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { useEffect, useMemo, useState } from "react";
 
 type OfflineSnapshot<T> = {
   records: T[];
   cachedAt: string;
 };
-
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
-}
 
 export function useOfflineSnapshotCache<T>({
   cacheKey,
@@ -28,7 +25,7 @@ export function useOfflineSnapshotCache<T>({
 
     async function hydrateCache() {
       try {
-        const online = browserIsOnline();
+        const online = (await checkServerConnectivity()) === "online";
 
         if (online && initialData.length > 0) {
           const cachedAt = new Date().toISOString();

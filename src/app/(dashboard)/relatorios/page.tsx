@@ -30,6 +30,7 @@ import {
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import {
   getManagementReportData,
   type KpiTrend,
@@ -166,6 +167,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-4">
+      <OnlineOnlyNotice moduleName="Relatórios Gerenciais" />
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">

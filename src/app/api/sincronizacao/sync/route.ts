@@ -5,9 +5,15 @@ import { createInspection } from "@/lib/actions/inspection-actions";
 import {
   addNonConformityComment,
   addNonConformityItemEvidence,
+  updateNonConformityDueDate,
+  updateNonConformityResponsible,
   updateNonConformityStatus,
 } from "@/lib/actions/non-conformity-actions";
-import { createScaffold } from "@/lib/actions/scaffold-actions";
+import {
+  completeAssembly,
+  createScaffold,
+  dismantleScaffold,
+} from "@/lib/actions/scaffold-actions";
 import {
   storeUploadedFile,
   type UploadCategory,
@@ -22,8 +28,12 @@ import {
   type OfflineAddNonConformityCommentPayload,
   type OfflineAddNonConformityItemEvidencePayload,
   type OfflineAddScaffoldDocumentPayload,
+  type OfflineCompleteScaffoldAssemblyPayload,
   type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
+  type OfflineDismantleScaffoldPayload,
+  type OfflineUpdateNonConformityDueDatePayload,
+  type OfflineUpdateNonConformityResponsiblePayload,
   type OfflineUpdateNonConformityStatusPayload,
   type SyncQueueItem,
 } from "@/lib/offline/types";
@@ -78,6 +88,22 @@ function isOfflineCreateScaffoldPayload(
   );
 }
 
+function isOfflineCompleteScaffoldAssemblyPayload(
+  value: unknown,
+): value is OfflineCompleteScaffoldAssemblyPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineCompleteScaffoldAssemblyPayload>;
+  return typeof payload.id === "string";
+}
+
+function isOfflineDismantleScaffoldPayload(
+  value: unknown,
+): value is OfflineDismantleScaffoldPayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineDismantleScaffoldPayload>;
+  return typeof payload.id === "string" && typeof payload.reason === "string";
+}
+
 function isOfflineAddNonConformityItemEvidencePayload(
   value: unknown,
 ): value is OfflineAddNonConformityItemEvidencePayload {
@@ -106,6 +132,30 @@ function isOfflineUpdateNonConformityStatusPayload(
   if (!value || typeof value !== "object") return false;
   const payload = value as Partial<OfflineUpdateNonConformityStatusPayload>;
   return typeof payload.id === "string" && typeof payload.status === "string";
+}
+
+function isOfflineUpdateNonConformityResponsiblePayload(
+  value: unknown,
+): value is OfflineUpdateNonConformityResponsiblePayload {
+  if (!value || typeof value !== "object") return false;
+  const payload =
+    value as Partial<OfflineUpdateNonConformityResponsiblePayload>;
+  return (
+    typeof payload.id === "string" &&
+    typeof payload.responsibleUserId === "string"
+  );
+}
+
+function isOfflineUpdateNonConformityDueDatePayload(
+  value: unknown,
+): value is OfflineUpdateNonConformityDueDatePayload {
+  if (!value || typeof value !== "object") return false;
+  const payload = value as Partial<OfflineUpdateNonConformityDueDatePayload>;
+  return (
+    typeof payload.id === "string" &&
+    typeof payload.dueDate === "string" &&
+    typeof payload.reason === "string"
+  );
 }
 
 function isOfflineAddScaffoldDocumentPayload(
@@ -240,6 +290,27 @@ async function syncNonConformityStatus(
   return updateNonConformityStatus(formData);
 }
 
+async function syncNonConformityResponsible(
+  payload: OfflineUpdateNonConformityResponsiblePayload,
+) {
+  const formData = new FormData();
+  formData.set("id", payload.id);
+  formData.set("responsibleUserId", payload.responsibleUserId);
+
+  return updateNonConformityResponsible(formData);
+}
+
+async function syncNonConformityDueDate(
+  payload: OfflineUpdateNonConformityDueDatePayload,
+) {
+  const formData = new FormData();
+  formData.set("id", payload.id);
+  formData.set("dueDate", payload.dueDate);
+  formData.set("reason", payload.reason);
+
+  return updateNonConformityDueDate(formData);
+}
+
 class OfflineSyncConflictError extends Error {
   details: Prisma.InputJsonObject;
 
@@ -364,6 +435,23 @@ async function conflictResponse(
   );
 }
 
+async function failedResponse(
+  item: SyncQueueItem,
+  access: SyncAccess,
+  error: string,
+  status = 422,
+  details?: Prisma.InputJsonObject,
+) {
+  await logOfflineSyncEvent({
+    item,
+    status: "failed",
+    access,
+    error,
+    details,
+  });
+  return Response.json({ id: item.id, status: "failed", error }, { status });
+}
+
 export async function POST(request: Request) {
   const access = await getCurrentUserAccess();
   if (!access) {
@@ -384,13 +472,10 @@ export async function POST(request: Request) {
 
   if (payload.action === "inspection.create") {
     if (!isOfflineCreateInspectionPayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de inspeção offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de inspeção offline invalido.",
       );
     }
 
@@ -401,29 +486,22 @@ export async function POST(request: Request) {
       const created = await createInspection(inspectionPayload);
       return syncedResponse(payload, access, created.id);
     } catch (error) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar a inspeção.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar a inspeção.",
       );
     }
   }
 
   if (payload.action === "scaffold.create") {
     if (!isOfflineCreateScaffoldPayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de andaime offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de andaime offline invalido.",
       );
     }
 
@@ -431,29 +509,71 @@ export async function POST(request: Request) {
       const created = await createScaffold(payload.payload);
       return syncedResponse(payload, access, created.id);
     } catch (error) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar o andaime.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o andaime.",
+      );
+    }
+  }
+
+  if (payload.action === "scaffold.assembly.complete") {
+    if (!isOfflineCompleteScaffoldAssemblyPayload(payload.payload)) {
+      return failedResponse(
+        payload,
+        access,
+        "Payload de conclusao de montagem offline invalido.",
+      );
+    }
+
+    try {
+      const scaffold = await completeAssembly(payload.payload.id);
+      return syncedResponse(payload, access, scaffold.id);
+    } catch (error) {
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar a conclusao de montagem.",
+      );
+    }
+  }
+
+  if (payload.action === "scaffold.dismantle") {
+    if (!isOfflineDismantleScaffoldPayload(payload.payload)) {
+      return failedResponse(
+        payload,
+        access,
+        "Payload de desmontagem offline invalido.",
+      );
+    }
+
+    try {
+      const scaffold = await dismantleScaffold(payload.payload.id, {
+        reason: payload.payload.reason,
+        reasonDescription: payload.payload.reasonDescription,
+      });
+      return syncedResponse(payload, access, scaffold.id);
+    } catch (error) {
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar a desmontagem.",
       );
     }
   }
 
   if (payload.action === "nonConformity.itemEvidence.add") {
     if (!isOfflineAddNonConformityItemEvidencePayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de evidencia de NC offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de evidencia de NC offline invalido.",
       );
     }
 
@@ -465,29 +585,22 @@ export async function POST(request: Request) {
         payload.payload.nonConformityItemId,
       );
     } catch (error) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar a evidencia da NC.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar a evidencia da NC.",
       );
     }
   }
 
   if (payload.action === "nonConformity.comment.add") {
     if (!isOfflineAddNonConformityCommentPayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de comentario de NC offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de comentario de NC offline invalido.",
       );
     }
 
@@ -495,29 +608,22 @@ export async function POST(request: Request) {
       await syncNonConformityComment(payload.payload);
       return syncedResponse(payload, access, payload.payload.id);
     } catch (error) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar o comentario da NC.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o comentario da NC.",
       );
     }
   }
 
   if (payload.action === "nonConformity.status.update") {
     if (!isOfflineUpdateNonConformityStatusPayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de status de NC offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de status de NC offline invalido.",
       );
     }
 
@@ -530,29 +636,68 @@ export async function POST(request: Request) {
         return conflictResponse(payload, access, error.message, error.details);
       }
 
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar o status da NC.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o status da NC.",
+      );
+    }
+  }
+
+  if (payload.action === "nonConformity.responsible.update") {
+    if (!isOfflineUpdateNonConformityResponsiblePayload(payload.payload)) {
+      return failedResponse(
+        payload,
+        access,
+        "Payload de responsavel de NC offline invalido.",
+      );
+    }
+
+    try {
+      await syncNonConformityResponsible(payload.payload);
+      return syncedResponse(payload, access, payload.payload.id);
+    } catch (error) {
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o responsavel da NC.",
+      );
+    }
+  }
+
+  if (payload.action === "nonConformity.dueDate.update") {
+    if (!isOfflineUpdateNonConformityDueDatePayload(payload.payload)) {
+      return failedResponse(
+        payload,
+        access,
+        "Payload de prazo de NC offline invalido.",
+      );
+    }
+
+    try {
+      await syncNonConformityDueDate(payload.payload);
+      return syncedResponse(payload, access, payload.payload.id);
+    } catch (error) {
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o prazo da NC.",
       );
     }
   }
 
   if (payload.action === "scaffold.document.add") {
     if (!isOfflineAddScaffoldDocumentPayload(payload.payload)) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error: "Payload de documento de andaime offline invalido.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        "Payload de documento de andaime offline invalido.",
       );
     }
 
@@ -560,27 +705,20 @@ export async function POST(request: Request) {
       const created = await syncScaffoldDocument(payload.payload);
       return syncedResponse(payload, access, created.id);
     } catch (error) {
-      return Response.json(
-        {
-          id: payload.id,
-          status: "failed",
-          error:
-            error instanceof Error
-              ? error.message
-              : "Nao foi possivel sincronizar o documento do andaime.",
-        },
-        { status: 422 },
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar o documento do andaime.",
       );
     }
   }
 
-  return Response.json(
-    {
-      id: payload.id,
-      status: "failed",
-      error:
-        "Processador servidor ainda nao conectado para esta acao offline.",
-    },
-    { status: 202 },
+  return failedResponse(
+    payload,
+    access,
+    "Processador servidor ainda nao conectado para esta acao offline.",
+    202,
   );
 }

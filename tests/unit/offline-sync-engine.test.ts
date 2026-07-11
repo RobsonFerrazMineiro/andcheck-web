@@ -1,5 +1,9 @@
 import { processSyncQueue } from "@/lib/offline/sync-engine";
-import { localDb } from "@/lib/offline/local-db";
+import {
+  localDb,
+  replaceOfflineRecordId,
+  replaceOfflineReferences,
+} from "@/lib/offline/local-db";
 import type { SyncQueueItem, SyncQueueStatus } from "@/lib/offline/types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,7 +33,12 @@ vi.mock("@/lib/offline/local-db", () => {
 
   function patchItem(
     id: string,
-    patch: Partial<Pick<SyncQueueItem, "status" | "attempts" | "lastError">>,
+    patch: Partial<
+      Pick<
+        SyncQueueItem,
+        "status" | "attempts" | "lastError" | "serverId" | "syncedAt"
+      >
+    >,
   ) {
     const index = state.items.findIndex((item) => item.id === id);
     if (index === -1) return null;
@@ -62,7 +71,16 @@ vi.mock("@/lib/offline/local-db", () => {
           async (
             id: string,
             patch: Partial<
-              Pick<SyncQueueItem, "status" | "attempts" | "lastError">
+              Pick<
+                SyncQueueItem,
+                | "status"
+                | "attempts"
+                | "lastError"
+                | "serverId"
+                | "syncedAt"
+                | "entityId"
+                | "payload"
+              >
             >,
           ) => patchItem(id, patch),
         ),
@@ -77,8 +95,11 @@ vi.mock("@/lib/offline/local-db", () => {
             updatedAt: "2026-01-01T00:00:01.000Z",
           };
         }),
+        get: vi.fn(async (id: string) => state.metadata.get(id)),
       },
     },
+    replaceOfflineRecordId: vi.fn(async () => null),
+    replaceOfflineReferences: vi.fn(async () => undefined),
   };
 });
 
@@ -143,10 +164,26 @@ describe("processSyncQueue", () => {
       "lastSyncAt",
       expect.any(String),
     );
+    expect(localDb.metadata.set).toHaveBeenCalledWith(
+      "syncId:scaffold:queue-1",
+      expect.objectContaining({ serverId: "server-1" }),
+    );
+    expect(replaceOfflineRecordId).toHaveBeenCalledWith(
+      "scaffolds",
+      "queue-1",
+      "server-1",
+    );
+    expect(replaceOfflineReferences).toHaveBeenCalledWith(
+      "queue-1",
+      "server-1",
+    );
   });
 
   it("can skip failed items when retry is disabled", async () => {
-    state.items = [queueItem("queue-1", "pending"), queueItem("queue-2", "failed")];
+    state.items = [
+      queueItem("queue-1", "pending"),
+      queueItem("queue-2", "failed"),
+    ];
 
     const summary = await processSyncQueue({ includeFailed: false });
 
@@ -156,6 +193,105 @@ describe("processSyncQueue", () => {
       "failed",
     ]);
     expect(summary).toMatchObject({ synced: 1, failed: 1, total: 2 });
+  });
+
+  it("retries items left as syncing after an interrupted sync", async () => {
+    state.items = [
+      queueItem("queue-1", "syncing"),
+      queueItem("queue-2", "pending"),
+    ];
+
+    const summary = await processSyncQueue();
+
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(state.items.map((item) => item.status)).toEqual([
+      "synced",
+      "synced",
+    ]);
+    expect(summary).toMatchObject({ synced: 2, total: 2 });
+  });
+
+  it("uses server ids for dependent queue items in the same sync run", async () => {
+    state.items = [
+      queueItem("offline_scaffold", "pending"),
+      {
+        ...queueItem("offline_inspection", "pending"),
+        action: "inspection.create",
+        entityType: "inspection",
+        payload: {
+          scaffold_id: "offline_scaffold",
+          scaffold_code: "Pendente",
+          inspector_name: "Robson",
+          result: "aprovado",
+          validity_days: 30,
+          checklist: [],
+        },
+      },
+    ];
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_scaffold",
+          status: "synced",
+          serverId: "server_scaffold",
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_inspection",
+          status: "synced",
+          serverId: "server_inspection",
+        }),
+      );
+
+    await processSyncQueue();
+
+    const secondBody = JSON.parse(
+      String(vi.mocked(fetch).mock.calls[1]?.[1]?.body),
+    ) as SyncQueueItem;
+    expect(secondBody.payload).toMatchObject({
+      scaffold_id: "server_scaffold",
+    });
+  });
+
+  it("uses server ids for scaffold status actions in the same sync run", async () => {
+    state.items = [
+      queueItem("offline_scaffold", "pending"),
+      {
+        ...queueItem("offline_complete", "pending"),
+        action: "scaffold.assembly.complete",
+        entityType: "scaffold",
+        entityId: "offline_scaffold",
+        payload: {
+          id: "offline_scaffold",
+        },
+      },
+    ];
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_scaffold",
+          status: "synced",
+          serverId: "server_scaffold",
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_complete",
+          status: "synced",
+          serverId: "server_scaffold",
+        }),
+      );
+
+    await processSyncQueue();
+
+    const secondBody = JSON.parse(
+      String(vi.mocked(fetch).mock.calls[1]?.[1]?.body),
+    ) as SyncQueueItem;
+    expect(secondBody).toMatchObject({
+      entityId: "server_scaffold",
+      payload: { id: "server_scaffold" },
+    });
   });
 
   it("marks an item as failed when the server rejects the payload", async () => {

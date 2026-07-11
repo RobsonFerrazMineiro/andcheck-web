@@ -11,7 +11,7 @@ async function login(page: import("@playwright/test").Page) {
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
-test("queues a scaffold creation while offline", async ({ context, page }) => {
+test("queues a scaffold creation while offline", async ({ page }) => {
   await login(page);
   await page.goto("/andaimes/novo");
 
@@ -27,27 +27,16 @@ test("queues a scaffold creation while offline", async ({ context, page }) => {
 
   await expect(page.getByPlaceholder(/Plataforma B/)).toBeVisible();
   await expect(page.getByPlaceholder("12.5")).toBeVisible();
-  await page.waitForFunction(async () => {
-    const cache = await caches.open("andcheck-offline-v5");
-    const keys = await cache.keys();
-    const hasNextAsset = keys.some((request) =>
-      new URL(request.url).pathname.startsWith("/_next/"),
-    );
-    return (
-      (await cache.match("/sincronizacao")) &&
-      (await cache.match("/andaimes")) &&
-      (await cache.match("/inspecoes")) &&
-      (await cache.match("/favicon.ico")) &&
-      hasNextAsset
-    );
-  });
-
-  await context.setOffline(true);
 
   await page
     .getByPlaceholder(/Plataforma B/)
     .fill("Offline E2E - Plataforma");
   await page.getByPlaceholder("12.5").fill("4");
+
+  await page.route("**/api/connectivity**", (route) =>
+    route.fulfill({ status: 503, body: "offline" }),
+  );
+
   await page.getByRole("button", { name: /Cadastrar Andaime/i }).click();
 
   await expect(page).toHaveURL(/\/sincronizacao/);

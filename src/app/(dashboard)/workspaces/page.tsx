@@ -1,3 +1,4 @@
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getWorkspaceManagementData } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { redirect } from "next/navigation";
@@ -36,26 +37,29 @@ export default async function WorkspacesPage({ searchParams }: Props) {
   const typedOwnerCompanies = ownerCompanies as OwnerCompanyOption[];
 
   return (
-    <WorkspacesClient
-      canManage={canManage}
-      initialEditingId={initialEditingId}
-      ownerCompanies={typedOwnerCompanies}
-      initialWorkspaces={typedWorkspaces.map((workspace) => ({
-        id: workspace.id,
-        name: workspace.name,
-        code: workspace.code,
-        ownerCompanyId: workspace.ownerCompanyId,
-        ownerCompanyName: workspace.ownerCompany.name,
-        city: workspace.city,
-        state: workspace.state,
-        address: workspace.address,
-        latitude: workspace.latitude,
-        longitude: workspace.longitude,
-        description: workspace.description,
-        active: workspace.active,
-        companies: workspace.companyLinks.length,
-        scaffolds: workspace._count.scaffolds,
-      }))}
-    />
+    <div className="space-y-4">
+      <OnlineOnlyNotice moduleName="Workspaces" />
+      <WorkspacesClient
+        canManage={canManage}
+        initialEditingId={initialEditingId}
+        ownerCompanies={typedOwnerCompanies}
+        initialWorkspaces={typedWorkspaces.map((workspace) => ({
+          id: workspace.id,
+          name: workspace.name,
+          code: workspace.code,
+          ownerCompanyId: workspace.ownerCompanyId,
+          ownerCompanyName: workspace.ownerCompany.name,
+          city: workspace.city,
+          state: workspace.state,
+          address: workspace.address,
+          latitude: workspace.latitude,
+          longitude: workspace.longitude,
+          description: workspace.description,
+          active: workspace.active,
+          companies: workspace.companyLinks.length,
+          scaffolds: workspace._count.scaffolds,
+        }))}
+      />
+    </div>
   );
 }

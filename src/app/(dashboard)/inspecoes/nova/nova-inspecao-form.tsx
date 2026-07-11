@@ -33,7 +33,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
-import { calculateInspectionResult } from "@/lib/inspection-outcome";
+import {
+  calculateInspectionResult,
+  calculateScaffoldStatus,
+} from "@/lib/inspection-outcome";
+import {
+  canNavigateAfterOfflineWrite,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import {
@@ -112,10 +119,6 @@ function statusToPrisma(
   if (status === "conforme") return "CL_OK";
   if (status === "nao_conforme") return "CL_FAIL";
   return "CL_NA";
-}
-
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
 export function NovaInspecaoForm({
@@ -203,10 +206,11 @@ export function NovaInspecaoForm({
       const files = Array.from(e.target.files ?? []);
       try {
         const { compressImageBlob } = await import("@/lib/compress-image");
+        const online = (await checkServerConnectivity()) === "online";
 
         for (const file of files) {
           const compressed = await compressImageBlob(file);
-          const photo = browserIsOnline()
+          const photo = online
             ? (
                 await uploadFile(compressed, {
                   category: "inspection-photos",
@@ -364,7 +368,8 @@ export function NovaInspecaoForm({
     setRegisteringSignature(true);
     try {
       const signatureBlob = await canvasToBlob(canvasRef.current);
-      const signatureReference = browserIsOnline()
+      const signatureReference =
+        (await checkServerConnectivity()) === "online"
         ? (
             await uploadFile(signatureBlob, {
               category: "inspection-signatures",
@@ -445,8 +450,34 @@ export function NovaInspecaoForm({
         checklist,
       };
 
-      if (!browserIsOnline()) {
+      if ((await checkServerConnectivity()) === "offline") {
         const offlineId = createOfflineId("inspection");
+        const scaffoldStatus = calculateScaffoldStatus(payload.result, checklist);
+        const validityDate =
+          payload.result !== "reprovado" && payload.validity_days > 0
+            ? addDays(new Date(), payload.validity_days).toISOString()
+            : null;
+
+        await localDb.inspections.put({
+          id: offlineId,
+          scaffold_id: payload.scaffold_id,
+          scaffold_code: payload.scaffold_code,
+          date: new Date().toISOString(),
+          inspector_name: payload.inspector_name,
+          result: payload.result,
+          validity_days: payload.validity_days,
+          notes: payload.notes ?? null,
+          syncStatus: "pending",
+        });
+        const cachedScaffold = await localDb.scaffolds.get(payload.scaffold_id);
+        if (cachedScaffold) {
+          await localDb.scaffolds.put({
+            ...cachedScaffold,
+            status: scaffoldStatus,
+            validity_date: validityDate,
+            syncStatus: "pending",
+          });
+        }
         await localDb.syncQueue.enqueue({
           action: "inspection.create",
           entityType: "inspection",
@@ -456,7 +487,12 @@ export function NovaInspecaoForm({
         toast.success("Inspeção salva offline para sincronização.", {
           id: toastId,
         });
-        router.replace("/sincronizacao");
+        if (canNavigateAfterOfflineWrite()) {
+          router.replace("/sincronizacao");
+        } else {
+          submittingRef.current = false;
+          setSubmitting(false);
+        }
         return;
       }
 

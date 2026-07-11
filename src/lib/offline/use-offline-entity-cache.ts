@@ -6,11 +6,8 @@ import {
   localDb,
   type OfflineEntityStoreName,
 } from "@/lib/offline/local-db";
+import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { useEffect, useMemo, useState } from "react";
-
-function browserIsOnline() {
-  return typeof navigator === "undefined" ? true : navigator.onLine;
-}
 
 export function useOfflineEntityCache<T extends { id: string }>({
   storeName,
@@ -28,7 +25,7 @@ export function useOfflineEntityCache<T extends { id: string }>({
 
     async function hydrateCache() {
       try {
-        const online = browserIsOnline();
+        const online = (await checkServerConnectivity()) === "online";
 
         if (online && initialData.length > 0) {
           const cachedAt = await cacheOfflineRecords(storeName, initialData);

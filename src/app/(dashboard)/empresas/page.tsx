@@ -1,3 +1,4 @@
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getCompanyManagementData } from "@/lib/actions/company-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { redirect } from "next/navigation";
@@ -27,23 +28,26 @@ export default async function EmpresasPage() {
   const typedWorkspaces = workspaces as WorkspaceOption[];
 
   return (
-    <EmpresasClient
-      canManage={canManage}
-      initialCompanies={typedCompanies.map((company) => ({
-        id: company.id,
-        name: company.name,
-        code: company.code,
-        type: company.type,
-        active: company.active,
-        description: company.description,
-        logoUrl: company.logoUrl,
-        workspaceNames: company.workspaceLinks.map(
-          (link) => link.workspace.name,
-        ),
-        users: company._count.users,
-        scaffolds: company._count.scaffolds,
-      }))}
-      workspaces={typedWorkspaces}
-    />
+    <div className="space-y-4">
+      <OnlineOnlyNotice moduleName="Empresas" />
+      <EmpresasClient
+        canManage={canManage}
+        initialCompanies={typedCompanies.map((company) => ({
+          id: company.id,
+          name: company.name,
+          code: company.code,
+          type: company.type,
+          active: company.active,
+          description: company.description,
+          logoUrl: company.logoUrl,
+          workspaceNames: company.workspaceLinks.map(
+            (link) => link.workspace.name,
+          ),
+          users: company._count.users,
+          scaffolds: company._count.scaffolds,
+        }))}
+        workspaces={typedWorkspaces}
+      />
+    </div>
   );
 }

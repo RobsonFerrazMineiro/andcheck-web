@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 
 const OFFLINE_CACHE_NAME = "andcheck-offline-v5";
+const ENABLE_SERVICE_WORKER =
+  process.env.NEXT_PUBLIC_ENABLE_SERVICE_WORKER !== "false";
 const STATIC_OFFLINE_ASSETS = ["/favicon.ico", "/manifest.webmanifest"];
 const OPERATIONAL_OFFLINE_ROUTES = [
   "/dashboard",
@@ -86,13 +88,32 @@ async function preheatOperationalRoutesCache() {
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
+    if (!ENABLE_SERVICE_WORKER) {
+      void navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) =>
+          Promise.all(
+            registrations
+              .filter((registration) =>
+                registration.active?.scriptURL.startsWith(window.location.origin),
+              )
+              .map((registration) => registration.unregister()),
+          ),
+        )
+        .catch((error) => {
+          console.error("Falha ao limpar service worker local:", error);
+        });
+      return;
+    }
 
     void navigator.serviceWorker
       .register("/sw.js")
+      .then((registration) => {
+        void registration.update();
+        return navigator.serviceWorker.ready;
+      })
       .then(() => {
-        void preheatOperationalRoutesCache().catch((error) => {
-          console.error("Falha ao preparar rotas offline:", error);
-        });
+        return preheatOperationalRoutesCache();
       })
       .catch((error) => {
         console.error("Falha ao registrar service worker:", error);

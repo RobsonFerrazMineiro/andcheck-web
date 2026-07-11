@@ -32,7 +32,13 @@ export default auth((req) => {
     if (!limit.allowed) return rateLimitResponse(limit.retryAfter);
   }
 
-  const publicPaths = ["/login", "/logout", "/api/auth", "/qr"];
+  const publicPaths = [
+    "/login",
+    "/logout",
+    "/api/auth",
+    "/api/connectivity",
+    "/qr",
+  ];
   const isPublic = publicPaths.some((path) => pathname.startsWith(path));
 
   if (!isLoggedIn && !isPublic) {
@@ -49,5 +55,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|public/).*)",
+  ],
 };

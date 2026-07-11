@@ -1,3 +1,4 @@
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,8 @@ export default async function AdminNotificationsPage() {
 
   return (
     <div className="space-y-6">
+      <OnlineOnlyNotice moduleName="Monitoramento administrativo de notificacoes" />
+
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Administracao

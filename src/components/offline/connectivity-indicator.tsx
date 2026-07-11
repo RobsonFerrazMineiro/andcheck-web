@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useOfflineStatus } from "@/components/offline/offline-provider";
+import { canNavigateAfterOfflineWrite } from "@/lib/offline/connectivity";
 import { AlertTriangle, CheckCircle2, CloudOff, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -39,6 +40,11 @@ export function ConnectivityIndicator() {
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3">
         <Link
           href="/sincronizacao"
+          onClick={(event) => {
+            if (!canNavigateAfterOfflineWrite()) {
+              event.preventDefault();
+            }
+          }}
           className="flex min-w-0 items-center gap-2 font-semibold"
         >
           <Icon

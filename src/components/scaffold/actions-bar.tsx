@@ -17,13 +17,19 @@ import {
   completeAssembly,
   dismantleScaffold,
 } from "@/lib/actions/scaffold-actions";
+import {
+  canNavigateAfterOfflineWrite,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
+import { localDb } from "@/lib/offline/local-db";
+import { createOfflineId } from "@/lib/offline/types";
 
 const DISMANTLE_REASONS = [
-  "Finalização da atividade",
+  "Finalizacao da atividade",
   "Encerramento de parada",
-  "Solicitação da operação",
+  "Solicitacao da operacao",
   "Substituicao do andaime",
-  "Readequação de projeto",
+  "Readequacao de projeto",
   "Condicao insegura",
   "Outros",
 ];
@@ -56,10 +62,46 @@ export function ScaffoldActionsBar({
     useState("");
   const [dismantleError, setDismantleError] = useState<string | null>(null);
 
+  async function updateLocalScaffoldStatus(
+    nextStatus: string,
+    patch: Record<string, unknown> = {},
+  ) {
+    const current = await localDb.scaffolds.get(scaffoldId);
+    if (!current) return;
+
+    await localDb.scaffolds.put({
+      ...current,
+      ...patch,
+      status: nextStatus,
+      syncStatus: "pending",
+    });
+  }
+
   function handleCompleteAssembly() {
     startTransition(async () => {
       const toastId = toast.loading("Concluindo montagem...");
       try {
+        if ((await checkServerConnectivity()) === "offline") {
+          const completedAt = new Date().toISOString();
+          await updateLocalScaffoldStatus("pendente_liberacao", {
+            assembly_completed_at: completedAt,
+          });
+          await localDb.syncQueue.enqueue({
+            id: createOfflineId("scaffold_complete_assembly"),
+            action: "scaffold.assembly.complete",
+            entityType: "scaffold",
+            entityId: scaffoldId,
+            payload: { id: scaffoldId },
+          });
+          toast.success("Montagem salva offline para sincronizacao.", {
+            id: toastId,
+          });
+          if (canNavigateAfterOfflineWrite()) {
+            router.push("/sincronizacao");
+          }
+          return;
+        }
+
         await completeAssembly(scaffoldId);
         toast.success("Montagem concluída. Andaime pendente de inspeção.", {
           id: toastId,
@@ -94,6 +136,32 @@ export function ScaffoldActionsBar({
     startTransition(async () => {
       const toastId = toast.loading("Registrando desmontagem...");
       try {
+        if ((await checkServerConnectivity()) === "offline") {
+          const dismantledAt = new Date().toISOString();
+          await updateLocalScaffoldStatus("desmontado", {
+            dismantled_at: dismantledAt,
+          });
+          await localDb.syncQueue.enqueue({
+            id: createOfflineId("scaffold_dismantle"),
+            action: "scaffold.dismantle",
+            entityType: "scaffold",
+            entityId: scaffoldId,
+            payload: {
+              id: scaffoldId,
+              reason: dismantleReason,
+              reasonDescription: dismantleReasonDescription.trim() || undefined,
+            },
+          });
+          setDismantleOpen(false);
+          toast.success("Desmontagem salva offline para sincronizacao.", {
+            id: toastId,
+          });
+          if (canNavigateAfterOfflineWrite()) {
+            router.push("/sincronizacao");
+          }
+          return;
+        }
+
         await dismantleScaffold(scaffoldId, {
           reason: dismantleReason,
           reasonDescription: dismantleReasonDescription,

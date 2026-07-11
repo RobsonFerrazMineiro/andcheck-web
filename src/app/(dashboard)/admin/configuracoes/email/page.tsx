@@ -1,3 +1,4 @@
+import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -23,6 +24,8 @@ export default async function AdminEmailConfigurationPage() {
 
   return (
     <div className="space-y-6">
+      <OnlineOnlyNotice moduleName="Configuracoes administrativas" />
+
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Administracao
