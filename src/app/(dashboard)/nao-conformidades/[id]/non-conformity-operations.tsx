@@ -193,21 +193,28 @@ export function NonConformityOperations({
     action,
     payload,
     successMessage,
+    replaceLatest = false,
   }: {
     action: string;
     payload: Record<string, unknown>;
     successMessage: string;
+    replaceLatest?: boolean;
   }) {
     setError(null);
     startTransition(async () => {
       try {
-        await localDb.syncQueue.enqueue({
+        const queueInput = {
           action,
           entityType: "nonConformity",
           entityId: id,
           payload,
           id: createOfflineId("nc"),
-        });
+        };
+        if (replaceLatest) {
+          await localDb.syncQueue.upsertLatest(queueInput);
+        } else {
+          await localDb.syncQueue.enqueue(queueInput);
+        }
         toast.success(successMessage);
         setModal(null);
         if (canNavigateAfterOfflineWrite()) {
@@ -237,6 +244,7 @@ export function NonConformityOperations({
           comment: comment.trim() || undefined,
         },
         successMessage: "Alteração de status salva offline para sincronização.",
+        replaceLatest: true,
       });
       return;
     }
@@ -287,6 +295,7 @@ export function NonConformityOperations({
         action: "nonConformity.responsible.update",
         payload: { id, responsibleUserId },
         successMessage: "Responsável salvo offline para sincronização.",
+        replaceLatest: true,
       });
       return;
     }
@@ -305,6 +314,7 @@ export function NonConformityOperations({
         action: "nonConformity.dueDate.update",
         payload: { id, dueDate, reason },
         successMessage: "Prazo salvo offline para sincronização.",
+        replaceLatest: true,
       });
       return;
     }

@@ -261,6 +261,31 @@ export const localDb = {
       emitQueueUpdated();
       return item;
     },
+    async upsertLatest(input: NewSyncQueueItem) {
+      const items = await this.all();
+      const current = items
+        .filter(
+          (item) =>
+            item.action === input.action &&
+            item.entityType === input.entityType &&
+            item.entityId === input.entityId &&
+            ["pending", "failed", "conflict"].includes(item.status),
+        )
+        .at(-1);
+
+      if (current) {
+        return this.update(current.id, {
+          status: input.status ?? "pending",
+          attempts: 0,
+          lastError: undefined,
+          serverId: undefined,
+          syncedAt: undefined,
+          payload: input.payload,
+        });
+      }
+
+      return this.enqueue(input);
+    },
     async update(
       id: string,
       patch: Partial<
@@ -290,6 +315,25 @@ export const localDb = {
       await done;
       emitQueueUpdated();
       return next;
+    },
+    async delete(id: string) {
+      const { store, done } = await getStore("syncQueue", "readwrite");
+      store.delete(id);
+      await done;
+      emitQueueUpdated();
+    },
+    async deleteByStatus(status: SyncQueueStatus) {
+      const items = await this.all();
+      const targets = items.filter((item) => item.status === status);
+      const { store, done } = await getStore("syncQueue", "readwrite");
+
+      for (const item of targets) {
+        store.delete(item.id);
+      }
+
+      await done;
+      if (targets.length > 0) emitQueueUpdated();
+      return targets.length;
     },
     async setStatus(id: string, status: SyncQueueStatus, lastError?: string) {
       const items = await this.all();

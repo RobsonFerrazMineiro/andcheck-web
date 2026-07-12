@@ -167,7 +167,7 @@ export default function NovoAndaimeForm({
             syncStatus: "pending",
             updatedAt: new Date().toISOString(),
           });
-          await localDb.syncQueue.enqueue({
+          await localDb.syncQueue.upsertLatest({
             action: "scaffold.update",
             entityType: "scaffold",
             entityId: scaffold.id,

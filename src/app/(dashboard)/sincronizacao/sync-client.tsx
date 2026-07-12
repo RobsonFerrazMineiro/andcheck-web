@@ -40,6 +40,62 @@ function formatPayloadPreview(payload: unknown) {
   }
 }
 
+function payloadRecord(payload: unknown) {
+  return payload && typeof payload === "object" && !Array.isArray(payload)
+    ? (payload as Record<string, unknown>)
+    : {};
+}
+
+const ACTION_LABELS: Record<string, string> = {
+  "inspection.create": "Criar inspeção",
+  "scaffold.create": "Criar andaime",
+  "scaffold.update": "Editar andaime",
+  "scaffold.assembly.complete": "Concluir montagem",
+  "scaffold.dismantle": "Registrar desmontagem",
+  "scaffold.document.add": "Anexar documento",
+  "nonConformity.itemEvidence.add": "Anexar evidência de NC",
+  "nonConformity.comment.add": "Comentar NC",
+  "nonConformity.status.update": "Alterar status da NC",
+  "nonConformity.responsible.update": "Alterar responsável da NC",
+  "nonConformity.dueDate.update": "Alterar prazo da NC",
+};
+
+function actionLabel(action: string) {
+  return ACTION_LABELS[action] ?? action;
+}
+
+function payloadString(payload: Record<string, unknown>, key: string) {
+  const value = payload[key];
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
+function entityLabel(item: SyncQueueItem) {
+  const payload = payloadRecord(item.payload);
+
+  if (item.entityType === "scaffold") {
+    return (
+      payloadString(payload, "scaffold_code") ??
+      payloadString(payload, "code") ??
+      payloadString(payload, "id") ??
+      item.entityId
+    );
+  }
+
+  if (item.entityType === "inspection") {
+    return (
+      payloadString(payload, "scaffold_code") ??
+      payloadString(payload, "scaffold_id") ??
+      item.entityId
+    );
+  }
+
+  if (item.entityType === "nonConformity") {
+    return payloadString(payload, "code") ?? payloadString(payload, "id") ?? item.entityId;
+  }
+
+  return item.entityId;
+}
+
 export function SyncClient() {
   const { status, summary, lastSyncAt, refresh, syncNow } = useOfflineStatus();
   const [items, setItems] = useState<SyncQueueItem[]>([]);
@@ -85,7 +141,41 @@ export function SyncClient() {
     await Promise.all([refresh(), loadItems()]);
   }
 
+  async function handleRetryFailedItems() {
+    const failedItems = items.filter((item) => item.status === "failed");
+    await Promise.all(
+      failedItems.map((item) =>
+        localDb.syncQueue.update(item.id, {
+          status: "pending",
+          lastError: undefined,
+        }),
+      ),
+    );
+    await handleSyncNow();
+  }
+
+  async function handleKeepAllServerVersions() {
+    const now = new Date().toISOString();
+    const conflictItems = items.filter((item) => item.status === "conflict");
+    await Promise.all(
+      conflictItems.map((item) =>
+        localDb.syncQueue.update(item.id, {
+          status: "synced",
+          lastError: undefined,
+          syncedAt: now,
+        }),
+      ),
+    );
+    await Promise.all([refresh(), loadItems()]);
+  }
+
+  async function handleClearSyncedItems() {
+    await localDb.syncQueue.deleteByStatus("synced");
+    await Promise.all([refresh(), loadItems()]);
+  }
+
   const conflictItems = items.filter((item) => item.status === "conflict");
+  const failedItems = items.filter((item) => item.status === "failed");
 
   return (
     <div className="space-y-5">
@@ -124,7 +214,8 @@ export function SyncClient() {
 
       {conflictItems.length > 0 && (
         <div className="border border-slate-300 bg-slate-50 p-4 text-sm text-slate-800">
-          <div className="flex items-start gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
             <div className="space-y-1">
               <p className="font-semibold">Conflito de sincronizacao</p>
@@ -134,6 +225,18 @@ export function SyncClient() {
                 aplicada automaticamente.
               </p>
             </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => void handleKeepAllServerVersions()}
+              disabled={status === "syncing"}
+              className="w-full shrink-0 md:w-auto"
+            >
+              <ShieldCheck className="size-3" />
+              Manter servidor em lote
+            </Button>
           </div>
         </div>
       )}
@@ -146,9 +249,39 @@ export function SyncClient() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
-            <div>Ultima sincronizacao: {formatDate(lastSyncAt)}</div>
-            <div>Total na fila local: {summary.total}</div>
+          <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+              <div>Ultima sincronizacao: {formatDate(lastSyncAt)}</div>
+              <div>Total na fila local: {summary.total}</div>
+            </div>
+            <div className="flex flex-col gap-2 md:flex-row">
+              {summary.synced > 0 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleClearSyncedItems()}
+                  disabled={status === "syncing"}
+                  className="w-full md:w-auto"
+                >
+                  <CheckCircle2 className="size-3" />
+                  Limpar sincronizados
+                </Button>
+              )}
+              {failedItems.length > 0 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void handleRetryFailedItems()}
+                  disabled={status === "offline" || status === "syncing"}
+                  className="w-full md:w-auto"
+                >
+                  <RotateCcw className="size-3" />
+                  Tentar falhas em lote
+                </Button>
+              )}
+            </div>
           </div>
 
           {items.length === 0 ? (
@@ -181,10 +314,22 @@ export function SyncClient() {
                         {formatDate(item.createdAt)}
                       </td>
                       <td className="px-4 py-3 font-semibold">
-                        {item.action}
+                        <div className="space-y-1">
+                          <p>{actionLabel(item.action)}</p>
+                          <p className="font-mono text-[10px] font-normal text-muted-foreground">
+                            {item.action}
+                          </p>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {item.entityType} / {item.entityId}
+                        <div className="space-y-1">
+                          <p className="font-medium text-foreground">
+                            {entityLabel(item)}
+                          </p>
+                          <p className="font-mono text-[10px]">
+                            {item.entityType} / {item.entityId}
+                          </p>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge item={item} />

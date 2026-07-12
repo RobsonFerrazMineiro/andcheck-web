@@ -86,7 +86,7 @@ export function ScaffoldActionsBar({
           await updateLocalScaffoldStatus("pendente_liberacao", {
             assembly_completed_at: completedAt,
           });
-          await localDb.syncQueue.enqueue({
+          await localDb.syncQueue.upsertLatest({
             id: createOfflineId("scaffold_complete_assembly"),
             action: "scaffold.assembly.complete",
             entityType: "scaffold",
@@ -141,7 +141,7 @@ export function ScaffoldActionsBar({
           await updateLocalScaffoldStatus("desmontado", {
             dismantled_at: dismantledAt,
           });
-          await localDb.syncQueue.enqueue({
+          await localDb.syncQueue.upsertLatest({
             id: createOfflineId("scaffold_dismantle"),
             action: "scaffold.dismantle",
             entityType: "scaffold",
