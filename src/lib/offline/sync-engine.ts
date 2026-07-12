@@ -81,7 +81,8 @@ async function prepareQueueItemForSync(item: SyncQueueItem) {
 
   if (
     next.action === "scaffold.assembly.complete" ||
-    next.action === "scaffold.dismantle"
+    next.action === "scaffold.dismantle" ||
+    next.action === "scaffold.update"
   ) {
     next = {
       ...next,

@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const email = process.env.E2E_EMAIL ?? "admin@andcheck.com";
 const password = process.env.E2E_PASSWORD ?? "andcheck@2025";
 
-async function login(page: import("@playwright/test").Page) {
+async function login(page: Page) {
   await page.goto("/login");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill(password);
@@ -11,10 +11,7 @@ async function login(page: import("@playwright/test").Page) {
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
-test("queues a scaffold creation while offline", async ({ page }) => {
-  await login(page);
-  await page.goto("/andaimes/novo");
-
+async function clearOfflineDb(page: Page) {
   await page.evaluate(async () => {
     await new Promise<void>((resolve, reject) => {
       const request = indexedDB.deleteDatabase("andcheck-offline");
@@ -23,6 +20,36 @@ test("queues a scaffold creation while offline", async ({ page }) => {
       request.onblocked = () => resolve();
     });
   });
+}
+
+function readQueuedActions(page: Page) {
+  return page.evaluate(async () => {
+    const request = indexedDB.open("andcheck-offline");
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+
+    const transaction = db.transaction("syncQueue", "readonly");
+    const store = transaction.objectStore("syncQueue");
+    const items = await new Promise<Array<{ action: string }>>(
+      (resolve, reject) => {
+        const getAll = store.getAll();
+        getAll.onsuccess = () => resolve(getAll.result);
+        getAll.onerror = () => reject(getAll.error);
+      },
+    );
+
+    db.close();
+    return items.map((item) => item.action);
+  });
+}
+
+test("queues a scaffold creation while offline", async ({ page }) => {
+  await login(page);
+  await page.goto("/andaimes/novo");
+
+  await clearOfflineDb(page);
   await page.reload();
 
   await expect(page.getByPlaceholder(/Plataforma B/)).toBeVisible();
@@ -41,27 +68,41 @@ test("queues a scaffold creation while offline", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/sincronizacao/);
 
-  const readQueuedAction = () =>
-    page.evaluate(async () => {
-      const request = indexedDB.open("andcheck-offline");
-      const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
+  await expect.poll(() => readQueuedActions(page)).toContain("scaffold.create");
+});
 
-      const transaction = db.transaction("syncQueue", "readonly");
-      const store = transaction.objectStore("syncQueue");
-      const items = await new Promise<Array<{ action: string }>>(
-        (resolve, reject) => {
-          const getAll = store.getAll();
-          getAll.onsuccess = () => resolve(getAll.result);
-          getAll.onerror = () => reject(getAll.error);
-        },
-      );
+test("queues a scaffold update while offline", async ({ page }) => {
+  await login(page);
+  await page.goto("/andaimes/novo");
 
-      db.close();
-      return items[0]?.action;
-    });
+  await clearOfflineDb(page);
+  await page.reload();
 
-  await expect.poll(readQueuedAction).toBe("scaffold.create");
+  const suffix = Date.now();
+  await page.getByPlaceholder(/Plataforma B/).fill(`E2E Edit ${suffix}`);
+  await page.getByPlaceholder(/Manuten/).fill("Area E2E");
+  await page.getByPlaceholder("12.5").fill("4");
+  await page.getByPlaceholder(/respons/).fill("Equipe E2E");
+
+  await page.getByRole("button", { name: /Cadastrar Andaime/i }).click();
+  await expect(page).toHaveURL(/\/(andaimes\/[^/]+|dashboard)$/);
+
+  await page.goto("/andaimes");
+  await page.getByText(`E2E Edit ${suffix}`).click();
+  await expect(page).toHaveURL(/\/andaimes\/[^/]+$/);
+
+  const detailUrl = page.url();
+  await page.goto(`${detailUrl}/editar`);
+  await expect(page).toHaveURL(/\/andaimes\/[^/]+\/editar/);
+  await expect(page.getByRole("button", { name: /Salvar Alteracoes/i })).toBeVisible();
+
+  await page.getByPlaceholder(/Plataforma B/).fill(`E2E Editado ${suffix}`);
+  await page.route("**/api/connectivity**", (route) =>
+    route.fulfill({ status: 503, body: "offline" }),
+  );
+
+  await page.getByRole("button", { name: /Salvar Alteracoes/i }).click();
+
+  await expect(page).toHaveURL(/\/sincronizacao/);
+  await expect.poll(() => readQueuedActions(page)).toContain("scaffold.update");
 });

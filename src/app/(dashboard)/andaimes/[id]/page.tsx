@@ -9,6 +9,7 @@ import {
   Clock,
   Construction,
   MapPin,
+  Pencil,
   Ruler,
   User,
   Weight,
@@ -149,6 +150,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canCreateInspection,
     canCompleteAssembly,
     canDismantle,
+    canUpdateScaffold,
     canAddDocument,
     canDeleteDocument,
     access,
@@ -158,6 +160,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
     canCurrentUser("inspections.create"),
     canCurrentUser("scaffolds.complete_assembly"),
     canCurrentUser("scaffolds.dismantle"),
+    canCurrentUser("scaffolds.update"),
     canCurrentUser("documents.create"),
     canCurrentUser("permissions.manage"),
     getCurrentUserAccess(),
@@ -206,6 +209,15 @@ export default async function AndaimeDetailPage({ params }: Props) {
           canCompleteAssembly={canCompleteAssembly}
           canDismantle={canDismantle}
         />
+        {canUpdateScaffold && (
+          <Link
+            href={`/andaimes/${scaffold.id}/editar`}
+            className="inline-flex h-8 items-center gap-2 rounded-md border border-border px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted"
+          >
+            <Pencil className="size-3.5" />
+            Editar
+          </Link>
+        )}
       </div>
 
       {activeNonConformity && (

@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ import {
   createOfflineId,
   type OfflineCreateInspectionPayload,
 } from "@/lib/offline/types";
+import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 
 const ChecklistSection = dynamic(
@@ -130,6 +132,25 @@ export function NovaInspecaoForm({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const {
+    data: cachedScaffolds,
+    isOfflineFallback: isScaffoldCacheFallback,
+    lastCachedAt: scaffoldsCachedAt,
+  } = useOfflineSnapshotCache({
+    cacheKey: "inspection:scaffolds",
+    initialData: scaffolds,
+  });
+  const {
+    data: cachedSignaturePolicies,
+    isOfflineFallback: isPolicyCacheFallback,
+    lastCachedAt: policiesCachedAt,
+  } = useOfflineSnapshotCache({
+    cacheKey: "inspection:signaturePolicies",
+    initialData: signaturePolicies,
+  });
+  const isAuxiliaryCacheFallback =
+    isScaffoldCacheFallback || isPolicyCacheFallback;
+  const lastAuxiliaryCachedAt = scaffoldsCachedAt ?? policiesCachedAt;
 
   const [selectedScaffoldId, setSelectedScaffoldId] = useState(
     params.get("scaffold_id") ?? "",
@@ -238,13 +259,15 @@ export function NovaInspecaoForm({
     ),
   );
 
-  const selectedScaffold = scaffolds.find((s) => s.id === selectedScaffoldId);
+  const selectedScaffold = cachedScaffolds.find(
+    (s) => s.id === selectedScaffoldId,
+  );
 
   const selectedPolicy = useMemo(() => {
     if (!selectedScaffold) return null;
 
     return (
-      signaturePolicies
+      cachedSignaturePolicies
         .map((policy) => {
           let score = policy.is_default ? 1 : 0;
 
@@ -271,7 +294,7 @@ export function NovaInspecaoForm({
         )
         .sort((a, b) => b.score - a.score)[0]?.policy ?? null
     );
-  }, [selectedScaffold, signaturePolicies]);
+  }, [cachedSignaturePolicies, selectedScaffold]);
 
   const requiredSignatures = useMemo(
     () =>
@@ -544,6 +567,12 @@ export function NovaInspecaoForm({
         </p>
       </div>
 
+      <OfflineDataNotice
+        active={isAuxiliaryCacheFallback}
+        label="dados da nova inspeção"
+        lastCachedAt={lastAuxiliaryCachedAt}
+      />
+
       <div className="bg-card border border-border shadow-sm p-5 space-y-4">
         <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
           Informações Gerais
@@ -561,7 +590,7 @@ export function NovaInspecaoForm({
                 <SelectValue placeholder="Selecionar andaime..." />
               </SelectTrigger>
               <SelectContent>
-                {scaffolds.map((s) => (
+                {cachedScaffolds.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.code} — {s.location}
                   </SelectItem>

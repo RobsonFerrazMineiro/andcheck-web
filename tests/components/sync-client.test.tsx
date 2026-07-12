@@ -71,6 +71,8 @@ describe("SyncClient", () => {
     render(<SyncClient />);
 
     expect(await screen.findByText("Conflito de sincronizacao")).toBeVisible();
+    fireEvent.click(screen.getByText("Ver dados locais"));
+    expect(screen.getByText(/"status": "CLOSED"/)).toBeVisible();
 
     fireEvent.click(screen.getByRole("button", { name: /manter servidor/i }));
 

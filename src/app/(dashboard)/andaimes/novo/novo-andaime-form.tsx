@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { createScaffold } from "@/lib/actions/scaffold-actions";
+import { createScaffold, updateScaffold } from "@/lib/actions/scaffold-actions";
 import {
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
@@ -27,6 +27,7 @@ import { localDb } from "@/lib/offline/local-db";
 import {
   createOfflineId,
   type OfflineCreateScaffoldPayload,
+  type OfflineUpdateScaffoldPayload,
 } from "@/lib/offline/types";
 
 const LocationPicker = dynamic(
@@ -61,11 +62,55 @@ const INITIAL: ScaffoldForm = {
   notes: "",
 };
 
-export default function NovoAndaimePage() {
+type EditableScaffold = {
+  id: string;
+  code: string;
+  type: string;
+  location: string;
+  area: string;
+  height: number;
+  width: number | null;
+  length: number | null;
+  max_load: number | null;
+  responsible: string;
+  company: string | null;
+  notes: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+export default function NovoAndaimeForm({
+  mode = "create",
+  scaffold,
+}: {
+  mode?: "create" | "edit";
+  scaffold?: EditableScaffold;
+}) {
   const router = useRouter();
-  const [form, setForm] = useState<ScaffoldForm>(INITIAL);
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
+  const isEdit = mode === "edit" && Boolean(scaffold);
+  const [form, setForm] = useState<ScaffoldForm>(() =>
+    scaffold
+      ? {
+          type: scaffold.type,
+          location: scaffold.location,
+          area: scaffold.area,
+          height: String(scaffold.height),
+          width: scaffold.width === null ? "" : String(scaffold.width),
+          length: scaffold.length === null ? "" : String(scaffold.length),
+          max_load:
+            scaffold.max_load === null ? "" : String(scaffold.max_load),
+          responsible: scaffold.responsible,
+          company: scaffold.company ?? "",
+          notes: scaffold.notes ?? "",
+        }
+      : INITIAL,
+  );
+  const [latitude, setLatitude] = useState<number | null>(
+    scaffold?.latitude ?? null,
+  );
+  const [longitude, setLongitude] = useState<number | null>(
+    scaffold?.longitude ?? null,
+  );
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
 
@@ -104,6 +149,42 @@ export default function NovoAndaimePage() {
       };
 
       if ((await checkServerConnectivity()) === "offline") {
+        if (isEdit && scaffold) {
+          const updatePayload: OfflineUpdateScaffoldPayload = {
+            id: scaffold.id,
+            ...payload,
+          };
+          const current = await localDb.scaffolds.get(scaffold.id);
+          await localDb.scaffolds.put({
+            ...(current ?? {
+              id: scaffold.id,
+              code: scaffold.code,
+              status: "em_montagem",
+              validity_date: null,
+              _count: { inspections: 0 },
+            }),
+            ...updatePayload,
+            syncStatus: "pending",
+            updatedAt: new Date().toISOString(),
+          });
+          await localDb.syncQueue.enqueue({
+            action: "scaffold.update",
+            entityType: "scaffold",
+            entityId: scaffold.id,
+            payload: updatePayload,
+          });
+          toast.success("Edicao salva offline para sincronizacao.", {
+            id: toastId,
+          });
+          if (canNavigateAfterOfflineWrite()) {
+            router.push("/sincronizacao");
+          } else {
+            savingRef.current = false;
+            setSaving(false);
+          }
+          return;
+        }
+
         const offlineId = createOfflineId("scaffold");
         await localDb.scaffolds.put({
           id: offlineId,
@@ -137,9 +218,16 @@ export default function NovoAndaimePage() {
         return;
       }
 
-      const scaffold = await createScaffold(payload);
+      if (isEdit && scaffold) {
+        const updated = await updateScaffold(scaffold.id, payload);
+        toast.success("Andaime atualizado com sucesso.", { id: toastId });
+        router.push("/andaimes/" + updated.id);
+        return;
+      }
+
+      const created = await createScaffold(payload);
       toast.success("Andaime cadastrado com sucesso.", { id: toastId });
-      router.push("/andaimes/" + scaffold.id);
+      router.push("/andaimes/" + created.id);
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Erro ao salvar andaime.";
@@ -169,7 +257,7 @@ export default function NovoAndaimePage() {
             AndCheck • Andaimes
           </div>
           <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
-            Cadastro de Andaime
+            {isEdit ? `Editar ${scaffold?.code}` : "Cadastro de Andaime"}
           </h1>
         </div>
       </div>
@@ -183,7 +271,9 @@ export default function NovoAndaimePage() {
               <Field label="Código / TAG">
                 <div className="flex items-center h-9 px-3 border border-border bg-muted/40">
                   <span className="text-[11px] text-muted-foreground italic">
-                    Gerado automaticamente ao salvar
+                    {isEdit
+                      ? scaffold?.code
+                      : "Gerado automaticamente ao salvar"}
                   </span>
                 </div>
               </Field>
@@ -330,9 +420,22 @@ export default function NovoAndaimePage() {
           {/* Status info */}
           <div className="bg-muted/30 border border-border px-4 py-3">
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
-              Status inicial:{" "}
-              <span className="font-bold text-blue-700">EM MONTAGEM</span> — o
-              andaime ficará em montagem até ser liberado após inspeção.
+              {isEdit ? (
+                <>
+                  Edicao operacional:{" "}
+                  <span className="font-bold text-blue-700">
+                    DADOS TECNICOS
+                  </span>{" "}
+                  - status e ciclo de vida permanecem nas acoes do andaime.
+                </>
+              ) : (
+                <>
+                  Status inicial:{" "}
+                  <span className="font-bold text-blue-700">EM MONTAGEM</span>{" "}
+                  - o andaime ficara em montagem ate ser liberado apos
+                  inspecao.
+                </>
+              )}
             </p>
           </div>
 
@@ -343,7 +446,9 @@ export default function NovoAndaimePage() {
               variant="outline"
               className="rounded-md text-[11px] uppercase tracking-widest h-9"
               disabled={saving}
-              onClick={() => router.push("/andaimes")}
+              onClick={() =>
+                router.push(isEdit && scaffold ? `/andaimes/${scaffold.id}` : "/andaimes")
+              }
             >
               Cancelar
             </Button>
@@ -357,7 +462,11 @@ export default function NovoAndaimePage() {
               ) : (
                 <Save className="w-3.5 h-3.5 mr-1.5" />
               )}
-              {saving ? "Salvando..." : "Cadastrar Andaime"}
+              {saving
+                ? "Salvando..."
+                : isEdit
+                  ? "Salvar Alteracoes"
+                  : "Cadastrar Andaime"}
             </Button>
           </div>
         </form>

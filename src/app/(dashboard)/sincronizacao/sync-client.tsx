@@ -29,6 +29,17 @@ function formatDate(value?: string) {
   return DATE_FORMATTER.format(date);
 }
 
+function formatPayloadPreview(payload: unknown) {
+  try {
+    const serialized = JSON.stringify(payload, null, 2);
+    return serialized.length > 800
+      ? `${serialized.slice(0, 800)}\n...`
+      : serialized;
+  } catch {
+    return "Payload local indisponivel.";
+  }
+}
+
 export function SyncClient() {
   const { status, summary, lastSyncAt, refresh, syncNow } = useOfflineStatus();
   const [items, setItems] = useState<SyncQueueItem[]>([]);
@@ -183,7 +194,20 @@ export function SyncClient() {
                         {item.serverId ?? "-"}
                       </td>
                       <td className="max-w-80 px-4 py-3 text-xs text-muted-foreground">
-                        {item.lastError ?? "-"}
+                        <div className="space-y-2">
+                          <p>{item.lastError ?? "-"}</p>
+                          {(item.status === "failed" ||
+                            item.status === "conflict") && (
+                            <details className="rounded-md border border-border bg-muted/30 p-2">
+                              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                Ver dados locais
+                              </summary>
+                              <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-foreground">
+                                {formatPayloadPreview(item.payload)}
+                              </pre>
+                            </details>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         {item.status === "failed" && (

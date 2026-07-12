@@ -430,6 +430,74 @@ export async function createScaffold(
   }
 }
 
+export async function updateScaffold(
+  id: string,
+  data: {
+    type: ScaffoldType;
+    location: string;
+    area: string;
+    height: number;
+    width?: number;
+    length?: number;
+    max_load?: number;
+    responsible: string;
+    company?: string;
+    notes?: string;
+    latitude?: number;
+    longitude?: number;
+    location_description?: string;
+  },
+) {
+  await requirePermission("scaffolds.update");
+  const scope = await getDataScope();
+  const scaffoldId = requiredId(id, "Andaime");
+  const input = parseScaffoldInput(data);
+  const oldScaffold = await prisma.scaffold.findUnique({
+    where: { id: scaffoldId },
+  });
+  assertRecordInDataScope(scope, oldScaffold);
+
+  const scaffold = await prisma.scaffold.update({
+    where: { id: scaffoldId },
+    data: input,
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.SCAFFOLD,
+    entityId: scaffold.id,
+    entityLabel: scaffold.code,
+    action: AuditAction.UPDATE,
+    description: `Dados do andaime ${scaffold.code} atualizados`,
+    oldValue: oldScaffold
+      ? {
+          type: oldScaffold.type,
+          location: oldScaffold.location,
+          area: oldScaffold.area,
+          height: oldScaffold.height,
+          width: oldScaffold.width,
+          length: oldScaffold.length,
+          max_load: oldScaffold.max_load,
+          responsible: oldScaffold.responsible,
+          company: oldScaffold.company,
+          notes: oldScaffold.notes,
+          latitude: oldScaffold.latitude,
+          longitude: oldScaffold.longitude,
+          location_description: oldScaffold.location_description,
+        }
+      : undefined,
+    newValue: input,
+    companyId: scaffold.companyId,
+    workspaceId: scaffold.workspaceId,
+  });
+
+  revalidatePath("/andaimes");
+  revalidatePath("/dashboard");
+  revalidatePath("/mapa");
+  revalidatePath(`/andaimes/${scaffold.id}`);
+  revalidatePath(`/andaimes/${scaffold.id}/editar`);
+  return scaffold;
+}
+
 const STATUS_NOTIFICATION: Partial<
   Record<
     ScaffoldStatus,

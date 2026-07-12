@@ -90,6 +90,10 @@ export type OfflineCreateScaffoldPayload = {
   location_description?: string;
 };
 
+export type OfflineUpdateScaffoldPayload = OfflineCreateScaffoldPayload & {
+  id: string;
+};
+
 export type OfflineCompleteScaffoldAssemblyPayload = {
   id: string;
 };

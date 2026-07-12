@@ -294,6 +294,51 @@ describe("processSyncQueue", () => {
     });
   });
 
+  it("uses server ids for scaffold update actions in the same sync run", async () => {
+    state.items = [
+      queueItem("offline_scaffold", "pending"),
+      {
+        ...queueItem("offline_update", "pending"),
+        action: "scaffold.update",
+        entityType: "scaffold",
+        entityId: "offline_scaffold",
+        payload: {
+          id: "offline_scaffold",
+          type: "tubular",
+          location: "Area 6",
+          area: "Montagem",
+          height: 4,
+          responsible: "Equipe B",
+        },
+      },
+    ];
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_scaffold",
+          status: "synced",
+          serverId: "server_scaffold",
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          id: "offline_update",
+          status: "synced",
+          serverId: "server_scaffold",
+        }),
+      );
+
+    await processSyncQueue();
+
+    const secondBody = JSON.parse(
+      String(vi.mocked(fetch).mock.calls[1]?.[1]?.body),
+    ) as SyncQueueItem;
+    expect(secondBody).toMatchObject({
+      entityId: "server_scaffold",
+      payload: { id: "server_scaffold" },
+    });
+  });
+
   it("marks an item as failed when the server rejects the payload", async () => {
     state.items = [queueItem("queue-1", "pending")];
     vi.mocked(fetch).mockResolvedValueOnce(

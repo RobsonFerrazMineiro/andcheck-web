@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const OFFLINE_CACHE_NAME = "andcheck-offline-v5";
+const OFFLINE_CACHE_NAME = "andcheck-offline-v6";
 const ENABLE_SERVICE_WORKER =
   process.env.NEXT_PUBLIC_ENABLE_SERVICE_WORKER !== "false";
 const STATIC_OFFLINE_ASSETS = ["/favicon.ico", "/manifest.webmanifest"];

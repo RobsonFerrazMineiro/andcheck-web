@@ -1,4 +1,4 @@
-const CACHE_NAME = "andcheck-offline-v5";
+const CACHE_NAME = "andcheck-offline-v6";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
 const STATIC_CACHE_PATHS = [OFFLINE_URL, "/favicon.ico", "/manifest.webmanifest"];
@@ -16,6 +16,12 @@ const NAVIGATION_CACHE_PATHS = new Set([
   "/perfil/notificacoes",
   "/sincronizacao",
 ]);
+const NAVIGATION_CACHE_PREFIXES = [
+  "/andaimes/",
+  "/inspecoes/",
+  "/nao-conformidades/",
+  "/acervo/",
+];
 
 function matchOfflineNavigation(request) {
   const requestUrl = new URL(request.url);
@@ -33,7 +39,10 @@ function matchOfflineNavigation(request) {
 function shouldCacheNavigation(requestUrl) {
   return (
     requestUrl.origin === self.location.origin &&
-    NAVIGATION_CACHE_PATHS.has(requestUrl.pathname)
+    (NAVIGATION_CACHE_PATHS.has(requestUrl.pathname) ||
+      NAVIGATION_CACHE_PREFIXES.some((path) =>
+        requestUrl.pathname.startsWith(path),
+      ))
   );
 }
 

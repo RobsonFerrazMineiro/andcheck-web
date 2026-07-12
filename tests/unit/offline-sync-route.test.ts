@@ -14,7 +14,9 @@ const mocks = vi.hoisted(() => ({
   dismantleScaffold: vi.fn(),
   getCurrentUserAccess: vi.fn(),
   nonConformityFindUnique: vi.fn(),
+  scaffoldFindUnique: vi.fn(),
   storeUploadedFile: vi.fn(),
+  updateScaffold: vi.fn(),
   updateNonConformityDueDate: vi.fn(),
   updateNonConformityResponsible: vi.fn(),
   updateNonConformityStatus: vi.fn(),
@@ -55,6 +57,7 @@ vi.mock("@/lib/actions/scaffold-actions", () => ({
   completeAssembly: mocks.completeAssembly,
   createScaffold: mocks.createScaffold,
   dismantleScaffold: mocks.dismantleScaffold,
+  updateScaffold: mocks.updateScaffold,
 }));
 
 vi.mock("@/lib/file-storage", () => ({
@@ -63,6 +66,9 @@ vi.mock("@/lib/file-storage", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    scaffold: {
+      findUnique: mocks.scaffoldFindUnique,
+    },
     nonConformity: {
       findUnique: mocks.nonConformityFindUnique,
     },
@@ -114,6 +120,7 @@ describe("sync route", () => {
     mocks.createScaffold.mockResolvedValue({ id: "scaffold-1" });
     mocks.completeAssembly.mockResolvedValue({ id: "scaffold-1" });
     mocks.dismantleScaffold.mockResolvedValue({ id: "scaffold-1" });
+    mocks.updateScaffold.mockResolvedValue({ id: "scaffold-1" });
     mocks.addScaffoldDocument.mockResolvedValue({ id: "document-1" });
     mocks.validateUploadedFile.mockResolvedValue({ ok: true });
     mocks.storeUploadedFile.mockResolvedValue({
@@ -122,6 +129,7 @@ describe("sync route", () => {
       contentType: "application/pdf",
     });
     mocks.nonConformityFindUnique.mockResolvedValue(null);
+    mocks.scaffoldFindUnique.mockResolvedValue(null);
   });
 
   it("syncs an offline inspection creation", async () => {
@@ -167,6 +175,52 @@ describe("sync route", () => {
     expect(mocks.createScaffold).toHaveBeenCalledWith(
       expect.objectContaining({ location: "Area 5" }),
     );
+  });
+
+  it("syncs an offline scaffold update", async () => {
+    const response = await postSync(
+      queueItem("scaffold.update", {
+        id: "scaffold-1",
+        type: "tubular",
+        location: "Area 6",
+        area: "Montagem",
+        height: 4,
+        responsible: "Equipe B",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "synced",
+      serverId: "scaffold-1",
+    });
+    expect(mocks.updateScaffold).toHaveBeenCalledWith(
+      "scaffold-1",
+      expect.objectContaining({ location: "Area 6" }),
+    );
+  });
+
+  it("marks offline scaffold update as conflict when server changed first", async () => {
+    mocks.scaffoldFindUnique.mockResolvedValue({
+      code: "AND-001",
+      updated_at: new Date("2026-01-01T01:00:00.000Z"),
+    });
+
+    const response = await postSync(
+      queueItem("scaffold.update", {
+        id: "scaffold-1",
+        type: "tubular",
+        location: "Area 6",
+        area: "Montagem",
+        height: 4,
+        responsible: "Equipe B",
+      }),
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      status: "conflict",
+      error: "Andaime AND-001 foi alterado no servidor antes da sincronizacao.",
+    });
+    expect(mocks.updateScaffold).not.toHaveBeenCalled();
   });
 
   it("syncs an offline scaffold assembly completion", async () => {

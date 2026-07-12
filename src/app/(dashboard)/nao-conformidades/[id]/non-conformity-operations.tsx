@@ -38,6 +38,7 @@ import {
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { createOfflineId } from "@/lib/offline/types";
+import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
@@ -162,6 +163,10 @@ export function NonConformityOperations({
   const [modal, setModal] = useState<Modal>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const { data: cachedResponsibleOptions } = useOfflineSnapshotCache({
+    cacheKey: "nonConformity:responsibleOptions",
+    initialData: responsibleOptions,
+  });
 
   function runAction(action: (formData: FormData) => Promise<unknown>, formData: FormData) {
     setError(null);
@@ -265,7 +270,7 @@ export function NonConformityOperations({
     ).trim();
 
     if ((await checkServerConnectivity()) === "offline") {
-      const responsible = responsibleOptions.find(
+      const responsible = cachedResponsibleOptions.find(
         (option) => option.id === responsibleUserId,
       );
       await updateCachedNonConformity(id, {
@@ -420,7 +425,7 @@ export function NonConformityOperations({
                 <SelectValue placeholder="Planejamento, Supervisor ou Encarregado" />
               </SelectTrigger>
               <SelectContent>
-                {responsibleOptions.map((user) => (
+                {cachedResponsibleOptions.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
                     {user.name} {user.company ? "- " + user.company : ""}
                   </SelectItem>

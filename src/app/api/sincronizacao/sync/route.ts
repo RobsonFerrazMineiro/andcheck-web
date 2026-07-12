@@ -13,6 +13,7 @@ import {
   completeAssembly,
   createScaffold,
   dismantleScaffold,
+  updateScaffold,
 } from "@/lib/actions/scaffold-actions";
 import {
   storeUploadedFile,
@@ -32,6 +33,7 @@ import {
   type OfflineCreateScaffoldPayload,
   type OfflineCreateInspectionPayload,
   type OfflineDismantleScaffoldPayload,
+  type OfflineUpdateScaffoldPayload,
   type OfflineUpdateNonConformityDueDatePayload,
   type OfflineUpdateNonConformityResponsiblePayload,
   type OfflineUpdateNonConformityStatusPayload,
@@ -85,6 +87,15 @@ function isOfflineCreateScaffoldPayload(
     typeof payload.area === "string" &&
     typeof payload.height === "number" &&
     typeof payload.responsible === "string"
+  );
+}
+
+function isOfflineUpdateScaffoldPayload(
+  value: unknown,
+): value is OfflineUpdateScaffoldPayload {
+  return (
+    isOfflineCreateScaffoldPayload(value) &&
+    typeof (value as Partial<OfflineUpdateScaffoldPayload>).id === "string"
   );
 }
 
@@ -345,6 +356,29 @@ async function assertNoNonConformityStatusConflict(item: SyncQueueItem) {
   }
 }
 
+async function assertNoScaffoldUpdateConflict(item: SyncQueueItem) {
+  if (!isOfflineUpdateScaffoldPayload(item.payload)) return;
+
+  const scaffold = await prisma.scaffold.findUnique({
+    where: { id: item.payload.id },
+    select: { code: true, updated_at: true },
+  });
+
+  if (!scaffold) return;
+
+  const localCreatedAt = new Date(item.createdAt);
+  if (Number.isNaN(localCreatedAt.getTime())) return;
+
+  if (scaffold.updated_at.getTime() > localCreatedAt.getTime()) {
+    throw new OfflineSyncConflictError(
+      `Andaime ${scaffold.code} foi alterado no servidor antes da sincronizacao.`,
+      {
+        serverUpdatedAt: scaffold.updated_at.toISOString(),
+      },
+    );
+  }
+}
+
 async function syncScaffoldDocument(payload: OfflineAddScaffoldDocumentPayload) {
   const fileUrl = await storeOfflineDataUrl(
     payload.file_url,
@@ -515,6 +549,34 @@ export async function POST(request: Request) {
         error instanceof Error
           ? error.message
           : "Nao foi possivel sincronizar o andaime.",
+      );
+    }
+  }
+
+  if (payload.action === "scaffold.update") {
+    if (!isOfflineUpdateScaffoldPayload(payload.payload)) {
+      return failedResponse(
+        payload,
+        access,
+        "Payload de edicao de andaime offline invalido.",
+      );
+    }
+
+    try {
+      await assertNoScaffoldUpdateConflict(payload);
+      const updated = await updateScaffold(payload.payload.id, payload.payload);
+      return syncedResponse(payload, access, updated.id);
+    } catch (error) {
+      if (error instanceof OfflineSyncConflictError) {
+        return conflictResponse(payload, access, error.message, error.details);
+      }
+
+      return failedResponse(
+        payload,
+        access,
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel sincronizar a edicao do andaime.",
       );
     }
   }
