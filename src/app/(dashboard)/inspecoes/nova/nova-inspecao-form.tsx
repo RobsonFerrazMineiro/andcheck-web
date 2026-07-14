@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { addDays, format } from "date-fns";
 import {
@@ -159,6 +159,7 @@ export function NovaInspecaoForm({
   const [validityDays, setValidityDays] = useState("7");
   const [observations, setObservations] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [savedOffline, setSavedOffline] = useState(false);
   const submittingRef = useRef(false);
   const [collectedSignatures, setCollectedSignatures] = useState<
     CollectedSignature[]
@@ -366,6 +367,7 @@ export function NovaInspecaoForm({
     signaturesReady &&
     !!selectedScaffoldId &&
     inspectorName.trim().length > 0 &&
+    !savedOffline &&
     !submitting;
 
   const handleRegisterSignature = async () => {
@@ -510,11 +512,12 @@ export function NovaInspecaoForm({
         toast.success("Inspeção salva offline para sincronização.", {
           id: toastId,
         });
+        setSavedOffline(true);
+        setSubmitting(false);
         if (canNavigateAfterOfflineWrite()) {
           router.replace("/sincronizacao");
         } else {
-          submittingRef.current = false;
-          setSubmitting(false);
+          toast.info("A inspeção já está na fila de sincronização.");
         }
         return;
       }
@@ -1045,7 +1048,12 @@ export function NovaInspecaoForm({
           onClick={handleSubmit}
           className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          {submitting ? (
+          {savedOffline ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Salva para sincronizar
+            </>
+          ) : submitting ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Salvando...

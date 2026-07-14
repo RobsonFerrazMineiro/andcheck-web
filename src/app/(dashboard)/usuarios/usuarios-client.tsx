@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   CheckCircle2,
@@ -603,45 +603,52 @@ export function UsuariosClient({
                 <div
                   key={user.id}
                   className={
-                    "flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 " +
+                    "grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 " +
                     (index % 2 === 1 ? "bg-muted/20" : "bg-card")
                   }
                 >
-                  <div className="min-w-0 flex-1 lg:contents">
-                    <div className="flex min-w-0 items-center gap-2">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                      <span className={typography.action}>
-                        {initials(user.name)}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <p
-                        className={`truncate text-foreground ${typography.bodyStrong}`}
-                      >
-                        {user.name}
-                      </p>
-                      <p
-                        className={`truncate text-muted-foreground ${typography.codeMuted}`}
-                      >
-                        {user.email}
-                      </p>
-                    </div>
-                    </div>
-                    <p className="hidden lg:block text-[11px] text-muted-foreground truncate">
-                      {user.company ?? "-"}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                    <span className={typography.action}>
+                      {initials(user.name)}
+                    </span>
+                  </div>
+                  <div className="min-w-0 lg:col-start-2">
+                    <p
+                      className={`truncate text-foreground ${typography.bodyStrong}`}
+                    >
+                      {user.name}
                     </p>
-                    <p className="hidden lg:block text-[11px] text-muted-foreground font-mono">
-                      {user.registration ?? "-"}
+                    <p
+                      className={`truncate text-muted-foreground ${typography.codeMuted}`}
+                    >
+                      {user.email}
                     </p>
-                    <div className="hidden lg:block min-w-0">
+                    <div className="mt-2 flex flex-wrap gap-1.5 lg:hidden">
                       <RoleBadge role={primaryRole} />
+                      <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                        {user.company ?? "Sem empresa"}
+                      </span>
+                      {user.department && (
+                        <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                          {user.department}
+                        </span>
+                      )}
                     </div>
-                    <p className="hidden lg:block text-[11px] text-muted-foreground truncate">
-                      {user.department ?? "-"}
-                    </p>
-                    <div className="hidden lg:flex">
-                      <StatusPill active={user.is_active} />
-                    </div>
+                  </div>
+                  <p className="hidden truncate text-[11px] text-muted-foreground lg:block">
+                    {user.company ?? "-"}
+                  </p>
+                  <p className="hidden text-[11px] font-mono text-muted-foreground lg:block">
+                    {user.registration ?? "-"}
+                  </p>
+                  <div className="hidden min-w-0 lg:block">
+                    <RoleBadge role={primaryRole} />
+                  </div>
+                  <p className="hidden truncate text-[11px] text-muted-foreground lg:block">
+                    {user.department ?? "-"}
+                  </p>
+                  <div className="hidden lg:flex">
+                    <StatusPill active={user.is_active} />
                   </div>
 
                   <div className="flex shrink-0 items-center justify-end gap-1">

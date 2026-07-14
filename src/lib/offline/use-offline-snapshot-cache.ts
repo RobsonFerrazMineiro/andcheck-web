@@ -1,8 +1,8 @@
 "use client";
 
 import { localDb } from "@/lib/offline/local-db";
-import { checkServerConnectivity } from "@/lib/offline/connectivity";
-import { useEffect, useMemo, useState } from "react";
+import { browserIsOnline } from "@/lib/offline/connectivity";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type OfflineSnapshot<T> = {
   records: T[];
@@ -19,20 +19,41 @@ export function useOfflineSnapshotCache<T>({
   const [cachedData, setCachedData] = useState<T[] | null>(null);
   const [isOfflineFallback, setIsOfflineFallback] = useState(false);
   const [lastCachedAt, setLastCachedAt] = useState<string | undefined>();
+  const lastInitialDataKeyRef = useRef<string | null>(null);
+  const initialDataRef = useRef(initialData);
+
+  const initialDataKey = useMemo(
+    () => JSON.stringify(initialData),
+    [initialData],
+  );
+
+  useEffect(() => {
+    initialDataRef.current = initialData;
+  }, [initialData, initialDataKey]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function hydrateCache() {
       try {
-        const online = (await checkServerConnectivity()) === "online";
+        const online = browserIsOnline();
+        const currentInitialData = initialDataRef.current;
 
-        if (online && initialData.length > 0) {
+        if (online && currentInitialData.length > 0) {
+          if (lastInitialDataKeyRef.current === initialDataKey) {
+            if (!cancelled) {
+              setIsOfflineFallback(false);
+              setCachedData(null);
+            }
+            return;
+          }
+
           const cachedAt = new Date().toISOString();
           await localDb.metadata.set(cacheKey, {
-            records: initialData,
+            records: currentInitialData,
             cachedAt,
           } satisfies OfflineSnapshot<T>);
+          lastInitialDataKeyRef.current = initialDataKey;
 
           if (!cancelled) {
             setLastCachedAt(cachedAt);
@@ -66,7 +87,7 @@ export function useOfflineSnapshotCache<T>({
       cancelled = true;
       window.removeEventListener("offline", handleOffline);
     };
-  }, [cacheKey, initialData]);
+  }, [cacheKey, initialDataKey]);
 
   const data = useMemo(
     () => (isOfflineFallback && cachedData ? cachedData : initialData),

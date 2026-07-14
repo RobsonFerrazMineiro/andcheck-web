@@ -46,7 +46,7 @@ export async function storeUploadedFile(file: File, category: UploadCategory) {
     };
   }
 
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
     throw new Error("Storage de arquivos nao configurado no ambiente.");
   }
 

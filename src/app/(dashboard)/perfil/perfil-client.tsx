@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   User,
 } from "lucide-react";
-import type { ElementType } from "react";
+import { useMemo, type ElementType } from "react";
 import { PasswordForm } from "./password-form";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
@@ -37,13 +37,14 @@ export function PerfilClient({
 }: {
   initialProfile: ProfileSnapshot;
 }) {
+  const initialProfiles = useMemo(() => [initialProfile], [initialProfile]);
   const {
     data: profiles,
     isOfflineFallback,
     lastCachedAt,
   } = useOfflineSnapshotCache({
     cacheKey: "profile:current",
-    initialData: [initialProfile],
+    initialData: initialProfiles,
   });
   const profile = profiles[0] ?? initialProfile;
 

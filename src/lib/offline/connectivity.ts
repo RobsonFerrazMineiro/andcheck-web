@@ -10,14 +10,7 @@ export function canNavigateAfterOfflineWrite() {
   return browserIsOnline();
 }
 
-export async function checkServerConnectivity({
-  timeoutMs = 4_000,
-}: {
-  timeoutMs?: number;
-} = {}): Promise<ConnectivityCheckResult> {
-  if (!browserIsOnline()) return "offline";
-  if (typeof window === "undefined") return "online";
-
+async function pingConnectivityEndpoint(timeoutMs: number) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
 
@@ -28,10 +21,27 @@ export async function checkServerConnectivity({
       signal: controller.signal,
     });
 
-    return response.ok ? "online" : "offline";
+    return response.ok;
   } catch {
-    return "offline";
+    return false;
   } finally {
     window.clearTimeout(timeout);
   }
+}
+
+export async function checkServerConnectivity({
+  timeoutMs = 4_000,
+}: {
+  timeoutMs?: number;
+} = {}): Promise<ConnectivityCheckResult> {
+  if (!browserIsOnline()) return "offline";
+  if (typeof window === "undefined") return "online";
+
+  if (await pingConnectivityEndpoint(timeoutMs)) return "online";
+  if (!browserIsOnline()) return "offline";
+
+  await new Promise((resolve) => window.setTimeout(resolve, 250));
+  return (await pingConnectivityEndpoint(Math.min(timeoutMs, 1_500)))
+    ? "online"
+    : "offline";
 }

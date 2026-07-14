@@ -1,4 +1,4 @@
-const CACHE_NAME = "andcheck-offline-v6";
+const CACHE_NAME = "andcheck-offline-v10";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
 const STATIC_CACHE_PATHS = [OFFLINE_URL, "/favicon.ico", "/manifest.webmanifest"];
@@ -36,6 +36,16 @@ function matchOfflineNavigation(request) {
     .then((cached) => cached || caches.match(OFFLINE_URL));
 }
 
+function cacheNavigationResponse(request, response) {
+  const requestUrl = new URL(request.url);
+  if (!response.ok || !shouldCacheNavigation(requestUrl)) return;
+
+  caches.open(CACHE_NAME).then((cache) => {
+    cache.put(request, response.clone());
+    cache.put(requestUrl.pathname, response.clone());
+  });
+}
+
 function shouldCacheNavigation(requestUrl) {
   return (
     requestUrl.origin === self.location.origin &&
@@ -49,6 +59,8 @@ function shouldCacheNavigation(requestUrl) {
 function shouldHandleAsset(request, requestUrl) {
   if (requestUrl.origin !== self.location.origin) return false;
   if (requestUrl.pathname.includes("webpack-hmr")) return false;
+  if (requestUrl.pathname.includes("_dev_")) return false;
+  if (requestUrl.pathname.includes("[turbopack]")) return false;
   return (
     ASSET_DESTINATIONS.has(request.destination) ||
     requestUrl.pathname.startsWith("/_next/")
@@ -81,18 +93,13 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
 
   if (request.method !== "GET") return;
+  const requestUrl = new URL(request.url);
 
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const requestUrl = new URL(request.url);
-          if (response.ok && shouldCacheNavigation(requestUrl)) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
+          cacheNavigationResponse(request, response);
           return response;
         })
         .catch(() => matchOfflineNavigation(request)),
@@ -100,14 +107,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const requestUrl = new URL(request.url);
   if (!shouldHandleAsset(request, requestUrl)) {
     return;
   }
 
   event.respondWith(
     caches.match(request).then((cached) => {
-      const networkFetch = fetch(request)
+      return fetch(request)
         .then((response) => {
           if (response.ok) {
             const responseClone = response.clone();
@@ -124,8 +130,6 @@ self.addEventListener("fetch", (event) => {
           }
           return new Response(null, { status: 503 });
         });
-
-      return cached || networkFetch;
     }),
   );
 });

@@ -17,6 +17,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -31,7 +32,7 @@ type OfflineContextValue = {
 };
 
 const OfflineContext = createContext<OfflineContextValue | null>(null);
-const AUTO_SYNC_INTERVAL_MS = 30_000;
+const AUTO_SYNC_INTERVAL_MS = 10_000;
 
 function hasAutoSyncCandidates(summary: SyncSummary) {
   return summary.pending > 0 || summary.syncing > 0;
@@ -42,6 +43,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ConnectivityStatus>("online");
   const [summary, setSummary] = useState<SyncSummary>(EMPTY_SYNC_SUMMARY);
   const [lastSyncAt, setLastSyncAt] = useState<string | undefined>();
+  const queueRefreshTimerRef = useRef<number | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -129,18 +131,36 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       void refresh();
     }
 
+    function handleQueueUpdated() {
+      if (queueRefreshTimerRef.current) {
+        window.clearTimeout(queueRefreshTimerRef.current);
+      }
+
+      queueRefreshTimerRef.current = window.setTimeout(() => {
+        queueRefreshTimerRef.current = null;
+        void localDb.syncQueue.summary().then(setSummary);
+      }, 250);
+    }
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-    window.addEventListener("andcheck:sync-queue-updated", autoSyncIfReady);
+    window.addEventListener("andcheck:sync-queue-updated", handleQueueUpdated);
+    window.addEventListener("focus", autoSyncIfReady);
+    document.addEventListener("visibilitychange", autoSyncIfReady);
 
     return () => {
       window.clearInterval(interval);
+      if (queueRefreshTimerRef.current) {
+        window.clearTimeout(queueRefreshTimerRef.current);
+      }
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener(
         "andcheck:sync-queue-updated",
-        autoSyncIfReady,
+        handleQueueUpdated,
       );
+      window.removeEventListener("focus", autoSyncIfReady);
+      document.removeEventListener("visibilitychange", autoSyncIfReady);
     };
   }, [autoSyncIfReady, refresh, syncNow]);
 

@@ -1,10 +1,12 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-const OFFLINE_CACHE_NAME = "andcheck-offline-v6";
-const ENABLE_SERVICE_WORKER =
-  process.env.NEXT_PUBLIC_ENABLE_SERVICE_WORKER !== "false";
+const OFFLINE_CACHE_NAME = "andcheck-offline-v10";
+const OFFLINE_CACHE_PREFIX = "andcheck-offline-";
+const SERVICE_WORKER_FLAG = process.env.NEXT_PUBLIC_ENABLE_SERVICE_WORKER;
+const ENABLE_SERVICE_WORKER = SERVICE_WORKER_FLAG !== "false";
 const STATIC_OFFLINE_ASSETS = ["/favicon.ico", "/manifest.webmanifest"];
 const OPERATIONAL_OFFLINE_ROUTES = [
   "/dashboard",
@@ -44,6 +46,8 @@ function cacheableAssetUrlsFromHtml(html: string) {
     return (
       parsed.origin === window.location.origin &&
       !parsed.pathname.includes("webpack-hmr") &&
+      !parsed.pathname.includes("_dev_") &&
+      !parsed.pathname.includes("[turbopack]") &&
       (parsed.pathname.startsWith("/_next/") ||
         STATIC_OFFLINE_ASSETS.includes(parsed.pathname))
     );
@@ -85,21 +89,53 @@ async function preheatOperationalRoutesCache() {
   );
 }
 
+async function cacheCurrentRoute(pathname: string) {
+  if (!navigator.onLine || !("caches" in window)) return;
+  if (!pathname.startsWith("/")) return;
+
+  const cache = await caches.open(OFFLINE_CACHE_NAME);
+  const response = await fetch(pathname, {
+    cache: "no-store",
+    credentials: "same-origin",
+  });
+
+  if (!response.ok) return;
+
+  const responseClone = response.clone();
+  await cache.put(pathname, response);
+  await cacheRouteDependencies(cache, responseClone);
+}
+
+async function clearLocalServiceWorkerState(
+  registrations: readonly ServiceWorkerRegistration[],
+) {
+  await Promise.all(
+    registrations
+      .filter((registration) =>
+        registration.active?.scriptURL.startsWith(window.location.origin),
+      )
+      .map((registration) => registration.unregister()),
+  );
+
+  if (!("caches" in window)) return;
+
+  const cacheNames = await caches.keys();
+  await Promise.all(
+    cacheNames
+      .filter((cacheName) => cacheName.startsWith(OFFLINE_CACHE_PREFIX))
+      .map((cacheName) => caches.delete(cacheName)),
+  );
+}
+
 export function ServiceWorkerRegister() {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     if (!ENABLE_SERVICE_WORKER) {
       void navigator.serviceWorker
         .getRegistrations()
-        .then((registrations) =>
-          Promise.all(
-            registrations
-              .filter((registration) =>
-                registration.active?.scriptURL.startsWith(window.location.origin),
-              )
-              .map((registration) => registration.unregister()),
-          ),
-        )
+        .then(clearLocalServiceWorkerState)
         .catch((error) => {
           console.error("Falha ao limpar service worker local:", error);
         });
@@ -119,6 +155,21 @@ export function ServiceWorkerRegister() {
         console.error("Falha ao registrar service worker:", error);
       });
   }, []);
+
+  useEffect(() => {
+    if (!ENABLE_SERVICE_WORKER) return;
+    if (!("serviceWorker" in navigator)) return;
+
+    const timeout = window.setTimeout(() => {
+      void navigator.serviceWorker.ready
+        .then(() => cacheCurrentRoute(pathname))
+        .catch((error) => {
+          console.error("Falha ao cachear rota atual:", error);
+        });
+    }, 500);
+
+    return () => window.clearTimeout(timeout);
+  }, [pathname]);
 
   return null;
 }
