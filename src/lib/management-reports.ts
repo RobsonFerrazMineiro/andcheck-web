@@ -46,9 +46,125 @@ export type ManagementReportFilters = {
   dateTo: string;
 };
 
-export type ManagementReportData = Awaited<
-  ReturnType<typeof getManagementReportData>
->;
+export type ManagementReportOption = {
+  id: string;
+  name: string;
+};
+
+export type ManagementReportAreaRanking = {
+  name: string;
+  scaffolds: number;
+  inspections: number;
+  ncs: number;
+  companies: string[];
+  workspaces: string[];
+};
+
+export type ManagementReportCompanyRanking = {
+  id: string;
+  name: string;
+  scaffolds: number;
+  inspections: number;
+  ncs: number;
+  aprovadas: number;
+  reprovadas: number;
+  ressalvas: number;
+  approvalRate: number | null;
+};
+
+export type ManagementReportInspectorRanking = {
+  name: string;
+  inspections: number;
+  aprovadas: number;
+  reprovadas: number;
+  ressalvas: number;
+  approvalRate: number | null;
+};
+
+export type ManagementReportNonConformityRanking = {
+  title: string;
+  occurrences: number;
+};
+
+export type ManagementReportNonConformityTrend = {
+  label: string;
+  abertas: number;
+  encerradas: number;
+};
+
+export type ManagementReportGranularity = "day" | "week" | "month" | "quarter";
+
+export type ManagementReportData = {
+  filters: ManagementReportFilters;
+  periodLabel: string;
+  exportedBy: string;
+  options: {
+    companies: ManagementReportOption[];
+    workspaces: ManagementReportOption[];
+    areas: string[];
+  };
+  kpis: {
+    scaffolds: {
+      total: number;
+      liberados: number;
+      emMontagem: number;
+      pendentes: number;
+      interditados: number;
+      vencidos: number;
+      desmontados: number;
+    };
+    inspections: {
+      total: number;
+      aprovadas: number;
+      reprovadas: number;
+      ressalvas: number;
+    };
+    nonConformities: {
+      abertas: number;
+      emTratamento: number;
+      encerradas: number;
+      vencidas: number;
+    };
+    averages: {
+      operationDays: number | null;
+      correctionDays: number | null;
+      inspectionIntervalDays: number | null;
+    };
+    quality: {
+      onTimeClosureRate: number | null;
+      utilizationRate: number | null;
+      activeScaffolds: number;
+    };
+  };
+  trends: {
+    approvalRate: KpiTrend;
+    operationDays: KpiTrend;
+    correctionDays: KpiTrend;
+    closedNonConformities: KpiTrend;
+    onTimeClosureRate: KpiTrend;
+  };
+  charts: {
+    granularity: "day" | "week" | "month" | "quarter";
+    inspectionTrend: Array<{
+      label: string;
+      aprovadas: number;
+      reprovadas: number;
+      ressalvas: number;
+    }>;
+    nonConformityTrend: ManagementReportNonConformityTrend[];
+  };
+  rankings: {
+    companies: ManagementReportCompanyRanking[];
+    areas: ManagementReportAreaRanking[];
+    inspectors: ManagementReportInspectorRanking[];
+    nonConformities: ManagementReportNonConformityRanking[];
+  };
+  exportRows: {
+    scaffolds: Array<Record<string, string>>;
+    inspections: Array<Record<string, string | number>>;
+    nonConformities: Array<Record<string, string | number | null>>;
+  };
+};
 
 export type TrendDirection = "up" | "down" | "neutral" | "none";
 
@@ -337,7 +453,7 @@ function formatQuarterLabel(date: Date) {
 
 function buildTimeBuckets(from: Date, to: Date) {
   const totalDays = Math.max(1, differenceInCalendarDays(to, from) + 1);
-  const granularity =
+  const granularity: ManagementReportGranularity =
     totalDays <= 31
       ? "day"
       : totalDays <= 90
@@ -552,7 +668,7 @@ export function summarizeChecklistNonConformity(label: string) {
 
 export async function getManagementReportData(
   searchParams: Record<string, string | string[] | undefined>,
-) {
+): Promise<ManagementReportData> {
   await requireAnyPermission(["read.all", "read.own_company"]);
 
   const access = await getCurrentUserAccess();

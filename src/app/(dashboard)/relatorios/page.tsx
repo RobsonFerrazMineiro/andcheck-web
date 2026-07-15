@@ -34,7 +34,11 @@ import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import {
   getManagementReportData,
   type KpiTrend,
-  type ManagementReportData,
+  type ManagementReportAreaRanking,
+  type ManagementReportCompanyRanking,
+  type ManagementReportInspectorRanking,
+  type ManagementReportNonConformityTrend,
+  type ManagementReportOption,
 } from "@/lib/management-reports";
 import { surface, typography } from "@/lib/design-system";
 import { ReportExportActions } from "./report-export-actions";
@@ -91,9 +95,7 @@ function getTrend(trend: KpiTrend) {
 
 export default async function RelatoriosPage({ searchParams }: Props) {
   const params = (await searchParams) ?? {};
-  const report = (await getManagementReportData(
-    params,
-  )) as ManagementReportData;
+  const report = await getManagementReportData(params);
   const { filters } = report;
   const rankingQuery = {
     companyId: filters.companyId,
@@ -209,25 +211,23 @@ export default async function RelatoriosPage({ searchParams }: Props) {
             label="Empresa"
             name="companyId"
             value={filters.companyId}
-            options={report.options.companies.map((item) => [
-              item.id,
-              item.name,
-            ])}
+            options={report.options.companies.map(
+              (item: ManagementReportOption) => [item.id, item.name],
+            )}
           />
           <FilterSelect
             label="Workspace"
             name="workspaceId"
             value={filters.workspaceId}
-            options={report.options.workspaces.map((item) => [
-              item.id,
-              item.name,
-            ])}
+            options={report.options.workspaces.map(
+              (item: ManagementReportOption) => [item.id, item.name],
+            )}
           />
           <FilterSelect
             label="Área"
             name="area"
             value={filters.area}
-            options={report.options.areas.map((area) => [area, area])}
+            options={report.options.areas.map((area: string) => [area, area])}
           />
           <FilterSelect
             label="Período"
@@ -333,7 +333,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
         <NonConformityTrendChart
           title="Evolução das NCs"
           icon={AlertTriangle}
-          rows={report.charts.nonConformityTrend.map((item) => ({
+          rows={report.charts.nonConformityTrend.map((item: ManagementReportNonConformityTrend) => ({
             label: item.label,
             abertas: item.abertas,
             encerradas: item.encerradas,
@@ -346,7 +346,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           title="Empresas"
           icon={Building2}
           href={buildRankingHref("/relatorios/rankings/empresas", rankingQuery)}
-          rows={report.rankings.companies.map((item) => ({
+          rows={report.rankings.companies.map((item: ManagementReportCompanyRanking) => ({
             label: item.name,
             values: [
               { label: "Andaimes", value: item.scaffolds, color: "#d97706" },
@@ -359,7 +359,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           title="Áreas Operacionais"
           icon={Factory}
           href={buildRankingHref("/relatorios/rankings/areas", rankingQuery)}
-          rows={report.rankings.areas.map((item) => ({
+          rows={report.rankings.areas.map((item: ManagementReportAreaRanking) => ({
             label: item.name,
             values: [
               { label: "Andaimes", value: item.scaffolds, color: "#d97706" },
@@ -372,7 +372,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           title="Top Inspetores"
           icon={UserCheck}
           href={buildRankingHref("/relatorios/rankings/inspetores", rankingQuery)}
-          rows={report.rankings.inspectors.map((item) => ({
+          rows={report.rankings.inspectors.map((item: ManagementReportInspectorRanking) => ({
             label: item.name,
             values: [
               { label: "Inspeções", value: item.inspections, color: "#64748b" },
