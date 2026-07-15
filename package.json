@@ -20,6 +20,7 @@
     "lighthouse:auth": "node scripts/lighthouse-authenticated.mjs",
     "qa": "pnpm typecheck && pnpm lint && pnpm test && pnpm qa:static",
     "qa:static": "node scripts/qa-static-check.mjs",
+    "homolog:check": "node scripts/check-homolog-env.mjs",
     "analyze:bundle": "node scripts/analyze-next-build.mjs",
     "prisma": "prisma",
     "files:migrate-base64": "node scripts/migrate-base64-files.mjs",

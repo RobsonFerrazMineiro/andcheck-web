@@ -44,6 +44,16 @@ pnpm typecheck
 pnpm build
 ```
 
+## Homologacao
+
+Antes de publicar uma URL para testes em celular e tablet reais, valide as variaveis do ambiente:
+
+```bash
+pnpm homolog:check
+```
+
+Use `.env.homolog.example` como referencia. Para validar localmente, crie `.env.homolog.local` com os valores reais de homologacao e siga o guia em `docs/homologation-deploy-guide.md`.
+
 ## Producao
 
 ```bash
