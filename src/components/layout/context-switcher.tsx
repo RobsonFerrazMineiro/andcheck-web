@@ -9,29 +9,13 @@ import {
 } from "@/components/ui/select";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { updateActiveContext } from "@/lib/actions/context-actions";
+import type { ContextSwitcherData } from "@/lib/context-switcher";
 import { Building2, ChevronDown, Loader2, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-type ContextOption = {
-  id: string;
-  name: string;
-};
-
-type WorkspaceOption = ContextOption & {
-  code: string;
-};
-
-export type ContextSwitcherData = {
-  canSwitch: boolean;
-  canSwitchCompany: boolean;
-  canSwitchWorkspace: boolean;
-  companies: ContextOption[];
-  workspaces: WorkspaceOption[];
-  selectedCompanyId: string;
-  selectedWorkspaceId: string;
-};
+export type { ContextSwitcherData };
 
 function shortWorkspaceName(name: string) {
   return (

@@ -10,7 +10,26 @@ import {
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
-export async function getContextSwitcherData() {
+export type ContextOption = {
+  id: string;
+  name: string;
+};
+
+export type WorkspaceOption = ContextOption & {
+  code: string;
+};
+
+export type ContextSwitcherData = {
+  canSwitch: boolean;
+  canSwitchCompany: boolean;
+  canSwitchWorkspace: boolean;
+  companies: ContextOption[];
+  workspaces: WorkspaceOption[];
+  selectedCompanyId: string;
+  selectedWorkspaceId: string;
+};
+
+export async function getContextSwitcherData(): Promise<ContextSwitcherData | null> {
   const access = await getCurrentUserAccess();
   if (!access) return null;
 
@@ -24,15 +43,15 @@ export async function getContextSwitcherData() {
     : access.workspaceId;
 
   const workspaces = capabilities.canSwitchWorkspace
-      ? prisma.workspace.findMany({
-          where: { active: true },
-          orderBy: { name: "asc" },
-          select: { id: true, name: true, code: true },
-        })
-      : prisma.workspace.findMany({
-          where: { id: access.workspaceId, active: true },
-          select: { id: true, name: true, code: true },
-        });
+    ? prisma.workspace.findMany({
+        where: { active: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, code: true },
+      })
+    : prisma.workspace.findMany({
+        where: { id: access.workspaceId, active: true },
+        select: { id: true, name: true, code: true },
+      });
   const workspaceOptions = await workspaces;
   const selectedWorkspace =
     workspaceOptions.find((workspace) => workspace.id === selectedWorkspaceId) ??
