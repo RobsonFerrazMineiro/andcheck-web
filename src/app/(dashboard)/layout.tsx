@@ -15,6 +15,7 @@ import {
 } from "@/lib/authz";
 import { getNotificationBellData } from "@/lib/actions/notification-actions";
 import { getContextSwitcherData } from "@/lib/context-switcher";
+import type { WorkspaceOption } from "@/lib/context-switcher";
 import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
@@ -125,7 +126,8 @@ export default async function DashboardLayout({
   );
   const activeWorkspaceName =
     contextSwitcher?.workspaces.find(
-      (workspace) => workspace.id === contextSwitcher.selectedWorkspaceId,
+      (workspace: WorkspaceOption) =>
+        workspace.id === contextSwitcher.selectedWorkspaceId,
     )?.name ?? "Nao informado";
 
   return (
