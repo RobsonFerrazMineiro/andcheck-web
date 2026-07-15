@@ -15,7 +15,7 @@ import {
 } from "@/lib/authz";
 import { getNotificationBellData } from "@/lib/actions/notification-actions";
 import { getContextSwitcherData } from "@/lib/context-switcher";
-import type { WorkspaceOption } from "@/lib/context-switcher";
+import type { ContextSwitcherData } from "@/lib/context-switcher";
 import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
@@ -47,6 +47,16 @@ function getRoleLabel(roleCodes: string[], legacyRole?: string) {
   if (legacyRole === "admin") return "Admin";
   if (legacyRole === "inspector") return "Inspetor";
   return "Viewer";
+}
+
+function getActiveWorkspaceName(contextSwitcher: ContextSwitcherData | null) {
+  if (!contextSwitcher) return "Nao informado";
+
+  return (
+    contextSwitcher.workspaces.find(
+      (workspace) => workspace.id === contextSwitcher.selectedWorkspaceId,
+    )?.name ?? "Nao informado"
+  );
 }
 
 export default async function DashboardLayout({
@@ -124,11 +134,7 @@ export default async function DashboardLayout({
     access?.roleCodes ?? [],
     (user as { role?: string } | undefined)?.role,
   );
-  const activeWorkspaceName =
-    contextSwitcher?.workspaces.find(
-      (workspace: WorkspaceOption) =>
-        workspace.id === contextSwitcher.selectedWorkspaceId,
-    )?.name ?? "Nao informado";
+  const activeWorkspaceName = getActiveWorkspaceName(contextSwitcher);
 
   return (
     <OfflineProvider>
@@ -206,12 +212,7 @@ export default async function DashboardLayout({
                 email={user.email ?? ""}
                 roleLabel={userRoleLabel}
                 companyName={authenticatedCompany?.name ?? "AndCheck"}
-                workspaceName={
-                  contextSwitcher?.workspaces.find(
-                    (workspace) =>
-                      workspace.id === contextSwitcher.selectedWorkspaceId,
-                  )?.name ?? "Nao informado"
-                }
+                workspaceName={activeWorkspaceName}
                 sessionStatus="Ativa"
               />
             )}

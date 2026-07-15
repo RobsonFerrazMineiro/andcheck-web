@@ -303,7 +303,8 @@ export async function setUserActive(userId: string, isActive: boolean) {
   });
 
   const targetIsSuperAdmin = targetUser?.roles.some(
-    (userRole) => userRole.role.code === "SUPER_ADMIN",
+    (userRole: { role: { code: string } }) =>
+      userRole.role.code === "SUPER_ADMIN",
   );
   assertRecordInDataScope(scope, targetUser);
 

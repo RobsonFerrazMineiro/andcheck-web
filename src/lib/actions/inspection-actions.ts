@@ -558,7 +558,9 @@ export async function createInspection(data: {
     input.scaffold_id,
   );
   const requiredSignatures =
-    policy?.requirements.filter((requirement) => requirement.is_required) ?? [];
+    policy?.requirements.filter(
+      (requirement: { is_required: boolean }) => requirement.is_required,
+    ) ?? [];
   const providedSignatures = (signatures ?? []).filter(
     (signature) => signature.signer_name.trim() && signature.signature_data,
   );
