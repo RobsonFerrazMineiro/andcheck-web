@@ -16,7 +16,7 @@ function isCrossOriginRequest(req: { headers: Headers; nextUrl: URL }) {
 }
 
 export default auth((req) => {
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = Boolean(req.auth?.user?.id || req.auth?.user?.email);
   const { pathname } = req.nextUrl;
 
   if (MUTATING_METHODS.has(req.method) && isCrossOriginRequest(req)) {
