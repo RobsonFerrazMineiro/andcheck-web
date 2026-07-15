@@ -84,7 +84,7 @@ Zoom:
 | `pnpm test:e2e -- audit-company-scope.spec.ts --project=chromium --workers=1` | Aprovado | Escopo de auditoria validado apos ajustar seletor do teste |
 | `pnpm test:e2e -- --workers=1` | Aprovado | 98 testes passaram em `chromium` e `mobile-chrome` contra `next start` local com URLs alinhadas |
 | Suite E2E completa desktop+mobile | Aprovado | Execucao serial aprovada; execucao paralela com 8 workers falhou por contencao/estado compartilhado do ambiente E2E local |
-| `pnpm audit --audit-level moderate` | Bloqueado | Requer aprovacao explicita para envio de metadados de dependencias ao registry externo |
+| `pnpm audit --audit-level moderate` | Aprovado | 0 vulnerabilidades info/low/moderate/high/critical |
 
 ## Resultado De Performance
 
@@ -137,7 +137,6 @@ Zoom:
 - Validar variaveis de ambiente obrigatorias antes do deploy.
 - Manter suite E2E completa em CI/homologacao com `--workers=1`, `NEXTAUTH_URL`, `AUTH_URL` e `E2E_BASE_URL` apontando para o mesmo origin e `E2E_DISABLE_AUTH_RATE_LIMIT=1`.
 - Repetir validacao especifica em tablet; desktop e mobile ja passaram em E2E completo.
-- Executar `pnpm audit --audit-level moderate` somente apos aprovacao explicita, pois envia metadados de dependencias ao registry externo.
 - Configurar provedor real de e-mail em producao. No momento o envio de e-mail ainda nao esta configurado.
 
 ## Riscos Conhecidos
@@ -175,4 +174,4 @@ Observacoes:
 
 Status atual: nao aprovado ainda.
 
-Motivo: revisao em andamento. Testes automatizados base, build, mobile responsivo e offline-sync mobile passaram, mas deploy deve aguardar validacao manual complementar dos fluxos operacionais, suite E2E completa em ambiente dedicado, auditoria de dependencias com aprovacao explicita, seguranca, variaveis de producao, configuracao do envio real de e-mail e ausencia de bugs bloqueadores/criticos.
+Motivo: revisao em andamento. Testes automatizados base, build, mobile responsivo, offline-sync mobile, suite E2E completa serial e auditoria de dependencias passaram, mas deploy deve aguardar validacao manual complementar dos fluxos operacionais, suite E2E em ambiente dedicado, seguranca, variaveis de producao, configuracao do envio real de e-mail e ausencia de bugs bloqueadores/criticos.
