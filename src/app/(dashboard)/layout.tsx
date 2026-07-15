@@ -31,7 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
   SUPERVISOR: "Supervisor",
   ENCARREGADO: "Encarregado",
   SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
-  MONTADOR_LIDER: "Montador Líder",
+  MONTADOR_LIDER: "Montador Lider",
   AUDITOR: "Auditor",
 };
 
@@ -126,7 +126,7 @@ export default async function DashboardLayout({
   const activeWorkspaceName =
     contextSwitcher?.workspaces.find(
       (workspace) => workspace.id === contextSwitcher.selectedWorkspaceId,
-    )?.name ?? "NÃ£o informado";
+    )?.name ?? "Nao informado";
 
   return (
     <OfflineProvider>
@@ -152,7 +152,7 @@ export default async function DashboardLayout({
         userProfile={
           user
             ? {
-                name: user.name ?? "UsuÃ¡rio",
+                name: user.name ?? "Usuario",
                 email: user.email ?? "",
                 roleLabel: userRoleLabel,
                 companyName: authenticatedCompany?.name ?? "AndCheck",
@@ -164,7 +164,7 @@ export default async function DashboardLayout({
       />
 
       <main className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden pt-14 lg:ml-56 lg:pt-0">
-        {/* Topbar — apenas desktop */}
+        {/* Topbar apenas desktop */}
         <div className="hidden lg:flex items-center justify-between bg-card border-b border-border px-6 py-2.5 shrink-0">
           <div
             className={`flex min-w-0 items-center ${contextSwitcher?.canSwitchCompany ? "gap-4" : "gap-2"}`}
@@ -200,7 +200,7 @@ export default async function DashboardLayout({
             />
             {user && (
               <UserMenu
-                name={user.name ?? "Usuário"}
+                name={user.name ?? "Usuario"}
                 email={user.email ?? ""}
                 roleLabel={userRoleLabel}
                 companyName={authenticatedCompany?.name ?? "AndCheck"}
@@ -208,7 +208,7 @@ export default async function DashboardLayout({
                   contextSwitcher?.workspaces.find(
                     (workspace) =>
                       workspace.id === contextSwitcher.selectedWorkspaceId,
-                  )?.name ?? "Não informado"
+                  )?.name ?? "Nao informado"
                 }
                 sessionStatus="Ativa"
               />

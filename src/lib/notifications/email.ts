@@ -13,11 +13,17 @@ export type SendEmailResult = {
 };
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
-  const provider = process.env.EMAIL_PROVIDER || "mock";
+  const provider = (process.env.EMAIL_PROVIDER || "mock").toLowerCase();
   void input;
 
+  if (provider !== "mock") {
+    throw new Error(
+      `Envio real de e-mail nao implementado para EMAIL_PROVIDER=${provider}. Configure um adapter antes de habilitar o canal.`,
+    );
+  }
+
   return {
-    provider: provider === "mock" ? "mock" : `mock:${provider}`,
+    provider: "mock",
     providerMessageId: `mock_${Date.now()}_${Math.random()
       .toString(36)
       .slice(2)}`,

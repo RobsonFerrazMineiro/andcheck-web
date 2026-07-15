@@ -8,7 +8,10 @@ import type { NextRequest } from "next/server";
 export const GET = handlers.GET;
 
 export async function POST(request: NextRequest) {
-  if (request.nextUrl.pathname.endsWith("/callback/credentials")) {
+  if (
+    request.nextUrl.pathname.endsWith("/callback/credentials") &&
+    process.env.E2E_DISABLE_AUTH_RATE_LIMIT !== "1"
+  ) {
     const limit = checkRequestRateLimit(request, {
       key: "auth-credentials",
       limit: 8,

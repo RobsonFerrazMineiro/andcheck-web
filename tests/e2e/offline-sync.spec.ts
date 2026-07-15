@@ -58,7 +58,9 @@ test("queues a scaffold creation while offline", async ({ page }) => {
   await page
     .getByPlaceholder(/Plataforma B/)
     .fill("Offline E2E - Plataforma");
+  await page.getByPlaceholder(/Manuten/).fill("Area E2E");
   await page.getByPlaceholder("12.5").fill("4");
+  await page.getByPlaceholder(/respons/i).fill("Equipe E2E");
 
   await page.route("**/api/connectivity**", (route) =>
     route.fulfill({ status: 503, body: "offline" }),
@@ -85,11 +87,7 @@ test("queues a scaffold update while offline", async ({ page }) => {
   await page.getByPlaceholder(/respons/).fill("Equipe E2E");
 
   await page.getByRole("button", { name: /Cadastrar Andaime/i }).click();
-  await expect(page).toHaveURL(/\/(andaimes\/[^/]+|dashboard)$/);
-
-  await page.goto("/andaimes");
-  await page.getByText(`E2E Edit ${suffix}`).click();
-  await expect(page).toHaveURL(/\/andaimes\/[^/]+$/);
+  await expect(page).toHaveURL(/\/andaimes\/(?!novo$)[^/]+$/);
 
   const detailUrl = page.url();
   await page.goto(`${detailUrl}/editar`);

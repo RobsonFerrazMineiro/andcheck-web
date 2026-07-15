@@ -137,7 +137,7 @@ export function ServiceWorkerRegister() {
         .getRegistrations()
         .then(clearLocalServiceWorkerState)
         .catch((error) => {
-          console.error("Falha ao limpar service worker local:", error);
+          console.warn("Falha ao limpar service worker local.", error);
         });
       return;
     }
@@ -152,7 +152,7 @@ export function ServiceWorkerRegister() {
         return preheatOperationalRoutesCache();
       })
       .catch((error) => {
-        console.error("Falha ao registrar service worker:", error);
+        console.warn("Falha ao registrar service worker.", error);
       });
   }, []);
 
@@ -164,7 +164,7 @@ export function ServiceWorkerRegister() {
       void navigator.serviceWorker.ready
         .then(() => cacheCurrentRoute(pathname))
         .catch((error) => {
-          console.error("Falha ao cachear rota atual:", error);
+          console.warn("Falha ao cachear rota atual.", error);
         });
     }, 500);
 

@@ -31,10 +31,14 @@ async function createScaffold(page: import("@playwright/test").Page) {
   await page.goto("/andaimes/novo");
   await page
     .getByPlaceholder("Ex: Área 5 – Plataforma B")
-    .fill("Plataforma Lifecycle-E2E");
+    .fill(`Plataforma Lifecycle-E2E ${Date.now()}`);
+  await page.getByPlaceholder(/Manuten/).fill("Area E2E");
   await page.getByPlaceholder("12.5").fill("5");
+  await page.getByPlaceholder(/respons/i).fill("Equipe E2E");
   await page.getByRole("button", { name: /Cadastrar Andaime/i }).click();
-  await expect(page).toHaveURL(/\/andaimes\/.+/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/andaimes\/(?!novo$)[^/]+$/, {
+    timeout: 15_000,
+  });
   return page.url();
 }
 
@@ -152,7 +156,7 @@ test("Registrar Desmontagem button opens dismantling dialog with reason selector
 
   // DismantleDialog renders a select/list of reasons
   await expect(page.locator("body")).toContainText(/motivo/i);
-  await expect(page.locator("body")).toContainText(/Finalização da atividade/i);
+  await expect(page.locator("body")).toContainText(/Finalizacao da atividade/i);
 });
 
 test("dismantling without selecting a reason shows a validation error", async ({
@@ -165,7 +169,7 @@ test("dismantling without selecting a reason shows a validation error", async ({
   await page.getByRole("button", { name: /Registrar Desmontagem/i }).click();
 
   // Try to confirm without choosing a reason
-  await page.getByRole("button", { name: /Confirmar|Registrar/i }).click();
+  await page.getByRole("button", { name: "Confirmar desmontagem" }).click();
 
   // Should show the inline error "Selecione o motivo da desmontagem."
   await expect(page.locator("body")).toContainText(

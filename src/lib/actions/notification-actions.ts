@@ -579,8 +579,8 @@ export async function getEmailChannelStatus() {
     return {
       status: "PENDING" as const,
       label: "Pendente de configuracao",
-      available: true,
-      detail: "Preferencias podem ser salvas; envio real depende do provedor.",
+      available: false,
+      detail: "Envio real de e-mail ainda nao esta configurado.",
     };
   }
 
@@ -615,10 +615,10 @@ export async function getEmailChannelStatus() {
   }
 
   return {
-    status: "CONFIGURED" as const,
-    label: "Configurado",
-    available: true,
-    detail: `Provedor ativo: ${provider}.`,
+    status: "PENDING" as const,
+    label: "Adapter pendente",
+    available: false,
+    detail: `Variaveis de ${provider} podem estar presentes, mas o adapter de envio real ainda nao foi implementado.`,
   };
 }
 

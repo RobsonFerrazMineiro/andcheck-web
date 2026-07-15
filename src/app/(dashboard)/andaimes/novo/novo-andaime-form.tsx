@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { ArrowLeft, Construction, Loader2, Save } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -311,11 +311,12 @@ export default function NovoAndaimeForm({
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>
-              <Field label="Área / Setor">
+              <Field label="Área / Setor *">
                 <Input
                   placeholder="Ex: Manutenção Industrial"
                   value={form.area}
                   onChange={set("area")}
+                  required
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>
@@ -385,11 +386,12 @@ export default function NovoAndaimeForm({
           {/* Responsabilidade */}
           <FormSection title="Responsabilidade Técnica">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Responsável Técnico">
+              <Field label="Responsável Técnico *">
                 <Input
                   placeholder="Nome do responsável"
                   value={form.responsible}
                   onChange={set("responsible")}
+                  required
                   className="rounded-md h-9 text-[12px]"
                 />
               </Field>

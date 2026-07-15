@@ -2,9 +2,8 @@ const ALLOWED_REFERENCE_PREFIXES = ["/uploads/", "vercel-blob:"];
 
 export function isStoredFileReference(value: string) {
   const reference = value.trim();
-  return (
-    /^https?:\/\//i.test(reference) ||
-    ALLOWED_REFERENCE_PREFIXES.some((prefix) => reference.startsWith(prefix))
+  return ALLOWED_REFERENCE_PREFIXES.some((prefix) =>
+    reference.startsWith(prefix),
   );
 }
 

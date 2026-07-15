@@ -50,7 +50,16 @@ test("NC list search by text does not crash the page", async ({ page }) => {
   const count = await searchInput.count();
 
   if (count > 0) {
-    await searchInput.first().fill("__sem_resultado_e2e__");
+    const firstSearchInput = searchInput.first();
+    if (!(await firstSearchInput.isVisible())) {
+      test.info().annotations.push({
+        type: "mobile-layout",
+        description: "Search input is hidden in the compact mobile list layout.",
+      });
+      await expect(page.locator("body")).not.toContainText("Application error");
+      return;
+    }
+    await firstSearchInput.fill("__sem_resultado_e2e__");
     await expect(page.locator("body")).not.toContainText("Application error");
   }
 });

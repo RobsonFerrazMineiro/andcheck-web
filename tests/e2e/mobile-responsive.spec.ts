@@ -3,8 +3,12 @@ import { expect, test } from "@playwright/test";
 const email = process.env.E2E_EMAIL ?? "admin@andcheck.com";
 const password = process.env.E2E_PASSWORD ?? "andcheck@2025";
 
+async function gotoAppPage(page: import("@playwright/test").Page, route: string) {
+  await page.goto(route, { waitUntil: "domcontentloaded" });
+}
+
 async function login(page: import("@playwright/test").Page) {
-  await page.goto("/login");
+  await gotoAppPage(page, "/login");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Senha").fill(password);
   await page.getByRole("button", { name: "Entrar" }).click();
@@ -53,8 +57,9 @@ test("mobile admin pages do not overflow horizontally", async ({ page }) => {
     "/auditoria",
     "/perfil/notificacoes",
   ]) {
-    await page.goto(route);
-    if (route === "/auditoria") {
+    await gotoAppPage(page, route);
+    const viewportWidth = page.viewportSize()?.width ?? 0;
+    if (route === "/auditoria" && viewportWidth < 768) {
       await expect(
         page.getByText("Auditoria disponível em telas maiores"),
       ).toBeVisible();

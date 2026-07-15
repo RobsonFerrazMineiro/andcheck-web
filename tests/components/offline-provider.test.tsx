@@ -65,7 +65,7 @@ describe("OfflineProvider", () => {
     vi.useRealTimers();
   });
 
-  it("syncs automatically when the queue changes and connectivity is available", async () => {
+  it("refreshes the local queue summary when the queue changes", async () => {
     render(
       <OfflineProvider>
         <StatusProbe />
@@ -77,13 +77,15 @@ describe("OfflineProvider", () => {
     });
 
     expect(processSyncQueue).not.toHaveBeenCalled();
+    vi.clearAllMocks();
 
     state.summary = { ...EMPTY_SUMMARY, pending: 1, total: 1 };
     window.dispatchEvent(new Event("andcheck:sync-queue-updated"));
 
     await waitFor(() => {
-      expect(checkServerConnectivity).toHaveBeenCalled();
-      expect(processSyncQueue).toHaveBeenCalledTimes(1);
+      expect(localDb.syncQueue.summary).toHaveBeenCalled();
     });
+    expect(checkServerConnectivity).not.toHaveBeenCalled();
+    expect(processSyncQueue).not.toHaveBeenCalled();
   });
 });
