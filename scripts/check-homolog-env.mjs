@@ -4,7 +4,6 @@ config({ path: ".env.homolog.local", override: false, quiet: true });
 
 const required = [
   "DATABASE_URL",
-  "AUTH_SECRET",
   "AUTH_URL",
   "NEXTAUTH_URL",
   "NEXT_PUBLIC_APP_URL",
@@ -28,6 +27,10 @@ function addWarning(message) {
 
 for (const name of required) {
   if (!value(name)) addFailure(`${name} nao definido.`);
+}
+
+if (!value("AUTH_SECRET") && !value("NEXTAUTH_SECRET")) {
+  addFailure("AUTH_SECRET ou NEXTAUTH_SECRET deve ser definido.");
 }
 
 if (value("NEXT_PUBLIC_ENABLE_SERVICE_WORKER") !== "true") {
