@@ -7,6 +7,7 @@ import {
   Camera,
   CheckCircle2,
   ClipboardCheck,
+  ImagePlus,
   Loader2,
   RotateCcw,
   ShieldCheck,
@@ -38,10 +39,7 @@ import {
   calculateInspectionResult,
   calculateScaffoldStatus,
 } from "@/lib/inspection-outcome";
-import {
-  canNavigateAfterOfflineWrite,
-  checkServerConnectivity,
-} from "@/lib/offline/connectivity";
+import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import {
@@ -49,7 +47,7 @@ import {
   type OfflineCreateInspectionPayload,
 } from "@/lib/offline/types";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
-import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
+import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 
 const ChecklistSection = dynamic(
   () => import("@/components/inspection/checklist-section"),
@@ -171,7 +169,8 @@ export function NovaInspecaoForm({
 
   // Registro fotográfico
   const [photos, setPhotos] = useState<string[]>([]);
-  const photoInputRef = useRef<HTMLInputElement>(null);
+  const photoGalleryInputRef = useRef<HTMLInputElement>(null);
+  const photoCameraInputRef = useRef<HTMLInputElement>(null);
 
   // Assinatura digital
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -228,18 +227,9 @@ export function NovaInspecaoForm({
       const files = Array.from(e.target.files ?? []);
       try {
         const { compressImageBlob } = await import("@/lib/compress-image");
-        const online = (await checkServerConnectivity()) === "online";
-
         for (const file of files) {
           const compressed = await compressImageBlob(file);
-          const photo = online
-            ? (
-                await uploadFile(compressed, {
-                  category: "inspection-photos",
-                  fileName: file.name,
-                })
-              ).reference
-            : await fileToDataUrl(compressed);
+          const photo = await fileToDataUrl(compressed);
           setPhotos((prev) => [...prev, photo]);
         }
       } catch (error) {
@@ -506,11 +496,7 @@ export function NovaInspecaoForm({
         });
         setSavedOffline(true);
         setSubmitting(false);
-        if (canNavigateAfterOfflineWrite()) {
-          router.replace("/sincronizacao");
-        } else {
-          toast.info("A inspeção já está na fila de sincronização.");
-        }
+        router.replace("/sincronizacao");
         return;
       }
 
@@ -709,10 +695,18 @@ export function NovaInspecaoForm({
 
         {/* Input de arquivo oculto */}
         <input
-          ref={photoInputRef}
+          ref={photoGalleryInputRef}
           type="file"
           accept="image/*"
           multiple
+          className="hidden"
+          onChange={handlePhotoAdd}
+        />
+        <input
+          ref={photoCameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={handlePhotoAdd}
         />
@@ -795,11 +789,19 @@ export function NovaInspecaoForm({
 
         <button
           type="button"
-          onClick={() => photoInputRef.current?.click()}
+          onClick={() => photoGalleryInputRef.current?.click()}
           className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
         >
+          <ImagePlus className="w-3.5 h-3.5" />
+          Galeria{photos.length > 0 ? ` (${photos.length})` : ""}
+        </button>
+        <button
+          type="button"
+          onClick={() => photoCameraInputRef.current?.click()}
+          className="ml-2 inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+        >
           <Camera className="w-3.5 h-3.5" />
-          Adicionar foto{photos.length > 0 ? ` (${photos.length})` : ""}
+          Camera
         </button>
       </div>
 

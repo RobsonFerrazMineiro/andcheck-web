@@ -19,10 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createScaffold, updateScaffold } from "@/lib/actions/scaffold-actions";
-import {
-  canNavigateAfterOfflineWrite,
-  checkServerConnectivity,
-} from "@/lib/offline/connectivity";
+import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import {
   createOfflineId,
@@ -178,9 +175,7 @@ export default function NovoAndaimeForm({
             id: toastId,
           });
           setSavedOffline(true);
-          if (canNavigateAfterOfflineWrite()) {
-            router.push(`/andaimes/${scaffold.id}`);
-          }
+          router.push(`/andaimes/${scaffold.id}`);
           return;
         }
 
@@ -208,9 +203,8 @@ export default function NovoAndaimeForm({
         toast.success("Andaime salvo offline para sincronização.", {
           id: toastId,
         });
-        if (canNavigateAfterOfflineWrite()) {
-          router.push(`/andaimes/${offlineId}`);
-        }
+        setSavedOffline(true);
+        router.push(`/andaimes/${offlineId}`);
         return;
       }
 

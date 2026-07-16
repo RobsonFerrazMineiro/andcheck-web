@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Camera,
   CheckCircle2,
+  ImagePlus,
   MinusCircle,
   XCircle,
 } from "lucide-react";
@@ -16,7 +17,6 @@ import type {
   ChecklistValue,
 } from "@/lib/checklist-template";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
-import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
 interface Props {
@@ -62,7 +62,8 @@ export default function ChecklistSection({
   values,
   onChange,
 }: Props) {
-  const photoInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const photoGalleryInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const photoCameraInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (
     itemIndex: number,
@@ -83,14 +84,7 @@ export default function ChecklistSection({
     try {
       const { compressImageBlob } = await import("@/lib/compress-image");
       const compressed = await compressImageBlob(file);
-      const photo = navigator.onLine
-        ? (
-            await uploadFile(compressed, {
-              category: "checklist-photos",
-              fileName: file.name,
-            })
-          ).reference
-        : await fileToDataUrl(compressed);
+      const photo = await fileToDataUrl(compressed);
       const updated = [...values];
       updated[itemIndex] = {
         ...updated[itemIndex],
@@ -173,19 +167,37 @@ export default function ChecklistSection({
                     accept="image/*"
                     className="hidden"
                     ref={(el) => {
-                      photoInputRefs.current[idx] = el;
+                      photoGalleryInputRefs.current[idx] = el;
+                    }}
+                    onChange={(e) => handlePhotoChange(idx, e)}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    ref={(el) => {
+                      photoCameraInputRefs.current[idx] = el;
                     }}
                     onChange={(e) => handlePhotoChange(idx, e)}
                   />
                   <button
                     type="button"
-                    title={val.photo ? "Foto adicionada" : "Adicionar foto"}
-                    onClick={() => photoInputRefs.current[idx]?.click()}
+                    title={val.photo ? "Foto adicionada" : "Escolher da galeria"}
+                    onClick={() => photoGalleryInputRefs.current[idx]?.click()}
                     className={`shrink-0 w-8 h-8 flex items-center justify-center border transition-colors ${
                       val.photo
                         ? "border-red-400 bg-red-50 text-red-600"
                         : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                     }`}
+                  >
+                    <ImagePlus className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Usar camera"
+                    onClick={() => photoCameraInputRefs.current[idx]?.click()}
+                    className="shrink-0 w-8 h-8 flex items-center justify-center border border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
                   >
                     <Camera className="w-3.5 h-3.5" />
                   </button>

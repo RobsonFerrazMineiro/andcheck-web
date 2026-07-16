@@ -206,19 +206,7 @@ async function resolveInspectionOfflineFiles(
 ) {
   return {
     ...payload,
-    photos: payload.photos
-      ? (
-          await Promise.all(
-            payload.photos.map((photo, index) =>
-              storeOfflineDataUrl(
-                photo,
-                "inspection-photos",
-                `inspection-photo-${index + 1}.jpg`,
-              ),
-            ),
-          )
-        ).filter((photo): photo is string => Boolean(photo))
-      : undefined,
+    photos: payload.photos,
     signature: payload.signature,
     signatures: payload.signatures
       ? payload.signatures.map((signature) => ({
@@ -226,16 +214,10 @@ async function resolveInspectionOfflineFiles(
           signature_data: signature.signature_data,
         }))
       : undefined,
-    checklist: await Promise.all(
-      payload.checklist.map(async (item, index) => ({
-        ...item,
-        photo: await storeOfflineDataUrl(
-          item.photo,
-          "checklist-photos",
-          `checklist-photo-${index + 1}.jpg`,
-        ),
-      })),
-    ),
+    checklist: payload.checklist.map((item) => ({
+      ...item,
+      photo: item.photo,
+    })),
   };
 }
 

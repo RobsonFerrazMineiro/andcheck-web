@@ -48,6 +48,7 @@ const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
 const CHECKLIST_VALUES = Object.values(ChecklistValue);
 const INSPECTION_RESULTS = Object.values(InspectionResult);
 const MAX_SIGNATURE_DATA_LENGTH = 350_000;
+const MAX_INLINE_IMAGE_DATA_LENGTH = 1_500_000;
 
 function parseInspectionInput(data: {
   scaffold_id: string;
@@ -99,7 +100,7 @@ function parseInspectionInput(data: {
     }),
     notes: optionalText(data.notes, "Observacoes", 2000) ?? undefined,
     photos: (data.photos ?? []).map((photo) =>
-      requiredText(photo, "Foto da inspecao", 500),
+      requiredText(photo, "Foto da inspecao", MAX_INLINE_IMAGE_DATA_LENGTH),
     ),
     signature:
       optionalText(
@@ -130,7 +131,12 @@ function parseInspectionInput(data: {
       value: enumValue(item.value, CHECKLIST_VALUES, "Valor do checklist"),
       critical: Boolean(item.critical),
       observation: optionalText(item.observation, "Observacao do item", 1000) ?? undefined,
-      photo: optionalText(item.photo, "Foto do checklist", 500) ?? undefined,
+      photo:
+        optionalText(
+          item.photo,
+          "Foto do checklist",
+          MAX_INLINE_IMAGE_DATA_LENGTH,
+        ) ?? undefined,
     })),
   };
 }
@@ -548,7 +554,7 @@ export async function createInspection(data: {
   }
 
   input.photos?.forEach((photo) =>
-    assertStoredFileReference(photo, "Foto da inspecao"),
+    assertStoredFileOrInlineImageReference(photo, "Foto da inspecao"),
   );
   if (input.signature) {
     assertStoredFileOrInlineImageReference(
@@ -566,7 +572,7 @@ export async function createInspection(data: {
   });
   input.checklist.forEach((item) => {
     if (item.photo) {
-      assertStoredFileReference(item.photo, "Foto do checklist");
+      assertStoredFileOrInlineImageReference(item.photo, "Foto do checklist");
     }
   });
   const currentAccess = await getCurrentUserAccess();
