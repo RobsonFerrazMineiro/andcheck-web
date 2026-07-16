@@ -122,14 +122,16 @@ export function UsuariosClient({
   companies,
   canSelectAnyCompany,
   currentUserId,
-  canDeleteUsers,
+  currentUserCompanyId,
+  currentUserRoleCodes,
 }: {
   initialData: UserRow[];
   roles: RoleOption[];
   companies: CompanyOption[];
   canSelectAnyCompany: boolean;
   currentUserId: string | null;
-  canDeleteUsers: boolean;
+  currentUserCompanyId: string | null;
+  currentUserRoleCodes: string[];
 }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -222,8 +224,8 @@ export function UsuariosClient({
   function handleDelete(user: UserRow) {
     startTransition(async () => {
       try {
-        await deleteUser(user.id);
-        toast.success("Usuário excluido.");
+        const result = await deleteUser(user.id);
+        toast.success(result.message);
         setDeleteTarget(null);
       } catch (error) {
         toast.error(
@@ -603,11 +605,13 @@ export function UsuariosClient({
             {filtered.map((user, index) => {
               const primaryRole = user.roles[0];
               const isCurrentUser = user.id === currentUserId;
-              const isProtectedAdmin = user.roles.some((role) =>
-                ["SUPER_ADMIN", "ADMIN_EMPRESA"].includes(role.code),
-              );
-              const canDeleteThisUser =
-                canDeleteUsers && !isCurrentUser && !isProtectedAdmin;
+              const deleteBlockReason = getDeleteBlockReason({
+                actorCompanyId: currentUserCompanyId,
+                actorRoleCodes: currentUserRoleCodes,
+                isCurrentUser,
+                target: user,
+              });
+              const canDeleteThisUser = !deleteBlockReason;
               return (
                 <div
                   key={user.id}
@@ -703,13 +707,7 @@ export function UsuariosClient({
                       onClick={() => setDeleteTarget(user)}
                       aria-label={`Excluir usuário ${user.name}`}
                       title={
-                        isCurrentUser
-                          ? "Não é permitido excluir o próprio usuário."
-                          : isProtectedAdmin
-                            ? "Não é permitido excluir administradores."
-                            : !canDeleteUsers
-                              ? "Você não tem permissão para excluir usuários."
-                              : undefined
+                        deleteBlockReason ?? "Excluir usuario"
                       }
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
                     >
@@ -761,6 +759,36 @@ function Field({
       />
     </div>
   );
+}
+
+function getDeleteBlockReason({
+  actorCompanyId,
+  actorRoleCodes,
+  isCurrentUser,
+  target,
+}: {
+  actorCompanyId: string | null;
+  actorRoleCodes: string[];
+  isCurrentUser: boolean;
+  target: UserRow;
+}) {
+  const actorIsSuperAdmin = actorRoleCodes.includes("SUPER_ADMIN");
+  const actorIsCompanyAdmin = actorRoleCodes.includes("ADMIN_EMPRESA");
+  const targetIsSuperAdmin = target.roles.some(
+    (role) => role.code === "SUPER_ADMIN",
+  );
+
+  if (isCurrentUser) return "Voce nao pode excluir sua propria conta.";
+  if (actorIsSuperAdmin) return null;
+  if (!actorIsCompanyAdmin) return "Voce nao tem permissao para excluir usuarios.";
+  if (targetIsSuperAdmin) {
+    return "Voce nao possui permissao para excluir um Super Admin.";
+  }
+  if (!actorCompanyId || target.companyId !== actorCompanyId) {
+    return "Este usuario pertence a outra empresa.";
+  }
+
+  return null;
 }
 
 function CompanySelect({

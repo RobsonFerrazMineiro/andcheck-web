@@ -20,7 +20,6 @@ export default async function UsuariosPage() {
     (await canCurrentUser("users.manage_company")) ||
     (await canCurrentUser("users.create"));
   if (!canManageUsers) redirect("/dashboard");
-  const canDeleteUsers = await canCurrentUser("permissions.manage");
 
   const [access, { users, roles, companies, canSelectAnyCompany }] =
     await Promise.all([
@@ -67,7 +66,8 @@ export default async function UsuariosPage() {
         companies={companyOptions}
         canSelectAnyCompany={canSelectAnyCompany}
         currentUserId={access?.userId ?? null}
-        canDeleteUsers={canDeleteUsers}
+        currentUserCompanyId={access?.companyId ?? null}
+        currentUserRoleCodes={access?.roleCodes ?? []}
       />
     </div>
   );

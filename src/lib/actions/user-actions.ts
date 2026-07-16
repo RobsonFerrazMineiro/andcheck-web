@@ -12,7 +12,6 @@ import {
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import {
-  assertRecordInDataScope,
   COMPANY_SCOPED_ROLE_CODES,
   dataScopeWhere,
   getDataScope,
@@ -28,6 +27,10 @@ const TEMPORARY_PASSWORD = "andcheck@2025";
 
 function userCanSelectAnyCompany(roleCodes: string[]) {
   return roleCodes.includes("SUPER_ADMIN");
+}
+
+function userIsCompanyAdmin(roleCodes: string[]) {
+  return roleCodes.includes("ADMIN_EMPRESA");
 }
 
 async function resolveUserCompanyForWrite({
@@ -60,6 +63,22 @@ async function resolveUserCompanyForWrite({
   return company;
 }
 
+function canManageTargetUserByCompany({
+  actorRoleCodes,
+  actorCompanyId,
+  targetCompanyId,
+}: {
+  actorRoleCodes: string[];
+  actorCompanyId: string;
+  targetCompanyId: string;
+}) {
+  if (actorRoleCodes.includes("SUPER_ADMIN")) return true;
+  if (actorRoleCodes.includes("ADMIN_EMPRESA")) {
+    return targetCompanyId === actorCompanyId;
+  }
+  return false;
+}
+
 function parseUserStatus(value: FormDataEntryValue | null) {
   const status = String(value ?? "active").trim();
   if (!["active", "inactive"].includes(status)) {
@@ -76,10 +95,15 @@ export async function getUserManagementData() {
   }
   const scope = await getDataScope();
   const canSelectAnyCompany = userCanSelectAnyCompany(access.roleCodes);
+  const isCompanyAdmin = userIsCompanyAdmin(access.roleCodes);
 
   const [users, roles, companies] = await Promise.all([
     prisma.user.findMany({
-      where: dataScopeWhere(scope),
+      where: canSelectAnyCompany
+        ? undefined
+        : isCompanyAdmin
+          ? { companyId: access.companyId }
+          : dataScopeWhere(scope),
       orderBy: { name: "asc" },
       include: {
         roles: {
@@ -228,7 +252,15 @@ export async function updateUser(formData: FormData) {
   if (!targetUser) {
     throw new Error("Usuario selecionado nao existe.");
   }
-  assertRecordInDataScope(scope, targetUser);
+  if (
+    !canManageTargetUserByCompany({
+      actorRoleCodes: currentAccess.roleCodes,
+      actorCompanyId: currentAccess.companyId,
+      targetCompanyId: targetUser.companyId,
+    })
+  ) {
+    throw new Error("Usuario fora do escopo permitido para esta empresa.");
+  }
 
   if (!role) {
     throw new Error("Perfil selecionado nao existe.");
@@ -321,7 +353,9 @@ export async function updateUser(formData: FormData) {
 export async function setUserActive(userId: string, isActive: boolean) {
   await requireAnyPermission(["users.deactivate", "users.update"]);
   const currentAccess = await getCurrentUserAccess();
-  const scope = await getDataScope();
+  if (!currentAccess) {
+    throw new Error("Usuario nao autenticado.");
+  }
   const parsedUserId = requiredId(userId, "Usuario");
 
   const targetUser = await prisma.user.findUnique({
@@ -333,7 +367,20 @@ export async function setUserActive(userId: string, isActive: boolean) {
     (userRole: { role: { code: string } }) =>
       userRole.role.code === "SUPER_ADMIN",
   );
-  assertRecordInDataScope(scope, targetUser);
+
+  if (!targetUser) {
+    throw new Error("Usuario selecionado nao existe.");
+  }
+
+  if (
+    !canManageTargetUserByCompany({
+      actorRoleCodes: currentAccess.roleCodes,
+      actorCompanyId: currentAccess.companyId,
+      targetCompanyId: targetUser.companyId,
+    })
+  ) {
+    throw new Error("Usuario fora do escopo permitido para esta empresa.");
+  }
 
   if (targetIsSuperAdmin && !(await canCurrentUser("permissions.manage"))) {
     throw new Error("Voce nao tem permissao para alterar Super Admin.");
@@ -363,13 +410,16 @@ export async function setUserActive(userId: string, isActive: boolean) {
 }
 
 export async function deleteUser(userId: string) {
-  await requirePermission("permissions.manage");
+  await requireAnyPermission([
+    "permissions.manage",
+    "users.manage_company",
+    "users.deactivate",
+  ]);
   const currentAccess = await getCurrentUserAccess();
-  const parsedUserId = requiredId(userId, "Usuario");
-
-  if (currentAccess?.userId === parsedUserId) {
-    throw new Error("Voce nao pode excluir o proprio usuario.");
+  if (!currentAccess) {
+    throw new Error("Usuario nao autenticado.");
   }
+  const parsedUserId = requiredId(userId, "Usuario");
 
   const targetUser = await prisma.user.findUnique({
     where: { id: parsedUserId },
@@ -380,12 +430,151 @@ export async function deleteUser(userId: string) {
     throw new Error("Usuario selecionado nao existe.");
   }
 
-  const protectedRole = targetUser.roles.find((userRole) =>
-    ["SUPER_ADMIN", "ADMIN_EMPRESA"].includes(userRole.role.code),
-  );
+  const actorIsSuperAdmin = currentAccess.roleCodes.includes("SUPER_ADMIN");
+  const actorIsCompanyAdmin = currentAccess.roleCodes.includes("ADMIN_EMPRESA");
+  const targetRoleCodes = targetUser.roles.map((userRole) => userRole.role.code);
+  const targetUserIsSuperAdmin = targetRoleCodes.includes("SUPER_ADMIN");
+  const auditBase = {
+    actorUserId: currentAccess.userId,
+    actorCompanyId: currentAccess.companyId,
+    actorRoleCodes: currentAccess.roleCodes,
+    targetUserId: targetUser.id,
+    targetCompanyId: targetUser.companyId,
+    targetRoleCodes,
+  };
 
-  if (protectedRole) {
-    throw new Error("Nao e permitido excluir usuarios administradores.");
+  if (currentAccess.userId === parsedUserId) {
+    await createAuditLog({
+      entityType: AuditEntityType.USER,
+      entityId: targetUser.id,
+      entityLabel: targetUser.name,
+      action: AuditAction.DELETE,
+      description: `Tentativa de autoexclusao do usuario ${targetUser.name} bloqueada`,
+      oldValue: auditBase,
+      newValue: { result: "denied", reason: "self_delete" },
+      companyId: targetUser.companyId,
+      workspaceId: targetUser.workspaceId,
+    });
+    throw new Error("Voce nao pode excluir a propria conta.");
+  }
+
+  if (!actorIsSuperAdmin && !actorIsCompanyAdmin) {
+    await createAuditLog({
+      entityType: AuditEntityType.USER,
+      entityId: targetUser.id,
+      entityLabel: targetUser.name,
+      action: AuditAction.DELETE,
+      description: `Tentativa de exclusao do usuario ${targetUser.name} bloqueada por permissao insuficiente`,
+      oldValue: auditBase,
+      newValue: { result: "denied", reason: "insufficient_permission" },
+      companyId: targetUser.companyId,
+      workspaceId: targetUser.workspaceId,
+    });
+    throw new Error("Voce nao tem permissao para excluir usuarios.");
+  }
+
+  if (actorIsCompanyAdmin && targetUserIsSuperAdmin) {
+    await createAuditLog({
+      entityType: AuditEntityType.USER,
+      entityId: targetUser.id,
+      entityLabel: targetUser.name,
+      action: AuditAction.DELETE,
+      description: `Tentativa de exclusao do Super Admin ${targetUser.name} bloqueada`,
+      oldValue: auditBase,
+      newValue: { result: "denied", reason: "target_super_admin" },
+      companyId: targetUser.companyId,
+      workspaceId: targetUser.workspaceId,
+    });
+    throw new Error("Voce nao possui permissao para excluir um Super Admin.");
+  }
+
+  if (
+    actorIsCompanyAdmin &&
+    targetUser.companyId !== currentAccess.companyId
+  ) {
+    await createAuditLog({
+      entityType: AuditEntityType.USER,
+      entityId: targetUser.id,
+      entityLabel: targetUser.name,
+      action: AuditAction.DELETE,
+      description: `Tentativa de exclusao do usuario ${targetUser.name} de outra empresa bloqueada`,
+      oldValue: auditBase,
+      newValue: { result: "denied", reason: "different_company" },
+      companyId: targetUser.companyId,
+      workspaceId: targetUser.workspaceId,
+    });
+    throw new Error("Este usuario pertence a outra empresa.");
+  }
+
+  await createAuditLog({
+    entityType: AuditEntityType.USER,
+    entityId: targetUser.id,
+    entityLabel: targetUser.name,
+    action: AuditAction.DELETE,
+    description: `Exclusao solicitada para usuario ${targetUser.name}`,
+    oldValue: {
+      ...auditBase,
+      name: targetUser.name,
+      email: targetUser.email,
+      company: targetUser.company,
+      is_active: targetUser.is_active,
+    },
+    newValue: { result: "requested" },
+    companyId: targetUser.companyId,
+    workspaceId: targetUser.workspaceId,
+  });
+
+  const historyCounts = await Promise.all([
+    prisma.document.count({ where: { createdById: parsedUserId } }),
+    prisma.nonConformity.count({
+      where: {
+        OR: [
+          { responsibleUserId: parsedUserId },
+          { createdById: parsedUserId },
+        ],
+      },
+    }),
+    prisma.nonConformityEvidence.count({
+      where: { uploadedById: parsedUserId },
+    }),
+    prisma.nonConformityItemEvidence.count({
+      where: { uploadedById: parsedUserId },
+    }),
+    prisma.nonConformityHistory.count({ where: { userId: parsedUserId } }),
+    prisma.inspectionSignature.count({ where: { user_id: parsedUserId } }),
+    prisma.notification.count({ where: { userId: parsedUserId } }),
+    prisma.auditLog.count({ where: { userId: parsedUserId } }),
+  ]);
+  const hasOperationalHistory = historyCounts.some((count) => count > 0);
+
+  if (hasOperationalHistory) {
+    const user = await prisma.user.update({
+      where: { id: parsedUserId },
+      data: { is_active: false },
+    });
+    await createAuditLog({
+      entityType: AuditEntityType.USER,
+      entityId: user.id,
+      entityLabel: user.name,
+      action: AuditAction.STATUS_CHANGE,
+      description: `Usuario ${user.name} desativado por possuir historico operacional`,
+      oldValue: {
+        is_active: targetUser.is_active,
+        historyCounts,
+      },
+      newValue: {
+        is_active: user.is_active,
+        result: "deactivated_instead_of_deleted",
+      },
+      companyId: user.companyId,
+      workspaceId: user.workspaceId,
+    });
+    revalidatePath("/usuarios");
+    return {
+      mode: "deactivated" as const,
+      message:
+        "Este usuario possui historico operacional e foi desativado em vez de excluido.",
+    };
   }
 
   await prisma.user.delete({ where: { id: parsedUserId } });
@@ -399,15 +588,21 @@ export async function deleteUser(userId: string) {
       name: targetUser.name,
       email: targetUser.email,
       company: targetUser.company,
+      companyId: targetUser.companyId,
       registration: targetUser.registration,
       department: targetUser.department,
       position: targetUser.position,
       is_active: targetUser.is_active,
-      roles: targetUser.roles.map((userRole) => userRole.role.code),
+      roles: targetRoleCodes,
     },
+    newValue: { result: "deleted" },
     companyId: targetUser.companyId,
     workspaceId: targetUser.workspaceId,
   });
 
   revalidatePath("/usuarios");
+  return {
+    mode: "deleted" as const,
+    message: "Usuario excluido.",
+  };
 }
