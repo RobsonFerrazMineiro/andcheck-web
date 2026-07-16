@@ -16,12 +16,7 @@ import {
   COMPANY_SCOPED_ROLE_CODES,
   dataScopeWhere,
   getDataScope,
-  getOwnedCreationContext,
 } from "@/lib/data-scope";
-import {
-  DEFAULT_COMPANY_ID,
-  DEFAULT_WORKSPACE_ID,
-} from "@/lib/multi-company";
 import {
   optionalText,
   requiredEmail,
@@ -30,6 +25,40 @@ import {
 } from "@/lib/input-validation";
 
 const TEMPORARY_PASSWORD = "andcheck@2025";
+
+function userCanSelectAnyCompany(roleCodes: string[]) {
+  return roleCodes.includes("SUPER_ADMIN");
+}
+
+async function resolveUserCompanyForWrite({
+  companyId,
+  access,
+}: {
+  companyId: string;
+  access: NonNullable<Awaited<ReturnType<typeof getCurrentUserAccess>>>;
+}) {
+  if (!companyId) {
+    throw new Error("Selecione a empresa do usuario.");
+  }
+
+  if (!userCanSelectAnyCompany(access.roleCodes) && companyId !== access.companyId) {
+    throw new Error("Empresa fora do escopo permitido para este usuario.");
+  }
+
+  const company = await prisma.company.findFirst({
+    where: {
+      id: companyId,
+      active: true,
+    },
+    select: { id: true, name: true },
+  });
+
+  if (!company) {
+    throw new Error("Empresa invalida.");
+  }
+
+  return company;
+}
 
 function parseUserStatus(value: FormDataEntryValue | null) {
   const status = String(value ?? "active").trim();
@@ -41,9 +70,14 @@ function parseUserStatus(value: FormDataEntryValue | null) {
 
 export async function getUserManagementData() {
   await requireAnyPermission(["users.manage_company", "users.create"]);
+  const access = await getCurrentUserAccess();
+  if (!access) {
+    throw new Error("Usuario nao autenticado.");
+  }
   const scope = await getDataScope();
+  const canSelectAnyCompany = userCanSelectAnyCompany(access.roleCodes);
 
-  const [users, roles] = await Promise.all([
+  const [users, roles, companies] = await Promise.all([
     prisma.user.findMany({
       where: dataScopeWhere(scope),
       orderBy: { name: "asc" },
@@ -60,18 +94,32 @@ export async function getUserManagementData() {
         : { code: { in: [...COMPANY_SCOPED_ROLE_CODES] } },
       orderBy: { name: "asc" },
     }),
+    prisma.company.findMany({
+      where: canSelectAnyCompany
+        ? { active: true }
+        : { id: access.companyId, active: true },
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+      },
+    }),
   ]);
 
-  return { users, roles };
+  return { users, roles, companies, canSelectAnyCompany };
 }
 
 export async function createUser(formData: FormData) {
   await requirePermission("users.create");
+  const access = await getCurrentUserAccess();
+  if (!access) {
+    throw new Error("Usuario nao autenticado.");
+  }
   const scope = await getDataScope();
 
   const name = requiredText(formData.get("name"), "Nome", 120);
   const email = requiredEmail(formData.get("email"));
-  const company = optionalText(formData.get("company"), "Empresa", 160) ?? "";
+  const companyId = String(formData.get("companyId") ?? "").trim();
   const registration = optionalText(formData.get("registration"), "Matricula", 80) ?? "";
   const department = optionalText(formData.get("department"), "Departamento", 120) ?? "";
   const position = optionalText(formData.get("position"), "Cargo", 120) ?? "";
@@ -81,18 +129,7 @@ export async function createUser(formData: FormData) {
   const [passwordHash, role, selectedCompany] = await Promise.all([
     bcrypt.hash(TEMPORARY_PASSWORD, 12),
     prisma.role.findUnique({ where: { id: roleId } }),
-    scope.isGlobal && company
-      ? prisma.company.findFirst({
-          where: {
-            OR: [
-              { id: company },
-              { name: { equals: company, mode: "insensitive" } },
-              { tradeName: { equals: company, mode: "insensitive" } },
-            ],
-          },
-          select: { id: true, name: true },
-        })
-      : null,
+    resolveUserCompanyForWrite({ companyId, access }),
   ]);
 
   if (!role) {
@@ -115,12 +152,10 @@ export async function createUser(formData: FormData) {
   }
 
   const legacyRole = role.code === "SUPER_ADMIN" ? "admin" : "inspector";
-  const creationContext = scope.isGlobal
-    ? {
-        companyId: selectedCompany?.id ?? DEFAULT_COMPANY_ID,
-        workspaceId: DEFAULT_WORKSPACE_ID,
-      }
-    : getOwnedCreationContext(scope);
+  const creationContext = {
+    companyId: selectedCompany.id,
+    workspaceId: scope.workspaceIds?.[0] ?? scope.actorWorkspaceId,
+  };
 
   const user = await prisma.user.create({
     data: {
@@ -128,7 +163,7 @@ export async function createUser(formData: FormData) {
       email,
       password_hash: passwordHash,
       role: legacyRole,
-      company: selectedCompany?.name ?? (company || null),
+      company: selectedCompany.name,
       ...creationContext,
       registration: registration || null,
       department: department || null,
@@ -167,12 +202,15 @@ export async function createUser(formData: FormData) {
 export async function updateUser(formData: FormData) {
   await requirePermission("users.update");
   const currentAccess = await getCurrentUserAccess();
+  if (!currentAccess) {
+    throw new Error("Usuario nao autenticado.");
+  }
   const scope = await getDataScope();
 
   const userId = requiredId(formData.get("user_id"), "Usuario");
   const name = requiredText(formData.get("name"), "Nome", 120);
   const email = requiredEmail(formData.get("email"));
-  const company = optionalText(formData.get("company"), "Empresa", 160) ?? "";
+  const companyId = String(formData.get("companyId") ?? "").trim();
   const registration = optionalText(formData.get("registration"), "Matricula", 80) ?? "";
   const department = optionalText(formData.get("department"), "Departamento", 120) ?? "";
   const position = optionalText(formData.get("position"), "Cargo", 120) ?? "";
@@ -219,19 +257,10 @@ export async function updateUser(formData: FormData) {
 
   const legacyRole = role.code === "SUPER_ADMIN" ? "admin" : "inspector";
   const oldRoleCode = targetUser.roles[0]?.role.code ?? null;
-  const selectedCompany =
-    scope.isGlobal && company
-      ? await prisma.company.findFirst({
-          where: {
-            OR: [
-              { id: company },
-              { name: { equals: company, mode: "insensitive" } },
-              { tradeName: { equals: company, mode: "insensitive" } },
-            ],
-          },
-          select: { id: true, name: true },
-        })
-      : null;
+  const selectedCompany = await resolveUserCompanyForWrite({
+    companyId,
+    access: currentAccess,
+  });
 
   const user = await prisma.user.update({
     where: { id: userId },
@@ -239,10 +268,8 @@ export async function updateUser(formData: FormData) {
       name,
       email,
       role: legacyRole,
-      company: selectedCompany?.name ?? (company || null),
-      companyId: scope.isGlobal
-        ? selectedCompany?.id ?? targetUser.companyId
-        : targetUser.companyId,
+      company: selectedCompany.name,
+      companyId: selectedCompany.id,
       registration: registration || null,
       department: department || null,
       position: position || null,

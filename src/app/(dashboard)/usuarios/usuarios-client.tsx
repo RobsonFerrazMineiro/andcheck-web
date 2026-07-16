@@ -45,6 +45,7 @@ export type UserRow = {
   name: string;
   email: string;
   company: string | null;
+  companyId: string;
   registration: string | null;
   department: string | null;
   position: string | null;
@@ -59,6 +60,11 @@ export type UserRow = {
 export type RoleOption = {
   id: string;
   code: string;
+  name: string;
+};
+
+export type CompanyOption = {
+  id: string;
   name: string;
 };
 
@@ -113,11 +119,15 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
 export function UsuariosClient({
   initialData,
   roles,
+  companies,
+  canSelectAnyCompany,
   currentUserId,
   canDeleteUsers,
 }: {
   initialData: UserRow[];
   roles: RoleOption[];
+  companies: CompanyOption[];
+  canSelectAnyCompany: boolean;
   currentUserId: string | null;
   canDeleteUsers: boolean;
 }) {
@@ -420,11 +430,10 @@ export function UsuariosClient({
               placeholder="email@empresa.com"
               defaultValue={editingUser?.email}
             />
-            <Field
-              label="Empresa"
-              name="company"
-              placeholder="Hydro Alunorte"
-              defaultValue={editingUser?.company ?? undefined}
+            <CompanySelect
+              companies={companies}
+              canSelectAnyCompany={canSelectAnyCompany}
+              defaultValue={editingUser?.companyId ?? companies[0]?.id}
             />
             <Field
               label="Matrícula"
@@ -750,6 +759,49 @@ function Field({
         required={label.includes("*")}
         className="h-8 text-[11px] rounded-md"
       />
+    </div>
+  );
+}
+
+function CompanySelect({
+  companies,
+  canSelectAnyCompany,
+  defaultValue,
+}: {
+  companies: CompanyOption[];
+  canSelectAnyCompany: boolean;
+  defaultValue?: string;
+}) {
+  const selectedCompanyId =
+    defaultValue && companies.some((company) => company.id === defaultValue)
+      ? defaultValue
+      : companies[0]?.id;
+
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-[10px] uppercase tracking-wider font-bold">
+        Empresa *
+      </Label>
+      {!canSelectAnyCompany && selectedCompanyId && (
+        <input type="hidden" name="companyId" value={selectedCompanyId} />
+      )}
+      <Select
+        name={canSelectAnyCompany ? "companyId" : undefined}
+        required={canSelectAnyCompany}
+        disabled={!canSelectAnyCompany}
+        defaultValue={selectedCompanyId}
+      >
+        <SelectTrigger className="h-8 text-[11px] rounded-md">
+          <SelectValue placeholder="Selecionar empresa" />
+        </SelectTrigger>
+        <SelectContent>
+          {companies.map((company) => (
+            <SelectItem key={company.id} value={company.id}>
+              {company.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

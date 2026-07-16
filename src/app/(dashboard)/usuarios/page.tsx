@@ -4,6 +4,7 @@ import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { redirect } from "next/navigation";
 import {
   UsuariosClient,
+  type CompanyOption,
   type RoleOption,
   type UserRow,
 } from "./usuarios-client";
@@ -21,10 +22,11 @@ export default async function UsuariosPage() {
   if (!canManageUsers) redirect("/dashboard");
   const canDeleteUsers = await canCurrentUser("permissions.manage");
 
-  const [access, { users, roles }] = await Promise.all([
-    getCurrentUserAccess(),
-    getUserManagementData(),
-  ]);
+  const [access, { users, roles, companies, canSelectAnyCompany }] =
+    await Promise.all([
+      getCurrentUserAccess(),
+      getUserManagementData(),
+    ]);
 
   const typedUsers = users as UserManagementRecord[];
   const typedRoles = roles as RoleOption[];
@@ -34,6 +36,7 @@ export default async function UsuariosPage() {
     name: user.name,
     email: user.email,
     company: user.company,
+    companyId: user.companyId,
     registration: user.registration,
     department: user.department,
     position: user.position,
@@ -50,6 +53,10 @@ export default async function UsuariosPage() {
     code: role.code,
     name: role.name,
   }));
+  const companyOptions: CompanyOption[] = companies.map((company) => ({
+    id: company.id,
+    name: company.name,
+  }));
 
   return (
     <div className="space-y-4">
@@ -57,6 +64,8 @@ export default async function UsuariosPage() {
       <UsuariosClient
         initialData={rows}
         roles={roleOptions}
+        companies={companyOptions}
+        canSelectAnyCompany={canSelectAnyCompany}
         currentUserId={access?.userId ?? null}
         canDeleteUsers={canDeleteUsers}
       />

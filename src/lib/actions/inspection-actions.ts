@@ -9,10 +9,7 @@ import {
 } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
-import {
-  assertStoredFileOrInlineImageReference,
-  assertStoredFileReference,
-} from "@/lib/file-storage-reference";
+import { assertStoredFileOrInlineImageReference } from "@/lib/file-storage-reference";
 import { ACTIVE_NON_CONFORMITY_STATUSES } from "@/lib/non-conformity-status";
 import {
   enumValue,
