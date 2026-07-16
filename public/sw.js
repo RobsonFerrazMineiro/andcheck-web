@@ -1,7 +1,12 @@
 const CACHE_NAME = "andcheck-offline-v10";
 const OFFLINE_URL = "/offline.html";
 const ASSET_DESTINATIONS = new Set(["script", "style", "font", "image"]);
-const STATIC_CACHE_PATHS = [OFFLINE_URL, "/favicon.ico", "/manifest.webmanifest"];
+const STATIC_CACHE_PATHS = [
+  OFFLINE_URL,
+  "/favicon.ico",
+  "/manifest.webmanifest",
+  "/icons/andcheck-icon.svg",
+];
 const NAVIGATION_CACHE_PATHS = new Set([
   "/dashboard",
   "/andaimes",

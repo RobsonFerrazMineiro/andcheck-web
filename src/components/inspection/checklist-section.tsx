@@ -171,7 +171,6 @@ export default function ChecklistSection({
                   <input
                     type="file"
                     accept="image/*"
-                    capture="environment"
                     className="hidden"
                     ref={(el) => {
                       photoInputRefs.current[idx] = el;

@@ -9,7 +9,10 @@ import {
 } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { generateNextNonConformityCode } from "@/lib/non-conformity-code";
-import { assertStoredFileReference } from "@/lib/file-storage-reference";
+import {
+  assertStoredFileOrInlineImageReference,
+  assertStoredFileReference,
+} from "@/lib/file-storage-reference";
 import { ACTIVE_NON_CONFORMITY_STATUSES } from "@/lib/non-conformity-status";
 import {
   enumValue,
@@ -44,6 +47,7 @@ import { createNotification } from "@/lib/notifications/service";
 const NON_CONFORMING_CHECKLIST_VALUES = new Set(["CL_FAIL", "CL_WARN"]);
 const CHECKLIST_VALUES = Object.values(ChecklistValue);
 const INSPECTION_RESULTS = Object.values(InspectionResult);
+const MAX_SIGNATURE_DATA_LENGTH = 350_000;
 
 function parseInspectionInput(data: {
   scaffold_id: string;
@@ -97,7 +101,12 @@ function parseInspectionInput(data: {
     photos: (data.photos ?? []).map((photo) =>
       requiredText(photo, "Foto da inspecao", 500),
     ),
-    signature: optionalText(data.signature, "Assinatura da inspecao", 500) ?? undefined,
+    signature:
+      optionalText(
+        data.signature,
+        "Assinatura da inspecao",
+        MAX_SIGNATURE_DATA_LENGTH,
+      ) ?? undefined,
     signatures: (data.signatures ?? []).map((signature) => ({
       role_code: requiredId(signature.role_code, "Perfil da assinatura"),
       signer_name: requiredText(signature.signer_name, "Nome do assinante", 140),
@@ -108,7 +117,11 @@ function parseInspectionInput(data: {
         optionalText(signature.signer_position, "Cargo do assinante", 120) ??
         undefined,
       signature_data:
-        optionalText(signature.signature_data, "Assinatura", 500) ?? undefined,
+        optionalText(
+          signature.signature_data,
+          "Assinatura",
+          MAX_SIGNATURE_DATA_LENGTH,
+        ) ?? undefined,
     })),
     checklist: data.checklist.map((item) => ({
       item_id: requiredId(item.item_id, "Item do checklist"),
@@ -538,11 +551,17 @@ export async function createInspection(data: {
     assertStoredFileReference(photo, "Foto da inspecao"),
   );
   if (input.signature) {
-    assertStoredFileReference(input.signature, "Assinatura da inspecao");
+    assertStoredFileOrInlineImageReference(
+      input.signature,
+      "Assinatura da inspecao",
+    );
   }
   input.signatures?.forEach((signature) => {
     if (signature.signature_data) {
-      assertStoredFileReference(signature.signature_data, "Assinatura");
+      assertStoredFileOrInlineImageReference(
+        signature.signature_data,
+        "Assinatura",
+      );
     }
   });
   input.checklist.forEach((item) => {

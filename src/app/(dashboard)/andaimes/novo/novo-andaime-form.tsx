@@ -112,6 +112,7 @@ export default function NovoAndaimeForm({
     scaffold?.longitude ?? null,
   );
   const [saving, setSaving] = useState(false);
+  const [savedOffline, setSavedOffline] = useState(false);
   const savingRef = useRef(false);
 
   const set =
@@ -176,11 +177,9 @@ export default function NovoAndaimeForm({
           toast.success("Edicao salva offline para sincronizacao.", {
             id: toastId,
           });
+          setSavedOffline(true);
           if (canNavigateAfterOfflineWrite()) {
-            router.push("/sincronizacao");
-          } else {
-            savingRef.current = false;
-            setSaving(false);
+            router.push(`/andaimes/${scaffold.id}`);
           }
           return;
         }
@@ -210,10 +209,7 @@ export default function NovoAndaimeForm({
           id: toastId,
         });
         if (canNavigateAfterOfflineWrite()) {
-          router.push("/sincronizacao");
-        } else {
-          savingRef.current = false;
-          setSaving(false);
+          router.push(`/andaimes/${offlineId}`);
         }
         return;
       }
@@ -447,7 +443,7 @@ export default function NovoAndaimeForm({
               type="button"
               variant="outline"
               className="rounded-md text-[11px] uppercase tracking-widest h-9"
-              disabled={saving}
+              disabled={saving || savedOffline}
               onClick={() =>
                 router.push(isEdit && scaffold ? `/andaimes/${scaffold.id}` : "/andaimes")
               }
@@ -456,15 +452,17 @@ export default function NovoAndaimeForm({
             </Button>
             <Button
               type="submit"
-              disabled={saving}
+              disabled={saving || savedOffline}
               className="rounded-md text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
             >
-              {saving ? (
+              {saving || savedOffline ? (
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
               ) : (
                 <Save className="w-3.5 h-3.5 mr-1.5" />
               )}
-              {saving
+              {savedOffline
+                ? "Salvo offline"
+                : saving
                 ? "Salvando..."
                 : isEdit
                   ? "Salvar Alteracoes"

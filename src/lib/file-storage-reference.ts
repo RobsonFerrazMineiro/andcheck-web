@@ -1,4 +1,6 @@
 const ALLOWED_REFERENCE_PREFIXES = ["/uploads/", "vercel-blob:"];
+const INLINE_IMAGE_DATA_URL_PATTERN =
+  /^data:image\/(?:png|jpeg|jpg|webp);base64,[a-z0-9+/=]+$/i;
 
 export function isStoredFileReference(value: string) {
   const reference = value.trim();
@@ -14,6 +16,25 @@ export function assertStoredFileReference(
   if (!value || !isStoredFileReference(value)) {
     throw new Error(
       `${fieldName} deve usar uma referencia de storage; dados Base64 nao sao aceitos.`,
+    );
+  }
+}
+
+export function isStoredFileOrInlineImageReference(value: string) {
+  const reference = value.trim();
+  return (
+    isStoredFileReference(reference) ||
+    INLINE_IMAGE_DATA_URL_PATTERN.test(reference)
+  );
+}
+
+export function assertStoredFileOrInlineImageReference(
+  value: string | null | undefined,
+  fieldName = "arquivo",
+) {
+  if (!value || !isStoredFileOrInlineImageReference(value)) {
+    throw new Error(
+      `${fieldName} deve usar uma referencia de storage ou uma imagem Base64 valida.`,
     );
   }
 }

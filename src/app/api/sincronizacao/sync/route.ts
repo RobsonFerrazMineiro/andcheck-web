@@ -219,22 +219,12 @@ async function resolveInspectionOfflineFiles(
           )
         ).filter((photo): photo is string => Boolean(photo))
       : undefined,
-    signature: await storeOfflineDataUrl(
-      payload.signature,
-      "inspection-signatures",
-      "inspection-signature.png",
-    ),
+    signature: payload.signature,
     signatures: payload.signatures
-      ? await Promise.all(
-          payload.signatures.map(async (signature, index) => ({
-            ...signature,
-            signature_data: await storeOfflineDataUrl(
-              signature.signature_data,
-              "inspection-signatures",
-              `inspection-signature-${index + 1}.png`,
-            ),
-          })),
-        )
+      ? payload.signatures.map((signature) => ({
+          ...signature,
+          signature_data: signature.signature_data,
+        }))
       : undefined,
     checklist: await Promise.all(
       payload.checklist.map(async (item, index) => ({

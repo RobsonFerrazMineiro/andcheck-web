@@ -393,15 +393,7 @@ export function NovaInspecaoForm({
     setRegisteringSignature(true);
     try {
       const signatureBlob = await canvasToBlob(canvasRef.current);
-      const signatureReference =
-        (await checkServerConnectivity()) === "online"
-        ? (
-            await uploadFile(signatureBlob, {
-              category: "inspection-signatures",
-              fileName: `assinatura-${requirement.role_code}.png`,
-            })
-          ).reference
-        : await fileToDataUrl(signatureBlob);
+      const signatureReference = await fileToDataUrl(signatureBlob);
 
       setCollectedSignatures((current) => [
         ...current.filter(
@@ -721,7 +713,6 @@ export function NovaInspecaoForm({
           type="file"
           accept="image/*"
           multiple
-          capture="environment"
           className="hidden"
           onChange={handlePhotoAdd}
         />
