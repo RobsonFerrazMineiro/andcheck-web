@@ -95,13 +95,13 @@ describe("SyncClient", () => {
     render(<SyncClient />);
 
     expect(await screen.findByText("Conflito de sincronizacao")).toBeVisible();
-    expect(screen.getByText("Alterar status da NC")).toBeVisible();
-    expect(screen.getByText("nc-1")).toBeVisible();
-    fireEvent.click(screen.getByText("Ver dados locais"));
-    expect(screen.getByText(/"status": "CLOSED"/)).toBeVisible();
+    expect(screen.getAllByText("Alterar status da NC")[0]).toBeVisible();
+    expect(screen.getAllByText("nc-1")[0]).toBeVisible();
+    fireEvent.click(screen.getAllByText("Ver dados locais")[0]);
+    expect(screen.getAllByText(/"status": "CLOSED"/)[0]).toBeVisible();
 
     fireEvent.click(
-      screen.getByRole("button", { name: /^manter servidor$/i }),
+      screen.getAllByRole("button", { name: /^manter servidor$/i })[0],
     );
 
     await waitFor(() => {
@@ -149,8 +149,8 @@ describe("SyncClient", () => {
 
     render(<SyncClient />);
 
-    expect(await screen.findByText("Editar andaime")).toBeVisible();
-    expect(screen.getByText("AND-001")).toBeVisible();
+    expect((await screen.findAllByText("Editar andaime"))[0]).toBeVisible();
+    expect(screen.getAllByText("AND-001")[0]).toBeVisible();
 
     fireEvent.click(
       screen.getByRole("button", { name: /tentar falhas em lote/i }),

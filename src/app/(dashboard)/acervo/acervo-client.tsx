@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { format, parseISO } from "date-fns";
 import {
@@ -7,13 +7,13 @@ import {
   CheckCircle2,
   ChevronRight,
   FileText,
-  Filter,
   Search,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -250,7 +250,12 @@ export function AcervoClient({
         description="Busque e refine o acervo operacional."
         summary={`${filtered.length}/${archiveRows.length} · ${companyFilter === "all" ? "Todas empresas" : companyFilter} · ${workspaceFilter === "all" ? "Todos workspaces" : workspaceFilter}`}
       >
-        <div className="grid min-w-0 grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]">
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${archiveRows.length}`}
+          contentClassName="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[1.2fr_160px_160px_140px_130px_130px_140px_160px]"
+        >
+          <FilterField label="Busca">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50" />
             <Input
@@ -260,9 +265,10 @@ export function AcervoClient({
               className="h-8 rounded-md border-border pl-9 text-[11px]"
             />
           </div>
+          </FilterField>
+          <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
             <SelectTrigger className="h-8 rounded-md text-[11px]">
-              <Filter className="mr-1.5 size-3.5 text-muted-foreground/50" />
               <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
@@ -274,6 +280,8 @@ export function AcervoClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Workspace">
           <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
             <SelectTrigger className="h-8 rounded-md text-[11px]">
               <SelectValue placeholder="Workspace" />
@@ -287,6 +295,8 @@ export function AcervoClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+            <FilterField label="Área">
           <Select value={areaFilter} onValueChange={setÁreaFilter}>
             <SelectTrigger className="h-8 rounded-md text-[11px]">
               <SelectValue placeholder="Área" />
@@ -300,6 +310,8 @@ export function AcervoClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Inicio">
           <Input
             type="date"
             aria-label="Periodo inicial"
@@ -307,6 +319,8 @@ export function AcervoClient({
             onChange={(event) => setPeriodStart(event.target.value)}
             className="h-8 rounded-md border-border text-[11px]"
           />
+          </FilterField>
+          <FilterField label="Fim">
           <Input
             type="date"
             aria-label="Periodo final"
@@ -314,6 +328,8 @@ export function AcervoClient({
             onChange={(event) => setPeriodEnd(event.target.value)}
             className="h-8 rounded-md border-border text-[11px]"
           />
+          </FilterField>
+          <FilterField label="NCs">
           <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
             <SelectTrigger className="h-8 rounded-md text-[11px]">
               <SelectValue placeholder="Possui NC" />
@@ -324,6 +340,8 @@ export function AcervoClient({
               <SelectItem value="no">Sem NC</SelectItem>
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Documentos">
           <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
             <SelectTrigger className="h-8 rounded-md text-[11px]">
               <SelectValue placeholder="Possui documentos" />
@@ -334,7 +352,8 @@ export function AcervoClient({
               <SelectItem value="no">Sem documentos</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          </FilterField>
+        </FilterShell>
       </MobileFilterPanel>
 
       <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">

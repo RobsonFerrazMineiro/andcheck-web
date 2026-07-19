@@ -67,7 +67,7 @@ export function MobileFilterPanel({
           className="fixed inset-0 z-50 flex items-end bg-black/40 p-3 sm:items-center sm:justify-center"
         >
           <div className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl">
-            <div className="flex items-start justify-between gap-4 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
+            <div className="flex items-start justify-between gap-4 border-b border-sidebar-border bg-sidebar px-4 py-3 text-sidebar-foreground">
               <div className="min-w-0">
                 <h2 id="mobile-filter-title" className={typography.panelTitle}>
                   {title}

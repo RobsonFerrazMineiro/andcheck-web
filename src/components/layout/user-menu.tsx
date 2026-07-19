@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 
 interface UserMenuProps {
   name: string;
@@ -27,6 +28,7 @@ export function UserMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const { toggleMenu } = useExclusiveMenu(open, setOpen);
 
   useDialogFocus(panelRef, open, () => setOpen(false));
 
@@ -55,7 +57,7 @@ export function UserMenu({
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggleMenu}
         className="flex items-center gap-2.5 rounded px-2 py-1 text-left transition-colors hover:bg-muted"
         aria-expanded={open}
         aria-haspopup="dialog"

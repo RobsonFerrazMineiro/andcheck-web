@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   CalendarClock,
@@ -13,6 +13,10 @@ import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  ActionMenu,
+  actionMenuItemClassName,
+} from "@/components/shared/action-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
@@ -125,7 +129,7 @@ function ModalShell({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     >
       <div className="w-full max-w-lg bg-card border border-border shadow-xl">
-        <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
+        <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
           <p
             id={titleId}
             className="text-[10px] font-bold uppercase tracking-widest"
@@ -335,88 +339,85 @@ export function NonConformityOperations({
 
   return (
     <>
-      <div className="flex flex-wrap justify-end gap-2">
+      <div className="flex flex-col items-end gap-2">
         {error && (
           <p className="basis-full text-right text-[11px] font-medium text-red-700">
             {error}
           </p>
         )}
 
-        {canAssign && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => setModal("responsible")}
-          >
-            <UserRound className="w-3.5 h-3.5" /> Atribuir Responsável
-          </Button>
-        )}
-        {canComment && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => setModal("comment")}
-          >
-            <MessageSquare className="w-3.5 h-3.5" /> Comentário
-          </Button>
-        )}
-        {canChangeDueDate && (
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={isPending}
-            onClick={() => setModal("dueDate")}
-          >
-            <CalendarClock className="w-3.5 h-3.5" /> Prazo
-          </Button>
-        )}
-        {canRequestVerification && (
-          <Button
-            type="button"
-            size="sm"
-            disabled={isPending}
-            onClick={() => void submitStatus("PENDING_VERIFICATION")}
-          >
-            <Send className="w-3.5 h-3.5" /> Solicitar Verificação
-          </Button>
-        )}
-        {canReview && (
-          <>
-            <Button
+        <ActionMenu>
+          {canAssign && (
+            <button
               type="button"
-              size="sm"
               disabled={isPending}
-              onClick={() => setModal("accept")}
+              onClick={() => setModal("responsible")}
+              className={actionMenuItemClassName}
             >
-              <CheckCircle2 className="w-3.5 h-3.5" /> Aceitar Correção
-            </Button>
-            <Button
+              <UserRound className="w-3.5 h-3.5" /> Atribuir Responsável
+            </button>
+          )}
+          {canComment && (
+            <button
               type="button"
-              size="sm"
-              variant="destructive"
               disabled={isPending}
-              onClick={() => setModal("reject")}
+              onClick={() => setModal("comment")}
+              className={actionMenuItemClassName}
             >
-              <XCircle className="w-3.5 h-3.5" /> Rejeitar Correção
-            </Button>
-          </>
-        )}
-        {canCancel && (
-          <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            disabled={isPending}
-            onClick={() => setModal("cancel")}
-          >
-            <XCircle className="w-3.5 h-3.5" /> Cancelar
-          </Button>
-        )}
+              <MessageSquare className="w-3.5 h-3.5" /> Comentário
+            </button>
+          )}
+          {canChangeDueDate && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => setModal("dueDate")}
+              className={actionMenuItemClassName}
+            >
+              <CalendarClock className="w-3.5 h-3.5" /> Prazo
+            </button>
+          )}
+          {canRequestVerification && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => void submitStatus("PENDING_VERIFICATION")}
+              className={actionMenuItemClassName}
+            >
+              <Send className="w-3.5 h-3.5" /> Solicitar Verificação
+            </button>
+          )}
+          {canReview && (
+            <>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => setModal("accept")}
+                className={actionMenuItemClassName}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> Aceitar Correção
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => setModal("reject")}
+                className={actionMenuItemClassName}
+              >
+                <XCircle className="w-3.5 h-3.5" /> Rejeitar Correção
+              </button>
+            </>
+          )}
+          {canCancel && (
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => setModal("cancel")}
+              className={actionMenuItemClassName}
+            >
+              <XCircle className="w-3.5 h-3.5" /> Cancelar
+            </button>
+          )}
+        </ActionMenu>
       </div>
 
       {modal === "responsible" && (
@@ -805,4 +806,3 @@ export function NonConformityItemEvidenceButton({
     </>
   );
 }
-

@@ -32,21 +32,21 @@ const STATUS_CFG = {
   },
   pendente_liberacao: {
     label: "PEND. LIBERACAO",
-    msg: "Montagem concluida. Aguardando inspecao de liberacao. Uso nao autorizado.",
+    msg: "Montagem concluída. Aguardando inspeção de liberação. Uso não autorizado.",
     bg: "bg-amber-500",
     ring: "ring-amber-500/50",
     icon: Clock,
   },
   em_montagem: {
     label: "EM MONTAGEM",
-    msg: "Andaime em montagem. Uso nao autorizado.",
+    msg: "Andaime em montagem. Uso não autorizado.",
     bg: "bg-sky-600",
     ring: "ring-sky-600/50",
     icon: Wrench,
   },
   reprovado: {
     label: "REPROVADO",
-    msg: "Andaime reprovado na inspecao. Uso proibido ate correcao e nova liberacao.",
+    msg: "Andaime reprovado na inspeção. Uso proibido até correção e nova liberação.",
     bg: "bg-red-600",
     ring: "ring-red-600/50",
     icon: XCircle,
@@ -60,7 +60,7 @@ const STATUS_CFG = {
   },
   vencido: {
     label: "VENCIDO",
-    msg: "Validade expirada. Uso proibido ate nova inspecao e liberacao.",
+    msg: "Validade expirada. Uso proibido até nova inspeção e liberação.",
     bg: "bg-red-700",
     ring: "ring-red-700/50",
     icon: AlertTriangle,
@@ -74,7 +74,7 @@ const STATUS_CFG = {
   },
   pendente: {
     label: "PENDENTE",
-    msg: "Aguardando inspecao de liberacao. Uso nao autorizado.",
+    msg: "Aguardando inspeção de liberação. Uso não autorizado.",
     bg: "bg-amber-500",
     ring: "ring-amber-500/50",
     icon: Clock,
@@ -197,7 +197,7 @@ export default async function QRPage({ params }: Props) {
               <div className="flex items-center gap-2 mb-3">
                 <ClipboardCheck className="w-3.5 h-3.5 text-white/40" />
                 <p className="text-[9px] font-bold uppercase tracking-widest text-white/40">
-                  Ultima Inspecao
+                  Última Inspeção
                 </p>
               </div>
               <div className="flex items-start justify-between gap-2">

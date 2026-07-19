@@ -65,15 +65,15 @@ function parseScaffoldInput(data: {
       optionalNumber(data.length, "Comprimento", { min: 0, max: 500 }) ??
       undefined,
     max_load:
-      optionalNumber(data.max_load, "Carga maxima", { min: 0, max: 100000 }) ??
+      optionalNumber(data.max_load, "Carga máxima", { min: 0, max: 100000 }) ??
       undefined,
-    responsible: requiredText(data.responsible, "Responsavel tecnico", 140),
+    responsible: requiredText(data.responsible, "Responsável técnico", 140),
     company: optionalText(data.company, "Empresa montadora", 160) ?? undefined,
     notes: optionalText(data.notes, "Observacoes", 1000) ?? undefined,
     latitude: optionalNumber(data.latitude, "Latitude", { min: -90, max: 90 }) ?? undefined,
     longitude: optionalNumber(data.longitude, "Longitude", { min: -180, max: 180 }) ?? undefined,
     location_description:
-      optionalText(data.location_description, "Descricao da localizacao", 240) ??
+      optionalText(data.location_description, "Descrição da localização", 240) ??
       undefined,
   };
 }
@@ -614,7 +614,7 @@ export async function completeAssembly(id: string) {
     type: "INSPECTION_PENDING",
     severity: "WARNING",
     title: `Inspecao pendente: ${scaffold.code}`,
-    message: `O andaime ${scaffold.code} concluiu montagem e aguarda inspecao para liberacao.`,
+    message: `O andaime ${scaffold.code} concluiu montagem e aguarda inspeção para liberação.`,
     entityType: "SCAFFOLD",
     entityId: scaffold.id,
     channels: ["INTERNAL", "EMAIL"],
@@ -631,7 +631,7 @@ export async function completeAssembly(id: string) {
 const DISMANTLE_REASONS = new Set([
   "Finalizacao da atividade",
   "Encerramento de parada",
-  "Solicitacao da operacao",
+  "Solicitação da operação",
   "Substituicao do andaime",
   "Readequacao de projeto",
   "Condicao insegura",
@@ -647,14 +647,14 @@ export async function dismantleScaffold(
   const reason = optionalText(input?.reason, "Motivo da desmontagem", 80);
   const reasonDescription = optionalText(
     input?.reasonDescription,
-    "Descricao do motivo",
+    "Descrição do motivo",
     500,
   );
   if (!reason || !DISMANTLE_REASONS.has(reason)) {
-    throw new Error("Motivo da desmontagem obrigatorio.");
+    throw new Error("Motivo da desmontagem obrigatório.");
   }
   if (reason === "Outros" && !reasonDescription) {
-    throw new Error("Descricao do motivo obrigatoria.");
+    throw new Error("Descrição do motivo obrigatória.");
   }
 
   const scope = await getDataScope();
@@ -714,7 +714,7 @@ export async function deleteScaffold(id: string) {
     entityId: scaffold.id,
     entityLabel: scaffold.code,
     action: AuditAction.DELETE,
-    description: `Andaime ${scaffold.code} excluido`,
+    description: `Andaime ${scaffold.code} excluído`,
     oldValue: oldScaffold
       ? {
           code: oldScaffold.code,

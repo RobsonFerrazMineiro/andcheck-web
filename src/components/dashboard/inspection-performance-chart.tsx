@@ -76,7 +76,7 @@ export function InspectionPerformanceChart({
             · Últimos 7 dias
           </span>
         </div>
-        <span className={`${typography.codeMuted} text-slate-400`}>
+        <span className={`${typography.codeMuted} text-sidebar-foreground/45`}>
           {total} total
         </span>
       </div>

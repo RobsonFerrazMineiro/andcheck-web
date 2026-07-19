@@ -15,7 +15,7 @@ export function assertStoredFileReference(
 ) {
   if (!value || !isStoredFileReference(value)) {
     throw new Error(
-      `${fieldName} deve usar uma referencia de storage; dados Base64 nao sao aceitos.`,
+      `${fieldName} deve usar uma referência de storage; dados Base64 não são aceitos.`,
     );
   }
 }
@@ -34,7 +34,7 @@ export function assertStoredFileOrInlineImageReference(
 ) {
   if (!value || !isStoredFileOrInlineImageReference(value)) {
     throw new Error(
-      `${fieldName} deve usar uma referencia de storage ou uma imagem Base64 valida.`,
+      `${fieldName} deve usar uma referência de storage ou uma imagem Base64 válida.`,
     );
   }
 }

@@ -35,13 +35,13 @@ export function LoginForm() {
           callbackUrl: absoluteCallbackUrl,
         });
         if (result?.error) {
-          setError("E-mail ou senha invalidos.");
+          setError("E-mail ou senha inválidos.");
         } else {
           router.push(callbackUrl);
           router.refresh();
         }
       } catch {
-        setError("Nao foi possivel iniciar a sessao. Tente novamente.");
+        setError("Não foi possível iniciar a sessão. Tente novamente.");
       }
     });
   }

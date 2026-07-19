@@ -211,7 +211,7 @@ export async function logScaffoldStatusConsultation(scaffold: {
           entityLabel: scaffold.code,
           action: AuditAction.VIEW_QR,
           description: user
-            ? `${user.name ?? "Usuario"} consultou o status do andaime ${scaffold.code}`
+            ? `${user.name ?? "Usuário"} consultou o status do andaime ${scaffold.code}`
             : `Consulta publica ao status do andaime ${scaffold.code}`,
           oldValue: Prisma.JsonNull,
           newValue: {

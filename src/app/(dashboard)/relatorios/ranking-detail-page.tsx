@@ -62,14 +62,59 @@ export function RankingDetailPage({
           <p className={surface.panelHeaderTitle}>Ranking completo</p>
           <p className={surface.panelHeaderSubtitle}>{periodLabel}</p>
         </div>
-        <div className="overflow-x-auto">
+        <div className="divide-y divide-border md:hidden">
+          {rows.length === 0 ? (
+            <p className="px-4 py-6 text-center text-[11px] text-muted-foreground">
+              Sem dados no periodo.
+            </p>
+          ) : (
+            rows.map((row, index) => (
+              <div key={index} className="grid gap-3 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {columns[1] ?? "Item"}
+                    </p>
+                    <div className="mt-1 break-words text-[13px] font-semibold text-foreground">
+                      {row[1] ?? "-"}
+                    </div>
+                  </div>
+                  <div className="shrink-0 rounded-md border border-border bg-muted/20 px-2 py-1 text-right">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+                      {columns[0] ?? "Posição"}
+                    </p>
+                    <div className="font-mono text-[12px] font-bold text-foreground">
+                      {row[0] ?? index + 1}
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {row.slice(2).map((cell, cellIndex) => (
+                    <div
+                      key={`${index}-${cellIndex + 2}`}
+                      className="min-w-0 rounded-md border border-border/70 bg-muted/15 p-2"
+                    >
+                      <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+                        {columns[cellIndex + 2]}
+                      </p>
+                      <div className="mt-1 break-words text-[11px] font-semibold text-foreground">
+                        {cell}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full min-w-[760px] border-collapse text-left">
-            <thead className="bg-primary">
+            <thead className="bg-sidebar">
               <tr>
                 {columns.map((column) => (
                   <th
                     key={column}
-                    className="px-4 py-3 text-[9px] font-bold uppercase tracking-widest text-primary-foreground/65"
+                    className="px-4 py-3 text-[9px] font-bold uppercase tracking-widest text-sidebar-foreground/65"
                   >
                     {column}
                   </th>

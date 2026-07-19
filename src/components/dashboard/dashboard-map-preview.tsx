@@ -107,7 +107,7 @@ export function DashboardMapPreview({
         </div>
         <Link
           href="/mapa"
-          className={`flex items-center gap-1 text-slate-300 transition-colors hover:text-white ${typography.linkAction}`}
+          className={`flex items-center gap-1 text-sidebar-foreground/70 transition-colors hover:text-sidebar-foreground ${typography.linkAction}`}
         >
           Abrir mapa
           <ExternalLink className="w-2.5 h-2.5" />

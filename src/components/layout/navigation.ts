@@ -87,7 +87,7 @@ export const mainNavigationItems: NavigationItem[] = [
   },
   {
     path: "/sincronizacao",
-    label: "Sincronizacao",
+    label: "Sincronização",
     icon: RefreshCw,
     desc: "Fila offline",
   },

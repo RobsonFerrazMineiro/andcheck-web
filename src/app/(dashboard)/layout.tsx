@@ -50,12 +50,12 @@ function getRoleLabel(roleCodes: string[], legacyRole?: string) {
 }
 
 function getActiveWorkspaceName(contextSwitcher: ContextSwitcherData | null) {
-  if (!contextSwitcher) return "Nao informado";
+  if (!contextSwitcher) return "Não informado";
 
   return (
     contextSwitcher.workspaces.find(
       (workspace) => workspace.id === contextSwitcher.selectedWorkspaceId,
-    )?.name ?? "Nao informado"
+    )?.name ?? "Não informado"
   );
 }
 
@@ -160,7 +160,7 @@ export default async function DashboardLayout({
         userProfile={
           user
             ? {
-                name: user.name ?? "Usuario",
+                name: user.name ?? "Usuário",
                 email: user.email ?? "",
                 roleLabel: userRoleLabel,
                 companyName: authenticatedCompany?.name ?? "AndCheck",
@@ -208,7 +208,7 @@ export default async function DashboardLayout({
             />
             {user && (
               <UserMenu
-                name={user.name ?? "Usuario"}
+                name={user.name ?? "Usuário"}
                 email={user.email ?? ""}
                 roleLabel={userRoleLabel}
                 companyName={authenticatedCompany?.name ?? "AndCheck"}

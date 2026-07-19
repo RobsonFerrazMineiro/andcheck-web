@@ -9,7 +9,7 @@ export function isOfflineFileReference(value?: string | null) {
 export function dataUrlToFile(dataUrl: string, fileName: string) {
   const match = /^data:([^;,]+);base64,(.+)$/i.exec(dataUrl);
   if (!match) {
-    throw new Error("Arquivo offline invalido.");
+    throw new Error("Arquivo offline inválido.");
   }
 
   const [, mimeType, payload] = match;

@@ -48,7 +48,7 @@ export function ConfirmDialog({
       aria-describedby="confirm-dialog-description"
     >
       <div className="w-full max-w-md overflow-hidden rounded-lg border border-border bg-card shadow-xl">
-        <div className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 text-primary-foreground">
+        <div className="flex items-center justify-between border-b border-sidebar-border bg-sidebar px-4 py-3 text-sidebar-foreground">
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-primary-foreground/80" />
             <p id="confirm-dialog-title" className={typography.panelTitle}>

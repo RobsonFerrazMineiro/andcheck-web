@@ -27,7 +27,7 @@ export async function GET(
 ) {
   const access = await getCurrentUserAccess();
   if (!access || !canAccessNonConformities(access.roleCodes)) {
-    return new Response("Nao autorizado.", { status: 403 });
+    return new Response("Não autorizado.", { status: 403 });
   }
   const scope = await getDataScope();
 
@@ -35,9 +35,9 @@ export async function GET(
   const kind = enumValue(
     rawKind,
     ["item", "general"] as const,
-    "Tipo de evidencia",
+    "Tipo de evidência",
   );
-  const id = requiredId(rawId, "Evidencia");
+  const id = requiredId(rawId, "Evidência");
   const evidence =
     kind === "item"
       ? await prisma.nonConformityItemEvidence.findFirst({
@@ -52,7 +52,7 @@ export async function GET(
         : null;
 
   if (!evidence) {
-    return new Response("Evidencia nao encontrada.", { status: 404 });
+    return new Response("Evidência não encontrada.", { status: 404 });
   }
 
   return createStoredFileResponse({

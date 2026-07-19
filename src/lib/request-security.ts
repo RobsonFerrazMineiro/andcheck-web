@@ -19,6 +19,6 @@ export async function assertSameOriginRequest() {
   const expectedHost = hdrs.get("x-forwarded-host") ?? hdrs.get("host");
 
   if (!originUrl || !expectedHost || originUrl.host !== expectedHost) {
-    throw new Error("Origem da requisicao nao autorizada.");
+  throw new Error("Origem da requisição não autorizada.");
   }
 }

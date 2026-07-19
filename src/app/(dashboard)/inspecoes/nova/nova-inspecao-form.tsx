@@ -153,6 +153,7 @@ export function NovaInspecaoForm({
   const [selectedScaffoldId, setSelectedScaffoldId] = useState(
     params.get("scaffold_id") ?? "",
   );
+  const [scaffoldSearch, setScaffoldSearch] = useState("");
   const [inspectorName, setInspectorName] = useState("");
   const [validityDays, setValidityDays] = useState("7");
   const [observations, setObservations] = useState("");
@@ -253,6 +254,25 @@ export function NovaInspecaoForm({
   const selectedScaffold = cachedScaffolds.find(
     (s) => s.id === selectedScaffoldId,
   );
+  const filteredScaffolds = useMemo(() => {
+    const term = scaffoldSearch.trim().toLowerCase();
+    if (!term) return cachedScaffolds;
+
+    const matches = cachedScaffolds.filter((scaffold) =>
+      [scaffold.code, scaffold.location, scaffold.area, scaffold.company]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(term)),
+    );
+
+    if (
+      selectedScaffold &&
+      !matches.some((scaffold) => scaffold.id === selectedScaffold.id)
+    ) {
+      return [selectedScaffold, ...matches];
+    }
+
+    return matches;
+  }, [cachedScaffolds, scaffoldSearch, selectedScaffold]);
 
   const selectedPolicy = useMemo(() => {
     if (!selectedScaffold) return null;
@@ -536,7 +556,7 @@ export function NovaInspecaoForm({
       <div className="pb-4 border-b-2 border-border">
         <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
           <ClipboardCheck className="size-4" />
-          AndCheck • Inspeções · NR-18 / NR-35 / ABNT NBR 6494
+          AndCheck ⬢ Inspeções · NR-18 / NR-35 / ABNT NBR 6494
         </div>
         <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
           Nova Inspeção
@@ -570,12 +590,26 @@ export function NovaInspecaoForm({
               <SelectTrigger className="h-8 text-[11px] rounded-md">
                 <SelectValue placeholder="Selecionar andaime..." />
               </SelectTrigger>
-              <SelectContent>
-                {cachedScaffolds.map((s) => (
+              <SelectContent className="max-h-72">
+                <div className="sticky top-0 z-10 border-b border-border bg-popover p-2">
+                  <Input
+                    value={scaffoldSearch}
+                    onChange={(event) => setScaffoldSearch(event.target.value)}
+                    placeholder="Pesquisar TAG, local, área ou empresa..."
+                    className="h-8 text-[11px]"
+                    onKeyDown={(event) => event.stopPropagation()}
+                  />
+                </div>
+                {filteredScaffolds.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.code} — {s.location}
                   </SelectItem>
                 ))}
+                {filteredScaffolds.length === 0 && (
+                  <div className="px-3 py-2 text-[11px] text-muted-foreground">
+                    Nenhum andaime encontrado.
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>

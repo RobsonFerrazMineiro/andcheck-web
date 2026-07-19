@@ -59,7 +59,7 @@ export default async function UsuariosPage() {
 
   return (
     <div className="space-y-4">
-      <OnlineOnlyNotice moduleName="Usuarios administrativos" />
+      <OnlineOnlyNotice moduleName="Usuários administrativos" />
       <UsuariosClient
         initialData={rows}
         roles={roleOptions}

@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       roleHasPermission(roleCode, permission),
     ),
   );
-  if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  if (!allowed) return new Response("Não autorizado.", { status: 403 });
   const limit = checkRequestRateLimit(request, {
     key: "upload-file-read",
     limit: 180,
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     reference.length > 512 ||
     !ALLOWED_BLOB_PREFIXES.some((prefix) => reference.startsWith(prefix))
   ) {
-    return new Response("Referencia de arquivo invalida.", { status: 422 });
+    return new Response("Referência de arquivo inválida.", { status: 422 });
   }
 
   return createStoredFileResponse({

@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
+  Calendar,
   ChevronRight,
   Construction,
-  Filter,
   MapPin,
   Plus,
   Search,
@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -98,7 +99,7 @@ export function AndaimesClient({
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <Construction className="size-4" />
-            AndCheck • Andaimes
+            AndCheck ⬢ Andaimes
           </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes
@@ -130,8 +131,13 @@ export function AndaimesClient({
         description="Busque e refine a lista de andaimes."
         summary={`${filtered.length}/${scaffolds.length} · ${statusFilter === "all" ? "Todos status" : statusFilter} · ${expirationFilter === "all" ? "Todos vencimentos" : expirationFilter}`}
       >
-        <div className="grid gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-[1fr_180px_180px]">
-          <div className="relative flex-1">
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${scaffolds.length}`}
+          contentClassName="grid gap-3 md:grid-cols-[1fr_180px_180px]"
+        >
+          <FilterField label="Busca">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
             <Input
               placeholder="Buscar por TAG, localização ou área..."
@@ -140,9 +146,10 @@ export function AndaimesClient({
               className="pl-9 h-8 text-[11px] rounded-md border-border"
             />
           </div>
+          </FilterField>
+          <FilterField label="Status">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
-              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -154,9 +161,10 @@ export function AndaimesClient({
               <SelectItem value="em_montagem">Em Montagem</SelectItem>
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Vencimento">
           <Select value={expirationFilter} onValueChange={setExpirationFilter}>
             <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
-              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
               <SelectValue placeholder="Vencimento" />
             </SelectTrigger>
             <SelectContent>
@@ -167,7 +175,8 @@ export function AndaimesClient({
               <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          </FilterField>
+        </FilterShell>
       </MobileFilterPanel>
 
       {filtered.length !== scaffolds.length && (
@@ -203,9 +212,9 @@ export function AndaimesClient({
                 <Link
                   key={scaffold.id}
                   href={"/andaimes/" + scaffold.id}
-                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-48 flex-col rounded-lg border border-border bg-card p-3 shadow-sm ring-1 hover:bg-primary/5 sm:p-4 ${tone.border}`}
+                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-40 flex-col rounded-lg border border-border bg-card p-3 shadow-sm ring-1 hover:bg-primary/5 ${tone.border}`}
                 >
-                  <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className={`${typography.code} text-foreground`}>
                         {scaffold.code}
@@ -220,19 +229,20 @@ export function AndaimesClient({
                     <StatusBadge status={scaffold.status} />
                   </div>
 
-                  <div className="grid flex-1 gap-3">
+                  <div className="grid flex-1 gap-2">
                     <CardMeta
                       icon={MapPin}
                       label="Localização"
                       value={scaffold.location || "Sem localização"}
                     />
-                    <CardMeta
-                      icon={Construction}
-                      label="Área"
-                      value={scaffold.area || "Sem área"}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <CardMetric
+                    <>
+                      <CardMeta
+                        icon={Construction}
+                        label="Área"
+                        value={scaffold.area || "Sem área"}
+                      />
+                      <CardMeta
+                        icon={Calendar}
                         label="Validade"
                         value={
                           scaffold.validity_date
@@ -243,18 +253,17 @@ export function AndaimesClient({
                             : "—"
                         }
                       />
-                      <CardMetric
-                        label="Inspeções"
-                        value={scaffold._count.inspections.toString()}
-                      />
-                    </div>
+                    </>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
                     <span
                       className={`${typography.action} text-muted-foreground`}
                     >
-                      Ver detalhes
+                      {scaffold._count.inspections}{" "}
+                      {scaffold._count.inspections === 1
+                        ? "inspeção"
+                        : "inspeções"}
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground/30 transition-colors group-hover:text-foreground" />
                   </div>
@@ -291,17 +300,6 @@ function CardMeta({
           {value}
         </p>
       </div>
-    </div>
-  );
-}
-
-function CardMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
-      <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
-        {label}
-      </p>
-      <p className={`mt-1 text-foreground ${typography.code}`}>{value}</p>
     </div>
   );
 }

@@ -22,7 +22,12 @@ import { notFound } from "next/navigation";
 
 import { PdfDownloadButton } from "@/components/inspection/pdf-download-button";
 import { PrintButton } from "@/components/inspection/print-button";
-import { AuditTimeline } from "@/components/shared/audit-timeline";
+import { LinkedRecordsButton } from "@/components/scaffold/linked-records-button";
+import {
+  ActionMenu,
+  actionMenuItemClassName,
+} from "@/components/shared/action-menu";
+import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
@@ -231,6 +236,10 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   const docNum =
     inspection.scaffold_code + "-" + format(inspection.date, "yyyyMMdd");
+  const linkedNonConformities = inspection.nonConformities.map((nc) => ({
+    ...nc,
+    responsibleUser: null,
+  }));
 
   const grouped: Record<string, typeof checklist> = {};
   checklist.forEach((item) => {
@@ -240,15 +249,15 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto pb-10">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             href="/inspecoes"
             className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground" />
           </Link>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+          <div className="min-w-0 text-[10px] text-muted-foreground uppercase tracking-widest">
             <Link href="/inspecoes" className="hover:text-foreground">
               Inspeções
             </Link>
@@ -258,8 +267,17 @@ export default async function InspectionDetailPage({ params }: Props) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <LinkedRecordsButton
+            type="nonConformities"
+            records={linkedNonConformities}
+            scaffoldId={inspection.scaffold_id}
+            scaffoldCode={inspection.scaffold_code}
+          />
+          <AuditTimelineButton items={auditTimeline} />
+        <ActionMenu className="shrink-0">
           <PdfDownloadButton
+            className={actionMenuItemClassName}
             inspection={{
               id: inspection.id,
               scaffold_code: inspection.scaffold_code,
@@ -284,19 +302,21 @@ export default async function InspectionDetailPage({ params }: Props) {
                 : null,
             }}
           />
-          <PrintButton />
+          <PrintButton className={actionMenuItemClassName} />
           {scaffold && (
             <Link
               href={"/andaimes/" + inspection.scaffold_id}
-              className="flex items-center gap-1.5 h-8 px-3 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
+              className={actionMenuItemClassName}
             >
-              <Construction className="w-3.5 h-3.5" /> Ver Andaime
+              <Construction className="w-4 h-4" />
+              Ver andaime
             </Link>
           )}
+        </ActionMenu>
         </div>
       </div>
 
-      <div className="bg-primary border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
+      <div className="bg-sidebar border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
           <div>
             <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/40">
@@ -518,7 +538,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         {inspection.signatures.length === 0 ? (
           <EmptyState
             icon={CheckCircle2}
-            title="Nenhuma assinatura obrigatoria registrada"
+            title="Nenhuma assinatura obrigatória registrada"
             description="As assinaturas coletadas nesta inspeção aparecerão aqui."
             className="border-0 border-b border-dashed py-8"
           />
@@ -645,7 +665,7 @@ export default async function InspectionDetailPage({ params }: Props) {
           />
         ) : (
           <div className="divide-y divide-border">
-            <div className="grid grid-cols-4 gap-3 px-4 py-2 bg-muted/40">
+            <div className="hidden grid-cols-4 gap-3 px-4 py-2 bg-muted/40 sm:grid">
               {["Código", "Status", "Classificação", "Prazo"].map((h) => (
                 <p
                   key={h}
@@ -659,18 +679,27 @@ export default async function InspectionDetailPage({ params }: Props) {
               <Link
                 key={nc.id}
                 href={"/nao-conformidades/" + nc.id}
-                className="grid grid-cols-4 gap-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors"
+                className="grid gap-2 px-4 py-3 hover:bg-muted/30 transition-colors sm:grid-cols-4 sm:items-center"
               >
                 <p className="text-[11px] font-bold font-mono text-foreground">
+                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                    Código
+                  </span>
                   {nc.code}
                 </p>
                 <div>
                   <NcBadge value={nc.status} />
                 </div>
                 <p className="text-[11px] text-muted-foreground">
+                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                    Classificação
+                  </span>
                   {NC_CLASSIFICATION_LABELS[nc.classification] ?? nc.classification}
                 </p>
                 <p className="text-[11px] text-muted-foreground font-mono">
+                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                    Prazo
+                  </span>
                   {nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
                 </p>
               </Link>
@@ -700,8 +729,6 @@ export default async function InspectionDetailPage({ params }: Props) {
           </Link>
         </div>
       )}
-
-      <AuditTimeline items={auditTimeline} />
 
       <div className="flex gap-3">
         <Link

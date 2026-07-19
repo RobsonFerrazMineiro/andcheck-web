@@ -32,7 +32,7 @@ export function compressImageBlob(
       canvas.height = targetHeight;
       const context = canvas.getContext("2d");
       if (!context) {
-        reject(new Error("Canvas indisponivel para compressao."));
+        reject(new Error("Canvas indisponível para compressão."));
         return;
       }
 
@@ -41,7 +41,7 @@ export function compressImageBlob(
         (blob) =>
           blob
             ? resolve(blob)
-            : reject(new Error("Nao foi possivel comprimir a imagem.")),
+      : reject(new Error("Não foi possível comprimir a imagem.")),
         "image/jpeg",
         quality,
       );

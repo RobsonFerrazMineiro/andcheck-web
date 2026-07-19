@@ -27,7 +27,7 @@ export async function logInspectionPdfGenerated(inspectionId: string) {
     entityId: inspection.id,
     entityLabel: inspection.scaffold_code,
     action: AuditAction.GENERATE_PDF,
-    description: `PDF da inspecao ${inspection.id} gerado`,
+    description: `PDF da inspeção ${inspection.id} gerado`,
     newValue: {
       inspection_id: inspection.id,
       scaffold_code: inspection.scaffold_code,

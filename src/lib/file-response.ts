@@ -44,7 +44,7 @@ export async function createStoredFileResponse(file: {
       access: "private",
     });
     if (!stored || stored.statusCode !== 200) {
-      return new Response("Arquivo nao encontrado.", { status: 404 });
+      return new Response("Arquivo não encontrado.", { status: 404 });
     }
 
     return new Response(stored.stream, {
@@ -63,7 +63,7 @@ export async function createStoredFileResponse(file: {
       file.fileUrl.replace(/^\/+/, ""),
     );
     if (!storedPath.startsWith(`${publicDirectory}${path.sep}`)) {
-      return new Response("Caminho de arquivo invalido.", { status: 422 });
+      return new Response("Caminho de arquivo inválido.", { status: 422 });
     }
 
     try {
@@ -76,7 +76,7 @@ export async function createStoredFileResponse(file: {
         ),
       });
     } catch {
-      return new Response("Arquivo nao encontrado.", { status: 404 });
+      return new Response("Arquivo não encontrado.", { status: 404 });
     }
   }
 
@@ -86,7 +86,7 @@ export async function createStoredFileResponse(file: {
 
   const decoded = decodeDataUrl(file.fileUrl);
   if (!decoded) {
-    return new Response("Conteudo do arquivo invalido.", { status: 422 });
+    return new Response("Conteúdo do arquivo inválido.", { status: 422 });
   }
 
   return new Response(decoded.bytes, {

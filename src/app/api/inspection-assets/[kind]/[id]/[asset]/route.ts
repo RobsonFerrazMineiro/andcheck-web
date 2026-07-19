@@ -23,7 +23,7 @@ export async function GET(
       roleHasPermission(roleCode, permission),
     ),
   );
-  if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  if (!allowed) return new Response("Não autorizado.", { status: 403 });
   const scope = await getDataScope();
   const scopeWhere = dataScopeWhere(scope);
 
@@ -33,12 +33,12 @@ export async function GET(
     ["photo", "checklist", "signature"] as const,
     "Tipo de arquivo",
   );
-  const id = requiredId(rawId, "Arquivo da inspecao");
+  const id = requiredId(rawId, "Arquivo da inspeção");
   let fileUrl: string | null = null;
   let fileName = "arquivo";
 
   if (kind === "photo") {
-    const index = requiredNumber(asset, "Indice da foto", { min: 0, max: 100 });
+    const index = requiredNumber(asset, "Índice da foto", { min: 0, max: 100 });
     const inspection = Number.isInteger(index)
       ? await prisma.inspection.findFirst({
           where: { id, ...scopeWhere },
@@ -49,7 +49,7 @@ export async function GET(
     fileName = `${inspection?.scaffold_code ?? "inspecao"}-foto-${index + 1}.jpg`;
   } else if (kind === "checklist") {
     if (asset !== "photo") {
-      return new Response("Arquivo da inspecao nao encontrado.", { status: 404 });
+      return new Response("Arquivo da inspeção não encontrado.", { status: 404 });
     }
     const item = await prisma.checklistEntry.findFirst({
       where: { id, inspection: scopeWhere },
@@ -59,7 +59,7 @@ export async function GET(
     fileName = `checklist-${item?.item_id ?? id}.jpg`;
   } else if (kind === "signature") {
     if (asset !== "main") {
-      return new Response("Arquivo da inspecao nao encontrado.", { status: 404 });
+      return new Response("Arquivo da inspeção não encontrado.", { status: 404 });
     }
     const inspection = await prisma.inspection.findFirst({
       where: { id, ...scopeWhere },
@@ -70,7 +70,7 @@ export async function GET(
   }
 
   if (!fileUrl) {
-    return new Response("Arquivo da inspecao nao encontrado.", { status: 404 });
+    return new Response("Arquivo da inspeção não encontrado.", { status: 404 });
   }
 
   return createStoredFileResponse({ fileUrl, fileName });

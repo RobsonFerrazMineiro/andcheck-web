@@ -104,7 +104,7 @@ function parseWorkspaceForm(formData: FormData) {
     "Status do workspace",
   );
   const active = status === "ACTIVE";
-  const description = optionalText(formData.get("description"), "Descricao", 500);
+  const description = optionalText(formData.get("description"), "Descrição", 500);
 
   if (state && state.length !== 2) {
     throw new Error("Estado deve usar a sigla com 2 caracteres.");
@@ -255,7 +255,7 @@ export async function updateWorkspace(formData: FormData) {
   const input = parseWorkspaceForm(formData);
   await assertOwnerCompany(input.ownerCompanyId);
   const current = await prisma.workspace.findUnique({ where: { id } });
-  if (!current) throw new Error("Workspace nao encontrado.");
+  if (!current) throw new Error("Workspace não encontrado.");
   if (current.active && !input.active) {
     await assertWorkspaceCanBeDeactivated(id);
   }
@@ -327,7 +327,7 @@ export async function setWorkspaceActive(id: string, active: boolean) {
   await requireRole("SUPER_ADMIN");
   const workspaceId = requiredId(id, "Workspace");
   const current = await prisma.workspace.findUnique({ where: { id: workspaceId } });
-  if (!current) throw new Error("Workspace nao encontrado.");
+  if (!current) throw new Error("Workspace não encontrado.");
   if (current.active === active) return;
   if (!active) await assertWorkspaceCanBeDeactivated(workspaceId);
 

@@ -2,14 +2,16 @@
 
 import { logInspectionPdfGenerated } from "@/lib/actions/audit-actions";
 import type { InspectionForPDF } from "@/lib/generate-inspection-pdf";
+import { cn } from "@/lib/utils";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface PdfDownloadButtonProps {
   inspection: InspectionForPDF;
+  className?: string;
 }
 
-export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
+export function PdfDownloadButton({ inspection, className }: PdfDownloadButtonProps) {
   const [loading, setLoading] = useState(false);
 
   async function handleDownload() {
@@ -42,14 +44,15 @@ export function PdfDownloadButton({ inspection }: PdfDownloadButtonProps) {
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="flex items-center gap-1.5 h-8 px-4 bg-accent text-accent-foreground
-                 text-[10px] font-bold uppercase tracking-widest hover:bg-accent/90
-                 disabled:opacity-60 transition-colors"
+      className={cn(
+        "flex items-center gap-2 disabled:opacity-60",
+        className,
+      )}
     >
       {loading ? (
-        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
-        <Download className="w-3.5 h-3.5" />
+        <Download className="w-4 h-4" />
       )}
       {loading ? "Gerando..." : "Exportar PDF"}
     </button>

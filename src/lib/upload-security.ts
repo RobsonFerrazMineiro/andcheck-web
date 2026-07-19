@@ -104,14 +104,14 @@ export async function validateUploadedFile(
   if (!policy.extensions.includes(extension)) {
     return {
       ok: false as const,
-      message: "Extensao de arquivo nao permitida para esta categoria.",
+      message: "Extensão de arquivo não permitida para esta categoria.",
     };
   }
 
   if (!policy.mimeTypes.includes(declaredMimeType)) {
     return {
       ok: false as const,
-      message: "Tipo de arquivo nao permitido para esta categoria.",
+      message: "Tipo de arquivo não permitido para esta categoria.",
     };
   }
 
@@ -124,7 +124,7 @@ export async function validateUploadedFile(
   if (!detectedMatchesDeclared) {
     return {
       ok: false as const,
-      message: "Conteudo do arquivo nao corresponde ao tipo informado.",
+      message: "Conteúdo do arquivo não corresponde ao tipo informado.",
     };
   }
 

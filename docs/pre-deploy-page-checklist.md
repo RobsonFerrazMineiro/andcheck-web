@@ -301,6 +301,73 @@ Para cada pagina, registrar:
 - Correcoes realizadas:
 - Pendencias:
 
+## Checklist Adicional - Rodada UX Polish
+
+Usar esta lista apos a proxima build/deploy de homologacao para conferir o que ainda depende de validacao visual/manual.
+
+### Padrao global
+- [ ] Conferir em desktop, tablet e celular se as paginas seguem a ordem: breadcrumb, titulo, descricao, linha divisoria, area de acoes e conteudo.
+- [ ] Confirmar que nao ha scroll horizontal, texto vazando, cards desalinhados, botoes cortados ou sobreposicao de elementos.
+- [ ] Validar textos longos em empresa, workspace, usuario, e-mail, cargo, area/setor e codigos de andaime.
+- [ ] Confirmar que as alteracoes foram apenas visuais, sem mudar RBAC, offline, sincronizacao, banco, APIs ou fluxo operacional.
+
+### Menus e acoes
+- [ ] Em detalhe de andaime, detalhe de inspecao e detalhe de nao conformidade, validar o menu "Acoes" em desktop e mobile.
+- [ ] Confirmar que todas as acoes antigas continuam funcionando: editar, nova inspecao, desmontagem, exportar PDF, imprimir, comentarios, responsavel, prazo e cancelar quando aplicavel.
+- [ ] Testar dropdowns de perfil, empresa/workspace, notificacoes, menu mobile e demais menus: clique fora fecha, ESC fecha e abrir outro menu nao deixa menus sobrepostos.
+
+### Timeline e historico
+- [ ] Em telas com timeline, validar que somente os ultimos 5 eventos aparecem inicialmente.
+- [ ] Clicar em "Ver historico completo" e confirmar que modal/drawer abre, rola corretamente, fecha no X, fecha com ESC e nao quebra no mobile.
+
+### Andaimes e inspecoes
+- [ ] Em `/andaimes`, conferir se cards de validade e inspecoes ficaram compactos e legiveis em mobile/tablet.
+- [ ] Em `/inspecoes`, conferir se validade, observacoes e data ficaram compactos e sem quebra visual.
+- [ ] Em `/andaimes/[id]` e `/inspecoes/[id]`, testar layout mobile, menu de acoes, listas relacionadas, timeline e acesso offline de pagina ja carregada.
+
+### Novo andaime
+- [ ] Conferir texto acima dos botoes do mapa: "Arraste o pin ou clique no mapa para ajustar a posicao exata do andaime."
+- [ ] Validar que "Centralizar no pin" e "Localizacao atual" nao quebram em celular.
+- [ ] Testar geolocalizacao, clique no mapa e arraste do pin.
+- [ ] Confirmar que toast de localizacao detectada nao sobrepoe o cabecalho.
+- [ ] Validar salvamento online e offline, bloqueio contra duplo clique e destino apos salvar.
+
+### Nova inspecao
+- [ ] Conferir se o select de andaime tem campo de pesquisa, altura maxima e scroll interno.
+- [ ] Testar busca por codigo/nome do andaime e selecao em celular real.
+- [ ] Confirmar que a lista nao ocupa a tela inteira nem gera scroll horizontal.
+- [ ] No bloco de assinatura, validar que o botao "Limpar" fica acima da area de assinatura.
+- [ ] Testar camera e galeria para fotos dos itens do checklist em mobile real.
+
+### Mapa operacional
+- [ ] Confirmar que a lista lateral mostra apenas uma parte da lista.
+- [ ] Clicar em "Ver todos" e validar modal/bottom sheet com lista completa.
+- [ ] Testar filtros, selecao de andaime e pins no mapa sem scroll longo excessivo.
+
+### Sincronizacao e offline
+- [ ] Conferir se `/sincronizacao` usa o mesmo padrao visual das demais paginas.
+- [ ] Validar cards no mobile e tabela no desktop.
+- [ ] Testar fila com item pendente, falha, retry individual e retry em lote.
+- [ ] Testar ida offline/online em homologacao real e confirmar que o status visual atualiza em tempo aceitavel.
+
+### Notificacoes e preferencias
+- [ ] Em `/notificacoes`, validar filtros simplificados, "Marcar lidas" e "Arquivar todas".
+- [ ] Confirmar que arquivar todas respeita escopo do usuario e nao afeta notificacoes indevidas.
+- [ ] Em `/perfil/notificacoes`, conferir agrupamento, checkboxes/toggles, textos e estados indisponiveis.
+
+### Perfil e areas administrativas
+- [ ] Em `/perfil`, validar hierarquia visual, dados longos, sessao, troca de senha e estados offline/online.
+- [ ] Em `/usuarios`, testar tabela em desktop/tablet/mobile com nomes, e-mails, perfis e empresas longos.
+- [ ] Em `/empresas`, `/empresas/[id]`, `/workspaces`, `/workspaces/[id]`, `/documentos/[id]` e paginas admin, validar header, cards, acoes e responsividade.
+- [ ] Em `/auditoria`, validar comportamento em tablet e modal/detalhe quando aplicavel.
+- [ ] Em `/relatorios`, validar filtros, selects, cards e graficos em mobile/tablet.
+
+### PWA e instalacao
+- [ ] Em Android real, abrir homologacao HTTPS e verificar se aparece opcao de instalar o app.
+- [ ] Em iOS/iPadOS real, validar instalacao via "Adicionar a Tela de Inicio".
+- [ ] Confirmar icone, nome do app, tela inicial e comportamento offline apos instalado.
+- [ ] Reabrir app instalado online e offline e validar paginas ja carregadas.
+
 ## Bugs Encontrados
 
 | ID | Severidade | Pagina/Fluxo | Ambiente | Descricao | Status |

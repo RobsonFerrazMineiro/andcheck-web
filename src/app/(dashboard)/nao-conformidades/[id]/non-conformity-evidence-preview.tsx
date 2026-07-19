@@ -166,7 +166,7 @@ export function NonConformityEvidencePreview({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
           <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
-            <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
+            <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
               <p
                 id={previewTitleId}
                 className="text-[10px] font-bold uppercase tracking-widest"

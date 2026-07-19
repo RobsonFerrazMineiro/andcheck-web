@@ -112,12 +112,12 @@ function parseDocumentForm(formData: FormData) {
     Object.values(DocumentCategory),
     "Categoria tecnica",
   );
-  const description = optionalText(formData.get("description"), "Descricao", 1000);
+  const description = optionalText(formData.get("description"), "Descrição", 1000);
   const companyId = requiredId(formData.get("companyId"), "Empresa");
   const workspaceId = requiredId(formData.get("workspaceId"), "Workspace");
   const issueDate = optionalDate(formData.get("issueDate"), "Data de emissao");
   const expiryDate = optionalDate(formData.get("expiryDate"), "Data de validade");
-  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo tecnico", 500);
+  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo técnico", 500);
   const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
   const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
   const fileSize = optionalNumber(formData.get("fileSize"), "Tamanho do arquivo", {
@@ -326,7 +326,7 @@ export async function getDocumentFormOptions() {
 export async function createDocument(formData: FormData) {
   await requirePermission("documents.create");
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
   const input = parseDocumentForm(formData);
   assertStoredFileReference(input.fileUrl, "Documento");
   await assertDocumentContext(input.companyId, input.workspaceId);
@@ -365,7 +365,7 @@ export async function createDocument(formData: FormData) {
       type: "DOCUMENT_ATTACHED",
       severity: "INFO",
       title: `Documento ${document.title} anexado`,
-      message: `O documento ${document.title} foi anexado ao acervo tecnico.`,
+      message: `O documento ${document.title} foi anexado ao acervo técnico.`,
       entityType: "DOCUMENT",
       entityId: document.id,
       channels: ["INTERNAL"],
@@ -441,7 +441,7 @@ export async function archiveDocument(id: string) {
   const current = await prisma.document.findFirst({
     where: { id: documentId, ...where },
   });
-  if (!current) throw new Error("Documento nao encontrado.");
+  if (!current) throw new Error("Documento não encontrado.");
   if (current.status === DocumentStatus.ARCHIVED) return;
 
   const document = await prisma.document.update({
@@ -506,7 +506,7 @@ export async function logDocumentFileAccess(
     description:
       action === "download"
         ? `Documento ${document.title} baixado`
-        : `Arquivo tecnico do documento ${document.title} visualizado`,
+        : `Arquivo técnico do documento ${document.title} visualizado`,
     newValue: { fileName: document.fileName },
     companyId: document.companyId,
     workspaceId: document.workspaceId,
@@ -576,7 +576,7 @@ export async function addScaffoldDocument(data: {
         max: 50 * 1024 * 1024,
       }) ?? undefined,
     mime_type: optionalText(data.mime_type, "Tipo do arquivo", 160) ?? undefined,
-    uploaded_by: requiredText(data.uploaded_by, "Responsavel pelo upload", 140),
+    uploaded_by: requiredText(data.uploaded_by, "Responsável pelo upload", 140),
     expires_at: data.expires_at,
     observation: optionalText(data.observation, "Observacao", 1000) ?? undefined,
   };
@@ -585,7 +585,7 @@ export async function addScaffoldDocument(data: {
   const scaffold = await prisma.scaffold.findUnique({
     where: { id: input.scaffold_id },
   });
-  if (!scaffold) throw new Error("Andaime nao encontrado.");
+  if (!scaffold) throw new Error("Andaime não encontrado.");
   assertRecordInDataScope(scope, scaffold);
 
   const doc = await prisma.scaffoldDocument.create({

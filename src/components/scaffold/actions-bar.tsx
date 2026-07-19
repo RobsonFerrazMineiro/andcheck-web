@@ -1,10 +1,11 @@
-﻿"use client";
+"use client";
 
 import {
   CheckCircle2,
   ClipboardCheck,
   HardHat,
   Loader2,
+  Pencil,
   Wrench,
 } from "lucide-react";
 import Link from "next/link";
@@ -13,6 +14,10 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  ActionMenu,
+  actionMenuItemClassName,
+} from "@/components/shared/action-menu";
 import {
   completeAssembly,
   dismantleScaffold,
@@ -27,7 +32,7 @@ import { createOfflineId } from "@/lib/offline/types";
 const DISMANTLE_REASONS = [
   "Finalizacao da atividade",
   "Encerramento de parada",
-  "Solicitacao da operacao",
+  "Solicitação da operação",
   "Substituicao do andaime",
   "Readequacao de projeto",
   "Condicao insegura",
@@ -42,6 +47,7 @@ export interface ScaffoldActionsBarProps {
   hasActiveNonConformity: boolean;
   canCompleteAssembly: boolean;
   canDismantle: boolean;
+  canUpdateScaffold?: boolean;
 }
 
 export function ScaffoldActionsBar({
@@ -52,6 +58,7 @@ export function ScaffoldActionsBar({
   hasActiveNonConformity,
   canCompleteAssembly,
   canDismantle,
+  canUpdateScaffold = false,
 }: ScaffoldActionsBarProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -93,7 +100,7 @@ export function ScaffoldActionsBar({
             entityId: scaffoldId,
             payload: { id: scaffoldId },
           });
-          toast.success("Montagem salva offline para sincronizacao.", {
+          toast.success("Montagem salva offline para sincronização.", {
             id: toastId,
           });
           if (canNavigateAfterOfflineWrite()) {
@@ -153,7 +160,7 @@ export function ScaffoldActionsBar({
             },
           });
           setDismantleOpen(false);
-          toast.success("Desmontagem salva offline para sincronizacao.", {
+          toast.success("Desmontagem salva offline para sincronização.", {
             id: toastId,
           });
           if (canNavigateAfterOfflineWrite()) {
@@ -186,13 +193,16 @@ export function ScaffoldActionsBar({
         <HardHat className="w-4 h-4 shrink-0" />
         <p className="text-[11px] font-semibold uppercase tracking-wide">
           Andaime encerrado - este andaime foi desmontado e esta fora de
-          operacao.
+          operação.
         </p>
       </div>
     );
   }
 
   if (status === "em_montagem") {
+    const hasAssemblyActions =
+      canUpdateScaffold || canCompleteAssembly || canDismantle;
+
     return (
       <>
         <ConfirmDialog
@@ -215,32 +225,43 @@ export function ScaffoldActionsBar({
             handleCompleteAssembly();
           }}
         />
-        <div className="flex flex-wrap items-center gap-2">
-          {canCompleteAssembly && (
-            <button
-              onClick={() => setCompleteOpen(true)}
-              disabled={isPending}
-              className="inline-flex h-8 items-center gap-2 bg-blue-600 px-4 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-blue-700 disabled:opacity-60"
-            >
-              {isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-4 h-4" />
-              )}
-              {isPending ? "Aguarde..." : "Concluir Montagem"}
-            </button>
-          )}
-          {canDismantle && (
-            <button
-              onClick={handleDismantle}
-              disabled={isPending}
-              className="inline-flex h-8 items-center gap-2 border border-border px-4 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted"
-            >
-              <Wrench className="w-4 h-4" />
-              Registrar Desmontagem
-            </button>
-          )}
-        </div>
+        {hasAssemblyActions && (
+          <ActionMenu>
+            {canUpdateScaffold && (
+              <Link
+                href={`/andaimes/${scaffoldId}/editar`}
+                className={actionMenuItemClassName}
+              >
+                <Pencil className="w-4 h-4" />
+                Editar
+              </Link>
+            )}
+            {canCompleteAssembly && (
+              <button
+                onClick={() => setCompleteOpen(true)}
+                disabled={isPending}
+                className={actionMenuItemClassName}
+              >
+                {isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
+                {isPending ? "Aguarde..." : "Concluir Montagem"}
+              </button>
+            )}
+            {canDismantle && (
+              <button
+                onClick={handleDismantle}
+                disabled={isPending}
+                className={actionMenuItemClassName}
+              >
+                <Wrench className="w-4 h-4" />
+                Registrar Desmontagem
+              </button>
+            )}
+          </ActionMenu>
+        )}
         {dismantleOpen && (
           <DismantleDialog
             scaffoldCode={scaffoldCode}
@@ -263,6 +284,7 @@ export function ScaffoldActionsBar({
       <ActionRow
         scaffoldId={scaffoldId}
         scaffoldCode={scaffoldCode}
+        canUpdateScaffold={canUpdateScaffold}
         canCreateInspection={canCreateInspection}
         hasActiveNonConformity={hasActiveNonConformity}
         showDismantle={canDismantle && status !== "interditado" && status !== "reprovado"}
@@ -290,6 +312,7 @@ function ActionRow({
   scaffoldId,
   scaffoldCode,
   canCreateInspection,
+  canUpdateScaffold,
   hasActiveNonConformity,
   showDismantle = false,
   onDismantle,
@@ -298,17 +321,34 @@ function ActionRow({
   scaffoldId: string;
   scaffoldCode: string;
   canCreateInspection: boolean;
+  canUpdateScaffold: boolean;
   hasActiveNonConformity: boolean;
   showDismantle?: boolean;
   onDismantle?: () => void;
   isPending?: boolean;
 }) {
+  const hasActions =
+    canUpdateScaffold ||
+    (canCreateInspection && !hasActiveNonConformity) ||
+    showDismantle;
+
+  if (!hasActions) return null;
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <ActionMenu>
+      {canUpdateScaffold && (
+        <Link
+          href={`/andaimes/${scaffoldId}/editar`}
+          className={actionMenuItemClassName}
+        >
+          <Pencil className="w-4 h-4" />
+          Editar
+        </Link>
+      )}
       {canCreateInspection && !hasActiveNonConformity && (
         <Link
           href={`/inspecoes/nova?scaffold_id=${scaffoldId}&scaffold_code=${scaffoldCode}`}
-          className="inline-flex items-center gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-white text-[10px] font-bold uppercase tracking-widest h-8 px-4"
+          className={actionMenuItemClassName}
         >
           <ClipboardCheck className="w-4 h-4" />
           Nova Inspeção
@@ -318,13 +358,13 @@ function ActionRow({
         <button
           onClick={onDismantle}
           disabled={isPending}
-          className="inline-flex items-center gap-2 border border-border hover:bg-muted text-foreground text-[10px] font-bold uppercase tracking-widest h-8 px-4"
+          className={actionMenuItemClassName}
         >
           <Wrench className="w-4 h-4" />
           Registrar Desmontagem
         </button>
       )}
-    </div>
+    </ActionMenu>
   );
 }
 

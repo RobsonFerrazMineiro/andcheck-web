@@ -319,7 +319,7 @@ async function assertNoNonConformityStatusConflict(item: SyncQueueItem) {
 
   if (nc.updatedAt.getTime() > localCreatedAt.getTime()) {
     throw new OfflineSyncConflictError(
-      `NC ${nc.code} foi alterada no servidor antes da sincronizacao.`,
+      `NC ${nc.code} foi alterada no servidor antes da sincronização.`,
       {
         serverStatus: nc.status,
         serverUpdatedAt: nc.updatedAt.toISOString(),
@@ -343,7 +343,7 @@ async function assertNoScaffoldUpdateConflict(item: SyncQueueItem) {
 
   if (scaffold.updated_at.getTime() > localCreatedAt.getTime()) {
     throw new OfflineSyncConflictError(
-      `Andaime ${scaffold.code} foi alterado no servidor antes da sincronizacao.`,
+      `Andaime ${scaffold.code} foi alterado no servidor antes da sincronização.`,
       {
         serverUpdatedAt: scaffold.updated_at.toISOString(),
       },
@@ -462,7 +462,7 @@ export async function POST(request: Request) {
   const access = await getCurrentUserAccess();
   if (!access) {
     return Response.json(
-      { error: "Usuario nao autenticado." },
+      { error: "Usuário não autenticado." },
       { status: 401 },
     );
   }
@@ -471,7 +471,7 @@ export async function POST(request: Request) {
 
   if (!isSyncQueueItemPayload(payload)) {
     return Response.json(
-      { error: "Item de sincronizacao invalido." },
+      { error: "Item de sincronização inválido." },
       { status: 400 },
     );
   }
@@ -481,7 +481,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de inspeção offline invalido.",
+        "Payload de inspeção offline inválido.",
       );
     }
 
@@ -497,7 +497,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar a inspeção.",
+          : "Não foi possível sincronizar a inspeção.",
       );
     }
   }
@@ -507,7 +507,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de andaime offline invalido.",
+        "Payload de andaime offline inválido.",
       );
     }
 
@@ -520,7 +520,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o andaime.",
+          : "Não foi possível sincronizar o andaime.",
       );
     }
   }
@@ -530,7 +530,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de edicao de andaime offline invalido.",
+        "Payload de edição de andaime offline inválido.",
       );
     }
 
@@ -548,7 +548,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar a edicao do andaime.",
+          : "Não foi possível sincronizar a edição do andaime.",
       );
     }
   }
@@ -558,7 +558,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de conclusao de montagem offline invalido.",
+        "Payload de conclusão de montagem offline inválido.",
       );
     }
 
@@ -571,7 +571,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar a conclusao de montagem.",
+          : "Não foi possível sincronizar a conclusão de montagem.",
       );
     }
   }
@@ -581,7 +581,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de desmontagem offline invalido.",
+        "Payload de desmontagem offline inválido.",
       );
     }
 
@@ -597,7 +597,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar a desmontagem.",
+          : "Não foi possível sincronizar a desmontagem.",
       );
     }
   }
@@ -607,7 +607,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de evidencia de NC offline invalido.",
+        "Payload de evidência de NC offline inválido.",
       );
     }
 
@@ -624,7 +624,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar a evidencia da NC.",
+          : "Não foi possível sincronizar a evidência da NC.",
       );
     }
   }
@@ -634,7 +634,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de comentario de NC offline invalido.",
+        "Payload de comentário de NC offline inválido.",
       );
     }
 
@@ -647,7 +647,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o comentario da NC.",
+          : "Não foi possível sincronizar o comentário da NC.",
       );
     }
   }
@@ -657,7 +657,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de status de NC offline invalido.",
+        "Payload de status de NC offline inválido.",
       );
     }
 
@@ -675,7 +675,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o status da NC.",
+          : "Não foi possível sincronizar o status da NC.",
       );
     }
   }
@@ -685,7 +685,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de responsavel de NC offline invalido.",
+        "Payload de responsável de NC offline inválido.",
       );
     }
 
@@ -698,7 +698,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o responsavel da NC.",
+          : "Não foi possível sincronizar o responsável da NC.",
       );
     }
   }
@@ -708,7 +708,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de prazo de NC offline invalido.",
+        "Payload de prazo de NC offline inválido.",
       );
     }
 
@@ -721,7 +721,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o prazo da NC.",
+          : "Não foi possível sincronizar o prazo da NC.",
       );
     }
   }
@@ -731,7 +731,7 @@ export async function POST(request: Request) {
       return failedResponse(
         payload,
         access,
-        "Payload de documento de andaime offline invalido.",
+        "Payload de documento de andaime offline inválido.",
       );
     }
 
@@ -744,7 +744,7 @@ export async function POST(request: Request) {
         access,
         error instanceof Error
           ? error.message
-          : "Nao foi possivel sincronizar o documento do andaime.",
+          : "Não foi possível sincronizar o documento do andaime.",
       );
     }
   }
@@ -752,7 +752,7 @@ export async function POST(request: Request) {
   return failedResponse(
     payload,
     access,
-    "Processador servidor ainda nao conectado para esta acao offline.",
+    "Processador servidor ainda não conectado para esta ação offline.",
     202,
   );
 }

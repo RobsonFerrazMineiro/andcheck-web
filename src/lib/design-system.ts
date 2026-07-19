@@ -52,9 +52,9 @@ export const typography = {
 } as const;
 
 export const surface = {
-  panelHeader: "bg-slate-800 px-4 py-3 text-slate-100",
-  panelHeaderIcon: "w-3.5 h-3.5 text-slate-300",
-  panelHeaderTitle: `${typography.panelTitle} text-slate-50`,
-  panelHeaderSubtitle: `${typography.panelSubtitle} text-slate-400`,
-  tableHeader: `bg-slate-800 px-4 py-3 text-slate-100 ${typography.tableHeader}`,
+  panelHeader: "bg-sidebar px-4 py-3 text-sidebar-foreground",
+  panelHeaderIcon: "w-3.5 h-3.5 text-sidebar-foreground/70",
+  panelHeaderTitle: `${typography.panelTitle} text-sidebar-foreground`,
+  panelHeaderSubtitle: `${typography.panelSubtitle} text-sidebar-foreground/45`,
+  tableHeader: `bg-sidebar px-4 py-3 text-sidebar-foreground ${typography.tableHeader}`,
 } as const;

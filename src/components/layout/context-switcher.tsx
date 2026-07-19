@@ -8,11 +8,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 import { updateActiveContext } from "@/lib/actions/context-actions";
 import type { ContextSwitcherData } from "@/lib/context-switcher";
 import { Building2, ChevronDown, Loader2, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 export type { ContextSwitcherData };
@@ -160,7 +161,9 @@ export function MobileContextSwitcher({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const { toggleMenu } = useExclusiveMenu(open, setOpen);
   const selectedCompany = context.companies.find(
     (company) => company.id === context.selectedCompanyId,
   );
@@ -173,6 +176,27 @@ export function MobileContextSwitcher({
     : "-";
 
   useDialogFocus(panelRef, open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
 
   function changeContext(next: { companyId?: string; workspaceId?: string }) {
     startTransition(async () => {
@@ -204,10 +228,10 @@ export function MobileContextSwitcher({
   }
 
   return (
-    <div className="relative w-0 min-w-0 flex-1 px-2">
+    <div ref={containerRef} className="relative w-0 min-w-0 flex-1 px-2">
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggleMenu}
         className="flex w-full min-w-0 items-center justify-between gap-2 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5 text-left"
         aria-expanded={open}
         aria-haspopup="dialog"

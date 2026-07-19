@@ -578,21 +578,7 @@ function getCorrectionDays(
 }
 
 function fixChecklistText(value: string) {
-  return value
-    .replaceAll("\u00c3\u00a7", "ç")
-    .replaceAll("\u00c3\u00a3", "ã")
-    .replaceAll("\u00c3\u00a1", "á")
-    .replaceAll("\u00c3\u00a9", "é")
-    .replaceAll("\u00c3\u00ad", "í")
-    .replaceAll("\u00c3\u00b3", "ó")
-    .replaceAll("\u00c3\u00ba", "ú")
-    .replaceAll("\u00c3\u00a2", "â")
-    .replaceAll("\u00c3\u00aa", "ê")
-    .replaceAll("\u00c3\u00b5", "õ")
-    .replaceAll("\u00c3\u201c", "Ó")
-    .replaceAll("\u00c3", "à")
-    .replace(/\s+/g, " ")
-    .trim();
+  return value.replace(/\s+/g, " ").trim();
 }
 
 export function summarizeChecklistNonConformity(label: string) {

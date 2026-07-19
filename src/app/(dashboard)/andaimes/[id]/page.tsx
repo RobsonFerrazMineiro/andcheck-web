@@ -4,12 +4,10 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
-  ChevronRight,
   ClipboardCheck,
   Clock,
   Construction,
   MapPin,
-  Pencil,
   Ruler,
   User,
   Weight,
@@ -23,13 +21,9 @@ import {
   LazyScaffoldDocumentSection,
   LazyScaffoldQRCard,
 } from "@/components/scaffold/lazy-scaffold-panels";
-import { AuditTimeline } from "@/components/shared/audit-timeline";
-import { EmptyState } from "@/components/shared/empty-state";
+import { LinkedRecordsButton } from "@/components/scaffold/linked-records-button";
+import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { StatusBadge } from "@/components/shared/status-badge";
-import {
-  nonConformityStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
@@ -50,50 +44,6 @@ const TYPE_LABELS: Record<string, string> = {
   suspenso: "Suspenso",
   torre: "Torre",
 };
-
-const NC_CLASSIFICATION_LABELS: Record<string, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-  CRITICAL: "Crítica",
-};
-
-const NC_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
-
-const NC_STATUS_STYLE: Record<string, string> = {
-  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
-  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
-  IN_PROGRESS:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
-  PENDING_VERIFICATION:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
-      .badge,
-  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
-  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
-  CANCELLED:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
-};
-
-function NcBadge({ value }: { value: string }) {
-  return (
-    <span
-      className={
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
-        (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
-      }
-    >
-      {NC_STATUS_LABELS[value] ?? value}
-    </span>
-  );
-}
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -184,15 +134,15 @@ export default async function AndaimeDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             href="/andaimes"
             className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/andaimes" className="hover:text-foreground">
               Andaimes
             </Link>
@@ -200,24 +150,31 @@ export default async function AndaimeDetailPage({ params }: Props) {
             <span className="text-foreground">{scaffold.code}</span>
           </p>
         </div>
-        <LazyScaffoldActionsBar
-          scaffoldId={scaffold.id}
-          scaffoldCode={scaffold.code}
-          status={scaffold.status}
-          canCreateInspection={canCreateInspection}
-          hasActiveNonConformity={Boolean(activeNonConformity)}
-          canCompleteAssembly={canCompleteAssembly}
-          canDismantle={canDismantle}
-        />
-        {canUpdateScaffold && (
-          <Link
-            href={`/andaimes/${scaffold.id}/editar`}
-            className="inline-flex h-8 items-center gap-2 rounded-md border border-border px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted"
-          >
-            <Pencil className="size-3.5" />
-            Editar
-          </Link>
-        )}
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <LinkedRecordsButton
+            type="inspections"
+            records={inspections}
+            scaffoldId={scaffold.id}
+            scaffoldCode={scaffold.code}
+          />
+          <LinkedRecordsButton
+            type="nonConformities"
+            records={scaffold.nonConformities}
+            scaffoldId={scaffold.id}
+            scaffoldCode={scaffold.code}
+          />
+          <AuditTimelineButton items={auditTimeline} />
+          <LazyScaffoldActionsBar
+            scaffoldId={scaffold.id}
+            scaffoldCode={scaffold.code}
+            status={scaffold.status}
+            canCreateInspection={canCreateInspection}
+            hasActiveNonConformity={Boolean(activeNonConformity)}
+            canCompleteAssembly={canCompleteAssembly}
+            canDismantle={canDismantle}
+            canUpdateScaffold={canUpdateScaffold}
+          />
+        </div>
       </div>
 
       {activeNonConformity && (
@@ -233,7 +190,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
         </div>
       )}
 
-      <div className="bg-primary border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
+      <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40 mb-1">
@@ -342,120 +299,11 @@ export default async function AndaimeDetailPage({ params }: Props) {
         canDeleteDocument={canDeleteDocument}
       />
 
-      <TechCard
-        title="Não Conformidades Vinculadas"
-        icon={AlertTriangle}
-        extra={
-          <span className="text-[9px] text-muted-foreground font-mono">
-            {scaffold.nonConformities.length} registro(s)
-          </span>
-        }
-      >
-        {scaffold.nonConformities.length === 0 ? (
-          <EmptyState
-            icon={AlertTriangle}
-            title="Nenhuma não conformidade vinculada"
-            description="As tratativas abertas para este andaime aparecerão aqui."
-            className="border-0 border-b border-dashed"
-          />
-        ) : (
-          <div className="divide-y divide-border">
-            <div className="grid grid-cols-5 gap-3 px-4 py-2 bg-muted/40">
-              {["Código", "Status", "Classificação", "Prazo", "Responsável"].map(
-                (h) => (
-                  <p
-                    key={h}
-                    className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
-                  >
-                    {h}
-                  </p>
-                ),
-              )}
-            </div>
-            {scaffold.nonConformities.map((nc) => (
-              <Link
-                key={nc.id}
-                href={"/nao-conformidades/" + nc.id}
-                className="grid grid-cols-5 gap-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors"
-              >
-                <p className="text-[11px] font-bold font-mono text-foreground">
-                  {nc.code}
-                </p>
-                <div>
-                  <NcBadge value={nc.status} />
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  {NC_CLASSIFICATION_LABELS[nc.classification] ?? nc.classification}
-                </p>
-                <p className="text-[11px] text-muted-foreground font-mono">
-                  {nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
-                </p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  {nc.responsibleUser?.name ?? "-"}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </TechCard>
-
       <LazyScaffoldQRCard
         scaffoldCode={scaffold.code}
         tag={scaffold.tag}
         origin={origin}
       />
-
-      <AuditTimeline items={auditTimeline} />
-
-      <TechCard
-        title="Histórico de Inspeções"
-        icon={ClipboardCheck}
-        extra={
-          <span className="text-[9px] text-muted-foreground font-mono">
-            {inspections.length} registro(s)
-          </span>
-        }
-      >
-        {inspections.length === 0 ? (
-          <EmptyState
-            icon={ClipboardCheck}
-            title="Nenhuma inspeção registrada"
-            description="As inspeções realizadas neste andaime formarão o histórico técnico."
-            className="border-0 border-b border-dashed"
-          />
-        ) : (
-          <div className="divide-y divide-border">
-            <div className="grid grid-cols-3 px-4 py-2 bg-muted/40">
-              {["Inspetor", "Data", "Resultado"].map((h) => (
-                <p
-                  key={h}
-                  className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
-                >
-                  {h}
-                </p>
-              ))}
-            </div>
-            {inspections.map((insp) => (
-              <Link
-                key={insp.id}
-                href={"/inspecoes/" + insp.id}
-                className="grid grid-cols-3 items-center px-4 py-3 hover:bg-muted/30 transition-colors group"
-              >
-                <p className="text-[11px] font-semibold text-foreground truncate">
-                  {insp.inspector_name}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {format(insp.date, "dd/MM/yyyy")}
-                </p>
-                <div className="flex items-center justify-between">
-                  <StatusBadge status={insp.result} />
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/20 group-hover:text-muted-foreground" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </TechCard>
     </div>
   );
 }

@@ -1,9 +1,13 @@
-﻿import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  ActionMenu,
+  actionMenuItemClassName,
+} from "@/components/shared/action-menu";
 import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { typography } from "@/lib/design-system";
 import {
   ArrowLeft,
   Building2,
@@ -83,17 +87,32 @@ export default async function WorkspaceDetailPage({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Workspace / Planta</p>
-          <h1 className="text-2xl font-bold tracking-tight">{workspace.name}</h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{workspace.code}</p>
+          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><MapPin className="size-4" /> AndCheck • Workspaces</p>
+          <h1 className={`${typography.pageTitle} text-foreground`}>{workspace.name}</h1>
+          <p className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}>{workspace.code}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {canManage && <Button asChild variant="outline"><Link href={`/workspaces?edit=${workspace.id}`}><Pencil /> Editar</Link></Button>}
-          {canManage && <WorkspaceStatusButton id={workspace.id} active={workspace.active} />}
-          <Button asChild variant="outline"><Link href="/workspaces"><ArrowLeft /> Voltar</Link></Button>
-        </div>
+        <ActionMenu className="justify-end sm:w-auto">
+          {canManage && (
+            <Link
+              href={`/workspaces?edit=${workspace.id}`}
+              className={actionMenuItemClassName}
+            >
+              <Pencil className="size-3.5" /> Editar
+            </Link>
+          )}
+          {canManage && (
+            <WorkspaceStatusButton
+              id={workspace.id}
+              active={workspace.active}
+              className={actionMenuItemClassName}
+            />
+          )}
+          <Link href="/workspaces" className={actionMenuItemClassName}>
+            <ArrowLeft className="size-3.5" /> Voltar
+          </Link>
+        </ActionMenu>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
@@ -128,7 +147,7 @@ export default async function WorkspaceDetailPage({
           ) : (
             <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
               {workspace.companyLinks.map(({ company, role }) => (
-                <Link key={company.id} href={`/empresas/${company.id}`} className="andcheck-lift flex items-center justify-between gap-3 border bg-muted/15 p-3 hover:bg-muted/40">
+                <Link key={company.id} href={`/empresas/${company.id}`} className="andcheck-lift flex min-w-0 items-center justify-between gap-3 border bg-muted/15 p-3 hover:bg-muted/40">
                   <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
                   <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietária" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
                 </Link>
@@ -142,5 +161,5 @@ export default async function WorkspaceDetailPage({
 }
 
 function Info({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
-  return <div><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className={`mt-1 text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p></div>;
+  return <div className="min-w-0"><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className={`mt-1 break-words text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p></div>;
 }

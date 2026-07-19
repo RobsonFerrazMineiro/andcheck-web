@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getEmailTechnicalConfiguration } from "@/lib/actions/notification-actions";
+import { typography } from "@/lib/design-system";
 import { CheckCircle2, Mail, XCircle } from "lucide-react";
 
 type EmailTechnicalConfiguration = {
@@ -23,19 +24,20 @@ export default async function AdminEmailConfigurationPage() {
     (await getEmailTechnicalConfiguration()) as EmailTechnicalConfiguration;
 
   return (
-    <div className="space-y-6">
-      <OnlineOnlyNotice moduleName="Configuracoes administrativas" />
+    <div className="space-y-5">
+      <OnlineOnlyNotice moduleName="Configurações administrativas" />
 
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Administracao
+      <div className="border-b-2 border-border pb-4">
+        <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <Mail className="size-4" />
+          AndCheck • Administração
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">
-          Configuracao tecnica de e-mail
+        <h1 className={`${typography.pageTitle} text-foreground`}>
+          Configuração técnica de e-mail
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
           Estado do provider adapter e variaveis de ambiente do envio de
-          notificacoes.
+          notificações.
         </p>
       </div>
 
@@ -59,7 +61,7 @@ export default async function AdminEmailConfigurationPage() {
           <CardHeader>
             <CardTitle>Variaveis de ambiente</CardTitle>
             <CardDescription>
-              Apenas o estado de configuracao e exibido; segredos nao sao
+              Apenas o estado de configuração é exibido; segredos não são
               renderizados.
             </CardDescription>
           </CardHeader>
@@ -68,9 +70,9 @@ export default async function AdminEmailConfigurationPage() {
               {config.variables.map((variable) => (
                 <div
                   key={variable.name}
-                  className="flex items-center justify-between border p-3"
+                  className="flex min-w-0 items-center justify-between gap-3 border p-3"
                 >
-                  <span className="font-mono text-xs">{variable.name}</span>
+                  <span className="min-w-0 break-all font-mono text-xs">{variable.name}</span>
                   <Badge
                     variant={variable.configured ? "outline" : "destructive"}
                   >
@@ -114,7 +116,7 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
-      <p className="mt-2 text-sm font-semibold">{value}</p>
+      <p className="mt-2 break-words text-sm font-semibold">{value}</p>
     </div>
   );
 }

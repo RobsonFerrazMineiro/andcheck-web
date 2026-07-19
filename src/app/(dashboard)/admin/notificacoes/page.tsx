@@ -12,8 +12,9 @@ import {
   getAdminNotificationData,
   resendNotificationEmail,
 } from "@/lib/actions/notification-actions";
+import { typography } from "@/lib/design-system";
 import { EmptyState } from "@/components/shared/empty-state";
-import { BellOff, RefreshCw } from "lucide-react";
+import { Bell, BellOff, RefreshCw } from "lucide-react";
 
 type AdminNotificationFailure = {
   id: string;
@@ -47,17 +48,18 @@ export default async function AdminNotificationsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <OnlineOnlyNotice moduleName="Monitoramento administrativo de notificacoes" />
+    <div className="space-y-5">
+      <OnlineOnlyNotice moduleName="Monitoramento administrativo de notificações" />
 
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Administracao
+      <div className="border-b-2 border-border pb-4">
+        <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <Bell className="size-4" />
+          AndCheck ⬢ Administracao
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">
-          Monitoramento de notificacoes
+        <h1 className={`${typography.pageTitle} text-foreground`}>
+          Monitoramento de notificações
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
           Visao operacional de envios internos e logs de e-mail.
         </p>
       </div>
@@ -75,7 +77,7 @@ export default async function AdminNotificationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Ultimas falhas</CardTitle>
+          <CardTitle>Últimas falhas</CardTitle>
           <CardDescription>
             Registros de e-mail com erro no escopo atual.
           </CardDescription>
@@ -89,15 +91,55 @@ export default async function AdminNotificationsPage() {
               className="border-dashed"
             />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-sm">
+            <>
+              <div className="grid gap-3 md:hidden">
+                {latestFailures.map((log) => (
+                  <div key={log.id} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="break-words text-[12px] font-semibold text-foreground">
+                          {log.notification.title}
+                        </p>
+                        <Badge className="mt-1" variant="outline">
+                          {log.notification.type}
+                        </Badge>
+                      </div>
+                      <form action={resendAction} className="shrink-0">
+                        <input
+                          type="hidden"
+                          name="notificationId"
+                          value={log.notification.id}
+                        />
+                        <Button type="submit" variant="outline" size="icon-sm" aria-label="Reenviar">
+                          <RefreshCw className="size-3.5" />
+                        </Button>
+                      </form>
+                    </div>
+                    <div className="mt-3 grid gap-1 text-[11px] text-muted-foreground">
+                      <p className="break-all">{log.recipientEmail}</p>
+                      <p>
+                        {log.notification.company.name}
+                        {log.notification.workspace?.name
+                          ? ` / ${log.notification.workspace.name}`
+                          : ""}
+                      </p>
+                      <p className="break-words text-red-700">
+                        {log.error ?? "Falha sem detalhe"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[760px] text-sm">
                 <thead>
                   <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
                     <th className="py-3 pr-4">Notificacao</th>
                     <th className="py-3 pr-4">Destinatario</th>
                     <th className="py-3 pr-4">Empresa</th>
                     <th className="py-3 pr-4">Erro</th>
-                    <th className="py-3 text-right">Acao</th>
+                <th className="py-3 text-right">Ação</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -139,8 +181,9 @@ export default async function AdminNotificationsPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

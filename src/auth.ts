@@ -96,7 +96,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             entityId: dbUser?.id ?? user.id ?? null,
             entityLabel: dbUser?.email ?? user.email ?? user.name ?? null,
             action: AuditAction.LOGIN,
-            description: `${dbUser?.email ?? user.email ?? user.name ?? "Usuario"} acessou o AndCheck`,
+            description: `${dbUser?.email ?? user.email ?? user.name ?? "Usuário"} acessou o AndCheck`,
             ipAddress: requestContext.ipAddress,
             userAgent: requestContext.userAgent,
             browserName: requestContext.browserName,
@@ -108,7 +108,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
       } catch (error) {
         console.error("Login audit failed:", error);
-        // Login nao deve falhar se a auditoria estiver indisponivel.
+        // Login não deve falhar se a auditoria estiver indisponível.
       }
     },
     async signOut(message) {
@@ -130,7 +130,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             entityId: typeof token?.id === "string" ? token.id : null,
             entityLabel: typeof token?.email === "string" ? token.email : null,
             action: AuditAction.LOGOUT,
-            description: "Usuario encerrou a sessao no AndCheck",
+            description: "Usuário encerrou a sessão no AndCheck",
             ipAddress: requestContext.ipAddress,
             userAgent: requestContext.userAgent,
             browserName: requestContext.browserName,
@@ -147,7 +147,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
         });
       } catch {
-        // Logout nao deve falhar se a auditoria estiver indisponivel.
+        // Logout não deve falhar se a auditoria estiver indisponível.
       }
     },
   },

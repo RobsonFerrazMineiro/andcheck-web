@@ -6,6 +6,7 @@ type InspectionRecord = {
   id: string;
   scaffold_id: string;
   scaffold_code: string;
+  scaffold: { location: string | null } | null;
   date: Date;
   inspector_name: string;
   result: string;
@@ -22,6 +23,7 @@ export default async function InspecoesPage() {
     id: i.id,
     scaffold_id: i.scaffold_id,
     scaffold_code: i.scaffold_code,
+    scaffold_location: i.scaffold?.location ?? null,
     date: i.date.toISOString(),
     inspector_name: i.inspector_name,
     result: i.result as string,

@@ -74,13 +74,13 @@ function parseInspectionInput(data: {
   }[];
 }) {
   if (!Array.isArray(data.checklist) || data.checklist.length === 0) {
-    throw new Error("Checklist da inspecao e obrigatorio.");
+    throw new Error("Checklist da inspeção é obrigatório.");
   }
   if (data.checklist.length > 250) {
-    throw new Error("Checklist da inspecao excede o limite permitido.");
+    throw new Error("Checklist da inspeção excede o limite permitido.");
   }
   if ((data.photos?.length ?? 0) > 30) {
-    throw new Error("Quantidade de fotos da inspecao excede o limite permitido.");
+    throw new Error("Quantidade de fotos da inspeção excede o limite permitido.");
   }
   if ((data.signatures?.length ?? 0) > 20) {
     throw new Error("Quantidade de assinaturas excede o limite permitido.");
@@ -88,21 +88,21 @@ function parseInspectionInput(data: {
 
   return {
     scaffold_id: requiredId(data.scaffold_id, "Andaime"),
-    scaffold_code: requiredText(data.scaffold_code, "Codigo do andaime", 80),
+    scaffold_code: requiredText(data.scaffold_code, "Código do andaime", 80),
     inspector_name: requiredText(data.inspector_name, "Inspetor", 140),
-    result: enumValue(data.result, INSPECTION_RESULTS, "Resultado da inspecao"),
+    result: enumValue(data.result, INSPECTION_RESULTS, "Resultado da inspeção"),
     validity_days: requiredNumber(data.validity_days, "Validade", {
       min: 0,
       max: 365,
     }),
     notes: optionalText(data.notes, "Observacoes", 2000) ?? undefined,
     photos: (data.photos ?? []).map((photo) =>
-      requiredText(photo, "Foto da inspecao", MAX_INLINE_IMAGE_DATA_LENGTH),
+      requiredText(photo, "Foto da inspeção", MAX_INLINE_IMAGE_DATA_LENGTH),
     ),
     signature:
       optionalText(
         data.signature,
-        "Assinatura da inspecao",
+        "Assinatura da inspeção",
         MAX_SIGNATURE_DATA_LENGTH,
       ) ?? undefined,
     signatures: (data.signatures ?? []).map((signature) => ({
@@ -123,7 +123,7 @@ function parseInspectionInput(data: {
     })),
     checklist: data.checklist.map((item) => ({
       item_id: requiredId(item.item_id, "Item do checklist"),
-      item_label: requiredText(item.item_label, "Descricao do item", 240),
+      item_label: requiredText(item.item_label, "Descrição do item", 240),
       category: requiredText(item.category, "Categoria do item", 120),
       value: enumValue(item.value, CHECKLIST_VALUES, "Valor do checklist"),
       critical: Boolean(item.critical),
@@ -423,10 +423,10 @@ async function createNonConformityFromInspection({
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const code = await generateNextNonConformityCode();
-    const title = `Tratativa da inspecao ${inspection.id.slice(-6)} - ${scaffold.code}`;
+    const title = `Tratativa da inspeção ${inspection.id.slice(-6)} - ${scaffold.code}`;
     const description =
-      `${failedItems.length} item(ns) nao conforme(s) identificados na ` +
-      `inspecao do andaime ${scaffold.code}: ${itemSummary}${extraItems}`;
+      `${failedItems.length} item(ns) não conforme(s) identificados na ` +
+      `inspeção do andaime ${scaffold.code}: ${itemSummary}${extraItems}`;
     const newValue: Prisma.InputJsonObject = {
       code,
       title,
@@ -469,7 +469,7 @@ async function createNonConformityFromInspection({
           history: {
             create: {
               action: AuditAction.CREATE,
-              description: `Nao conformidade ${code} criada a partir da inspecao ${inspection.id}`,
+              description: `Não conformidade ${code} criada a partir da inspeção ${inspection.id}`,
               oldValue: Prisma.JsonNull,
               newValue,
               userId: currentUserId ?? null,
@@ -483,7 +483,7 @@ async function createNonConformityFromInspection({
         entityId: nonConformity.id,
         entityLabel: nonConformity.code,
         action: AuditAction.CREATE,
-        description: `Nao conformidade ${nonConformity.code} criada a partir da inspecao do andaime ${scaffold.code}`,
+        description: `Não conformidade ${nonConformity.code} criada a partir da inspeção do andaime ${scaffold.code}`,
         newValue,
         companyId: scaffold.companyId,
         workspaceId: scaffold.workspaceId,
@@ -551,12 +551,12 @@ export async function createInspection(data: {
   }
 
   input.photos?.forEach((photo) =>
-    assertStoredFileOrInlineImageReference(photo, "Foto da inspecao"),
+    assertStoredFileOrInlineImageReference(photo, "Foto da inspeção"),
   );
   if (input.signature) {
     assertStoredFileOrInlineImageReference(
       input.signature,
-      "Assinatura da inspecao",
+      "Assinatura da inspeção",
     );
   }
   input.signatures?.forEach((signature) => {
@@ -598,7 +598,7 @@ export async function createInspection(data: {
       (requirement) => requirement.label ?? requirement.role.name,
     );
     throw new Error(
-      "Nao e possivel finalizar a inspecao. Assinaturas pendentes: " +
+      "Não é possível finalizar a inspeção. Assinaturas pendentes: " +
         pendingLabels.join(", ") +
         ".",
     );
@@ -705,7 +705,7 @@ export async function createInspection(data: {
     entityId: inspection.id,
     entityLabel: `${inspection.scaffold_code}-${inspection.id.slice(-6)}`,
     action: AuditAction.COMPLETE,
-    description: `Checklist da inspecao ${inspection.id} finalizado`,
+    description: `Checklist da inspeção ${inspection.id} finalizado`,
     newValue: {
       checklist_items: checklist.length,
       failed_items: checklist.filter((item) => item.value === "CL_FAIL").length,
@@ -721,7 +721,7 @@ export async function createInspection(data: {
       entityId: inspection.id,
       entityLabel: `${inspection.scaffold_code}-${signature.role_code}`,
       action: AuditAction.SIGN,
-      description: `Assinatura ${signature.role_code} adicionada na inspecao ${inspection.id}`,
+      description: `Assinatura ${signature.role_code} adicionada na inspeção ${inspection.id}`,
       newValue: {
         role_code: signature.role_code,
         signer_name: signature.signer_name,
@@ -759,7 +759,7 @@ export async function createInspection(data: {
     type: "INSPECTION_COMPLETED",
     severity: "INFO",
     title: `Inspecao do andaime ${inspection.scaffold_code} realizada`,
-    message: `A inspecao do andaime ${inspection.scaffold_code} foi realizada por ${inspection.inspector_name}.`,
+    message: `A inspeção do andaime ${inspection.scaffold_code} foi realizada por ${inspection.inspector_name}.`,
     entityType: "INSPECTION",
     entityId: inspection.id,
     channels: ["INTERNAL"],
@@ -783,7 +783,7 @@ export async function createInspection(data: {
           ? "SUCCESS"
           : "WARNING",
       title: `Andaime ${scaffold.code} ${newStatus}`,
-      message: `O andaime ${scaffold.code} foi ${newStatus} apos inspecao.`,
+      message: `O andaime ${scaffold.code} foi ${newStatus} após inspeção.`,
       entityType: "SCAFFOLD",
       entityId: scaffold.id,
       channels:
@@ -805,7 +805,7 @@ export async function createInspection(data: {
     type: resultNotification.type,
     severity: resultNotification.severity,
     title: `Inspecao ${resultNotification.label}: ${inspection.scaffold_code}`,
-    message: `A inspecao do andaime ${inspection.scaffold_code} foi ${resultNotification.label}.`,
+    message: `A inspeção do andaime ${inspection.scaffold_code} foi ${resultNotification.label}.`,
     entityType: "INSPECTION",
     entityId: inspection.id,
     channels: resultNotification.channels,

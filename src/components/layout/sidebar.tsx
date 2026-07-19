@@ -34,7 +34,7 @@ export function Sidebar({
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-56 bg-sidebar fixed h-full z-30 border-r border-sidebar-border">
+    <aside className="hidden lg:flex h-screen w-56 flex-col overflow-y-auto overflow-x-hidden overscroll-contain bg-sidebar fixed z-30 border-r border-sidebar-border">
       {/* Brand */}
       <div className="px-4 pt-5 pb-4 border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-3">

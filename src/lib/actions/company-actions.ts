@@ -84,10 +84,10 @@ function parseCompanyForm(formData: FormData) {
     "Status da empresa",
   );
   const active = status === "ACTIVE";
-  const description = optionalText(formData.get("description"), "Descricao", 500);
+  const description = optionalText(formData.get("description"), "Descrição", 500);
   const logoUrl = optionalText(formData.get("logoUrl"), "Logo", 500);
 
-  if (requestedCode && requestedCode.length < 2) throw new Error("Codigo da empresa invalido.");
+  if (requestedCode && requestedCode.length < 2) throw new Error("Código da empresa inválido.");
 
   return { name, requestedCode, type, workspaceId, active, description, logoUrl };
 }
@@ -97,7 +97,7 @@ async function assertWorkspace(workspaceId: string) {
     where: { id: workspaceId, active: true },
     select: { id: true },
   });
-  if (!workspace) throw new Error("Workspace selecionado nao esta disponivel.");
+  if (!workspace) throw new Error("Workspace selecionado não está disponível.");
 }
 
 export async function getCompanyManagementData() {
@@ -202,7 +202,7 @@ export async function updateCompany(formData: FormData) {
   const input = parseCompanyForm(formData);
   if (input.workspaceId) await assertWorkspace(input.workspaceId);
   const current = await prisma.company.findUnique({ where: { id } });
-  if (!current) throw new Error("Empresa nao encontrada.");
+  if (!current) throw new Error("Empresa não encontrada.");
   if (current.type === CompanyType.CLIENT && input.type !== CompanyType.CLIENT) {
     const ownedWorkspace = await prisma.workspace.findFirst({
       where: { ownerCompanyId: id },
@@ -215,7 +215,7 @@ export async function updateCompany(formData: FormData) {
     }
   }
   if (!input.active && current.active && actor?.companyId === id) {
-    throw new Error("Nao e permitido desativar a empresa do usuario atual.");
+    throw new Error("Não é permitido desativar a empresa do usuário atual.");
   }
   const code = input.requestedCode || current.code;
 
@@ -292,9 +292,9 @@ export async function setCompanyActive(id: string, active: boolean) {
   const actor = await getCurrentUserAccess();
   const companyId = requiredId(id, "Empresa");
   const current = await prisma.company.findUnique({ where: { id: companyId } });
-  if (!current) throw new Error("Empresa nao encontrada.");
+  if (!current) throw new Error("Empresa não encontrada.");
   if (!active && actor?.companyId === companyId) {
-    throw new Error("Nao e permitido desativar a empresa do usuario atual.");
+    throw new Error("Não é permitido desativar a empresa do usuário atual.");
   }
   if (current.active === active) return;
 

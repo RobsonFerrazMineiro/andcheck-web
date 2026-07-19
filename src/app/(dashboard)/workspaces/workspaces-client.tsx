@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { FormModal } from "@/components/shared/form-modal";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import {
@@ -372,7 +373,12 @@ export function WorkspacesClient({
         description="Busque e refine a lista de workspaces."
         summary={`${filtered.length}/${initialWorkspaces.length} · ${status === "all" ? "Todos status" : status === "active" ? "Ativos" : "Inativos"} · ${ownerCompanyId === "all" ? "Todas proprietárias" : ownerCompanies.find((company) => company.id === ownerCompanyId)?.name ?? "Proprietária"}`}
       >
-        <div className="grid gap-3 rounded-lg border border-border bg-card p-3 md:grid-cols-[1fr_190px_240px]">
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${initialWorkspaces.length}`}
+          contentClassName="grid gap-3 md:grid-cols-[1fr_190px_240px]"
+        >
+          <FilterField label="Busca">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
             <Input
@@ -382,6 +388,8 @@ export function WorkspacesClient({
               className="pl-8"
             />
           </div>
+          </FilterField>
+          <FilterField label="Status">
           <FilterSelect
             value={status}
             onValueChange={setStatus}
@@ -391,13 +399,16 @@ export function WorkspacesClient({
               ["inactive", "Inativos"],
             ]}
           />
+          </FilterField>
+          <FilterField label="Proprietaria">
           <FilterSelect
             value={ownerCompanyId}
             onValueChange={setOwnerCompanyId}
             placeholder="Todas as proprietárias"
             options={ownerCompanies.map((company) => [company.id, company.name])}
           />
-        </div>
+          </FilterField>
+        </FilterShell>
       </MobileFilterPanel>
 
       {filtered.length === 0 ? (
@@ -431,12 +442,12 @@ export function WorkspacesClient({
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p
-                      className={`truncate text-foreground ${typography.bodyStrong}`}
+                      className={`break-words text-foreground sm:truncate ${typography.bodyStrong}`}
                     >
                       {workspace.name}
                     </p>
                     <p
-                      className={`mt-1 text-muted-foreground ${typography.codeMuted}`}
+                      className={`mt-1 break-all text-muted-foreground ${typography.codeMuted}`}
                     >
                       {workspace.code}
                     </p>
@@ -665,7 +676,7 @@ function WorkspaceMeta({
         <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
           {label}
         </p>
-        <p className={`truncate text-muted-foreground ${typography.bodyMuted}`}>
+        <p className={`break-words text-muted-foreground sm:truncate ${typography.bodyMuted}`}>
           {value}
         </p>
       </div>

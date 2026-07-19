@@ -20,7 +20,7 @@ export function fileToDataUrl(file: Blob) {
         resolve(reader.result);
         return;
       }
-      reject(new Error("Nao foi possivel preparar o arquivo offline."));
+      reject(new Error("Não foi possível preparar o arquivo offline."));
     };
     reader.onerror = () =>
       reject(reader.error ?? new Error("Falha ao ler arquivo offline."));

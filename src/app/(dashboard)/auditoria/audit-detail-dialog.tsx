@@ -136,17 +136,17 @@ export function AuditDetailDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby="audit-detail-title"
-      className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
     >
-      <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-5xl max-h-[88vh] overflow-auto">
-        <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border bg-primary">
-          <div>
+      <div className="max-h-[90vh] w-full max-w-5xl overflow-auto rounded-xl border border-border bg-card shadow-xl">
+        <div className="flex flex-col gap-3 border-b border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground sm:flex-row sm:items-start sm:justify-between sm:px-5">
+          <div className="min-w-0">
             <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
               Evento de Auditoria
             </p>
             <h2
               id="audit-detail-title"
-              className="mt-1 text-[15px] font-bold text-primary-foreground"
+              className="mt-1 break-words text-[15px] font-bold text-primary-foreground"
             >
               {title}
             </h2>
@@ -154,13 +154,13 @@ export function AuditDetailDialog({
           <button
             type="button"
             onClick={onClose}
-            className={`h-7 rounded-md border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
+            className={`h-7 w-fit rounded-md border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
           >
             Fechar
           </button>
         </div>
 
-        <div className="p-5 border-b border-border">
+        <div className="border-b border-border p-4 sm:p-5">
           <p className={`mb-3 text-muted-foreground ${typography.action}`}>
             Resumo
           </p>
@@ -196,11 +196,43 @@ export function AuditDetailDialog({
           </div>
         </div>
 
-        <div className="p-5 border-b border-border">
+        <div className="border-b border-border p-4 sm:p-5">
           <p className={`mb-3 text-muted-foreground ${typography.action}`}>
             Alterações
           </p>
-          <div className="overflow-x-auto border border-border">
+          <div className="divide-y divide-border border border-border md:hidden">
+            {comparisonRows(row).map((item) => (
+              <div key={item.field} className="grid gap-3 p-3">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Campo
+                  </p>
+                  <p className="mt-1 break-words text-[12px] font-semibold text-foreground">
+                    {item.field}
+                  </p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Antes
+                    </p>
+                    <p className="mt-1 break-words text-[11px] text-muted-foreground">
+                      {item.before}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Depois
+                    </p>
+                    <p className="mt-1 break-words text-[11px] text-foreground">
+                      {item.after}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto border border-border md:block">
             <div className="min-w-[680px] grid grid-cols-[190px_1fr_1fr] bg-muted/50 border-b border-border">
               {["Campo", "Antes", "Depois"].map((header) => (
                 <p
@@ -229,7 +261,7 @@ export function AuditDetailDialog({
           </div>
         </div>
 
-        <details className="p-5">
+        <details className="p-4 sm:p-5">
           <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             Ver dados técnicos
           </summary>

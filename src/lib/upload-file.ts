@@ -19,7 +19,7 @@ export async function uploadFile(
   };
 
   if (!response.ok || !result.reference) {
-    throw new Error(result.error || "Nao foi possivel enviar o arquivo.");
+  throw new Error(result.error || "Não foi possível enviar o arquivo.");
   }
 
   return {

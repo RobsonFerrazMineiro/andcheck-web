@@ -16,11 +16,12 @@ import {
   DocumentStatusBadge,
   formatDocumentFileSize,
 } from "@/components/document/document-ui";
-import { AuditTimeline } from "@/components/shared/audit-timeline";
+import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDocumentDetail } from "@/lib/actions/document-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
+import { typography } from "@/lib/design-system";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -67,33 +68,34 @@ export default async function DocumentoDetalhePage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            AndCheck • Documento Técnico
+          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            AndCheck ⬢ Documento Técnico
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">{document.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className={`${typography.pageTitle} text-foreground`}>{document.title}</h1>
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
             Documento do acervo técnico vinculado ao ciclo de vida dos andaimes.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <AuditTimelineButton items={auditTimeline} />
+          <Button asChild variant="outline" size="sm" aria-label="Voltar ao acervo" title="Voltar ao acervo">
             <Link href="/acervo">
               <ArrowLeft />
-              Voltar ao acervo
+              <span className="hidden sm:inline">Voltar ao acervo</span>
             </Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" size="sm" aria-label="Abrir arquivo" title="Abrir arquivo">
             <a href={document.fileUrl} target="_blank" rel="noreferrer">
               <ExternalLink />
-              Abrir arquivo
+              <span className="hidden sm:inline">Abrir arquivo</span>
             </a>
           </Button>
-          <Button asChild>
+          <Button asChild size="sm" aria-label="Baixar" title="Baixar">
             <a href={document.downloadUrl}>
               <Download />
-              Baixar
+              <span className="hidden sm:inline">Baixar</span>
             </a>
           </Button>
         </div>
@@ -157,7 +159,7 @@ export default async function DocumentoDetalhePage({ params }: Props) {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold">{document.fileName}</p>
+                <p className="break-words text-sm font-bold">{document.fileName}</p>
                 <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                   {formatDocumentFileSize(document.fileSize)}
                 </p>
@@ -189,7 +191,6 @@ export default async function DocumentoDetalhePage({ params }: Props) {
         </Card>
       </div>
 
-      <AuditTimeline items={auditTimeline} />
     </div>
   );
 }

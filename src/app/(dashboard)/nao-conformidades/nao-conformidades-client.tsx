@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import {
@@ -7,7 +7,6 @@ import {
   ChevronRight,
   ClipboardList,
   Clock,
-  Filter,
   Search,
   User,
 } from "lucide-react";
@@ -15,6 +14,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Input } from "@/components/ui/input";
@@ -338,7 +338,12 @@ export function NaoConformidadesClient({
         description="Busque e refine a lista de não conformidades."
         summary={`${filtered.length}/${nonConformities.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? statusFilter} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? classificationFilter}`}
       >
-        <div className="grid grid-cols-1 gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]">
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${nonConformities.length}`}
+          contentClassName="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[1.4fr_170px_170px_170px_170px_140px]"
+        >
+          <FilterField label="Busca">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
             <Input
@@ -348,9 +353,10 @@ export function NaoConformidadesClient({
               className="pl-9 h-8 text-[11px] rounded-md border-border"
             />
           </div>
+          </FilterField>
+          <FilterField label="Status">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="h-8 text-[11px] rounded-md">
-              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -362,6 +368,8 @@ export function NaoConformidadesClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
             <SelectTrigger className="h-8 text-[11px] rounded-md">
               <SelectValue placeholder="Empresa" />
@@ -375,6 +383,8 @@ export function NaoConformidadesClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Classificação">
           <Select
             value={classificationFilter}
             onValueChange={setClassificationFilter}
@@ -391,6 +401,8 @@ export function NaoConformidadesClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Responsável">
           <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
             <SelectTrigger className="h-8 text-[11px] rounded-md">
               <SelectValue placeholder="Responsável" />
@@ -404,6 +416,8 @@ export function NaoConformidadesClient({
               ))}
             </SelectContent>
           </Select>
+          </FilterField>
+          <FilterField label="Prazo">
           <Select value={dueFilter} onValueChange={setDueFilter}>
             <SelectTrigger className="h-8 text-[11px] rounded-md">
               <SelectValue placeholder="Vencimento" />
@@ -417,7 +431,8 @@ export function NaoConformidadesClient({
               <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+          </FilterField>
+        </FilterShell>
       </MobileFilterPanel>
 
       {filtered.length !== nonConformities.length && (

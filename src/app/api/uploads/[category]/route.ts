@@ -41,7 +41,7 @@ export async function POST(
 ) {
   const { category } = await context.params;
   if (!isUploadCategory(category)) {
-    return Response.json({ error: "Categoria de upload invalida." }, { status: 404 });
+    return Response.json({ error: "Categoria de upload inválida." }, { status: 404 });
   }
 
   const access = await getCurrentUserAccess();
@@ -51,7 +51,7 @@ export async function POST(
     ),
   );
   if (!allowed) {
-    return Response.json({ error: "Nao autorizado." }, { status: 403 });
+    return Response.json({ error: "Não autorizado." }, { status: 403 });
   }
   const limit = checkRequestRateLimit(request, {
     key: `upload:${category}`,
@@ -63,7 +63,7 @@ export async function POST(
   const formData = await request.formData();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return Response.json({ error: "Arquivo obrigatorio." }, { status: 400 });
+    return Response.json({ error: "Arquivo obrigatório." }, { status: 400 });
   }
   if (file.size > MAX_FILE_SIZE[category]) {
     return Response.json({ error: "Arquivo excede o tamanho permitido." }, { status: 413 });
@@ -83,7 +83,7 @@ export async function POST(
         error:
           error instanceof Error
             ? error.message
-            : "Nao foi possivel armazenar o arquivo.",
+            : "Não foi possível armazenar o arquivo.",
       },
       { status: 500 },
     );

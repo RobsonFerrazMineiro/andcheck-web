@@ -3,6 +3,8 @@
 import { NotificationListActions } from "@/components/notifications/notification-list-actions";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterShell } from "@/components/shared/filter-shell";
+import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,21 +15,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  archiveAllNotifications,
   markAllNotificationsAsRead,
   type NotificationFilter,
 } from "@/lib/actions/notification-actions";
 import { typography } from "@/lib/design-system";
 import { NOTIFICATION_ENTITY_GROUPS } from "@/lib/notifications/catalog";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
-import { Bell, Check } from "lucide-react";
+import { Archive, Bell, Check } from "lucide-react";
 import Link from "next/link";
 
 const FILTERS: { value: NotificationFilter; label: string }[] = [
   { value: "all", label: "Todas" },
-  { value: "unread", label: "Nao lidas" },
+  { value: "unread", label: "Não lidas" },
   { value: "critical", label: "Criticas" },
   { value: "scaffolds", label: "Andaimes" },
-  { value: "inspections", label: "Inspecoes" },
+  { value: "inspections", label: "Inspeções" },
   { value: "nonconformities", label: "NCs" },
   { value: "documents", label: "Documentos" },
 ];
@@ -72,7 +75,7 @@ export function NotificationsClient({
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <Bell className="size-4" />
-            AndCheck • Notificacoes
+            AndCheck • Notificações
           </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Notificacoes
@@ -80,29 +83,54 @@ export function NotificationsClient({
           <p
             className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
           >
-            Alertas internos, historico e preferencias por canal.
+            Alertas internos, histórico e preferências por canal.
           </p>
         </div>
-        <form action={markAllNotificationsAsRead} className="shrink-0">
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isOfflineFallback}
-            className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
-          >
-            <Check className="size-3.5" />
-            Marcar todas como lidas
-          </Button>
-        </form>
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto">
+          <form action={markAllNotificationsAsRead}>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isOfflineFallback}
+              className={`h-8 w-full gap-1.5 rounded-md px-3 ${typography.action}`}
+            >
+              <Check className="size-3.5" />
+              Marcar como lidas
+            </Button>
+          </form>
+          <form action={archiveAllNotifications}>
+            <Button
+              type="submit"
+              size="sm"
+              variant="outline"
+              disabled={isOfflineFallback}
+              className={`h-8 w-full gap-1.5 rounded-md px-3 ${typography.action}`}
+            >
+              <Archive className="size-3.5" />
+              Arquivar todas
+            </Button>
+          </form>
+        </div>
       </div>
 
       <OfflineDataNotice
         active={isOfflineFallback}
-        label="notificacoes"
+        label="notificações"
         lastCachedAt={lastCachedAt}
       />
 
-      <div className="flex flex-wrap gap-2">
+      <MobileFilterPanel
+        title="Filtros de notificacao"
+        description="Filtre o histórico por status ou tipo de evento."
+        summary={`${filtered.length}/${notifications.length} · ${
+          FILTERS.find((item) => item.value === filter)?.label ?? "Todas"
+        }`}
+      >
+      <FilterShell
+        title="Filtros"
+        meta={`${filtered.length}/${notifications.length}`}
+        contentClassName="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+      >
         {FILTERS.map((item) => (
           <Button
             key={item.value}
@@ -118,21 +146,22 @@ export function NotificationsClient({
             </Link>
           </Button>
         ))}
-      </div>
+      </FilterShell>
+      </MobileFilterPanel>
 
       <Card>
         <CardHeader>
-          <CardTitle>Historico</CardTitle>
+          <CardTitle>Histórico</CardTitle>
           <CardDescription>
-            Ultimas notificacoes no seu escopo de acesso.
+            Últimas notificações no seu escopo de acesso.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {filtered.length === 0 ? (
             <EmptyState
               icon={Bell}
-              title="Nenhuma notificacao encontrada"
-              description="As notificacoes internas aparecem aqui conforme os eventos operacionais forem registrados no seu escopo."
+              title="Nenhuma notificação encontrada"
+              description="As notificações internas aparecem aqui conforme os eventos operacionais forem registrados no seu escopo."
               className="border-dashed"
             />
           ) : (
@@ -162,9 +191,11 @@ export function NotificationsClient({
                   <h2 className="mt-3 text-sm font-semibold">
                     {notification.title}
                   </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {notification.message}
-                  </p>
+                  {notificationSummary(notification) ? (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {notificationSummary(notification)}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-xs text-muted-foreground">
                     {notification.company.name}
                     {notification.workspace?.name
@@ -205,7 +236,7 @@ function matchesFilter(notification: NotificationRow, filter: NotificationFilter
 
 function filterLabel(filter: NotificationFilter) {
   if (filter === "scaffolds") return "andaimes";
-  if (filter === "inspections") return "inspecoes";
+  if (filter === "inspections") return "inspeções";
   if (filter === "nonconformities") return "ncs";
   if (filter === "documents") return "documentos";
   return filter;
@@ -227,10 +258,22 @@ function severityLabel(severity: string) {
 function groupLabel(type: keyof typeof NOTIFICATION_ENTITY_GROUPS) {
   const group = NOTIFICATION_ENTITY_GROUPS[type];
   if (group === "SCAFFOLD") return "Andaimes";
-  if (group === "INSPECTION") return "Inspecoes";
+  if (group === "INSPECTION") return "Inspeções";
   if (group === "NONCONFORMITY") return "NCs";
   if (group === "DOCUMENT") return "Documentos";
   return "Geral";
+}
+
+function notificationSummary(notification: Pick<NotificationRow, "title" | "message">) {
+  const message = notification.message.trim();
+  if (!message) return "";
+
+  const titleCode = notification.title.match(/[A-Z]{2,}-\d{4}-\d{4,}/)?.[0];
+  if (titleCode && message.includes(titleCode)) {
+    return "";
+  }
+
+  return message;
 }
 
 function entityPath(notification: {

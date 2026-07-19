@@ -75,7 +75,7 @@ export const getContextCapabilities = cache(async (access: UserAccess) => {
 
 export const getDataScope = cache(async (): Promise<DataScope> => {
   const access = await getCurrentUserAccess();
-  if (!access) throw new AuthorizationError("Usuario nao autenticado.");
+  if (!access) throw new AuthorizationError("Usuário não autenticado.");
 
   const capabilities = await getContextCapabilities(access);
 

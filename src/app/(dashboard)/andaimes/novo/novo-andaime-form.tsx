@@ -171,7 +171,7 @@ export default function NovoAndaimeForm({
             entityId: scaffold.id,
             payload: updatePayload,
           });
-          toast.success("Edicao salva offline para sincronizacao.", {
+          toast.success("Edição salva offline para sincronização.", {
             id: toastId,
           });
           setSavedOffline(true);
@@ -425,7 +425,7 @@ export default function NovoAndaimeForm({
                   Status inicial:{" "}
                   <span className="font-bold text-blue-700">EM MONTAGEM</span>{" "}
                   - o andaime ficara em montagem ate ser liberado apos
-                  inspecao.
+                  inspeção.
                 </>
               )}
             </p>

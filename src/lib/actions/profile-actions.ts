@@ -15,7 +15,7 @@ export type PasswordChangeState = {
 
 export async function getMyProfile() {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
 
   const user = await prisma.user.findUnique({
     where: { id: access.userId },
@@ -28,7 +28,7 @@ export async function getMyProfile() {
       },
     },
   });
-  if (!user || !user.is_active) throw new Error("Usuario nao encontrado.");
+  if (!user || !user.is_active) throw new Error("Usuário não encontrado.");
 
   const lastLogin = await prisma.auditLog.findFirst({
     where: {
@@ -87,7 +87,7 @@ export async function changeMyPassword(
     return { status: "error", message: "A nova senha deve conter letras e numeros." };
   }
   if (newPassword !== confirmPassword) {
-    return { status: "error", message: "A confirmacao nao confere com a nova senha." };
+    return { status: "error", message: "A confirmação não confere com a nova senha." };
   }
   if (newPassword === currentPassword) {
     return { status: "error", message: "A nova senha deve ser diferente da atual." };
@@ -106,7 +106,7 @@ export async function changeMyPassword(
     },
   });
   if (!user || !user.is_active) {
-    return { status: "error", message: "Usuario nao encontrado ou inativo." };
+    return { status: "error", message: "Usuário não encontrado ou inativo." };
   }
 
   const currentPasswordMatches = await bcrypt.compare(
@@ -136,7 +136,7 @@ export async function changeMyPassword(
     entityId: user.id,
     entityLabel: user.name,
     action: AuditAction.USER_PASSWORD_CHANGED,
-    description: `Usuario ${user.name} alterou a propria senha`,
+    description: `Usuário ${user.name} alterou a própria senha`,
     newValue: { email: user.email },
     companyId: user.companyId,
     workspaceId: user.workspaceId,

@@ -28,12 +28,12 @@ export async function updateActiveContext(input: {
   await assertSameOriginRequest();
   const access = await getCurrentUserAccess();
   if (!access) {
-    throw new AuthorizationError("Troca de contexto nao permitida.");
+    throw new AuthorizationError("Troca de contexto não permitida.");
   }
 
   const capabilities = await getContextCapabilities(access);
   if (!capabilities.canSwitchCompany && !capabilities.canSwitchWorkspace) {
-    throw new AuthorizationError("Troca de contexto nao permitida.");
+    throw new AuthorizationError("Troca de contexto não permitida.");
   }
 
   const workspaceId = requiredId(input.workspaceId, "Workspace");
@@ -42,7 +42,7 @@ export async function updateActiveContext(input: {
     ? ALL_COMPANIES_CONTEXT
     : requiredId(input.companyId, "Empresa");
   if (allCompaniesSelected && !capabilities.canUseAllCompanies) {
-    throw new AuthorizationError("Escopo de todas as empresas nao permitido.");
+    throw new AuthorizationError("Escopo de todas as empresas não permitido.");
   }
 
   const workspace = await prisma.workspace.findFirst({
@@ -75,7 +75,7 @@ export async function updateActiveContext(input: {
     allCompaniesSelected || (!company && capabilities.canUseAllCompanies);
 
   if ((!useAllCompanies && !company) || !workspace) {
-    throw new AuthorizationError("Contexto selecionado nao esta disponivel.");
+    throw new AuthorizationError("Contexto selecionado não está disponível.");
   }
 
   const cookieStore = await cookies();

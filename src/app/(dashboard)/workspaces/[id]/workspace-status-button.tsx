@@ -11,9 +11,11 @@ import { toast } from "sonner";
 export function WorkspaceStatusButton({
   id,
   active,
+  className,
 }: {
   id: string;
   active: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -53,9 +55,13 @@ export function WorkspaceStatusButton({
         onConfirm={toggleStatus}
       />
       <Button
-        variant="outline"
+        variant={className ? "ghost" : "outline"}
+        className={className}
         disabled={isPending}
-        onClick={() => setConfirmOpen(true)}
+        onClick={(event) => {
+          event.stopPropagation();
+          setConfirmOpen(true);
+        }}
       >
         {isPending ? <Loader2 className="animate-spin" /> : <Power />}
         {active ? "Desativar" : "Ativar"}

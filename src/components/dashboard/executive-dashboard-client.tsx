@@ -38,6 +38,7 @@ import {
   BarChart3,
   Download,
   FileSpreadsheet,
+  Filter,
   Info,
   MapPinned,
   Sparkles,
@@ -175,14 +176,16 @@ export function ExecutiveDashboardClient({ data }: Props) {
         description="Todos os indicadores, rankings, mapa e exportações usam a mesma seleção."
         summary={`${data.range.label} · ${filters.companyId === "all" ? "Todas empresas" : data.filterOptions.companies.find((item) => item.id === filters.companyId)?.name ?? "Empresa"} · ${filters.status === "all" ? "Todos status" : filters.status}`}
       >
-      <Card>
-        <CardHeader>
-          <CardTitle>Filtros globais</CardTitle>
-          <CardDescription>
-            Todos os indicadores, rankings, mapa e exportações usam esta mesma seleção.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <Filter className="size-4 text-muted-foreground" />
+          <p className={`${typography.sectionLabel} text-muted-foreground`}>
+            Filtros globais
+          </p>
+          <span className={`${typography.panelSubtitle} text-muted-foreground/50`}>
+            {data.range.label}
+          </span>
+        </div>
           <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
             <FilterSelect
               label="Empresa"
@@ -251,8 +254,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
               {isPending ? "Aplicando..." : "Aplicar filtros"}
             </Button>
           </div>
-        </CardContent>
-      </Card>
+      </div>
       </MobileFilterPanel>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
@@ -370,7 +372,7 @@ function KpiCard({ kpi }: { kpi: ExecutiveDashboardData["kpis"][number] }) {
       </CardHeader>
       <CardContent>
         <div className="flex items-end justify-between gap-3">
-          <div className="text-3xl font-bold tracking-normal">{kpi.value}</div>
+          <div className="text-2xl font-bold tracking-normal">{kpi.value}</div>
           <Badge variant={positive ? "secondary" : "destructive"} className="gap-1">
             {positive ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
             {kpi.trend === null ? "n/a" : `${kpi.trend}%`}
@@ -475,7 +477,7 @@ function Metric({ label, value, suffix = "" }: { label: string; value: number; s
   return (
     <div className="rounded-md border bg-muted/30 p-3">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold tracking-normal">
+      <p className="mt-1 text-xl font-bold tracking-normal">
         {formatNumber(value)}
         {suffix}
       </p>

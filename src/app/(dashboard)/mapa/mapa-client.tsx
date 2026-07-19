@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { ScaffoldPin } from "@/components/maps/operational-map";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -177,6 +177,7 @@ export function MapaOperacionalClient({
   const [activeStatus, setActiveStatus] = useState<string | null>(null);
   const [activeCompanyId, setActiveCompanyId] = useState("all");
   const [dueFilter, setDueFilter] = useState("all");
+  const [showAllScaffolds, setShowAllScaffolds] = useState(false);
   const {
     data: cachedScaffolds,
     isOfflineFallback,
@@ -216,6 +217,7 @@ export function MapaOperacionalClient({
   const comCoords = filteredScaffolds.filter(
     (scaffold) => scaffold.latitude !== null && scaffold.longitude !== null,
   ).length;
+  const visibleScaffolds = filteredScaffolds.slice(0, 8);
 
   return (
     <div className="min-w-0 space-y-5 overflow-hidden">
@@ -382,7 +384,7 @@ export function MapaOperacionalClient({
               className="border-0 border-b border-dashed"
             />
           ) : (
-            filteredScaffolds.map((scaffold) => (
+            visibleScaffolds.map((scaffold) => (
               <div
                 key={scaffold.id}
                 className="flex min-w-0 items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/30 sm:px-4"
@@ -445,8 +447,99 @@ export function MapaOperacionalClient({
               </div>
             ))
           )}
+          {filteredScaffolds.length > visibleScaffolds.length && (
+            <div className="px-3 py-3 sm:px-4">
+              <button
+                type="button"
+                onClick={() => setShowAllScaffolds(true)}
+                className="inline-flex h-8 w-full items-center justify-center rounded-md border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted sm:w-auto sm:px-4"
+              >
+                Ver todos
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {showAllScaffolds && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="map-scaffold-list-title"
+          className="fixed inset-0 z-50 flex items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-4"
+        >
+          <div className="max-h-[85vh] w-full overflow-hidden border border-border bg-card shadow-xl sm:max-w-3xl">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-border bg-muted/40 px-4 py-3">
+              <div>
+                <p
+                  id="map-scaffold-list-title"
+                  className={`${typography.panelTitle} text-foreground`}
+                >
+                  Todos os andaimes
+                </p>
+                <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                  {filteredScaffolds.length} registro(s) filtrado(s)
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAllScaffolds(false)}
+                className="inline-flex h-8 items-center rounded-md border border-border px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+              >
+                Fechar
+              </button>
+            </div>
+            <div className="max-h-[calc(85vh-4.5rem)] divide-y divide-border overflow-y-auto">
+              {filteredScaffolds.map((scaffold) => (
+                <div
+                  key={scaffold.id}
+                  className="flex min-w-0 items-center gap-3 px-4 py-3"
+                >
+                  <div
+                    className={
+                      "size-2 shrink-0 rounded-full " +
+                      (STATUS_DOT[scaffold.effectiveStatus] ??
+                        SEMANTIC_TONE_CLASSES.disabled.dot)
+                    }
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-[12px] font-bold text-foreground">
+                      {scaffold.code}
+                    </p>
+                    <p className="truncate text-[10px] text-muted-foreground">
+                      {canFilterCompany ? `${scaffold.companyName} - ` : ""}
+                      {scaffold.location} - {scaffold.area}
+                    </p>
+                  </div>
+                  <div className="hidden shrink-0 sm:block">
+                    <StatusBadge status={scaffold.effectiveStatus} />
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    <Link
+                      href={`/andaimes/${scaffold.id}`}
+                      onClick={() => setShowAllScaffolds(false)}
+                      className="flex size-7 items-center justify-center rounded-md hover:bg-muted"
+                      aria-label={`Visualizar andaime ${scaffold.code}`}
+                    >
+                      <Construction className="size-3.5 text-muted-foreground" />
+                    </Link>
+                    {canInspect && (
+                      <Link
+                        href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
+                        onClick={() => setShowAllScaffolds(false)}
+                        className="flex size-7 items-center justify-center rounded-md hover:bg-muted"
+                        aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
+                      >
+                        <ClipboardCheck className="size-3.5 text-muted-foreground" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

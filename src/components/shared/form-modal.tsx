@@ -44,7 +44,7 @@ export function FormModal({
           maxWidth,
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border bg-primary px-5 py-4 text-primary-foreground">
+        <div className="flex items-start justify-between gap-4 border-b border-sidebar-border bg-sidebar px-5 py-4 text-sidebar-foreground">
           <div className="min-w-0">
             <h2 id="form-modal-title" className={typography.panelTitle}>
               {title}

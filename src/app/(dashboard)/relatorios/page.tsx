@@ -465,16 +465,16 @@ function KpiPanel({
           <p className={surface.panelHeaderTitle}>{title}</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
+      <div className="grid gap-px bg-border min-[380px]:grid-cols-2 md:grid-cols-4">
         {items.map(([label, value, ItemIcon]) => (
-          <div key={label} className="bg-card p-3">
+          <div key={label} className="min-w-0 bg-card p-3">
             <p
-              className={`${typography.sectionLabel} flex items-center gap-1.5 text-muted-foreground`}
+              className={`${typography.sectionLabel} flex min-w-0 items-center gap-1.5 text-muted-foreground`}
             >
               <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
-              {label}
+              <span className="min-w-0 break-words">{label}</span>
             </p>
-            <p className={`${typography.kpiValue} mt-1.5 text-foreground`}>
+            <p className={`${typography.kpiValue} mt-1.5 break-words text-foreground`}>
               {value}
             </p>
           </div>
@@ -505,11 +505,11 @@ function InspectionPerformanceChart({
           <p className={surface.panelHeaderTitle}>{title}</p>
         </div>
       </div>
-      <div className="grid grid-cols-[216px_1fr] items-center gap-2 p-4">
-        <div className="relative flex size-52 items-center justify-center">
+      <div className="grid gap-4 p-4 sm:grid-cols-[190px_1fr] lg:grid-cols-[216px_1fr]">
+        <div className="relative mx-auto flex size-44 items-center justify-center sm:size-48 lg:size-52">
           <MiniDonut
             values={rows}
-            sizeClassName="size-52"
+            sizeClassName="size-44 sm:size-48 lg:size-52"
             strokeWidth={6}
             gap={1.4}
           />
@@ -522,11 +522,11 @@ function InspectionPerformanceChart({
             </p>
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2 self-center">
           {rows.map((item) => (
             <div
               key={item.label}
-              className="grid max-w-[300px] grid-cols-[150px_28px] items-center gap-0.5"
+              className="grid max-w-[300px] grid-cols-[minmax(0,1fr)_32px] items-center gap-2"
             >
               <span className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 <span
@@ -579,7 +579,7 @@ function NonConformityTrendChart({
         </div>
       </div>
       <div className="p-4 pb-6">
-        <div className="mb-3 flex items-center gap-4">
+        <div className="mb-3 flex flex-wrap items-center gap-3">
           <LegendItem color="bg-[#be123c]" label="NCs abertas" />
           <LegendItem color="bg-[#059669]" label="NCs encerradas" />
         </div>
@@ -595,7 +595,7 @@ function NonConformityTrendChart({
               </span>
             ))}
           </div>
-          <div className="relative h-28 border-b border-l border-border bg-slate-50/50">
+          <div className="relative h-28 min-w-0 border-b border-l border-border bg-slate-50/50">
             <div className="absolute inset-0 flex items-end justify-between gap-1 px-2">
               {rows.map((item) => (
                 <div
@@ -618,7 +618,7 @@ function NonConformityTrendChart({
             </div>
           </div>
           <span />
-          <div className="mt-2 flex h-16 justify-between gap-1 px-2">
+          <div className="mt-2 flex h-16 min-w-0 justify-between gap-1 px-2">
             {rows.map((item, index) => (
               <span
                 key={item.label}
@@ -719,20 +719,20 @@ function RankingRow({
 }) {
   return (
     <div className="px-3 py-2.5">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         <span className="font-mono text-[10px] font-bold text-muted-foreground">
           {index + 1}.
       </span>
-      <p className={`${typography.bodyStrong} min-w-0 flex-1 truncate`}>
+      <p className={`${typography.bodyStrong} min-w-0 flex-1 break-words sm:truncate`}>
         {row.label}
       </p>
-        <div className="ml-3 flex shrink-0 items-center gap-5">
+        <div className="flex min-w-0 items-center gap-4 sm:ml-3 sm:shrink-0 sm:gap-5">
           <MiniDonut values={row.values} />
-          <div className="space-y-0.5">
+          <div className="min-w-0 flex-1 space-y-0.5 sm:flex-none">
             {row.values.map((item) => (
               <div
                 key={item.label}
-                className="grid grid-cols-[72px_24px] items-center gap-1.5"
+                className="grid grid-cols-[minmax(0,72px)_24px] items-center gap-1.5"
               >
                 <span className="flex min-w-0 items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
                   <span
@@ -780,20 +780,20 @@ function TopNonConformitiesPanel({
         />
       ) : (
         <div className="divide-y divide-border">
-          <div className="grid grid-cols-[1fr_110px] bg-muted/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="grid grid-cols-[minmax(0,1fr)_82px] gap-3 bg-muted/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:grid-cols-[minmax(0,1fr)_110px]">
             <span>Não Conformidade</span>
             <span className="text-right">Ocorrências</span>
           </div>
           {visibleRows.map((item, index) => (
             <div
               key={item.title}
-              className="grid grid-cols-[1fr_110px] items-center gap-4 px-4 py-2.5 hover:bg-primary/5"
+              className="grid grid-cols-[minmax(0,1fr)_82px] items-center gap-3 px-4 py-2.5 hover:bg-primary/5 sm:grid-cols-[minmax(0,1fr)_110px]"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className="font-mono text-[10px] font-bold text-muted-foreground">
                   {index + 1}.
                 </span>
-                <span className="truncate text-[12px] font-semibold text-foreground">
+                <span className="break-words text-[12px] font-semibold text-foreground sm:truncate">
                   {item.title}
                 </span>
               </div>
@@ -910,14 +910,14 @@ function InsightsPanel({ items }: { items: TrendItem[] }) {
         {items.map((item) => {
           const ItemIcon = item.icon;
           return (
-          <div key={item.label} className="bg-card p-3">
+          <div key={item.label} className="min-w-0 bg-card p-3">
             <p
               className={`${typography.sectionLabel} flex items-center gap-1.5 text-muted-foreground`}
             >
               <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
               {item.label}
             </p>
-            <p className="mt-1 truncate text-[13px] font-semibold text-foreground">
+            <p className="mt-1 break-words text-[13px] font-semibold text-foreground">
               {item.value}
             </p>
             {item.trend && (

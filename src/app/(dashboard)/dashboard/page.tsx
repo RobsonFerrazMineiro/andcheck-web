@@ -1,4 +1,4 @@
-﻿import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   AlertTriangle,
@@ -212,11 +212,11 @@ export default async function DashboardPage() {
       {/* Indicadores históricos */}
       <section className="space-y-3">
         <div>
-          <p className={`${typography.sectionLabel} text-muted-foreground`}>
+          <p className="text-[13px] font-bold uppercase tracking-widest text-foreground">
             Indicadores Históricos
           </p>
           <p
-            className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}
+            className="mt-1 text-[12px] leading-relaxed text-muted-foreground"
           >
             Visão gerencial baseada em andaimes desmontados, inspeções e
             tratativas.
@@ -298,7 +298,7 @@ export default async function DashboardPage() {
             action={
               <Link
                 href="/andaimes"
-                className={`flex items-center gap-1 text-slate-300 hover:text-white ${typography.linkAction}`}
+                className={`flex items-center gap-1 text-sidebar-foreground/70 hover:text-sidebar-foreground ${typography.linkAction}`}
               >
                 Ver todos <ArrowRight className="w-3 h-3" />
               </Link>
@@ -489,10 +489,10 @@ function ExecutiveKpiCard({
   return (
     <div
       className={
-        "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " + t.border
+        "andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm " + t.border
       }
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-2 flex items-start justify-between gap-3">
         <p
           className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
         >
@@ -504,7 +504,7 @@ function ExecutiveKpiCard({
         {value}
       </p>
       <p
-        className={`mt-3 leading-relaxed text-muted-foreground ${typography.bodyMuted}`}
+        className={`mt-2 leading-relaxed text-muted-foreground ${typography.bodyMuted}`}
       >
         {description}
       </p>
@@ -560,9 +560,9 @@ function RankingPanel({
               >
                 {item.name}
               </p>
-              <div className="h-2.5 min-w-12 flex-1 border border-orange-200 bg-orange-50 sm:max-w-64">
+              <div className="h-1.5 min-w-12 flex-1 overflow-hidden rounded-full bg-muted sm:max-w-64">
                 <div
-                  className="h-full bg-accent"
+                  className="h-full rounded-full bg-primary transition-all"
                   style={{
                     width: `${Math.max(8, Math.round((item.total / maxTotal) * 100))}%`,
                   }}
@@ -631,10 +631,10 @@ function KpiCard({
       className={
         "bg-card " +
         t.borderLeft +
-        " andcheck-lift border border-border rounded-lg p-4 shadow-sm"
+        " andcheck-lift border border-border rounded-lg p-3 shadow-sm"
       }
     >
-      <div className="flex items-start justify-between mb-2">
+      <div className="mb-1.5 flex items-start justify-between">
         <p
           className={`${typography.sectionLabel} pr-2 leading-tight text-muted-foreground`}
         >
@@ -647,7 +647,7 @@ function KpiCard({
       >
         {value}
       </p>
-      <div className="mt-3">
+      <div className="mt-2">
         {showBar && (
           <div className="w-full bg-border/60 h-0.75 mb-1.5">
             <div

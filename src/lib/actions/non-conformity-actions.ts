@@ -218,7 +218,7 @@ async function returnScaffoldToPendingReleaseAfterClosure({
     entityId: updatedScaffold.id,
     entityLabel: updatedScaffold.code,
     action: AuditAction.STATUS_CHANGE,
-    description: `Nao conformidade ${ncCode} encerrada. Andaime ${updatedScaffold.code} retornou para pendente de liberacao.`,
+    description: `Não conformidade ${ncCode} encerrada. Andaime ${updatedScaffold.code} retornou para pendente de liberação.`,
     oldValue: {
       status: scaffold.status,
       nonConformityCode: ncCode,
@@ -268,7 +268,7 @@ function assertAllowedTransition(
 
   if (!allowed[currentStatus]?.includes(nextStatus)) {
     throw new Error(
-      `Transicao nao permitida: ${currentStatus} para ${nextStatus}.`,
+      `Transição não permitida: ${currentStatus} para ${nextStatus}.`,
     );
   }
 }
@@ -279,7 +279,7 @@ function statusDescription(
   nextStatus: NonConformityStatus,
 ) {
   if (currentStatus === "OPEN" && nextStatus === "ASSIGNED") {
-    return `Responsavel atribuido e NC ${code} movida para Em Correcao`;
+    return `Responsável atribuído e NC ${code} movida para Em Correção`;
   }
   if (
     ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(currentStatus) &&
@@ -295,7 +295,7 @@ function statusDescription(
 
 export async function logNonConformityCreated(id: string) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -306,7 +306,7 @@ export async function logNonConformityCreated(id: string) {
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.CREATE,
-    description: `Nao conformidade ${nc.code} criada`,
+    description: `Não conformidade ${nc.code} criada`,
     newValue: toAuditValue(nc),
   });
   await createNotification({
@@ -316,7 +316,7 @@ export async function logNonConformityCreated(id: string) {
     type: "NONCONFORMITY_OPENED",
     severity: "WARNING",
     title: `NC ${nc.code} aberta`,
-    message: `A nao conformidade ${nc.code} foi aberta no andaime ${nc.scaffold.code}.`,
+    message: `A não conformidade ${nc.code} foi aberta no andaime ${nc.scaffold.code}.`,
     entityType: "NONCONFORMITY",
     entityId: nc.id,
     channels: ["INTERNAL", "EMAIL"],
@@ -339,7 +339,7 @@ export async function logNonConformityUpdated({
   newValue: NonConformityAuditValue;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -349,7 +349,7 @@ export async function logNonConformityUpdated({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.UPDATE,
-    description: `Nao conformidade ${nc.code} atualizada`,
+    description: `Não conformidade ${nc.code} atualizada`,
     oldValue,
     newValue,
   });
@@ -365,7 +365,7 @@ export async function logNonConformityClosed({
   newValue: NonConformityAuditValue;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -375,7 +375,7 @@ export async function logNonConformityClosed({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.COMPLETE,
-    description: `Nao conformidade ${nc.code} encerrada`,
+    description: `Não conformidade ${nc.code} encerrada`,
     oldValue,
     newValue,
   });
@@ -391,7 +391,7 @@ export async function logNonConformityStatusChanged({
   newStatus: string | null;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -401,7 +401,7 @@ export async function logNonConformityStatusChanged({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.STATUS_CHANGE,
-    description: `Status da nao conformidade ${nc.code} alterado de ${oldStatus ?? "-"} para ${newStatus ?? "-"}`,
+    description: `Status da não conformidade ${nc.code} alterado de ${oldStatus ?? "-"} para ${newStatus ?? "-"}`,
     oldValue: { status: oldStatus },
     newValue: { status: newStatus },
   });
@@ -417,7 +417,7 @@ export async function logNonConformityEvidenceAdded({
   fileName: string;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
   const safeFileName = requiredText(fileName, "Nome do arquivo", 240);
 
   const nc = await prisma.nonConformity.findUnique({
@@ -428,7 +428,7 @@ export async function logNonConformityEvidenceAdded({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.UPLOAD,
-    description: `Evidencia ${safeFileName} anexada a nao conformidade ${nc.code}`,
+    description: `Evidência ${safeFileName} anexada à não conformidade ${nc.code}`,
     newValue: {
       evidenceType,
       fileName: safeFileName,
@@ -446,7 +446,7 @@ export async function logNonConformityResponsibleChanged({
   newResponsibleUserId: string | null;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -456,7 +456,7 @@ export async function logNonConformityResponsibleChanged({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.UPDATE,
-    description: `Responsavel da nao conformidade ${nc.code} alterado`,
+    description: `Responsável da não conformidade ${nc.code} alterado`,
     oldValue: { responsibleUserId: oldResponsibleUserId },
     newValue: { responsibleUserId: newResponsibleUserId },
   });
@@ -472,7 +472,7 @@ export async function logNonConformityDueDateChanged({
   newDueDate: string | null;
 }) {
   await requireNonConformityAccess();
-  const nonConformityId = requiredId(id, "Nao conformidade");
+  const nonConformityId = requiredId(id, "Não conformidade");
 
   const nc = await prisma.nonConformity.findUnique({
     where: { id: nonConformityId },
@@ -482,7 +482,7 @@ export async function logNonConformityDueDateChanged({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.UPDATE,
-    description: `Prazo da nao conformidade ${nc.code} alterado`,
+    description: `Prazo da não conformidade ${nc.code} alterado`,
     oldValue: { dueDate: oldDueDate },
     newValue: { dueDate: newDueDate },
   });
@@ -522,7 +522,7 @@ export async function getNonConformityResponsibleOptions() {
 
 export async function updateNonConformityStatus(formData: FormData) {
   const scope = await getDataScope();
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const parsedNextStatus = enumValue(
     formData.get("status"),
     Object.values(NonConformityStatus),
@@ -553,7 +553,7 @@ export async function updateNonConformityStatus(formData: FormData) {
     },
   });
 
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
 
   assertAllowedTransition(nc.status, parsedNextStatus);
@@ -584,12 +584,12 @@ export async function updateNonConformityStatus(formData: FormData) {
   if (parsedNextStatus === NonConformityStatus.CLOSED) {
     if (nc.status !== NonConformityStatus.PENDING_VERIFICATION) {
       throw new Error(
-        "A NC so pode ser encerrada quando estiver Aguardando Verificacao.",
+        "A NC só pode ser encerrada quando estiver Aguardando Verificação.",
       );
     }
     if (nc._count.evidences + itemEvidenceCount === 0) {
       throw new Error(
-        "Anexe pelo menos uma evidencia por item antes de encerrar a NC.",
+        "Anexe pelo menos uma evidência por item antes de encerrar a NC.",
       );
     }
     if (!comment) {
@@ -609,7 +609,7 @@ export async function updateNonConformityStatus(formData: FormData) {
     parsedNextStatus === NonConformityStatus.PENDING_VERIFICATION &&
     !nc.responsibleUserId
   ) {
-    throw new Error("Atribua um responsavel antes de solicitar verificacao.");
+    throw new Error("Atribua um responsável antes de solicitar verificação.");
   }
 
   const updated = await prisma.nonConformity.update({
@@ -653,7 +653,7 @@ export async function updateNonConformityStatus(formData: FormData) {
       type: "NONCONFORMITY_CLOSED",
       severity: "SUCCESS",
       title: `NC ${nc.code} encerrada`,
-      message: `A nao conformidade ${nc.code} foi encerrada.`,
+      message: `A não conformidade ${nc.code} foi encerrada.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
       channels: ["INTERNAL"],
@@ -671,7 +671,7 @@ export async function updateNonConformityStatus(formData: FormData) {
       type: "NONCONFORMITY_CORRECTED",
       severity: "SUCCESS",
       title: `NC ${nc.code} corrigida`,
-      message: `A nao conformidade ${nc.code} foi enviada para verificacao.`,
+      message: `A não conformidade ${nc.code} foi enviada para verificação.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
       channels: ["INTERNAL"],
@@ -694,9 +694,9 @@ export async function updateNonConformityResponsible(formData: FormData) {
   await requirePermission("non_conformities.update");
   const scope = await getDataScope();
 
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const responsibleUserId =
-    requiredId(formData.get("responsibleUserId"), "Responsavel");
+    requiredId(formData.get("responsibleUserId"), "Responsável");
 
   const [nc, responsible] = await Promise.all([
     prisma.nonConformity.findUnique({
@@ -730,13 +730,13 @@ export async function updateNonConformityResponsible(formData: FormData) {
         }),
   ]);
 
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
   if (responsibleUserId && !responsible) {
-    throw new Error("Responsavel selecionado nao existe.");
+    throw new Error("Responsável selecionado não existe.");
   }
   if (responsible) assertRecordInDataScope(scope, responsible);
   const responsibleWithRole = await prisma.user.findFirst({
@@ -753,7 +753,7 @@ export async function updateNonConformityResponsible(formData: FormData) {
 
   if (!responsibleWithRole) {
     throw new Error(
-      "Responsavel deve ter perfil Planejamento, Supervisor ou Encarregado.",
+      "Responsável deve ter perfil Planejamento, Supervisor ou Encarregado.",
     );
   }
 
@@ -773,8 +773,8 @@ export async function updateNonConformityResponsible(formData: FormData) {
     action: AuditAction.UPDATE,
     description:
       nc.status === NonConformityStatus.OPEN
-        ? `Responsavel atribuido e correcao iniciada na NC ${nc.code}`
-        : `Responsavel da nao conformidade ${nc.code} alterado`,
+        ? `Responsável atribuído e correção iniciada na NC ${nc.code}`
+        : `Responsável da não conformidade ${nc.code} alterado`,
     oldValue: {
       responsibleUserId: nc.responsibleUserId,
       responsibleName: nc.responsibleUser?.name ?? null,
@@ -794,7 +794,7 @@ export async function updateNonConformityResponsible(formData: FormData) {
       type: "NONCONFORMITY_IN_PROGRESS",
       severity: "INFO",
       title: `NC ${nc.code} em tratamento`,
-      message: `A nao conformidade ${nc.code} foi atribuida para tratamento.`,
+      message: `A não conformidade ${nc.code} foi atribuída para tratamento.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
       channels: ["INTERNAL"],
@@ -814,13 +814,13 @@ export async function updateNonConformityDueDate(formData: FormData) {
   );
   const scope = await getDataScope();
 
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const dueDate = optionalDate(formData.get("dueDate"), "Data limite");
   const reason = requiredText(formData.get("reason"), "Motivo", 500);
   if (!dueDate) throw new Error("Nova data limite e obrigatoria.");
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
@@ -834,7 +834,7 @@ export async function updateNonConformityDueDate(formData: FormData) {
   await writeNonConformityAudit({
     id,
     action: AuditAction.UPDATE,
-    description: `Prazo da nao conformidade ${nc.code} alterado`,
+    description: `Prazo da não conformidade ${nc.code} alterado`,
     oldValue: {
       dueDate: nc.dueDate?.toISOString() ?? null,
     },
@@ -849,11 +849,11 @@ export async function addNonConformityEvidence(formData: FormData) {
   await requirePermission("non_conformities.add_evidence");
   const scope = await getDataScope();
 
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const evidenceType = enumValue(
     formData.get("evidenceType") ?? NonConformityEvidenceType.OTHER,
     Object.values(NonConformityEvidenceType),
-    "Tipo da evidencia",
+    "Tipo da evidência",
   );
   const title = requiredText(formData.get("title"), "Titulo", 180);
   const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
@@ -864,13 +864,13 @@ export async function addNonConformityEvidence(formData: FormData) {
   });
   const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
   const observation = optionalText(formData.get("observation"), "Observacao", 1000);
-  assertStoredFileReference(fileUrl, "Evidencia");
+  assertStoredFileReference(fileUrl, "Evidência");
 
   const [nc, access] = await Promise.all([
     prisma.nonConformity.findUnique({ where: { id } }),
     getCurrentUserAccess(),
   ]);
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
   if (["CLOSED", "CANCELLED"].includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
@@ -895,7 +895,7 @@ export async function addNonConformityEvidence(formData: FormData) {
   await writeNonConformityAudit({
     id,
     action: AuditAction.UPLOAD,
-    description: `Evidencia ${evidence.fileName} anexada a nao conformidade ${nc.code}`,
+    description: `Evidência ${evidence.fileName} anexada à não conformidade ${nc.code}`,
     newValue: {
       evidenceId: evidence.id,
       evidenceType: evidence.type,
@@ -911,11 +911,11 @@ export async function addNonConformityEvidence(formData: FormData) {
 export async function addNonConformityItemEvidence(formData: FormData) {
   await requireWorkflowRole(
     RESPONSIBLE_ROLE_CODES,
-    "Somente Planejamento, Supervisor ou Encarregado podem anexar evidencias de correcao.",
+    "Somente Planejamento, Supervisor ou Encarregado podem anexar evidências de correção.",
   );
   const scope = await getDataScope();
 
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const nonConformityItemId = requiredId(
     formData.get("nonConformityItemId"),
     "Item de checklist",
@@ -923,7 +923,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   const evidenceType = enumValue(
     formData.get("evidenceType") ?? NonConformityEvidenceType.OTHER,
     Object.values(NonConformityEvidenceType),
-    "Tipo da evidencia",
+    "Tipo da evidência",
   );
   const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
   const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
@@ -935,7 +935,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   });
   const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
   const observation = optionalText(formData.get("observation"), "Observacao", 1000);
-  assertStoredFileReference(fileUrl, "Evidencia");
+  assertStoredFileReference(fileUrl, "Evidência");
 
   const [nc, item, access] = await Promise.all([
     prisma.nonConformity.findUnique({ where: { id } }),
@@ -950,9 +950,9 @@ export async function addNonConformityItemEvidence(formData: FormData) {
     getCurrentUserAccess(),
   ]);
 
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
-  if (!item) throw new Error("Item de checklist nao encontrado para esta NC.");
+  if (!item) throw new Error("Item de checklist não encontrado para esta NC.");
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
@@ -962,7 +962,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
     NonConformityStatus.REJECTED,
   ];
   if (!correctionStatuses.includes(nc.status)) {
-    throw new Error("Evidencias de correcao so podem ser anexadas em correcao.");
+    throw new Error("Evidências de correção só podem ser anexadas em correção.");
   }
 
   const evidence = await prisma.nonConformityItemEvidence.create({
@@ -984,7 +984,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   await writeNonConformityAudit({
     id,
     action: AuditAction.UPLOAD,
-    description: `Evidencia ${evidence.fileName} anexada ao item ${item.checklistEntry.item_label} da NC ${nc.code}`,
+    description: `Evidência ${evidence.fileName} anexada ao item ${item.checklistEntry.item_label} da NC ${nc.code}`,
     newValue: {
       evidenceId: evidence.id,
       nonConformityItemId,
@@ -1002,11 +1002,11 @@ export async function addNonConformityItemEvidence(formData: FormData) {
 
 export async function addNonConformityComment(formData: FormData) {
   const scope = await getDataScope();
-  const id = requiredId(formData.get("id"), "Nao conformidade");
+  const id = requiredId(formData.get("id"), "Não conformidade");
   const comment = requiredText(formData.get("comment"), "Comentario", 1000);
 
   const nc = await prisma.nonConformity.findUnique({ where: { id } });
-  if (!nc) throw new Error("Nao conformidade nao encontrada.");
+  if (!nc) throw new Error("Não conformidade não encontrada.");
   assertRecordInDataScope(scope, nc);
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
@@ -1016,7 +1016,7 @@ export async function addNonConformityComment(formData: FormData) {
   if (
     !hasAnyRole(access, [...RESPONSIBLE_ROLE_CODES, ...HSE_ROLE_CODES])
   ) {
-    throw new Error("Voce nao tem permissao para comentar nesta NC.");
+    throw new Error("Você não tem permissão para comentar nesta NC.");
   }
 
   await writeNonConformityAudit({

@@ -8,14 +8,16 @@ import {
   Clock,
   Construction,
   FileText,
-  History,
   Paperclip,
   User,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { AuditTimeline } from "@/components/shared/audit-timeline";
+import type {
+  AuditTimelineItem,
+  HistoryEvent,
+} from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   getNonConformityById,
@@ -27,6 +29,7 @@ import {
   NonConformityItemEvidenceButton,
   NonConformityOperations,
 } from "./non-conformity-operations";
+import { NonConformityHistoryButton } from "./non-conformity-history-button";
 import { LazyNonConformityEvidencePreview } from "./lazy-non-conformity-panels";
 import {
   nonConformityStatusTone,
@@ -252,13 +255,40 @@ export default async function NonConformityDetailPage({ params }: Props) {
   const ncResult = await getNonConformityById(id);
   if (!ncResult) notFound();
   const nc = ncResult as NonConformityDetail;
-  const auditTimeline = await getEntityAuditTimeline({
-    entityType: AuditEntityType.NON_CONFORMITY,
-    entityId: nc.id,
-  });
+  let auditTimeline: AuditTimelineItem[] = [];
 
-  const company = nc.tenantCompany.name ?? nc.scaffold.company ?? "-";
+  try {
+    auditTimeline = await getEntityAuditTimeline({
+      entityType: AuditEntityType.NON_CONFORMITY,
+      entityId: nc.id,
+    });
+  } catch (error) {
+    console.error("Failed to load non conformity audit timeline:", error);
+  }
+
+  const auditTimelineForClient = auditTimeline.map((item) => ({
+    ...item,
+    createdAt:
+      item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
+  }));
+
+  const company = nc.tenantCompany?.name ?? nc.scaffold.company ?? "-";
   const responsible = nc.responsibleUser?.name ?? "-";
+  const ncHistoryEvents: HistoryEvent[] = nc.history.map((entry) => ({
+    id: `nc-history-${entry.id}`,
+    type: "non_conformity",
+    actorName: entry.user?.name ?? "Sistema",
+    summary: entry.description || entry.action,
+    createdAt:
+      entry.createdAt instanceof Date
+        ? entry.createdAt.toISOString()
+        : entry.createdAt,
+    tone: "neutral",
+    details: [{ label: "Ação", value: entry.action }],
+    metadata: {
+      company,
+    },
+  }));
   const [canUpdate, access] = await Promise.all([
     canCurrentUser("non_conformities.update"),
     getCurrentUserAccess(),
@@ -285,14 +315,22 @@ export default async function NonConformityDetailPage({ params }: Props) {
     !isFinal && (isResponsibleProfile || isHse);
   const canCancel =
     isHse && ["OPEN", "ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status);
-  const responsibleOptions = canAssign
-    ? await getNonConformityResponsibleOptions()
-    : [];
+  let responsibleOptions: Awaited<
+    ReturnType<typeof getNonConformityResponsibleOptions>
+  > = [];
+
+  if (canAssign) {
+    try {
+      responsibleOptions = await getNonConformityResponsibleOptions();
+    } catch (error) {
+      console.error("Failed to load non conformity responsible options:", error);
+    }
+  }
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto pb-10">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2">
           <Link
             href="/nao-conformidades"
             className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
@@ -309,26 +347,32 @@ export default async function NonConformityDetailPage({ params }: Props) {
             </span>
           </div>
         </div>
-        <NonConformityOperations
-          id={nc.id}
-          responsibleUserId={nc.responsibleUserId}
-          dueDate={nc.dueDate?.toISOString() ?? null}
-          responsibleOptions={responsibleOptions}
-          canAssign={canAssign}
-          canRequestVerification={canRequestVerification}
-          canReview={canReview}
-          canChangeDueDate={canChangeDueDate}
-          canComment={canComment}
-          canCancel={canCancel}
-        />
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <NonConformityHistoryButton
+            auditTimeline={auditTimelineForClient}
+            historyEvents={ncHistoryEvents}
+          />
+          <NonConformityOperations
+            id={nc.id}
+            responsibleUserId={nc.responsibleUserId}
+            dueDate={nc.dueDate?.toISOString() ?? null}
+            responsibleOptions={responsibleOptions}
+            canAssign={canAssign}
+            canRequestVerification={canRequestVerification}
+            canReview={canReview}
+            canChangeDueDate={canChangeDueDate}
+            canComment={canComment}
+            canCancel={canCancel}
+          />
+        </div>
       </div>
 
-      <div className="bg-primary border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
+      <div className="bg-sidebar border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 py-4">
           <div>
             <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/40">
               <AlertTriangle className="size-4" />
-              AndCheck • Não Conformidades
+              AndCheck ⬢ Não Conformidades
             </div>
             <h1 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
               {nc.code}
@@ -431,7 +475,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             {nc.checklistItems.map((item) => (
               <div key={item.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-start gap-3">
-                  <div className="min-w-[320px] max-w-2xl pt-1">
+                  <div className="min-w-0 flex-1 pt-1">
                     <p className="text-[12px] font-semibold text-foreground">
                       {item.checklistEntry.item_label}
                     </p>
@@ -508,39 +552,6 @@ export default async function NonConformityDetailPage({ params }: Props) {
         </Section>
       )}
 
-      <Section title="Histórico" icon={History}>
-        {nc.history.length === 0 ? (
-          <EmptyState
-            icon={History}
-            title="Nenhum histórico registrado"
-            description="As movimentações desta não conformidade serão registradas aqui."
-            className="border-0 border-b border-dashed py-8"
-          />
-        ) : (
-          <div className="divide-y divide-border">
-            {nc.history.map((entry) => (
-              <div key={entry.id} className="px-4 py-3">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-[12px] font-bold text-foreground">
-                    {entry.action}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-mono shrink-0">
-                    {format(entry.createdAt, "dd/MM/yyyy HH:mm")}
-                  </p>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {entry.description}
-                </p>
-                <p className="text-[10px] text-muted-foreground/60 mt-1">
-                  {entry.user?.name ?? "Sistema"}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </Section>
-
-      <AuditTimeline items={auditTimeline} />
 
       <div className="flex gap-3">
         <Link

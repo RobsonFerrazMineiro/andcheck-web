@@ -22,7 +22,7 @@ export async function GET(
       roleHasPermission(roleCode, permission),
     ),
   );
-  if (!allowed) return new Response("Nao autorizado.", { status: 403 });
+  if (!allowed) return new Response("Não autorizado.", { status: 403 });
   const scope = await getDataScope();
 
   const { id: rawId } = await context.params;
@@ -32,7 +32,7 @@ export async function GET(
     select: { file_url: true, file_name: true, mime_type: true },
   });
   if (!document) {
-    return new Response("Documento nao encontrado.", { status: 404 });
+    return new Response("Documento não encontrado.", { status: 404 });
   }
 
   return createStoredFileResponse({

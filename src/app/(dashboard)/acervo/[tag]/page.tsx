@@ -21,6 +21,12 @@ import { notFound, redirect } from "next/navigation";
 
 import { ScaffoldQRCard } from "@/components/scaffold/qr-card";
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  HistoryDrawerButton,
+  type HistoryEvent,
+  type HistoryEventDetail,
+  type HistoryEventType,
+} from "@/components/shared/audit-timeline";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
 
@@ -141,10 +147,6 @@ function formatDateOr(value: Date | null | undefined, fallback: string) {
   return value ? format(value, "dd/MM/yyyy") : fallback;
 }
 
-function formatDateTime(value: Date | null | undefined) {
-  return value ? format(value, "dd/MM/yyyy HH:mm") : "-";
-}
-
 function formatBytes(value: number | null) {
   if (!value) return "-";
   if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
@@ -257,6 +259,81 @@ function operationalTimelineLabel(log: {
   return log.description.endsWith(".") ? log.description.slice(0, -1) : log.description;
 }
 
+function archivedAuditValueLabel(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "-";
+  if (value instanceof Date) return format(value, "dd/MM/yyyy HH:mm");
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return value.replaceAll("_", " ");
+  if (Array.isArray(value)) return `${value.length} item(ns)`;
+  return "Dados registrados";
+}
+
+function archivedAuditDetails(
+  oldValue: unknown,
+  newValue: unknown,
+): HistoryEventDetail[] {
+  if (!isRecord(oldValue) && !isRecord(newValue)) return [];
+
+  const before = isRecord(oldValue) ? oldValue : {};
+  const after = isRecord(newValue) ? newValue : {};
+
+  return Array.from(new Set([...Object.keys(before), ...Object.keys(after)]))
+    .filter((key) => !["id", "createdAt", "updatedAt"].includes(key))
+    .filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+    .map((key) => ({
+      label: key.replaceAll("_", " "),
+      before: archivedAuditValueLabel(before[key]),
+      after: archivedAuditValueLabel(after[key]),
+    }));
+}
+
+function archivedAuditType(log: ArchivedAuditLog): HistoryEventType {
+  if (log.action === "CREATE" || log.action.endsWith("_CREATED")) return "create";
+  if (log.action === "DELETE" || log.action.includes("REMOVED")) return "delete";
+  if (log.action === "STATUS_CHANGE") return "status";
+  if (log.entityType === "INSPECTION") return "inspection";
+  if (log.entityType === "NON_CONFORMITY") return "non_conformity";
+  if (log.entityType === "DOCUMENT") return "document";
+  return "update";
+}
+
+function archivedAuditTone(log: ArchivedAuditLog) {
+  const status = getStringField(log.newValue, "status");
+  if (log.action === "DELETE" || status === "reprovado" || status === "interditado") {
+    return "critical" as const;
+  }
+  if (status === "liberado" || status === "aprovado" || status === "CLOSED") {
+    return "success" as const;
+  }
+  if (log.action === "STATUS_CHANGE" || log.action === "COMPLETE") {
+    return "warning" as const;
+  }
+  return "neutral" as const;
+}
+
+function archivedAuditToHistoryEvent(
+  log: ArchivedAuditLog,
+  scaffold: ArchivedScaffold,
+): HistoryEvent {
+  return {
+    id: log.id,
+    type: archivedAuditType(log),
+    actorName: log.userName ?? "Sistema",
+    summary: operationalTimelineLabel(log),
+    createdAt: log.createdAt,
+    tone: archivedAuditTone(log),
+    details: [
+      { label: "Entidade", value: log.entityType.replaceAll("_", " ") },
+      ...archivedAuditDetails(log.oldValue, log.newValue),
+    ],
+    metadata: {
+      company: scaffold.tenantCompany?.name ?? scaffold.company,
+      workspace: scaffold.workspace?.name,
+    },
+  };
+}
+
 type Props = { params: Promise<{ tag: string }> };
 
 export default async function AcervoDetalhePage({ params }: Props) {
@@ -297,6 +374,9 @@ export default async function AcervoDetalhePage({ params }: Props) {
     "-";
   const dismantleResponsible = dismantleLog?.userName ?? "-";
   const operationalTimeline = [...auditLogs].reverse();
+  const operationalHistoryEvents = operationalTimeline.map((log) =>
+    archivedAuditToHistoryEvent(log, scaffold),
+  );
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
   const proto = hdrs.get("x-forwarded-proto") ?? "http";
@@ -304,23 +384,28 @@ export default async function AcervoDetalhePage({ params }: Props) {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
-      <div className="flex items-center gap-2">
-        <Link
-          href="/acervo"
-          className="flex size-7 items-center justify-center transition-colors hover:bg-muted"
-        >
-          <ArrowLeft className="size-4" />
-        </Link>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-          <Link href="/acervo" className="hover:text-foreground">
-            Acervo de Andaimes
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Link
+            href="/acervo"
+            className="flex size-7 items-center justify-center transition-colors hover:bg-muted"
+          >
+            <ArrowLeft className="size-4" />
           </Link>
-          <span className="mx-1.5">/</span>
-          <span className="text-foreground">{scaffold.code}</span>
-        </p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <Link href="/acervo" className="hover:text-foreground">
+              Acervo de Andaimes
+            </Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-foreground">{scaffold.code}</span>
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <HistoryDrawerButton events={operationalHistoryEvents} />
+        </div>
       </div>
 
-      <div className="border-l-4 border-l-sidebar-primary bg-primary px-5 py-4 shadow-sm">
+      <div className="border-l-4 border-l-sidebar-primary bg-sidebar px-5 py-4 shadow-sm">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className="mb-1 text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40">
@@ -350,38 +435,6 @@ export default async function AcervoDetalhePage({ params }: Props) {
         lastInspectionDate={lastInspection?.date}
         dismantledDate={scaffold.dismantled_at}
       />
-
-      <ArchiveCard
-        title="Linha do Tempo Operacional"
-        icon={FileClock}
-        extra={`${operationalTimeline.length} evento(s)`}
-      >
-        {operationalTimeline.length === 0 ? (
-          <EmptyLine icon={FileClock} text="Nenhum evento operacional registrado." />
-        ) : (
-          <div className="px-4 py-2">
-            {operationalTimeline.map((log, index) => (
-              <div key={log.id} className="relative flex gap-3 pb-4 last:pb-2">
-                {index < operationalTimeline.length - 1 && (
-                  <div className="absolute left-[5px] top-4 h-full w-px bg-border" />
-                )}
-                <div className="relative z-10 mt-1 size-3 shrink-0 rounded-full border-2 border-sidebar-primary bg-card" />
-                <div className="min-w-0">
-                  <p className="font-mono text-[10px] text-muted-foreground">
-                    {formatDate(log.createdAt)}
-                  </p>
-                  <p className="text-[11px] font-semibold text-foreground">
-                    {operationalTimelineLabel(log)}
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">
-                    {log.userName ?? "Sistema"}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </ArchiveCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ArchiveCard title="Dados do Andaime" icon={Construction}>
@@ -603,37 +656,6 @@ export default async function AcervoDetalhePage({ params }: Props) {
                 </p>
                 <p className="font-mono text-[11px] text-muted-foreground">
                   {formatDate(document.expires_at)}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </ArchiveCard>
-
-      <ArchiveCard
-        title="Auditoria"
-        icon={FileClock}
-        extra={`${auditLogs.length} evento(s)`}
-      >
-        {auditLogs.length === 0 ? (
-          <EmptyLine icon={FileClock} text="Nenhum evento de auditoria encontrado." />
-        ) : (
-          <div className="divide-y divide-border">
-            {auditLogs.map((log) => (
-              <div key={log.id} className="px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-foreground">
-                    {log.action}
-                  </p>
-                  <p className="font-mono text-[10px] text-muted-foreground">
-                    {formatDateTime(log.createdAt)}
-                  </p>
-                </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {log.description}
-                </p>
-                <p className="mt-1 text-[9px] uppercase tracking-widest text-muted-foreground/60">
-                  {log.userName ?? "Sistema"}
                 </p>
               </div>
             ))}

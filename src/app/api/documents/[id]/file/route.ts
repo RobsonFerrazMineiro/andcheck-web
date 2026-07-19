@@ -10,7 +10,7 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const document = await assertCanReadDocumentFile(id);
-  if (!document) return new Response("Documento nao encontrado.", { status: 404 });
+  if (!document) return new Response("Documento não encontrado.", { status: 404 });
 
   const disposition =
     new URL(request.url).searchParams.get("disposition") === "attachment"

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -193,24 +193,24 @@ export function LocationPicker({
     if (!mapRef.current || latitude === null || longitude === null) return;
     placeOrMoveMarker(mapRef.current, latitude, longitude);
     mapRef.current.setView([latitude, longitude], mapRef.current.getZoom());
-    // onChange nao participa desta sincronizacao externa.
+    // onChange não participa desta sincronização externa.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude]);
 
   return (
     <div className="space-y-3">
       {/* Instrução + ações */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           {instruction}
         </p>
-        <div className="flex gap-2 shrink-0">
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 sm:shrink-0">
           {hasCoords && (
             <button
               type="button"
               onClick={handleCenterOnPin}
               title="Centralizar no pin"
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-bold uppercase tracking-widest border border-border bg-card text-foreground hover:bg-muted transition-colors"
+              className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground transition-colors hover:bg-muted"
             >
               <MapPin className="w-3 h-3" />
               Centralizar no pin
@@ -220,7 +220,7 @@ export function LocationPicker({
             type="button"
             onClick={handleGeolocate}
             disabled={geoState === "loading"}
-            className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[11px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 text-[10px] font-bold uppercase tracking-widest text-accent-foreground transition-colors hover:bg-accent/90 disabled:opacity-50"
           >
             {geoState === "loading" ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -238,25 +238,25 @@ export function LocationPicker({
         style={{ height }}
       >
         {mapGeoState === "detecting" && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-blue-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none">
+          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
             <Loader2 className="w-3 h-3 animate-spin" />
             Obtendo localização...
           </div>
         )}
         {mapGeoState === "detected" && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-emerald-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none">
+          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
             <CheckCircle2 className="w-3 h-3" />
             Localização detectada
           </div>
         )}
         {mapGeoState === "failed" && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-amber-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none whitespace-nowrap">
+          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
             <Navigation2 className="w-3 h-3" />
             Ajuste o pin manualmente
           </div>
         )}
         {mapGeoState === "manual" && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-1000 bg-orange-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg pointer-events-none whitespace-nowrap">
+          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-orange-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
             <CheckCircle2 className="w-3 h-3" />
             Localização ajustada
           </div>

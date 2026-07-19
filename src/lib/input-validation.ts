@@ -8,7 +8,7 @@ export function requiredText(
   maxLength = DEFAULT_TEXT_MAX_LENGTH,
 ) {
   const text = String(value ?? "").trim();
-  if (!text) throw new Error(`${label} e obrigatorio.`);
+  if (!text) throw new Error(`${label} é obrigatório.`);
   if (text.length > maxLength) {
     throw new Error(`${label} deve ter no maximo ${maxLength} caracteres.`);
   }
@@ -30,21 +30,21 @@ export function optionalText(
 
 export function requiredId(value: unknown, label: string) {
   const id = String(value ?? "").trim();
-  if (!id) throw new Error(`${label} e obrigatorio.`);
-  if (!ID_PATTERN.test(id)) throw new Error(`${label} invalido.`);
+  if (!id) throw new Error(`${label} é obrigatório.`);
+  if (!ID_PATTERN.test(id)) throw new Error(`${label} inválido.`);
   return id;
 }
 
 export function optionalId(value: unknown, label: string) {
   const id = String(value ?? "").trim();
   if (!id || id === "none") return null;
-  if (!ID_PATTERN.test(id)) throw new Error(`${label} invalido.`);
+  if (!ID_PATTERN.test(id)) throw new Error(`${label} inválido.`);
   return id;
 }
 
 export function requiredEmail(value: unknown, label = "E-mail") {
   const email = requiredText(value, label, 254).toLowerCase();
-  if (!EMAIL_PATTERN.test(email)) throw new Error(`${label} invalido.`);
+  if (!EMAIL_PATTERN.test(email)) throw new Error(`${label} inválido.`);
   return email;
 }
 
@@ -56,7 +56,7 @@ export function optionalNumber(
   const raw = String(value ?? "").trim();
   if (!raw) return null;
   const number = Number(raw.replace(",", "."));
-  if (!Number.isFinite(number)) throw new Error(`${label} invalido.`);
+  if (!Number.isFinite(number)) throw new Error(`${label} inválido.`);
   if (options.min !== undefined && number < options.min) {
     throw new Error(`${label} deve ser maior ou igual a ${options.min}.`);
   }
@@ -72,7 +72,7 @@ export function requiredNumber(
   options: { min?: number; max?: number } = {},
 ) {
   const number = optionalNumber(value, label, options);
-  if (number === null) throw new Error(`${label} e obrigatorio.`);
+  if (number === null) throw new Error(`${label} é obrigatório.`);
   return number;
 }
 
@@ -82,15 +82,15 @@ export function enumValue<T extends string>(
   label: string,
 ) {
   const text = String(value ?? "").trim();
-  if (!allowedValues.includes(text as T)) throw new Error(`${label} invalido.`);
+  if (!allowedValues.includes(text as T)) throw new Error(`${label} inválido.`);
   return text as T;
 }
 
 export function optionalDate(value: unknown, label: string) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error(`${label} invalida.`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error(`${label} inválida.`);
   const date = new Date(`${raw}T00:00:00`);
-  if (Number.isNaN(date.getTime())) throw new Error(`${label} invalida.`);
+  if (Number.isNaN(date.getTime())) throw new Error(`${label} inválida.`);
   return date;
 }

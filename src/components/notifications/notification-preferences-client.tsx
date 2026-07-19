@@ -82,10 +82,10 @@ export function NotificationPreferencesClient({
     startTransition(async () => {
       try {
         await updateNotificationPreferenceValue({ type, channel, enabled });
-        toast.success("Preferencia atualizada.");
+        toast.success("Preferência atualizada.");
       } catch {
         setItems(previous);
-        toast.error("Nao foi possivel salvar a preferencia.");
+      toast.error("Não foi possível salvar a preferência.");
       }
     });
   }
@@ -109,17 +109,17 @@ export function NotificationPreferencesClient({
     startTransition(async () => {
       try {
         await updateNotificationPreferenceGroup({ group, channel, enabled });
-        toast.success("Preferencia atualizada.");
+        toast.success("Preferência atualizada.");
       } catch {
         setItems(previous);
-        toast.error("Nao foi possivel salvar a preferencia.");
+      toast.error("Não foi possível salvar a preferência.");
       }
     });
   }
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 border p-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
           <div className="flex size-9 items-center justify-center rounded-md bg-muted">
             <Mail className="size-4 text-muted-foreground" />
@@ -139,20 +139,21 @@ export function NotificationPreferencesClient({
       </div>
 
       {groups.map((group) => (
-        <section key={group.group} className="border">
-          <div className="flex flex-col gap-3 border-b bg-muted/25 p-4 md:flex-row md:items-center md:justify-between">
+        <section key={group.group} className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+          <div className="flex flex-col gap-3 border-b-2 border-border bg-muted/35 p-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-sm font-semibold">{group.label}</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                {group.items.length} tipo(s) de notificacao
+                {group.items.length} tipo(s) de notificação
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 disabled={isPending}
+                className="w-full"
                 onClick={() => saveGroup(group.group, "internal", true)}
               >
                 <Bell className="size-4" />
@@ -163,6 +164,7 @@ export function NotificationPreferencesClient({
                 variant="outline"
                 size="sm"
                 disabled={isPending || !emailStatus.available}
+                className="w-full"
                 title={!emailStatus.available ? emailStatus.detail : undefined}
                 onClick={() => saveGroup(group.group, "email", true)}
               >
@@ -240,7 +242,7 @@ export function NotificationPreferencesClient({
             <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
-                  <th className="px-4 py-3">Tipo de notificacao</th>
+                  <th className="px-4 py-3">Tipo de notificação</th>
                   <th className="px-4 py-3">Grupo</th>
                   <th className="px-4 py-3">Interna</th>
                   <th className="px-4 py-3">E-mail</th>

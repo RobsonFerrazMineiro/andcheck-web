@@ -10,6 +10,7 @@ import {
   type BellNotification,
 } from "@/components/notifications/notification-bell";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 import {
   Building2,
   LogOut,
@@ -65,6 +66,7 @@ export function MobileHeader({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { toggleMenu } = useExclusiveMenu(open, setOpen);
 
   const isActive = (path: string) => {
     if (path === "/dashboard") return pathname === "/dashboard";
@@ -115,7 +117,7 @@ export function MobileHeader({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setOpen(!open)}
+          onClick={toggleMenu}
           className="h-8 w-8 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
           aria-label={open ? "Fechar menu principal" : "Abrir menu principal"}
           aria-expanded={open}
@@ -172,6 +174,7 @@ function MobileUserMenu({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const { toggleMenu } = useExclusiveMenu(open, setOpen);
 
   useDialogFocus(panelRef, open, () => setOpen(false));
 
@@ -201,7 +204,7 @@ function MobileUserMenu({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggleMenu}
         className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
         aria-label={open ? "Fechar perfil do usuário" : "Abrir perfil do usuário"}
         aria-expanded={open}

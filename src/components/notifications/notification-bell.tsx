@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 
 export type BellNotification = {
   id: string;
@@ -42,6 +43,7 @@ export function NotificationBell({
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const { toggleMenu } = useExclusiveMenu(open, setOpen);
 
   useDialogFocus(panelRef, open, () => setOpen(false));
 
@@ -80,7 +82,7 @@ export function NotificationBell({
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls="notification-bell-panel"
-        onClick={() => setOpen((current) => !current)}
+        onClick={toggleMenu}
       >
         <Bell className="size-4" />
         {unreadCount > 0 && (
@@ -136,9 +138,11 @@ export function NotificationBell({
                       <p className="line-clamp-1 text-xs font-semibold">
                         {notification.title}
                       </p>
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                        {notification.message}
-                      </p>
+                      {notificationSummary(notification) ? (
+                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                          {notificationSummary(notification)}
+                        </p>
+                      ) : null}
                       <div className="mt-2 flex items-center gap-2">
                         <Button asChild variant="ghost" size="xs">
                           <Link
@@ -194,6 +198,18 @@ export function NotificationBell({
 
 function severityDot(severity: string) {
   return SEMANTIC_TONE_CLASSES[notificationSeverityTone(severity)].dot;
+}
+
+function notificationSummary(notification: BellNotification) {
+  const message = notification.message.trim();
+  if (!message) return "";
+
+  const titleCode = notification.title.match(/[A-Z]{2,}-\d{4}-\d{4,}/)?.[0];
+  if (titleCode && message.includes(titleCode)) {
+    return "";
+  }
+
+  return message;
 }
 
 function entityPath(notification: BellNotification) {

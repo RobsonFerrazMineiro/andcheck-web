@@ -174,7 +174,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           },
         });
 
-        toast.success("Documento salvo offline para sincronizacao.");
+        toast.success("Documento salvo offline para sincronização.");
         onClose();
         if (canNavigateAfterOfflineWrite()) {
           router.push("/sincronizacao");

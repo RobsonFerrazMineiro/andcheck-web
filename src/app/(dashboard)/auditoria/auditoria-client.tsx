@@ -1,30 +1,24 @@
-﻿"use client";
+"use client";
 
 import { format } from "date-fns";
 import {
-  AlertTriangle,
-  Bell,
-  Building2,
   ChevronLeft,
   ChevronRight,
-  ClipboardCheck,
-  Construction,
   Download,
   FileClock,
-  FileText,
-  Filter,
-  MapPinned,
   Search,
   ShieldCheck,
-  User,
 } from "lucide-react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
-import type { ComponentType } from "react";
+import { useMemo } from "react";
 
-import { EmptyState } from "@/components/shared/empty-state";
-import { Badge } from "@/components/ui/badge";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
+import {
+  HistoryTimelineCompact,
+  type HistoryEvent,
+  type HistoryEventDetail,
+  type HistoryEventType,
+} from "@/components/shared/audit-timeline";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -33,12 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { surface, typography } from "@/lib/design-system";
-import {
-  type SemanticTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
-import type { AuditDetailDialogProps } from "./audit-detail-dialog";
+import { typography } from "@/lib/design-system";
+import type { SemanticTone } from "@/lib/semantic-tones";
 
 export type AuditRow = {
   id: string;
@@ -91,35 +81,6 @@ const ENTITY_LABELS: Record<string, string> = {
   NOTIFICATION: "Notificação",
 };
 
-const ENTITY_BADGE_LABELS: Record<string, string> = {
-  COMPANY: "EMPRESA",
-  USER: "USUÁRIO",
-  WORKSPACE: "WORKSPACE",
-  SCAFFOLD: "ANDAIME",
-  INSPECTION: "INSPEÇÃO",
-  DOCUMENT: "DOCUMENTAÇÃO",
-  SIGNATURE: "ASSINATURA",
-  PDF: "PDF",
-  QR_CODE: "CONSULTA",
-  SETTINGS: "CONFIGURAÇÃO",
-  NON_CONFORMITY: "NÃO CONFORMIDADE",
-  NOTIFICATION: "NOTIFICAÇÃO",
-};
-
-const ENTITY_ICONS: Record<string, React.ElementType> = {
-  COMPANY: Building2,
-  USER: User,
-  SCAFFOLD: Construction,
-  INSPECTION: ClipboardCheck,
-  DOCUMENT: FileText,
-  SIGNATURE: FileText,
-  PDF: FileText,
-  QR_CODE: Construction,
-  SETTINGS: ShieldCheck,
-  NON_CONFORMITY: AlertTriangle,
-  NOTIFICATION: Bell,
-  WORKSPACE: MapPinned,
-};
 
 type EventTone = SemanticTone;
 
@@ -167,17 +128,6 @@ const ACTION_FILTERS = [
   ["NOTIFICATION_ARCHIVED", "Notificação arquivada"],
   ["NOTIFICATION_EMAIL_RESENT", "Reenvio de e-mail"],
 ] as const;
-
-const AUDIT_TABLE_GRID =
-  "grid-cols-[112px_130px_100px_165px_220px_minmax(280px,1fr)_175px]";
-
-const AuditDetailDialog = dynamic(
-  () =>
-    import("./audit-detail-dialog").then(
-      (mod) => mod.AuditDetailDialog as ComponentType<AuditDetailDialogProps>,
-    ),
-  { ssr: false },
-);
 
 function buildHref(filters: Filters, page: number) {
   const params = new URLSearchParams();
@@ -384,35 +334,221 @@ function friendlyDescription(row: AuditRow) {
   }
 }
 
-function ActionBadge({ row }: { row: AuditRow }) {
-  const meta = getEventMeta(row);
-  return (
-    <Badge
-      variant="outline"
-      title={meta.label}
-      className={`max-w-full rounded-md px-2 py-0.5 ${typography.badge} ${SEMANTIC_TONE_CLASSES[meta.tone].badge}`}
-    >
-      <span className="block truncate">{meta.label}</span>
-    </Badge>
-  );
+const AUDIT_TECHNICAL_KEYS = new Set([
+  "id",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "created_at",
+  "updated_at",
+  "deleted_at",
+  "password",
+  "passwordHash",
+  "password_hash",
+  "entityType",
+  "entity_type",
+  "tenantCompanyId",
+  "tenant_company_id",
+  "workspace_id",
+  "userAgent",
+  "sessionId",
+]);
+
+const AUDIT_RELEVANT_DETAIL_KEYS = new Set([
+  "action",
+  "area",
+  "classification",
+  "code",
+  "companyId",
+  "department",
+  "description",
+  "dueDate",
+  "email",
+  "fileName",
+  "location",
+  "name",
+  "notes",
+  "reason",
+  "responsible",
+  "responsibleUserId",
+  "result",
+  "role",
+  "roleCode",
+  "scaffoldCode",
+  "status",
+  "tag",
+  "title",
+  "type",
+  "validity_date",
+  "validityDate",
+  "validity_days",
+  "workspaceId",
+]);
+
+const AUDIT_VALUE_LABELS: Record<string, string> = {
+  ASSIGNED: "Atribuída",
+  CANCELLED: "Cancelado",
+  CLOSED: "Encerrada",
+  IN_PROGRESS: "Em tratamento",
+  LOW: "Baixa",
+  MEDIUM: "Média",
+  HIGH: "Alta",
+  CRITICAL: "Crítica",
+  OPEN: "Aberta",
+  PENDING_VERIFICATION: "Aguardando verificação",
+  REJECTED: "Rejeitada",
+  aprovado: "Aprovado",
+  aprovado_com_ressalvas: "Aprovado com ressalvas",
+  desmontado: "Desmontado",
+  em_montagem: "Em montagem",
+  interditado: "Interditado",
+  liberado: "Liberado",
+  pendente_liberacao: "Pendente de liberação",
+  reprovado: "Reprovado",
+  tubular: "Tubular",
+  vencido: "Vencido",
+};
+
+const AUDIT_DETAIL_LABELS: Record<string, string> = {
+  action: "Ação",
+  area: "Área",
+  code: "Código",
+  companyId: "Empresa",
+  department: "Departamento",
+  description: "Descrição",
+  dueDate: "Prazo",
+  email: "E-mail",
+  name: "Nome",
+  result: "Resultado",
+  role: "Perfil",
+  roleCode: "Perfil",
+  scaffoldCode: "Andaime",
+  scaffoldId: "Andaime",
+  status: "Status",
+  tag: "TAG",
+  title: "Título",
+  type: "Tipo",
+  userName: "Usuário",
+  validityDate: "Validade",
+  workspaceId: "Workspace",
+};
+
+function auditDetailLabel(key: string) {
+  return AUDIT_DETAIL_LABELS[key] ?? key.replaceAll("_", " ");
 }
 
-function EntityBadge({ row }: { row: AuditRow }) {
-  const Icon = ENTITY_ICONS[row.entityType] ?? FileClock;
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Badge
-        variant="outline"
-        className={`inline-flex w-fit items-center gap-1 rounded-md px-2 py-0.5 ${typography.badge} ${SEMANTIC_TONE_CLASSES.neutral.badge}`}
-      >
-        <Icon className="size-3" />
-        {ENTITY_BADGE_LABELS[row.entityType] ?? labelEntity(row.entityType).toUpperCase()}
-      </Badge>
-      <span className={`text-foreground ${typography.code}`}>
-        {row.entityLabel ?? row.entityId ?? "-"}
-      </span>
-    </div>
-  );
+function auditValueLabel(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "-";
+  if (value instanceof Date) return format(value, "dd/MM/yyyy HH:mm");
+  if (typeof value === "boolean") return value ? "Sim" : "Não";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") {
+    if (/^\d{4}-\d{2}-\d{2}T/.test(value)) {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) return format(date, "dd/MM/yyyy HH:mm");
+    }
+    return AUDIT_VALUE_LABELS[value] ?? value.replaceAll("_", " ");
+  }
+  if (Array.isArray(value)) return `${value.length} item(ns)`;
+  return "Dados registrados";
+}
+
+function auditChangedDetails(
+  oldValue: unknown,
+  newValue: unknown,
+): HistoryEventDetail[] {
+  if (!isPlainObject(oldValue) && !isPlainObject(newValue)) return [];
+
+  const before = isPlainObject(oldValue) ? oldValue : {};
+  const after = isPlainObject(newValue) ? newValue : {};
+
+  return Array.from(new Set([...Object.keys(before), ...Object.keys(after)]))
+    .filter((key) => !AUDIT_TECHNICAL_KEYS.has(key))
+    .filter((key) => AUDIT_RELEVANT_DETAIL_KEYS.has(key))
+    .filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+    .filter(
+      (key) =>
+        auditValueLabel(before[key]) !== "-" || auditValueLabel(after[key]) !== "-",
+    )
+    .map((key) => ({
+      label: auditDetailLabel(key),
+      before: auditValueLabel(before[key]),
+      after: auditValueLabel(after[key]),
+    }))
+    .slice(0, 8);
+}
+
+function auditRowType(row: AuditRow): HistoryEventType {
+  if (row.action.includes("FAIL")) return "failure";
+  if (row.action.includes("SYNC")) return "sync";
+  if (row.action === "CREATE" || row.action.endsWith("_CREATED")) return "create";
+  if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) return "update";
+  if (row.action === "DELETE" || row.action.includes("REMOVED")) return "delete";
+  if (row.action === "STATUS_CHANGE") return "status";
+  if (row.action.includes("COMMENT")) return "comment";
+  if (row.action.includes("DOCUMENT") || row.action === "UPLOAD") return "document";
+  if (row.action.includes("SIGN")) return "signature";
+  if (row.entityType === "INSPECTION") return "inspection";
+  if (row.entityType === "NON_CONFORMITY") return "non_conformity";
+  return "update";
+}
+
+function compactHistorySummary(row: AuditRow) {
+  const newStatus =
+    getRecordString(row.newValue, "status") ??
+    getRecordString(row.newValue, "result");
+  const entity = labelEntity(row.entityType);
+
+  if (row.action === "STATUS_CHANGE" && newStatus) {
+    return `${entity} ${auditValueLabel(newStatus)}`;
+  }
+  if (row.action === "COMPLETE") return `${entity} concluído`;
+  if (row.action === "DELETE" || row.action.includes("REMOVED")) {
+    return `${entity} removido`;
+  }
+  if (row.action.includes("DOCUMENT") || row.action === "UPLOAD") {
+    return "Documento anexado";
+  }
+  if (row.action.includes("SIGN")) return "Assinatura registrada";
+  if (row.action.includes("NOTIFICATION")) return getEventMeta(row).label;
+  if (row.action === "CREATE" || row.action.endsWith("_CREATED")) {
+    return `${entity} criado`;
+  }
+  if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
+    return `${entity} atualizado`;
+  }
+
+  return getEventMeta(row).label;
+}
+
+function auditRowToHistoryEvent(row: AuditRow): HistoryEvent {
+  const meta = getEventMeta(row);
+  const summary = compactHistorySummary(row)
+    .replace(/\bcm[a-z0-9]{18,}\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return {
+    id: row.id,
+    type: auditRowType(row),
+    actorName: row.userName ?? "Sistema",
+    summary,
+    createdAt: row.createdAt,
+    tone: meta.tone,
+    details: [
+      { label: "Entidade", value: entityDisplay(row) },
+      { label: "Tipo de evento", value: labelAction(row) },
+      ...auditChangedDetails(row.oldValue, row.newValue),
+    ],
+    metadata: {
+      company: row.companyId,
+      workspace: row.workspaceId,
+      browser: row.browserName,
+      device: row.deviceType,
+      os: row.osName,
+      ip: row.ipAddress,
+    },
+  };
 }
 
 function escapeHtml(value: string) {
@@ -545,9 +681,12 @@ export function AuditoriaClient({
   pageSize: number;
   filters: Filters;
 }) {
-  const [selected, setSelected] = useState<AuditRow | null>(null);
   const totalPages = Math.max(Math.ceil(total / pageSize), 1);
   const currentFilters = useMemo(() => filters, [filters]);
+  const historyEvents = useMemo(
+    () => rows.map(auditRowToHistoryEvent),
+    [rows],
+  );
 
   return (
     <div className="min-w-0 space-y-5">
@@ -597,11 +736,11 @@ export function AuditoriaClient({
           </div>
           <div className="min-w-0">
             <p className={`${typography.bodyStrong} text-foreground`}>
-              Auditoria disponível em telas maiores
+              Auditoria resumida
             </p>
             <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>
-              Esta visualização exige mais colunas e contexto. Acesse por tablet
-              ou desktop para filtrar, exportar e revisar os eventos.
+              {total} evento(s) encontrados. Toque em um evento para revisar os
+              detalhes completos.
             </p>
           </div>
         </div>
@@ -609,9 +748,15 @@ export function AuditoriaClient({
 
       <form
         action="/auditoria"
-        className="hidden min-w-0 flex-wrap items-start gap-2 rounded-lg border border-border bg-card p-3 shadow-sm md:flex"
+        className="hidden md:block"
       >
-        <div className="relative w-full sm:min-w-[180px] sm:flex-1 md:max-w-[260px]">
+        <FilterShell
+          title="Filtros"
+          meta={`${total} evento(s)`}
+          contentClassName="flex min-w-0 flex-wrap items-start gap-2"
+        >
+          <FilterField label="Busca" className="w-full sm:min-w-[180px] sm:flex-1 md:max-w-[260px]">
+          <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
           <Input
             name="search"
@@ -619,10 +764,11 @@ export function AuditoriaClient({
             placeholder="Buscar descrição, usuário ou entidade..."
             className="pl-9 h-8 text-[11px] rounded-md border-border"
           />
-        </div>
+          </div>
+          </FilterField>
+        <FilterField label="Ação" className="sm:w-[150px]">
         <Select name="action" defaultValue={filters.action || "all"}>
           <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[150px]">
-            <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
             <SelectValue placeholder="Ação" />
           </SelectTrigger>
           <SelectContent>
@@ -634,6 +780,8 @@ export function AuditoriaClient({
             ))}
           </SelectContent>
         </Select>
+        </FilterField>
+        <FilterField label="Entidade" className="sm:w-[108px]">
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
           <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[108px]">
             <SelectValue placeholder="Entidade" />
@@ -646,48 +794,64 @@ export function AuditoriaClient({
             ))}
           </SelectContent>
         </Select>
+        </FilterField>
+        <FilterField label="Usuário" className="sm:w-[150px]">
         <Input
           name="user"
           defaultValue={filters.user}
           placeholder="Usuário"
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
+        </FilterField>
+        <FilterField label="Empresa" className="sm:w-[150px]">
         <Input
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
+        </FilterField>
+        <FilterField label="Workspace" className="sm:w-[150px]">
         <Input
           name="workspace"
           defaultValue={filters.workspace}
           placeholder="Workspace"
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
         />
+        </FilterField>
+        <FilterField label="Status" className="sm:w-[135px]">
         <Input
           name="status"
           defaultValue={filters.status}
           placeholder="Status"
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[135px]"
         />
+        </FilterField>
+        <FilterField label="TAG" className="sm:w-[125px]">
         <Input
           name="scaffoldTag"
           defaultValue={filters.scaffoldTag}
           placeholder="TAG"
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[125px]"
         />
+        </FilterField>
+        <FilterField label="Inicio" className="sm:w-[154px]">
         <Input
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
         />
+        </FilterField>
+        <FilterField label="Fim" className="sm:w-[154px]">
         <Input
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
         />
+        </FilterField>
+        <FilterField label="Ordenacao" className="sm:w-[132px]">
         <Select name="order" defaultValue={filters.order}>
           <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[132px]">
             <SelectValue placeholder="Ordenação" />
@@ -697,125 +861,22 @@ export function AuditoriaClient({
             <SelectItem value="asc">Mais antigos</SelectItem>
           </SelectContent>
         </Select>
-        <button className="h-8 w-full rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest sm:w-[170px]">
+        </FilterField>
+        <div className="flex items-end sm:w-[170px]">
+        <button className="h-8 w-full rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
           Filtrar
         </button>
+        </div>
+        </FilterShell>
       </form>
 
-      <div className="hidden min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm md:block">
-        <div className="divide-y divide-border md:hidden">
-          {rows.length === 0 ? (
-            <EmptyState
-              icon={FileClock}
-              title="Nenhum evento encontrado"
-              description="Os eventos de auditoria aparecem aqui conforme as operações são registradas no sistema."
-              className="border-0 border-b border-dashed"
-            />
-          ) : (
-            rows.map((row, index) => (
-              <button
-                key={row.id}
-                type="button"
-                onClick={() => setSelected(row)}
-                className={
-                  "block w-full px-4 py-3 text-left hover:bg-muted/40 " +
-                  (index % 2 === 1 ? "bg-muted/20" : "bg-card")
-                }
-              >
-                <div className="mb-2 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className={`text-muted-foreground ${typography.code}`}>
-                      {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
-                    </p>
-                    <p className={`mt-1 truncate text-foreground ${typography.bodyStrong}`}>
-                      {row.userName ?? "Sistema"}
-                    </p>
-                  </div>
-                  <div className="shrink-0">
-                    <ActionBadge row={row} />
-                  </div>
-                </div>
-                <p className={`truncate text-muted-foreground ${typography.codeMuted}`}>
-                  {row.userRole ?? "-"} · {entityDisplay(row)}
-                </p>
-                <p className={`mt-1 line-clamp-2 text-foreground ${typography.sectionDescription}`}>
-                  {friendlyDescription(row)}
-                </p>
-                <p className={`mt-2 truncate text-muted-foreground ${typography.bodyMuted}`}>
-                  {companyDisplay(row)}
-                </p>
-              </button>
-            ))
-          )}
-        </div>
-
-        <div className="hidden overflow-x-auto md:block">
-          <div className="min-w-[1180px]">
-            <div className={`grid ${AUDIT_TABLE_GRID} gap-3 border-b border-border ${surface.tableHeader}`}>
-              {[
-                "Data/Hora",
-                "Usuário",
-                "Perfil",
-                "Ação",
-                "Entidade",
-                "Descrição",
-                "Empresa/Planta",
-              ].map((header) => (
-                <p
-                  key={header}
-                  className="text-primary-foreground/60"
-                >
-                  {header}
-                </p>
-              ))}
-            </div>
-
-            {rows.length === 0 ? (
-              <EmptyState
-                icon={FileClock}
-                title="Nenhum evento encontrado"
-                description="Os eventos de auditoria aparecem aqui conforme as operações são registradas no sistema."
-                className="border-0 border-b border-dashed"
-              />
-            ) : (
-              <div className="divide-y divide-border">
-                {rows.map((row, index) => (
-                  <button
-                    key={row.id}
-                    type="button"
-                    onClick={() => setSelected(row)}
-                    className={
-                      `w-full grid ${AUDIT_TABLE_GRID} gap-3 items-center overflow-hidden px-4 py-3 text-left hover:bg-muted/40 ` +
-                      (index % 2 === 1 ? "bg-muted/20" : "bg-card")
-                    }
-                  >
-                    <p className={`min-w-0 text-muted-foreground ${typography.code}`}>
-                      {format(new Date(row.createdAt), "dd/MM/yyyy HH:mm")}
-                    </p>
-                    <p className={`min-w-0 truncate text-foreground ${typography.bodyStrong}`}>
-                      {row.userName ?? "Sistema"}
-                    </p>
-                    <p className={`min-w-0 truncate text-muted-foreground ${typography.codeMuted}`}>
-                      {row.userRole ?? "-"}
-                    </p>
-                    <div className="min-w-0">
-                      <ActionBadge row={row} />
-                    </div>
-                    <p className={`min-w-0 truncate text-muted-foreground ${typography.codeMuted}`}>
-                      {entityDisplay(row)}
-                    </p>
-                    <p className={`min-w-0 truncate text-foreground ${typography.sectionDescription}`}>
-                      {friendlyDescription(row)}
-                    </p>
-                    <p className={`min-w-0 truncate text-muted-foreground ${typography.bodyMuted}`}>
-                      {companyDisplay(row)}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
+        <HistoryTimelineCompact
+          events={historyEvents}
+          initialLimit={Math.max(rows.length, 1)}
+          showFullHistoryAction={false}
+          variant="page"
+        />
 
         <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-t border-border">
           <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
@@ -840,20 +901,6 @@ export function AuditoriaClient({
         </div>
       </div>
 
-      {selected && (
-        <AuditDetailDialog
-          row={selected}
-          title={friendlyDescription(selected)}
-          companyLabel={companyDisplay(selected)}
-          actionLabel={labelAction(selected)}
-          entityLabel={`${labelEntity(selected.entityType)} · ${
-            selected.entityLabel ?? selected.entityId ?? "-"
-          }`}
-          entityBadge={<EntityBadge row={selected} />}
-          actionBadge={<ActionBadge row={selected} />}
-          onClose={() => setSelected(null)}
-        />
-      )}
     </div>
   );
 }

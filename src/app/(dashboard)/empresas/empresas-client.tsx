@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { FormModal } from "@/components/shared/form-modal";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import {
@@ -367,28 +368,35 @@ export function EmpresasClient({
         description="Busque e refine a lista de empresas."
         summary={`${filtered.length}/${initialCompanies.length} · ${type === "all" ? "Todos tipos" : TYPE_LABELS[type as CompanyType] ?? type} · ${status === "all" ? "Todos status" : status === "active" ? "Ativas" : "Inativas"}`}
       >
-        <div className="space-y-3 rounded-lg border border-border bg-card p-3">
-          <div
-            className="flex flex-wrap gap-2"
-            aria-label="Filtros rapidos por tipo de empresa"
-          >
-            <TypeFilterButton
-              active={type === "all"}
-              label="Todas"
-              count={initialCompanies.length}
-              onClick={() => setType("all")}
-            />
-            {FORM_TYPE_OPTIONS.map(([value, label]) => (
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${initialCompanies.length}`}
+          contentClassName="space-y-3"
+        >
+          <FilterField label="Tipo">
+            <div
+              className="flex flex-wrap gap-2"
+              aria-label="Filtros rapidos por tipo de empresa"
+            >
               <TypeFilterButton
-                key={value}
-                active={type === value}
-                label={label}
-                count={typeCounts[value as CompanyType]}
-                onClick={() => setType(value)}
+                active={type === "all"}
+                label="Todas"
+                count={initialCompanies.length}
+                onClick={() => setType("all")}
               />
-            ))}
-          </div>
+              {FORM_TYPE_OPTIONS.map(([value, label]) => (
+                <TypeFilterButton
+                  key={value}
+                  active={type === value}
+                  label={label}
+                  count={typeCounts[value as CompanyType]}
+                  onClick={() => setType(value)}
+                />
+              ))}
+            </div>
+          </FilterField>
           <div className="grid gap-3 md:grid-cols-[1fr_190px]">
+            <FilterField label="Busca">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
               <Input
@@ -398,6 +406,8 @@ export function EmpresasClient({
                 className="pl-8"
               />
             </div>
+            </FilterField>
+            <FilterField label="Status">
             <FilterSelect
               value={status}
               onValueChange={setStatus}
@@ -407,13 +417,14 @@ export function EmpresasClient({
                 ["inactive", "Inativas"],
               ]}
             />
+            </FilterField>
           </div>
-        </div>
+        </FilterShell>
       </MobileFilterPanel>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="max-w-full overflow-hidden rounded-lg border border-border bg-card">
         <div
-          className={`hidden grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] gap-4 border-b lg:grid ${surface.tableHeader}`}
+          className={`hidden grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] gap-2 border-b lg:grid ${surface.tableHeader}`}
         >
           <span>Nome</span>
           <span>Tipo</span>
@@ -434,7 +445,7 @@ export function EmpresasClient({
           filtered.map((company, index) => (
             <div
               key={company.id}
-              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(180px,1.4fr)_150px_minmax(180px,1fr)_80px_80px_90px_120px] lg:gap-4 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
+              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] lg:gap-2 lg:px-3 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-center gap-2">
@@ -445,12 +456,12 @@ export function EmpresasClient({
                   />
                   <div className="min-w-0">
                     <p
-                      className={`truncate text-foreground ${typography.bodyStrong}`}
+                      className={`break-words text-foreground lg:truncate ${typography.bodyStrong}`}
                     >
                       {company.name}
                     </p>
                     <p
-                      className={`text-muted-foreground ${typography.codeMuted}`}
+                      className={`break-all text-muted-foreground ${typography.codeMuted}`}
                     >
                       {company.code}
                     </p>
@@ -459,7 +470,7 @@ export function EmpresasClient({
               </div>
               <Badge
                 variant="outline"
-                className={`hidden w-fit rounded-md lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}
+                className={`hidden max-w-full rounded-md lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}
               >
                 {TYPE_LABELS[company.type]}
               </Badge>

@@ -1,14 +1,18 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Printer } from "lucide-react";
 
-export function PrintButton() {
+export function PrintButton({ className }: { className?: string }) {
   return (
     <button
       onClick={() => window.print()}
-      className="inline-flex items-center gap-1.5 h-8 px-3 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
+      className={cn(
+        "inline-flex items-center gap-2",
+        className,
+      )}
     >
-      <Printer className="w-3.5 h-3.5" />
+      <Printer className="w-4 h-4" />
       Imprimir
     </button>
   );

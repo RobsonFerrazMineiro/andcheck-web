@@ -200,7 +200,7 @@ function getOperationalMovement(log: {
       badge: "DOC. VENCIDO",
       dedupeKey: `${log.entityType}:${log.entityId ?? label}:vencido`,
       groupable: false,
-      subtitle: "Documento tecnico vencido",
+      subtitle: "Documento técnico vencido",
       title: label,
       tone: "critical" as const,
     };

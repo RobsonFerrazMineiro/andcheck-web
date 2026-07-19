@@ -2,7 +2,6 @@
 
 import {
   CheckCircle2,
-  Filter,
   KeyRound,
   Loader2,
   Pencil,
@@ -20,6 +19,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { FormModal } from "@/components/shared/form-modal";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Badge } from "@/components/ui/badge";
@@ -529,8 +529,13 @@ export function UsuariosClient({
         description="Busque usuários e filtre por status ou perfil."
         summary={`${filtered.length}/${users.length} · ${statusFilter === "all" ? "Todos" : statusFilter === "active" ? "Ativos" : statusFilter === "inactive" ? "Inativos" : roles.find((role) => role.code === statusFilter)?.name ?? "Perfil"}`}
       >
-        <div className="bg-card border border-border rounded-lg shadow-sm p-3 flex flex-col gap-2 sm:flex-row">
-          <div className="relative flex-1">
+        <FilterShell
+          title="Filtros"
+          meta={`${filtered.length}/${users.length}`}
+          contentClassName="flex flex-col gap-3 sm:flex-row"
+        >
+          <FilterField label="Busca" className="flex-1">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
             <Input
               placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
@@ -539,9 +544,10 @@ export function UsuariosClient({
               className="pl-9 h-8 text-[11px] rounded-md border-border"
             />
           </div>
+          </FilterField>
+          <FilterField label="Status / perfil" className="sm:w-56">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-md">
-              <Filter className="w-3.5 h-3.5 mr-1.5 text-muted-foreground/50" />
               <SelectValue placeholder="Filtro" />
             </SelectTrigger>
             <SelectContent>
@@ -555,11 +561,12 @@ export function UsuariosClient({
               ))}
             </SelectContent>
           </Select>
-        </div>
+          </FilterField>
+        </FilterShell>
       </MobileFilterPanel>
 
       <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
-        <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-primary border-b border-border">
+        <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-sidebar border-b border-sidebar-border">
           {[
             "",
             "Nome",
@@ -707,7 +714,7 @@ export function UsuariosClient({
                       onClick={() => setDeleteTarget(user)}
                       aria-label={`Excluir usuário ${user.name}`}
                       title={
-                        deleteBlockReason ?? "Excluir usuario"
+                        deleteBlockReason ?? "Excluir usuário"
                       }
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
                     >
@@ -778,14 +785,14 @@ function getDeleteBlockReason({
     (role) => role.code === "SUPER_ADMIN",
   );
 
-  if (isCurrentUser) return "Voce nao pode excluir sua propria conta.";
+  if (isCurrentUser) return "Você não pode excluir sua própria conta.";
   if (actorIsSuperAdmin) return null;
-  if (!actorIsCompanyAdmin) return "Voce nao tem permissao para excluir usuarios.";
+  if (!actorIsCompanyAdmin) return "Você não tem permissão para excluir usuários.";
   if (targetIsSuperAdmin) {
-    return "Voce nao possui permissao para excluir um Super Admin.";
+    return "Você não possui permissão para excluir um Super Admin.";
   }
   if (!actorCompanyId || target.companyId !== actorCompanyId) {
-    return "Este usuario pertence a outra empresa.";
+    return "Este usuário pertence a outra empresa.";
   }
 
   return null;

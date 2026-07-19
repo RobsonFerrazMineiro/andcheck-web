@@ -18,7 +18,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
 
   if (provider !== "mock") {
     throw new Error(
-      `Envio real de e-mail nao implementado para EMAIL_PROVIDER=${provider}. Configure um adapter antes de habilitar o canal.`,
+      `Envio real de e-mail não implementado para EMAIL_PROVIDER=${provider}. Configure um adapter antes de habilitar o canal.`,
     );
   }
 
@@ -66,7 +66,7 @@ export function renderNotificationEmail({
     "",
     `Acesse o AndCheck: ${actionUrl}`,
     "",
-    "Mensagem automatica. Nao responda este e-mail.",
+    "Mensagem automática. Não responda este e-mail.",
   ].join("\n");
 
   const details = rows
@@ -98,7 +98,7 @@ export function renderNotificationEmail({
             </tr>
             <tr>
               <td style="padding:16px 24px;background:#f8fafc;color:#64748b;font-size:12px">
-                Mensagem automatica. Nao responda este e-mail.
+                Mensagem automática. Não responda este e-mail.
               </td>
             </tr>
           </table>

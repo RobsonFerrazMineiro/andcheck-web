@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 export class AuthorizationError extends Error {
-  constructor(message = "Voce nao tem permissao para executar esta acao.") {
+  constructor(message = "Você não tem permissão para executar esta ação.") {
     super(message);
     this.name = "AuthorizationError";
   }
@@ -131,7 +131,7 @@ export async function assertActiveCompanyForCreation(
   const resolvedCompanyId =
     companyId ?? (await getCurrentUserAccess())?.companyId;
   if (!resolvedCompanyId) {
-    throw new AuthorizationError("Usuario nao autenticado.");
+  throw new AuthorizationError("Usuário não autenticado.");
   }
 
   const company = await prisma.company.findUnique({
@@ -140,7 +140,7 @@ export async function assertActiveCompanyForCreation(
   });
   if (!company?.active) {
     throw new AuthorizationError(
-      "Empresa inativa. Novas operacoes nao sao permitidas.",
+    "Empresa inativa. Novas operações não são permitidas.",
     );
   }
 }
@@ -156,7 +156,7 @@ export async function assertActiveWorkspaceForCreation(
     (await cookies()).get("andcheck_workspace_context")?.value ??
     (await getCurrentUserAccess())?.workspaceId;
   if (!resolvedWorkspaceId) {
-    throw new AuthorizationError("Usuario nao autenticado.");
+  throw new AuthorizationError("Usuário não autenticado.");
   }
 
   const workspace = await prisma.workspace.findUnique({
@@ -165,7 +165,7 @@ export async function assertActiveWorkspaceForCreation(
   });
   if (!workspace?.active) {
     throw new AuthorizationError(
-      "Workspace inativo. Novas operacoes nao sao permitidas.",
+    "Workspace inativo. Novas operações não são permitidas.",
     );
   }
 }

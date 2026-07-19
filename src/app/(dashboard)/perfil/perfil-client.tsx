@@ -3,12 +3,13 @@
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { typography } from "@/lib/design-system";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
   Building2,
   CalendarClock,
   CheckCircle2,
-  Mail,
+  KeyRound,
   MapPin,
   ShieldCheck,
   User,
@@ -52,14 +53,15 @@ export function PerfilClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-3 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            Conta e seguranca
+          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <User className="size-4" />
+            AndCheck - Conta e segurança
           </p>
-          <h1 className="text-[18px] font-bold uppercase tracking-tight text-foreground">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Meu Perfil
           </h1>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Dados da sessao autenticada e credenciais do usuario atual.
+          <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
+            Dados da sessão autenticada e credenciais do usuário atual.
           </p>
         </div>
         <Badge
@@ -77,71 +79,117 @@ export function PerfilClient({
         lastCachedAt={lastCachedAt}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="size-4" /> Identidade
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
-            <Info icon={User} label="Nome" value={profile.name} />
-            <Info icon={Mail} label="E-mail" value={profile.email} />
-            <Info
-              icon={Building2}
-              label="Empresa do usuario"
-              value={profile.companyName}
-            />
-            <Info
-              icon={ShieldCheck}
-              label="Perfil/RBAC"
-              value={profile.roleLabels.join(", ") || "Sem perfil"}
-            />
-            <Info
-              icon={MapPin}
-              label="Workspace atual"
-              value={profile.workspaceName}
-            />
-            <Info
-              icon={CheckCircle2}
-              label="Status da sessao"
-              value={profile.isActive ? "Ativa" : "Inativa"}
-            />
-            <Info
-              icon={CalendarClock}
-              label="Criado em"
-              value={formatDate(profile.createdAt)}
-            />
-            <Info
-              icon={CalendarClock}
-              label="Ultimo acesso"
-              value={
-                profile.lastAccessAt
-                  ? formatDate(profile.lastAccessAt)
-                  : "Sem registro"
-              }
-            />
+      <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
+        <Card className="overflow-hidden rounded-lg">
+          <CardContent className="p-0">
+            <div className="border-b bg-sidebar px-5 py-5 text-sidebar-foreground">
+              <div className="flex items-start gap-4">
+                <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/60 ring-1 ring-sidebar-border/60">
+                  <User className="size-6" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/55">
+                    Usuário autenticado
+                  </p>
+                  <h2 className="mt-1 break-words text-[18px] font-bold leading-tight">
+                    {profile.name}
+                  </h2>
+                  <p className="mt-1 break-all text-[11px] text-primary-foreground/70">
+                    {profile.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="grid gap-px bg-border sm:grid-cols-2 [&>*:last-child]:sm:col-span-2">
+              <SummaryTile
+                icon={Building2}
+                label="Empresa"
+                value={profile.companyName}
+              />
+              <SummaryTile
+                icon={MapPin}
+                label="Workspace"
+                value={profile.workspaceName}
+              />
+              <SummaryTile
+                icon={ShieldCheck}
+                label="Perfil"
+                value={profile.roleLabels.join(", ") || "Sem perfil"}
+              />
+              <SummaryTile
+                icon={CheckCircle2}
+                label="Status"
+                value={profile.isActive ? "Ativa" : "Inativa"}
+              />
+              <SummaryTile
+                icon={CalendarClock}
+                label="Ultimo acesso"
+                value={
+                  profile.lastAccessAt
+                    ? formatDate(profile.lastAccessAt)
+                    : "Sem registro"
+                }
+              />
+            </div>
           </CardContent>
         </Card>
 
         <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="size-4" /> Seguranca
+          <CardHeader className="border-b pb-3">
+            <CardTitle className="flex items-center gap-2 text-[14px]">
+              <KeyRound className="size-4" /> Segurança da conta
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="grid gap-4 p-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <Info
+                icon={CalendarClock}
+                label="Conta criada em"
+                value={formatDate(profile.createdAt)}
+              />
+              <Info
+                icon={CheckCircle2}
+                label="Sessao"
+                value={isOfflineFallback ? "Cache local" : "Ativa online"}
+              />
+            </div>
             {isOfflineFallback ? (
-              <p className="text-[11px] text-muted-foreground">
-                Alteracao de senha indisponivel offline. Conecte-se para usar
-                esta acao.
-              </p>
+              <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4">
+                <p className="text-[11px] text-muted-foreground">
+                  Alteração de senha indisponível offline. Conecte-se para usar
+                  esta ação.
+                </p>
+              </div>
             ) : (
               <PasswordForm />
             )}
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function SummaryTile({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: ElementType;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0 bg-card p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          {label}
+        </p>
+      </div>
+      <p className="break-words text-[13px] font-semibold text-foreground">
+        {value}
+      </p>
     </div>
   );
 }
@@ -156,13 +204,13 @@ function Info({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 border bg-muted/20 p-3">
+    <div className="flex min-w-0 items-start gap-3 border bg-muted/20 p-3">
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
         <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
           {label}
         </p>
-        <p className="mt-1 truncate text-sm font-semibold">{value}</p>
+        <p className="mt-1 break-words text-sm font-semibold">{value}</p>
       </div>
     </div>
   );

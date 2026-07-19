@@ -33,7 +33,7 @@ let dbPromise: Promise<IDBDatabase> | null = null;
 
 function assertIndexedDbAvailable() {
   if (typeof window === "undefined" || !("indexedDB" in window)) {
-    throw new Error("IndexedDB nao esta disponivel neste ambiente.");
+  throw new Error("IndexedDB não está disponível neste ambiente.");
   }
 }
 
@@ -67,7 +67,7 @@ function requestToPromise<T>(request: IDBRequest<T>) {
   return new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () =>
-      reject(request.error ?? new Error("Falha na operacao IndexedDB."));
+      reject(request.error ?? new Error("Falha na operação IndexedDB."));
   });
 }
 
@@ -75,9 +75,9 @@ function transactionDone(transaction: IDBTransaction) {
   return new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () =>
-      reject(transaction.error ?? new Error("Falha na transacao IndexedDB."));
+      reject(transaction.error ?? new Error("Falha na transação IndexedDB."));
     transaction.onabort = () =>
-      reject(transaction.error ?? new Error("Transacao IndexedDB abortada."));
+      reject(transaction.error ?? new Error("Transação IndexedDB abortada."));
   });
 }
 

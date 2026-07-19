@@ -89,7 +89,7 @@ export async function getNotifications(filter: NotificationFilter = "all") {
   const parsedFilter = enumValue(
     filter,
     NOTIFICATION_FILTERS,
-    "Filtro de notificacao",
+    "Filtro de notificação",
   );
 
   try {
@@ -127,7 +127,7 @@ export async function getNotifications(filter: NotificationFilter = "all") {
 
 export async function markNotificationAsRead(id: string) {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
   const notificationId = requiredId(id, "Notificacao");
 
   try {
@@ -181,7 +181,7 @@ export async function markNotificationAsRead(id: string) {
 
 export async function markAllNotificationsAsRead() {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
 
   try {
     const result = await prisma.notification.updateMany({
@@ -197,7 +197,7 @@ export async function markAllNotificationsAsRead() {
         entityId: access.userId,
         entityLabel: "bulk-read",
         action: AuditAction.NOTIFICATION_READ,
-        description: `${result.count} notificacao(oes) marcadas como lidas`,
+        description: `${result.count} notificação(ões) marcadas como lidas`,
         newValue: {
           count: result.count,
           status: "READ",
@@ -215,7 +215,7 @@ export async function markAllNotificationsAsRead() {
 
 export async function archiveNotification(id: string) {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
   const notificationId = requiredId(id, "Notificacao");
 
   try {
@@ -265,9 +265,43 @@ export async function archiveNotification(id: string) {
   revalidatePath("/notificacoes");
 }
 
+export async function archiveAllNotifications() {
+  const access = await getCurrentUserAccess();
+  if (!access) throw new Error("Usuário não autenticado.");
+
+  try {
+    const result = await prisma.notification.updateMany({
+      where: {
+        ...userNotificationWhere(access.userId),
+        status: { not: "ARCHIVED" },
+      },
+      data: { status: "ARCHIVED" },
+    });
+    if (result.count > 0) {
+      await createAuditLog({
+        entityType: AuditEntityType.NOTIFICATION,
+        entityId: access.userId,
+        entityLabel: "bulk-archive",
+        action: AuditAction.NOTIFICATION_ARCHIVED,
+        description: `${result.count} notificação(ões) arquivadas`,
+        newValue: {
+          count: result.count,
+          status: "ARCHIVED",
+        },
+        companyId: access.companyId,
+        workspaceId: access.workspaceId,
+      });
+    }
+  } catch (error) {
+    if (!isMissingNotificationTables(error)) throw error;
+  }
+
+  revalidatePath("/notificacoes");
+}
+
 export async function getNotificationPreferences() {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
 
   const preferences = await prisma.notificationPreference
     .findMany({
@@ -302,12 +336,12 @@ export async function getNotificationPreferences() {
 
 export async function updateNotificationPreference(formData: FormData) {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
 
   const type = enumValue(
     formData.get("type"),
     notificationTypes(),
-    "Tipo de notificacao",
+    "Tipo de notificação",
   );
 
   const internal = formData.get("internal") === "on";
@@ -358,7 +392,7 @@ export async function updateNotificationPreference(formData: FormData) {
     entityId: access.userId,
     entityLabel: "notification-preference",
     action: AuditAction.UPDATE,
-    description: "Preferencia de notificacao atualizada",
+    description: "Preferência de notificação atualizada",
     oldValue: {
       type,
       internal: current?.internal ?? true,
@@ -382,8 +416,8 @@ export async function updateNotificationPreferenceValue(input: {
   enabled: boolean;
 }) {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
-  const type = enumValue(input.type, notificationTypes(), "Tipo de notificacao");
+  if (!access) throw new Error("Usuário não autenticado.");
+  const type = enumValue(input.type, notificationTypes(), "Tipo de notificação");
   const channel = enumValue(input.channel, NOTIFICATION_CHANNELS, "Canal");
 
   const critical = defaultCriticalTypes.has(type);
@@ -446,7 +480,7 @@ export async function updateNotificationPreferenceValue(input: {
     entityId: access.userId,
     entityLabel: "notification-preference",
     action: AuditAction.UPDATE,
-    description: "Preferencia de canal de notificacao atualizada",
+    description: "Preferência de canal de notificação atualizada",
     oldValue: {
       type,
       internal: current?.internal ?? true,
@@ -473,13 +507,13 @@ export async function updateNotificationPreferenceGroup(input: {
   enabled: boolean;
 }) {
   const access = await getCurrentUserAccess();
-  if (!access) throw new Error("Usuario nao autenticado.");
+  if (!access) throw new Error("Usuário não autenticado.");
   const channel = enumValue(input.channel, NOTIFICATION_CHANNELS, "Canal");
 
   const types = notificationTypes().filter(
     (type) => NOTIFICATION_ENTITY_GROUPS[type] === input.group,
   );
-  if (types.length === 0) throw new Error("Grupo de notificacao invalido.");
+  if (types.length === 0) throw new Error("Grupo de notificação inválido.");
   const currentPreferences = await prisma.notificationPreference
     .findMany({
       where: {
@@ -536,7 +570,7 @@ export async function updateNotificationPreferenceGroup(input: {
     entityId: access.userId,
     entityLabel: "notification-preference-group",
     action: AuditAction.UPDATE,
-    description: "Preferencias de notificacao em grupo atualizadas",
+    description: "Preferências de notificação em grupo atualizadas",
     oldValue: {
       group: input.group,
       channel,
@@ -578,27 +612,27 @@ export async function getEmailChannelStatus() {
   if (provider === "mock") {
     return {
       status: "PENDING" as const,
-      label: "Pendente de configuracao",
+      label: "Pendente de configuração",
       available: false,
-      detail: "Envio real de e-mail ainda nao esta configurado.",
+      detail: "Envio real de e-mail ainda não está configurado.",
     };
   }
 
   if (provider === "resend" && !process.env.RESEND_API_KEY) {
     return {
       status: "CONFIG_ERROR" as const,
-      label: "Erro de configuracao",
+      label: "Erro de configuração",
       available: false,
-      detail: "RESEND_API_KEY nao configurada.",
+      detail: "RESEND_API_KEY não configurada.",
     };
   }
 
   if (provider === "sendgrid" && !process.env.SENDGRID_API_KEY) {
     return {
       status: "CONFIG_ERROR" as const,
-      label: "Erro de configuracao",
+      label: "Erro de configuração",
       available: false,
-      detail: "SENDGRID_API_KEY nao configurada.",
+      detail: "SENDGRID_API_KEY não configurada.",
     };
   }
 
@@ -608,9 +642,9 @@ export async function getEmailChannelStatus() {
   ) {
     return {
       status: "CONFIG_ERROR" as const,
-      label: "Erro de configuracao",
+      label: "Erro de configuração",
       available: false,
-      detail: "SMTP_HOST e SMTP_PORT sao obrigatorios.",
+      detail: "SMTP_HOST e SMTP_PORT são obrigatórios.",
     };
   }
 
@@ -618,7 +652,7 @@ export async function getEmailChannelStatus() {
     status: "PENDING" as const,
     label: "Adapter pendente",
     available: false,
-    detail: `Variaveis de ${provider} podem estar presentes, mas o adapter de envio real ainda nao foi implementado.`,
+    detail: `Variáveis de ${provider} podem estar presentes, mas o adapter de envio real ainda não foi implementado.`,
   };
 }
 
@@ -634,7 +668,7 @@ export async function getEmailTechnicalConfiguration() {
 
   return {
     provider,
-    from: process.env.EMAIL_FROM || "Nao configurado",
+    from: process.env.EMAIL_FROM || "Não configurado",
     status,
     plannedProviders: ["Resend", "SMTP corporativo", "SendGrid", "Amazon SES"],
     variables: [
@@ -745,7 +779,7 @@ export async function resendNotificationEmail(notificationId: string) {
       workspace: { select: { name: true } },
     },
   });
-  if (!notification) throw new Error("Notificacao nao encontrada.");
+  if (!notification) throw new Error("Notificação não encontrada.");
   if (!notification.user?.email) {
     throw new Error("Notificacao sem destinatario de e-mail.");
   }
@@ -756,7 +790,7 @@ export async function resendNotificationEmail(notificationId: string) {
     entityId: notification.id,
     entityLabel: notification.title,
     action: AuditAction.NOTIFICATION_EMAIL_RESENT,
-    description: "E-mail de notificacao reenviado manualmente",
+    description: "E-mail de notificação reenviado manualmente",
     newValue: {
       notificationId: notification.id,
       recipientEmail: notification.user.email,

@@ -129,7 +129,7 @@ async function sendQueueItem(item: SyncQueueItem): Promise<ServerSyncResult> {
     return {
       id: item.id,
       status: isSyncQueueStatus(result?.status) ? result.status : "failed",
-      error: result?.error ?? "Falha ao enviar item para sincronizacao.",
+      error: result?.error ?? "Falha ao enviar item para sincronização.",
     };
   }
 
@@ -137,7 +137,7 @@ async function sendQueueItem(item: SyncQueueItem): Promise<ServerSyncResult> {
     result ?? {
       id: item.id,
       status: "failed",
-      error: "Resposta invalida do servidor de sincronizacao.",
+      error: "Resposta inválida do servidor de sincronização.",
     }
   );
 }
@@ -191,7 +191,7 @@ async function runSyncQueue({
         lastError:
           error instanceof Error
             ? error.message
-            : "Falha desconhecida na sincronizacao.",
+            : "Falha desconhecida na sincronização.",
       });
     }
   }
