@@ -4,7 +4,7 @@ import { ArrowLeft, Construction, Loader2, Save } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,64 @@ const INITIAL: ScaffoldForm = {
   notes: "",
 };
 
+const SCAFFOLD_PREFS_KEY = "andcheck:intelligence:scaffold-form";
+
+type ScaffoldFormPreferences = {
+  type?: string;
+  location?: string;
+  area?: string;
+  responsible?: string;
+  company?: string;
+  recentLocations?: string[];
+  recentAreas?: string[];
+  recentResponsibles?: string[];
+  recentCompanies?: string[];
+};
+
+function readScaffoldPreferences(): ScaffoldFormPreferences {
+  if (typeof window === "undefined") return {};
+  try {
+    const parsed = JSON.parse(
+      window.localStorage.getItem(SCAFFOLD_PREFS_KEY) ?? "{}",
+    );
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function uniqueRecent(values: Array<string | undefined>, limit = 8) {
+  return Array.from(
+    new Set(values.map((value) => value?.trim()).filter(Boolean) as string[]),
+  ).slice(0, limit);
+}
+
+function writeScaffoldPreferences(form: ScaffoldForm) {
+  if (typeof window === "undefined") return;
+  const current = readScaffoldPreferences();
+  const next: ScaffoldFormPreferences = {
+    type: form.type,
+    location: form.location.trim() || current.location,
+    area: form.area.trim() || current.area,
+    responsible: form.responsible.trim() || current.responsible,
+    company: form.company.trim() || current.company,
+    recentLocations: uniqueRecent([
+      form.location,
+      ...(current.recentLocations ?? []),
+    ]),
+    recentAreas: uniqueRecent([form.area, ...(current.recentAreas ?? [])]),
+    recentResponsibles: uniqueRecent([
+      form.responsible,
+      ...(current.recentResponsibles ?? []),
+    ]),
+    recentCompanies: uniqueRecent([
+      form.company,
+      ...(current.recentCompanies ?? []),
+    ]),
+  };
+  window.localStorage.setItem(SCAFFOLD_PREFS_KEY, JSON.stringify(next));
+}
+
 type EditableScaffold = {
   id: string;
   code: string;
@@ -111,6 +169,17 @@ export default function NovoAndaimeForm({
   const [saving, setSaving] = useState(false);
   const [savedOffline, setSavedOffline] = useState(false);
   const savingRef = useRef(false);
+  const [suggestions, setSuggestions] = useState<ScaffoldFormPreferences>({});
+
+  const datalistId = useId();
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setSuggestions(readScaffoldPreferences());
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   const set =
     (field: keyof ScaffoldForm) =>
@@ -145,6 +214,7 @@ export default function NovoAndaimeForm({
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
       };
+      writeScaffoldPreferences(form);
 
       if ((await checkServerConnectivity()) === "offline") {
         if (isEdit && scaffold) {
@@ -255,6 +325,22 @@ export default function NovoAndaimeForm({
       {/* ── Formulário ── */}
       <div className="bg-card border border-border shadow-sm p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
+          <SmartDatalist
+            id={`${datalistId}-locations`}
+            values={suggestions.recentLocations}
+          />
+          <SmartDatalist
+            id={`${datalistId}-areas`}
+            values={suggestions.recentAreas}
+          />
+          <SmartDatalist
+            id={`${datalistId}-responsibles`}
+            values={suggestions.recentResponsibles}
+          />
+          <SmartDatalist
+            id={`${datalistId}-companies`}
+            values={suggestions.recentCompanies}
+          />
           {/* TAG e Tipo */}
           <FormSection title="Identificação">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -297,8 +383,15 @@ export default function NovoAndaimeForm({
                   placeholder="Ex: Área 5 – Plataforma B"
                   value={form.location}
                   onChange={set("location")}
+                  list={`${datalistId}-locations`}
                   required
                   className="rounded-md h-9 text-[12px]"
+                />
+                <SmartSuggestion
+                  value={suggestions.location}
+                  onApply={(value) =>
+                    setForm((current) => ({ ...current, location: value }))
+                  }
                 />
               </Field>
               <Field label="Área / Setor *">
@@ -306,8 +399,15 @@ export default function NovoAndaimeForm({
                   placeholder="Ex: Manutenção Industrial"
                   value={form.area}
                   onChange={set("area")}
+                  list={`${datalistId}-areas`}
                   required
                   className="rounded-md h-9 text-[12px]"
+                />
+                <SmartSuggestion
+                  value={suggestions.area}
+                  onApply={(value) =>
+                    setForm((current) => ({ ...current, area: value }))
+                  }
                 />
               </Field>
             </div>
@@ -381,8 +481,15 @@ export default function NovoAndaimeForm({
                   placeholder="Nome do responsável"
                   value={form.responsible}
                   onChange={set("responsible")}
+                  list={`${datalistId}-responsibles`}
                   required
                   className="rounded-md h-9 text-[12px]"
+                />
+                <SmartSuggestion
+                  value={suggestions.responsible}
+                  onApply={(value) =>
+                    setForm((current) => ({ ...current, responsible: value }))
+                  }
                 />
               </Field>
               <Field label="Empresa Montadora">
@@ -390,7 +497,14 @@ export default function NovoAndaimeForm({
                   placeholder="Nome da empresa"
                   value={form.company}
                   onChange={set("company")}
+                  list={`${datalistId}-companies`}
                   className="rounded-md h-9 text-[12px]"
+                />
+                <SmartSuggestion
+                  value={suggestions.company}
+                  onApply={(value) =>
+                    setForm((current) => ({ ...current, company: value }))
+                  }
                 />
               </Field>
             </div>
@@ -507,5 +621,43 @@ function Field({
       </Label>
       {children}
     </div>
+  );
+}
+
+function SmartDatalist({
+  id,
+  values = [],
+}: {
+  id: string;
+  values?: string[];
+}) {
+  if (values.length === 0) return null;
+
+  return (
+    <datalist id={id}>
+      {values.map((value) => (
+        <option key={value} value={value} />
+      ))}
+    </datalist>
+  );
+}
+
+function SmartSuggestion({
+  value,
+  onApply,
+}: {
+  value?: string;
+  onApply: (value: string) => void;
+}) {
+  if (!value) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onApply(value)}
+      className="mt-1 inline-flex max-w-full items-center border border-border bg-muted/30 px-2 py-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground hover:bg-muted/60"
+    >
+      Ultimo usado: <span className="ml-1 truncate text-foreground">{value}</span>
+    </button>
   );
 }

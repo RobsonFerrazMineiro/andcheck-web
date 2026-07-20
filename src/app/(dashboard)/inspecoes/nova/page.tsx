@@ -2,7 +2,11 @@ import { Suspense } from "react";
 
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { getActiveNonConformitiesForInspection } from "@/lib/actions/inspection-actions";
-import { getInspectionSignaturePolicies } from "@/lib/actions/signature-policy-actions";
+import { getMyProfile } from "@/lib/actions/profile-actions";
+import {
+  getInspectionSignaturePolicies,
+  getInspectionSignerOptions,
+} from "@/lib/actions/signature-policy-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +24,17 @@ type InspectionScaffoldOptionRecord = {
   area: string;
   company: string | null;
   type: string;
+  status: string;
+  responsible: string;
+  height: number;
+  width: number | null;
+  length: number | null;
+  max_load: number | null;
+  validity_date: Date | null;
+  inspections: Array<{
+    date: Date;
+    result: string;
+  }>;
 };
 
 type ActiveNonConformityRecord = {
@@ -50,6 +65,21 @@ type SignaturePolicyRecord = {
   }>;
 };
 
+type SignatureSignerRecord = {
+  id: string;
+  name: string;
+  email: string;
+  companyId: string;
+  companyName: string;
+  legacyCompanyName: string | null;
+  department: string | null;
+  position: string | null;
+  roles: Array<{
+    code: string;
+    name: string;
+  }>;
+};
+
 export default async function NovaInspecaoPage({ searchParams }: Props) {
   const canCreateInspection =
     (await canCurrentUser("inspections.create")) ||
@@ -57,13 +87,17 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
   if (!canCreateInspection) redirect("/inspecoes");
 
   const { scaffold_id: selectedScaffoldId } = await searchParams;
-  const [raw, rawPolicies, activeNonConformities] = await Promise.all([
-    getScaffolds(),
-    getInspectionSignaturePolicies(),
-    getActiveNonConformitiesForInspection(),
-  ]);
+  const [raw, rawPolicies, rawSigners, activeNonConformities, profile] =
+    await Promise.all([
+      getScaffolds(),
+      getInspectionSignaturePolicies(),
+      getInspectionSignerOptions(),
+      getActiveNonConformitiesForInspection(),
+      getMyProfile(),
+    ]);
   const scaffoldRecords = raw as InspectionScaffoldOptionRecord[];
   const signaturePolicyRecords = rawPolicies as SignaturePolicyRecord[];
+  const signerRecords = rawSigners as SignatureSignerRecord[];
   const activeNonConformityRecords =
     activeNonConformities as ActiveNonConformityRecord[];
   const activeScaffoldIds = new Set(
@@ -117,6 +151,15 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
       area: s.area,
       company: s.company,
       type: s.type,
+      status: s.status,
+      responsible: s.responsible,
+      height: s.height,
+      width: s.width,
+      length: s.length,
+      max_load: s.max_load,
+      validity_date: s.validity_date?.toISOString() ?? null,
+      lastInspectionDate: s.inspections[0]?.date.toISOString() ?? null,
+      lastInspectionResult: s.inspections[0]?.result ?? null,
     }));
   const signaturePolicies = signaturePolicyRecords.map((policy) => ({
     id: policy.id,
@@ -138,11 +181,31 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
       },
     })),
   }));
+  const signerOptions = signerRecords.map((signer) => ({
+    id: signer.id,
+    name: signer.name,
+    email: signer.email,
+    companyId: signer.companyId,
+    companyName: signer.companyName,
+    legacyCompanyName: signer.legacyCompanyName,
+    department: signer.department,
+    position: signer.position,
+    roles: signer.roles,
+  }));
   return (
     <Suspense>
       <NovaInspecaoForm
         scaffolds={scaffolds}
         signaturePolicies={signaturePolicies}
+        signerOptions={signerOptions}
+        currentUser={{
+          name: profile.name,
+          email: profile.email,
+          companyName: profile.companyName,
+          workspaceName: profile.workspaceName,
+          roleName: profile.roleNames[0] ?? profile.roleCodes[0] ?? "",
+          position: profile.position ?? profile.department ?? "",
+        }}
       />
     </Suspense>
   );

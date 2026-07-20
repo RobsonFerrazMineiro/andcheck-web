@@ -25,6 +25,49 @@ export async function getInspectionSignaturePolicies() {
   });
 }
 
+export async function getInspectionSignerOptions() {
+  await requireAnyPermission(["inspections.create", "inspections.finalize"]);
+  const scope = await getDataScope();
+
+  const users = await prisma.user.findMany({
+    where: {
+      ...dataScopeWhere(scope),
+      is_active: true,
+    },
+    orderBy: [{ tenantCompany: { name: "asc" } }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      company: true,
+      companyId: true,
+      department: true,
+      position: true,
+      tenantCompany: { select: { id: true, name: true } },
+      roles: {
+        select: {
+          role: { select: { code: true, name: true } },
+        },
+      },
+    },
+  });
+
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    companyId: user.companyId,
+    companyName: user.tenantCompany.name,
+    legacyCompanyName: user.company,
+    department: user.department,
+    position: user.position,
+    roles: user.roles.map((userRole) => ({
+      code: userRole.role.code,
+      name: userRole.role.name,
+    })),
+  }));
+}
+
 export async function resolveInspectionSignaturePolicyForScaffold(
   scaffoldId: string,
 ) {

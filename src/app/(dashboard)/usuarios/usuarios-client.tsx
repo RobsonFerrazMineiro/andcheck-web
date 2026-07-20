@@ -137,6 +137,7 @@ export function UsuariosClient({
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<UserRow | null>(null);
+  const [selectedRoleId, setSelectedRoleId] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [statusTarget, setStatusTarget] = useState<UserRow | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -151,6 +152,9 @@ export function UsuariosClient({
       (role) => role.code === "SUPER_ADMIN" || role.code === "ADMIN_EMPRESA",
     ),
   ).length;
+  const selectedFormRole = roles.find(
+    (role) => role.id === (selectedRoleId || editingUser?.roles[0]?.id || ""),
+  );
 
   const filtered = useMemo(
     () =>
@@ -184,6 +188,7 @@ export function UsuariosClient({
           id: toastId,
         });
         setShowForm(false);
+        setSelectedRoleId("");
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Erro ao criar usuário.",
@@ -200,6 +205,7 @@ export function UsuariosClient({
         await updateUser(formData);
         toast.success("Usuário atualizado.", { id: toastId });
         setEditingUser(null);
+        setSelectedRoleId("");
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Erro ao atualizar usuário.",
@@ -310,6 +316,7 @@ export function UsuariosClient({
           type="button"
           onClick={() => {
             setEditingUser(null);
+            setSelectedRoleId("");
             setShowForm((current) => !current);
           }}
           className="inline-flex h-8 w-full shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90 sm:w-auto"
@@ -402,6 +409,7 @@ export function UsuariosClient({
         onClose={() => {
           setShowForm(false);
           setEditingUser(null);
+          setSelectedRoleId("");
         }}
       >
         <form
@@ -463,6 +471,7 @@ export function UsuariosClient({
                 name="role_id"
                 required
                 defaultValue={editingUser?.roles[0]?.id}
+                onValueChange={setSelectedRoleId}
               >
                 <SelectTrigger className="h-8 text-[11px] rounded-md">
                   <SelectValue placeholder="Selecionar perfil" />
@@ -476,6 +485,13 @@ export function UsuariosClient({
                 </SelectContent>
               </Select>
             </div>
+            {selectedFormRole?.code === "HSE_GERENCIADORA" && (
+              <div className="border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold text-amber-800 md:col-span-3">
+                Este perfil possui acesso operacional amplo aos dados do
+                workspace autorizado. Use apenas para empresas gerenciadoras
+                de HSE, como TUV Rheinland ou Arcadis.
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label className="text-[10px] uppercase tracking-wider font-bold">
                 Status
@@ -508,6 +524,7 @@ export function UsuariosClient({
               onClick={() => {
                 setShowForm(false);
                 setEditingUser(null);
+                setSelectedRoleId("");
               }}
               className="h-8 rounded-md px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -597,6 +614,7 @@ export function UsuariosClient({
                   type="button"
                   onClick={() => {
                     setEditingUser(null);
+                    setSelectedRoleId("");
                     setShowForm(true);
                   }}
                   className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
@@ -683,6 +701,7 @@ export function UsuariosClient({
                       onClick={() => {
                         setShowForm(false);
                         setEditingUser(user);
+                        setSelectedRoleId(user.roles[0]?.id ?? "");
                       }}
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
                     >

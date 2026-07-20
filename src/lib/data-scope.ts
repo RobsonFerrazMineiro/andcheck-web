@@ -13,6 +13,11 @@ const CONTEXT_SWITCHER_ROLES = new Set([
 
 const GLOBAL_WORKSPACE_ROLES = new Set(["SUPER_ADMIN"]);
 
+export const WORKSPACE_SCOPED_ROLE_CODES = [
+  "HSE_HYDRO",
+  "HSE_GERENCIADORA",
+] as const;
+
 export const ALL_COMPANIES_CONTEXT = "__all_companies__";
 export const COMPANY_CONTEXT_COOKIE = "andcheck_company_context";
 export const WORKSPACE_CONTEXT_COOKIE = "andcheck_workspace_context";

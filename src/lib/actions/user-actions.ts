@@ -13,6 +13,7 @@ import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import {
   COMPANY_SCOPED_ROLE_CODES,
+  WORKSPACE_SCOPED_ROLE_CODES,
   dataScopeWhere,
   getDataScope,
 } from "@/lib/data-scope";
@@ -87,6 +88,14 @@ function parseUserStatus(value: FormDataEntryValue | null) {
   return status === "active";
 }
 
+const COMPANY_SCOPED_ROLE_SET = new Set<string>(COMPANY_SCOPED_ROLE_CODES);
+const WORKSPACE_SCOPED_ROLE_SET = new Set<string>(WORKSPACE_SCOPED_ROLE_CODES);
+
+function canAssignRoleCode(roleCode: string, actorRoleCodes: string[]) {
+  if (actorRoleCodes.includes("SUPER_ADMIN")) return true;
+  return COMPANY_SCOPED_ROLE_SET.has(roleCode);
+}
+
 export async function getUserManagementData() {
   await requireAnyPermission(["users.manage_company", "users.create"]);
   const access = await getCurrentUserAccess();
@@ -113,7 +122,7 @@ export async function getUserManagementData() {
       },
     }),
     prisma.role.findMany({
-      where: scope.isGlobal
+      where: canSelectAnyCompany
         ? undefined
         : { code: { in: [...COMPANY_SCOPED_ROLE_CODES] } },
       orderBy: { name: "asc" },
@@ -159,13 +168,15 @@ export async function createUser(formData: FormData) {
   if (!role) {
     throw new Error("Perfil selecionado não existe.");
   }
-  if (
-    !scope.isGlobal &&
-    !COMPANY_SCOPED_ROLE_CODES.includes(
-      role.code as (typeof COMPANY_SCOPED_ROLE_CODES)[number],
-    )
-  ) {
+  if (!canAssignRoleCode(role.code, access.roleCodes)) {
     throw new Error("Perfil fora do escopo permitido para esta empresa.");
+  }
+
+  if (
+    WORKSPACE_SCOPED_ROLE_SET.has(role.code) &&
+    !access.roleCodes.includes("SUPER_ADMIN")
+  ) {
+    throw new Error("Somente Super Admin pode atribuir perfil de escopo workspace.");
   }
 
   if (
@@ -229,7 +240,6 @@ export async function updateUser(formData: FormData) {
   if (!currentAccess) {
     throw new Error("Usuário não autenticado.");
   }
-  const scope = await getDataScope();
 
   const userId = requiredId(formData.get("user_id"), "Usuário");
   const name = requiredText(formData.get("name"), "Nome", 120);
@@ -265,13 +275,15 @@ export async function updateUser(formData: FormData) {
   if (!role) {
     throw new Error("Perfil selecionado não existe.");
   }
-  if (
-    !scope.isGlobal &&
-    !COMPANY_SCOPED_ROLE_CODES.includes(
-      role.code as (typeof COMPANY_SCOPED_ROLE_CODES)[number],
-    )
-  ) {
+  if (!canAssignRoleCode(role.code, currentAccess.roleCodes)) {
     throw new Error("Perfil fora do escopo permitido para esta empresa.");
+  }
+
+  if (
+    WORKSPACE_SCOPED_ROLE_SET.has(role.code) &&
+    !currentAccess.roleCodes.includes("SUPER_ADMIN")
+  ) {
+    throw new Error("Somente Super Admin pode atribuir perfil de escopo workspace.");
   }
 
   const targetIsSuperAdmin = targetUser.roles.some(
