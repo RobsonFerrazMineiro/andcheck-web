@@ -99,7 +99,7 @@ export function AndaimesClient({
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <Construction className="size-4" />
-            AndCheck ⬢ Andaimes
+            AndCheck • Andaimes
           </div>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Registro de Andaimes

@@ -202,7 +202,7 @@ export function SyncClient() {
         <div>
           <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <RefreshCw className="size-4" />
-            AndCheck - Offline
+            AndCheck • Sincronização
           </p>
           <h1 className={`${typography.pageTitle} text-foreground`}>
             Sincronização

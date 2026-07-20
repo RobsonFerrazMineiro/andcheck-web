@@ -222,17 +222,24 @@ function ReadonlyInfo({
   label,
   value,
   className = "",
+  compact = false,
 }: {
   label: string;
   value: string;
   className?: string;
+  compact?: boolean;
 }) {
   return (
     <div className={className}>
       <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
         {label}
       </p>
-      <p className="mt-0.5 truncate text-[11px] font-semibold text-foreground">
+      <p
+        className={
+          "mt-0.5 text-[11px] font-semibold text-foreground " +
+          (compact ? "line-clamp-2 leading-snug" : "truncate")
+        }
+      >
         {value}
       </p>
     </div>
@@ -764,15 +771,15 @@ export function NovaInspecaoForm({
       <div className="pb-4 border-b-2 border-border">
         <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
           <ClipboardCheck className="size-4" />
-          AndCheck ⬢ Inspeções · NR-18 / NR-35 / ABNT NBR 6494
+          AndCheck • Inspeções
         </div>
         <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
           Nova Inspeção
         </h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           Checklist de{" "}
-          {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens ·
-          Resultado calculado automaticamente
+          {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens •
+          Resultado calculado automaticamente • NR-18 / NR-35 / ABNT NBR 6494
         </p>
       </div>
 
@@ -837,58 +844,65 @@ export function NovaInspecaoForm({
           </div>
         </div>
         {selectedScaffold && (
-          <div className="grid grid-cols-1 gap-2 border border-border bg-muted/20 p-3 sm:grid-cols-4">
-            <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
-            <ReadonlyInfo
-              label="Tipo"
-              value={scaffoldTypeLabel(selectedScaffold.type)}
-            />
-            <ReadonlyInfo label="Area" value={selectedScaffold.area} />
-            <ReadonlyInfo label="Status" value={selectedScaffold.status} />
-            <ReadonlyInfo
-              label="Localizacao"
-              value={selectedScaffold.location}
-              className="sm:col-span-2"
-            />
-            <ReadonlyInfo
-              label="Empresa montadora"
-              value={selectedScaffold.company ?? "-"}
-            />
-            <ReadonlyInfo
-              label="Responsavel tecnico"
-              value={selectedScaffold.responsible}
-            />
-            <ReadonlyInfo
-              label="Dimensoes"
-              value={[
-                `${selectedScaffold.height} m alt.`,
-                selectedScaffold.width
-                  ? `${selectedScaffold.width} m larg.`
-                  : null,
-                selectedScaffold.length
-                  ? `${selectedScaffold.length} m comp.`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(" / ")}
-              className="sm:col-span-2"
-            />
-            <ReadonlyInfo
-              label="Carga maxima"
-              value={
-                selectedScaffold.max_load
-                  ? `${selectedScaffold.max_load} kg`
-                  : "-"
-              }
-            />
-            <ReadonlyInfo
-              label="Ultima validade"
-              value={formatNullableDate(selectedScaffold.validity_date)}
-            />
-            <ReadonlyInfo
-              label="Ultima inspecao"
-              value={formatNullableDate(selectedScaffold.lastInspectionDate)}
-            />
+          <div className="space-y-3 border border-border bg-muted/20 p-3">
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:grid-cols-[1fr_auto_auto]">
+              <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
+              <ReadonlyInfo label="Status" value={selectedScaffold.status} />
+              <ReadonlyInfo
+                label="Tipo"
+                value={scaffoldTypeLabel(selectedScaffold.type)}
+                className="col-span-2 sm:col-span-1"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+              <ReadonlyInfo label="Area" value={selectedScaffold.area} compact />
+              <ReadonlyInfo
+                label="Localizacao"
+                value={selectedScaffold.location}
+                compact
+              />
+              <ReadonlyInfo
+                label="Empresa"
+                value={selectedScaffold.company ?? "-"}
+                compact
+              />
+              <ReadonlyInfo
+                label="Responsavel"
+                value={selectedScaffold.responsible}
+                compact
+              />
+              <ReadonlyInfo
+                label="Dimensoes"
+                value={[
+                  `${selectedScaffold.height} m alt.`,
+                  selectedScaffold.width
+                    ? `${selectedScaffold.width} m larg.`
+                    : null,
+                  selectedScaffold.length
+                    ? `${selectedScaffold.length} m comp.`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" / ")}
+                compact
+              />
+              <ReadonlyInfo
+                label="Carga"
+                value={
+                  selectedScaffold.max_load
+                    ? `${selectedScaffold.max_load} kg`
+                    : "-"
+                }
+              />
+              <ReadonlyInfo
+                label="Validade"
+                value={formatNullableDate(selectedScaffold.validity_date)}
+              />
+              <ReadonlyInfo
+                label="Ultima inspecao"
+                value={formatNullableDate(selectedScaffold.lastInspectionDate)}
+              />
+            </div>
           </div>
         )}
         <div className="space-y-1.5">
