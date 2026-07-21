@@ -3,7 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { requireAnyPermission, requirePermission, requireRole } from "@/lib/authz";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
-import { assertStoredFileReference } from "@/lib/file-storage-reference";
+import {
+  assertStoredFileReference,
+  assertStoredFileOrInlineFileReference,
+} from "@/lib/file-storage-reference";
 import {
   DocumentCategory,
   DocumentStatus,
@@ -47,6 +50,7 @@ const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
   CERTIFICADO_TECNICO: "Certificado Tecnico",
   OUTRO: "Outros",
 };
+const INLINE_SCAFFOLD_DOCUMENT_REFERENCE_MAX_LENGTH = 10 * 1024 * 1024;
 
 function hasAccessPermission(
   access: Awaited<ReturnType<typeof getCurrentUserAccess>>,
@@ -568,7 +572,11 @@ export async function addScaffoldDocument(data: {
     scaffold_id: requiredId(data.scaffold_id, "Andaime"),
     type: enumValue(data.type, Object.values(DocumentType), "Tipo de documento"),
     title: requiredText(data.title, "Titulo", 180),
-    file_url: requiredText(data.file_url, "Arquivo", 500),
+    file_url: requiredText(
+      data.file_url,
+      "Arquivo",
+      INLINE_SCAFFOLD_DOCUMENT_REFERENCE_MAX_LENGTH,
+    ),
     file_name: requiredText(data.file_name, "Nome do arquivo", 240),
     file_size:
       optionalNumber(data.file_size, "Tamanho do arquivo", {
@@ -580,7 +588,7 @@ export async function addScaffoldDocument(data: {
     expires_at: data.expires_at,
     observation: optionalText(data.observation, "Observacao", 1000) ?? undefined,
   };
-  assertStoredFileReference(input.file_url, "Documento");
+  assertStoredFileOrInlineFileReference(input.file_url, "Documento");
 
   const scaffold = await prisma.scaffold.findUnique({
     where: { id: input.scaffold_id },

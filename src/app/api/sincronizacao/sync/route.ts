@@ -197,8 +197,19 @@ async function storeOfflineDataUrl(
     throw new Error(validation.message);
   }
 
-  const stored = await storeUploadedFile(file, category);
-  return stored.reference;
+  try {
+    const stored = await storeUploadedFile(file, category);
+    return stored.reference;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      /storage/i.test(error.message) &&
+      /configur/i.test(error.message)
+    ) {
+      return value;
+    }
+    throw error;
+  }
 }
 
 async function resolveInspectionOfflineFiles(

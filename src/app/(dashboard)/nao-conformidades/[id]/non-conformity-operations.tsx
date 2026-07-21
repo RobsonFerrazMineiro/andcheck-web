@@ -46,6 +46,14 @@ import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cach
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
 
+function isStorageNotConfiguredError(error: unknown) {
+  return (
+    error instanceof Error &&
+    /storage/i.test(error.message) &&
+    /configur/i.test(error.message)
+  );
+}
+
 type ResponsibleOption = {
   id: string;
   name: string;
@@ -710,17 +718,28 @@ export function NonConformityItemEvidenceButton({
           return;
         }
 
-        const uploaded = await uploadFile(file, {
-          category: "non-conformity-evidence",
-          fileName: file.name,
-        });
+        let fileUrl: string;
+        let fileSize = file.size;
+        let mimeType = file.type || undefined;
+        try {
+          const uploaded = await uploadFile(file, {
+            category: "non-conformity-evidence",
+            fileName: file.name,
+          });
+          fileUrl = uploaded.reference;
+          fileSize = uploaded.size;
+          mimeType = uploaded.contentType;
+        } catch (error) {
+          if (!isStorageNotConfiguredError(error)) throw error;
+          fileUrl = await fileToDataUrl(file);
+        }
         formData.delete("file");
         formData.set("id", id);
         formData.set("nonConformityItemId", itemId);
-        formData.set("fileUrl", uploaded.reference);
+        formData.set("fileUrl", fileUrl);
         formData.set("fileName", file.name);
-        formData.set("fileSize", String(uploaded.size));
-        formData.set("mimeType", uploaded.contentType);
+        formData.set("fileSize", String(fileSize));
+        if (mimeType) formData.set("mimeType", mimeType);
         formData.set("evidenceType", evidenceType);
 
         await addNonConformityItemEvidence(formData);

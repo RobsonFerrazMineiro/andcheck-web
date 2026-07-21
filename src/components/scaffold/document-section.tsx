@@ -43,6 +43,14 @@ import {
 import { typography } from "@/lib/design-system";
 import { uploadFile } from "@/lib/upload-file";
 
+function isStorageNotConfiguredError(error: unknown) {
+  return (
+    error instanceof Error &&
+    /storage/i.test(error.message) &&
+    /configur/i.test(error.message)
+  );
+}
+
 // ── Tipos e constantes ────────────────────────────────────────────────────────
 
 const DOC_TYPES = [
@@ -182,19 +190,30 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
         return;
       }
 
-      const uploaded = await uploadFile(uploadBody, {
-        category: "scaffold-documents",
-        fileName: file.name,
-      });
+      let fileUrl: string;
+      let fileSize = uploadBody.size;
+      let mimeType = uploadBody.type || file.type || undefined;
+      try {
+        const uploaded = await uploadFile(uploadBody, {
+          category: "scaffold-documents",
+          fileName: file.name,
+        });
+        fileUrl = uploaded.reference;
+        fileSize = uploaded.size;
+        mimeType = uploaded.contentType;
+      } catch (error) {
+        if (!isStorageNotConfiguredError(error)) throw error;
+        fileUrl = await fileToDataUrl(uploadBody);
+      }
 
       await addScaffoldDocument({
         scaffold_id: scaffoldId,
         type: type as Parameters<typeof addScaffoldDocument>[0]["type"],
         title: title.trim() || docTypeLabel(type),
-        file_url: uploaded.reference,
+        file_url: fileUrl,
         file_name: file.name,
-        file_size: uploaded.size,
-        mime_type: uploaded.contentType,
+        file_size: fileSize,
+        mime_type: mimeType,
         uploaded_by: uploadedBy.trim(),
         expires_at: expiresAt ? new Date(expiresAt) : undefined,
         observation: observation.trim() || undefined,

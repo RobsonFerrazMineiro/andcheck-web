@@ -7,7 +7,7 @@ import {
   requirePermission,
 } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-import { assertStoredFileReference } from "@/lib/file-storage-reference";
+import { assertStoredFileOrInlineFileReference } from "@/lib/file-storage-reference";
 import {
   enumValue,
   optionalDate,
@@ -39,6 +39,7 @@ const RESPONSIBLE_ROLE_CODES = [
   "ENCARREGADO",
   "SUPERVISOR_ENCARREGADO",
 ];
+const INLINE_EVIDENCE_REFERENCE_MAX_LENGTH = 15 * 1024 * 1024;
 const HSE_ROLE_CODES = ["HSE_HYDRO", "HSE_GERENCIADORA", "HSE_EMPRESA"];
 const FINAL_STATUSES = ["CLOSED", "CANCELLED"];
 const NC_BLOCKED_SCAFFOLD_STATUSES: ScaffoldStatus[] = [
@@ -856,7 +857,11 @@ export async function addNonConformityEvidence(formData: FormData) {
     "Tipo da evidência",
   );
   const title = requiredText(formData.get("title"), "Titulo", 180);
-  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
+  const fileUrl = requiredText(
+    formData.get("fileUrl"),
+    "Arquivo",
+    INLINE_EVIDENCE_REFERENCE_MAX_LENGTH,
+  );
   const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
   const fileSize = optionalNumber(formData.get("fileSize"), "Tamanho do arquivo", {
     min: 0,
@@ -864,7 +869,7 @@ export async function addNonConformityEvidence(formData: FormData) {
   });
   const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
   const observation = optionalText(formData.get("observation"), "Observacao", 1000);
-  assertStoredFileReference(fileUrl, "Evidência");
+  assertStoredFileOrInlineFileReference(fileUrl, "Evidência");
 
   const [nc, access] = await Promise.all([
     prisma.nonConformity.findUnique({ where: { id } }),
@@ -925,7 +930,11 @@ export async function addNonConformityItemEvidence(formData: FormData) {
     Object.values(NonConformityEvidenceType),
     "Tipo da evidência",
   );
-  const fileUrl = requiredText(formData.get("fileUrl"), "Arquivo", 500);
+  const fileUrl = requiredText(
+    formData.get("fileUrl"),
+    "Arquivo",
+    INLINE_EVIDENCE_REFERENCE_MAX_LENGTH,
+  );
   const fileName = requiredText(formData.get("fileName"), "Nome do arquivo", 240);
   const title =
     optionalText(formData.get("title"), "Titulo", 180) ?? fileName;
@@ -935,7 +944,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   });
   const mimeType = optionalText(formData.get("mimeType"), "Tipo do arquivo", 160);
   const observation = optionalText(formData.get("observation"), "Observacao", 1000);
-  assertStoredFileReference(fileUrl, "Evidência");
+  assertStoredFileOrInlineFileReference(fileUrl, "Evidência");
 
   const [nc, item, access] = await Promise.all([
     prisma.nonConformity.findUnique({ where: { id } }),
