@@ -47,6 +47,47 @@ const INSPECTION_RESULTS = Object.values(InspectionResult);
 const MAX_SIGNATURE_DATA_LENGTH = 350_000;
 const MAX_INLINE_IMAGE_DATA_LENGTH = 1_500_000;
 
+const SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES: Record<string, string[]> = {
+  SUPERVISOR_ENCARREGADO: [
+    "SUPERVISOR",
+    "ENCARREGADO",
+    "SUPERVISOR_ENCARREGADO",
+  ],
+  HSE_AUTORIZADO: ["HSE_EMPRESA", "HSE_GERENCIADORA", "HSE_HYDRO"],
+};
+
+const OPERATIONAL_SIGNER_COMPANY_SWITCH_ROLES = new Set([
+  "SUPER_ADMIN",
+  "HSE_GERENCIADORA",
+  "HSE_HYDRO",
+]);
+
+function normalizeSignatureRequirement(code: string) {
+  if (code === "HSE_EMPRESA") return "HSE_AUTORIZADO";
+  return code;
+}
+
+function signatureRoleMatchesRequirement(roleCode: string, requirementCode: string) {
+  if (roleCode === requirementCode) return true;
+  const eligibleRoles =
+    SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES[
+      normalizeSignatureRequirement(requirementCode)
+    ];
+  return eligibleRoles?.includes(roleCode) ?? false;
+}
+
+function friendlySignerRoleName(roleCode?: string) {
+  const labels: Record<string, string> = {
+    SUPERVISOR: "Supervisor",
+    ENCARREGADO: "Encarregado",
+    SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
+    HSE_EMPRESA: "HSE da Empresa",
+    HSE_GERENCIADORA: "HSE Gerenciadora",
+    HSE_HYDRO: "HSE da Contratante",
+  };
+  return roleCode ? labels[roleCode] ?? roleCode : "";
+}
+
 function parseInspectionInput(data: {
   scaffold_id: string;
   scaffold_code: string;
@@ -58,6 +99,7 @@ function parseInspectionInput(data: {
   signature?: string;
   signatures?: {
     role_code: string;
+    signer_user_id?: string;
     signer_name: string;
     signer_company?: string;
     signer_position?: string;
@@ -107,6 +149,8 @@ function parseInspectionInput(data: {
       ) ?? undefined,
     signatures: (data.signatures ?? []).map((signature) => ({
       role_code: requiredId(signature.role_code, "Perfil da assinatura"),
+      signer_user_id:
+        optionalText(signature.signer_user_id, "Assinante", 120) ?? undefined,
       signer_name: requiredText(signature.signer_name, "Nome do assinante", 140),
       signer_company:
         optionalText(signature.signer_company, "Empresa do assinante", 160) ??
@@ -519,6 +563,7 @@ export async function createInspection(data: {
   signature?: string;
   signatures?: {
     role_code: string;
+    signer_user_id?: string;
     signer_name: string;
     signer_company?: string;
     signer_position?: string;
@@ -586,8 +631,113 @@ export async function createInspection(data: {
   const providedSignatures = (signatures ?? []).filter(
     (signature) => signature.signer_name.trim() && signature.signature_data,
   );
+  const validatedSignatures = await Promise.all(
+    providedSignatures.map(async (signature) => {
+      if (!signature.signer_user_id) {
+        throw new Error("Assinante invalido. Selecione um usuario cadastrado.");
+      }
+
+      const signer = await prisma.user.findUnique({
+        where: { id: signature.signer_user_id },
+        select: {
+          id: true,
+          name: true,
+          companyId: true,
+          workspaceId: true,
+          position: true,
+          department: true,
+          is_active: true,
+          tenantCompany: { select: { name: true } },
+          roles: {
+            select: {
+              role: { select: { code: true, name: true } },
+            },
+          },
+        },
+      });
+
+      if (!signer || !signer.is_active) {
+        throw new Error("Assinante inexistente ou inativo.");
+      }
+
+      const signerRole = signer.roles
+        .map((userRole) => userRole.role)
+        .find((role) =>
+          signatureRoleMatchesRequirement(role.code, signature.role_code),
+        );
+
+      if (!signerRole) {
+        throw new Error(
+          `O assinante ${signer.name} nao possui perfil compativel com ${signature.role_code}.`,
+        );
+      }
+
+      const normalizedRequirement = normalizeSignatureRequirement(
+        signature.role_code,
+      );
+
+      if (signer.workspaceId !== oldScaffold?.workspaceId) {
+        throw new Error(
+          "Assinante deve pertencer ao mesmo workspace do andaime inspecionado.",
+        );
+      }
+
+      const canSwitchOperationalSignerCompany = Boolean(
+        currentAccess?.roleCodes.some((roleCode) =>
+          OPERATIONAL_SIGNER_COMPANY_SWITCH_ROLES.has(roleCode),
+        ),
+      );
+
+      if (
+        normalizedRequirement === "SUPERVISOR_ENCARREGADO" &&
+        !canSwitchOperationalSignerCompany &&
+        signer.companyId !== oldScaffold?.companyId
+      ) {
+        throw new Error(
+          "Supervisor/Encarregado deve pertencer a empresa montadora do andaime.",
+        );
+      }
+
+      if (
+        normalizedRequirement === "HSE_AUTORIZADO" &&
+        currentAccess &&
+        !currentAccess.roleCodes.includes("SUPER_ADMIN") &&
+        currentAccess.roleCodes.some((roleCode) =>
+          signatureRoleMatchesRequirement(roleCode, signature.role_code),
+        ) &&
+        signer.companyId !== currentAccess.companyId
+      ) {
+        throw new Error(
+          "HSE autorizado deve pertencer a mesma empresa do usuario autenticado.",
+        );
+      }
+
+      if (
+        !["SUPERVISOR_ENCARREGADO", "HSE_AUTORIZADO"].includes(
+          normalizedRequirement,
+        )
+      ) {
+        assertRecordInDataScope(scope, signer);
+      }
+
+      return {
+        role_code: signature.role_code,
+        signer_user_id: signer.id,
+        signer_role_code: signerRole.code,
+        signer_name: signer.name,
+        signer_company: signer.tenantCompany.name,
+        signer_position:
+          signer.position ||
+          friendlySignerRoleName(signerRole.code) ||
+          signer.department ||
+          undefined,
+        signer_company_id: signer.companyId,
+        signature_data: signature.signature_data,
+      };
+    }),
+  );
   const pendingSignatures = requiredSignatures.filter((requirement) => {
-    const signedCount = providedSignatures.filter(
+    const signedCount = validatedSignatures.filter(
       (signature) => signature.role_code === requirement.role_code,
     ).length;
     return signedCount < requirement.min_count;
@@ -613,13 +763,14 @@ export async function createInspection(data: {
       validity_days:
         calculatedResult === "reprovado" ? 0 : input.validity_days,
       signatures: {
-        create: providedSignatures.map((signature) => ({
+        create: validatedSignatures.map((signature) => ({
           role_code: signature.role_code,
-          signer_name: signature.signer_name.trim(),
-          signer_company: signature.signer_company?.trim() || null,
-          signer_position: signature.signer_position?.trim() || null,
+          user_id: signature.signer_user_id,
+          signer_name: signature.signer_name,
+          signer_company: signature.signer_company,
+          signer_position: signature.signer_position ?? null,
           signature_data: signature.signature_data,
-          companyId: oldScaffold?.companyId,
+          companyId: signature.signer_company_id,
           workspaceId: oldScaffold?.workspaceId,
         })),
       },
@@ -689,8 +840,10 @@ export async function createInspection(data: {
       result: inspection.result,
       validity_days: inspection.validity_days,
       checklist_items: checklist.length,
-      signatures: providedSignatures.map((signature) => ({
+      signatures: validatedSignatures.map((signature) => ({
         role_code: signature.role_code,
+        signer_role_code: signature.signer_role_code,
+        signer_user_id: signature.signer_user_id,
         signer_name: signature.signer_name,
         signer_company: signature.signer_company,
         signer_position: signature.signer_position,
@@ -715,7 +868,7 @@ export async function createInspection(data: {
     workspaceId: scaffold.workspaceId,
   });
 
-  for (const signature of providedSignatures) {
+  for (const signature of validatedSignatures) {
     await createAuditLog({
       entityType: AuditEntityType.SIGNATURE,
       entityId: inspection.id,
@@ -724,6 +877,8 @@ export async function createInspection(data: {
       description: `Assinatura ${signature.role_code} adicionada na inspeção ${inspection.id}`,
       newValue: {
         role_code: signature.role_code,
+        signer_role_code: signature.signer_role_code,
+        signer_user_id: signature.signer_user_id,
         signer_name: signature.signer_name,
         signer_company: signature.signer_company,
         signer_position: signature.signer_position,

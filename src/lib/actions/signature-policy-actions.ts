@@ -28,11 +28,12 @@ export async function getInspectionSignaturePolicies() {
 export async function getInspectionSignerOptions() {
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
   const scope = await getDataScope();
+  const workspaceIds = scope.workspaceIds ?? [scope.actorWorkspaceId];
 
   const users = await prisma.user.findMany({
     where: {
-      ...dataScopeWhere(scope),
       is_active: true,
+      ...(scope.isGlobal ? {} : { workspaceId: { in: workspaceIds } }),
     },
     orderBy: [{ tenantCompany: { name: "asc" } }, { name: "asc" }],
     select: {

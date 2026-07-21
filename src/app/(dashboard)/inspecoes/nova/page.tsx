@@ -22,6 +22,7 @@ type InspectionScaffoldOptionRecord = {
   code: string;
   location: string;
   area: string;
+  companyId: string;
   company: string | null;
   type: string;
   status: string;
@@ -149,6 +150,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
       code: s.code,
       location: s.location,
       area: s.area,
+      companyId: s.companyId,
       company: s.company,
       type: s.type,
       status: s.status,
@@ -199,10 +201,13 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
         signaturePolicies={signaturePolicies}
         signerOptions={signerOptions}
         currentUser={{
+          id: profile.id,
           name: profile.name,
           email: profile.email,
+          companyId: profile.companyId,
           companyName: profile.companyName,
           workspaceName: profile.workspaceName,
+          roleCodes: profile.roleCodes,
           roleName: profile.roleNames[0] ?? profile.roleCodes[0] ?? "",
           position: profile.position ?? profile.department ?? "",
         }}

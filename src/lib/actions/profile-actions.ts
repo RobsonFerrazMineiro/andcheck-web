@@ -43,6 +43,7 @@ export async function getMyProfile() {
     id: user.id,
     name: user.name,
     email: user.email,
+    companyId: user.companyId,
     companyName: user.tenantCompany.name,
     workspaceName: user.workspace.name,
     roleCodes: user.roles.map((userRole) => userRole.role.code),

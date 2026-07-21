@@ -67,6 +67,7 @@ type ScaffoldOption = {
   code: string;
   location: string;
   area: string;
+  companyId: string;
   company: string | null;
   type: string;
   status: string;
@@ -119,6 +120,7 @@ type SignerOption = {
 type CollectedSignature = {
   role_code: string;
   role_label: string;
+  signer_user_id: string;
   signer_name: string;
   signer_company?: string;
   signer_position?: string;
@@ -126,10 +128,13 @@ type CollectedSignature = {
 };
 
 type CurrentUserDefaults = {
+  id: string;
   name: string;
   email: string;
+  companyId: string;
   companyName: string;
   workspaceName: string;
+  roleCodes: string[];
   roleName: string;
   position: string;
 };
@@ -173,29 +178,95 @@ function scaffoldTypeLabel(value: string) {
   return labels[value] ?? value;
 }
 
+const SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES: Record<string, string[]> = {
+  SUPERVISOR_ENCARREGADO: [
+    "SUPERVISOR",
+    "ENCARREGADO",
+    "SUPERVISOR_ENCARREGADO",
+  ],
+  HSE_AUTORIZADO: ["HSE_EMPRESA", "HSE_GERENCIADORA", "HSE_HYDRO"],
+};
+
+const OPERATIONAL_SIGNER_COMPANY_SWITCH_ROLES = new Set([
+  "SUPER_ADMIN",
+  "HSE_GERENCIADORA",
+  "HSE_HYDRO",
+]);
+
+function normalizeSignatureRequirement(code: string) {
+  if (code === "HSE_EMPRESA") return "HSE_AUTORIZADO";
+  return code;
+}
+
 function signatureRoleMatchesRequirement(roleCode: string, requirementCode: string) {
   if (roleCode === requirementCode) return true;
-
-  if (requirementCode === "SUPERVISOR_ENCARREGADO") {
-    return ["SUPERVISOR", "ENCARREGADO", "SUPERVISOR_ENCARREGADO"].includes(
-      roleCode,
-    );
-  }
-
-  if (requirementCode === "HSE_EMPRESA") {
-    return ["HSE_EMPRESA", "HSE_GERENCIADORA", "HSE_HYDRO"].includes(
-      roleCode,
-    );
-  }
-
-  return false;
+  const eligibleRoles =
+    SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES[
+      normalizeSignatureRequirement(requirementCode)
+    ];
+  return eligibleRoles?.includes(roleCode) ?? false;
 }
 
 function signatureRequirementLabel(
   requirement: SignaturePolicyOption["requirements"][number],
 ) {
-  if (requirement.role_code === "HSE_EMPRESA") return "HSE autorizado";
+  if (normalizeSignatureRequirement(requirement.role_code) === "HSE_AUTORIZADO") {
+    return "HSE autorizado";
+  }
   return requirement.label ?? requirement.role.name;
+}
+
+function signaturePolicyDisplayName(policy: SignaturePolicyOption | null) {
+  if (!policy) return "Nenhuma política ativa";
+  return policy.name.replace("HSE Empresa", "HSE autorizado");
+}
+
+function friendlySignerRoleName(roleCode?: string) {
+  const labels: Record<string, string> = {
+    SUPERVISOR: "Supervisor",
+    ENCARREGADO: "Encarregado",
+    SUPERVISOR_ENCARREGADO: "Supervisor/Encarregado",
+    HSE_EMPRESA: "HSE da Empresa",
+    HSE_GERENCIADORA: "HSE Gerenciadora",
+    HSE_HYDRO: "HSE da Contratante",
+  };
+  return roleCode ? labels[roleCode] ?? roleCode : "";
+}
+
+function primaryMatchingRoleCode(
+  signer: Pick<SignerOption, "roles">,
+  requirementCode: string,
+) {
+  return signer.roles.find((role) =>
+    signatureRoleMatchesRequirement(role.code, requirementCode),
+  )?.code;
+}
+
+function signerPositionForRequirement(
+  signer: SignerOption | null,
+  requirementCode: string,
+) {
+  if (!signer) return "";
+  return (
+    signer.position ||
+    friendlySignerRoleName(primaryMatchingRoleCode(signer, requirementCode)) ||
+    signer.department ||
+    ""
+  );
+}
+
+function emptySignerMessage(requirementCode: string) {
+  const normalizedRequirement = normalizeSignatureRequirement(requirementCode);
+
+  if (normalizedRequirement === "SUPERVISOR_ENCARREGADO") {
+    return "Nenhum Supervisor ou Encarregado ativo foi encontrado para a empresa selecionada.";
+  }
+
+  if (normalizedRequirement === "HSE_AUTORIZADO") {
+    return "Nenhum HSE autorizado foi encontrado neste workspace.";
+  }
+
+  return "Nenhum usuário ativo encontrado para este perfil e empresa.";
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement) {
@@ -295,9 +366,7 @@ export function NovaInspecaoForm({
   const [signatureRoleCode, setSignatureRoleCode] = useState("");
   const [signerId, setSignerId] = useState("");
   const [signerCompanyId, setSignerCompanyId] = useState("");
-  const [signerPosition, setSignerPosition] = useState(
-    currentUser.position || currentUser.roleName,
-  );
+  const [signerPosition, setSignerPosition] = useState("");
 
   // Registro fotográfico
   const [photos, setPhotos] = useState<string[]>([]);
@@ -495,10 +564,20 @@ export function NovaInspecaoForm({
 
   const activeSignatureRoleCode =
     signatureRoleCode || pendingSignatures[0]?.role_code || "";
-
-  const activeSignatureRequirement = requiredSignatures.find(
-    (item) => item.role_code === activeSignatureRoleCode,
+  const normalizedActiveSignatureRequirement = normalizeSignatureRequirement(
+    activeSignatureRoleCode,
   );
+
+  const isSupervisorRequirement =
+    normalizedActiveSignatureRequirement === "SUPERVISOR_ENCARREGADO";
+  const canSwitchOperationalSignerCompany = currentUser.roleCodes.some((roleCode) =>
+    OPERATIONAL_SIGNER_COMPANY_SWITCH_ROLES.has(roleCode),
+  );
+  const currentUserMatchesSignatureRole =
+    activeSignatureRoleCode.length > 0 &&
+    currentUser.roleCodes.some((roleCode) =>
+      signatureRoleMatchesRequirement(roleCode, activeSignatureRoleCode),
+    );
   const eligibleSignersForRole = activeSignatureRoleCode
     ? signerOptions.filter((signer) =>
         signer.roles.some((role) =>
@@ -506,39 +585,75 @@ export function NovaInspecaoForm({
         ),
       )
     : [];
-  const signerCompanyOptions = Array.from(
-    new Map(
-      eligibleSignersForRole.map((signer) => [
-        signer.companyId,
-        {
-          id: signer.companyId,
-          name: signer.companyName,
-        },
-      ]),
-    ).values(),
-  ).sort((a, b) => a.name.localeCompare(b.name));
+  const eligibleSignersForRequirement = eligibleSignersForRole.filter(
+    (signer) => {
+      if (isSupervisorRequirement) {
+        if (canSwitchOperationalSignerCompany) return true;
+        return (
+          Boolean(selectedScaffold?.companyId) &&
+          signer.companyId === selectedScaffold?.companyId
+        );
+      }
+
+      if (currentUserMatchesSignatureRole) {
+        return signer.companyId === currentUser.companyId;
+      }
+
+      return true;
+    },
+  );
+  const signerCompanyOptions =
+    isSupervisorRequirement &&
+    !canSwitchOperationalSignerCompany &&
+    selectedScaffold?.companyId
+      ? [
+          {
+            id: selectedScaffold.companyId,
+            name: selectedScaffold.company ?? "Empresa montadora",
+          },
+        ]
+      : Array.from(
+          new Map(
+            eligibleSignersForRequirement.map((signer) => [
+              signer.companyId,
+              {
+                id: signer.companyId,
+                name: signer.companyName,
+              },
+            ]),
+          ).values(),
+        ).sort((a, b) => a.name.localeCompare(b.name));
+  const defaultSupervisorCompanyId =
+    isSupervisorRequirement &&
+    selectedScaffold?.companyId &&
+    signerCompanyOptions.some((company) => company.id === selectedScaffold.companyId)
+      ? selectedScaffold.companyId
+      : "";
   const effectiveSignerCompanyId =
     signerCompanyId &&
     signerCompanyOptions.some((company) => company.id === signerCompanyId)
       ? signerCompanyId
-      : signerCompanyOptions[0]?.id ?? "";
+      : defaultSupervisorCompanyId || signerCompanyOptions[0]?.id || "";
   const filteredSignerOptions = eligibleSignersForRole.filter(
-    (signer) => !effectiveSignerCompanyId || signer.companyId === effectiveSignerCompanyId,
+    (signer) =>
+      eligibleSignersForRequirement.some((eligible) => eligible.id === signer.id) &&
+      (!effectiveSignerCompanyId || signer.companyId === effectiveSignerCompanyId),
+  );
+  const preferredCurrentSigner = filteredSignerOptions.find(
+    (signer) => signer.id === currentUser.id,
   );
   const selectedSigner =
     filteredSignerOptions.find((signer) => signer.id === signerId) ??
+    preferredCurrentSigner ??
     filteredSignerOptions[0] ??
     null;
 
   const defaultSignerCompany =
     selectedSigner?.companyName ?? selectedScaffold?.company ?? "";
-  const defaultSignerPosition =
-    selectedSigner?.position ||
-    selectedSigner?.department ||
-    (activeSignatureRequirement
-      ? signatureRequirementLabel(activeSignatureRequirement)
-      : "") ||
-    "";
+  const defaultSignerPosition = signerPositionForRequirement(
+    selectedSigner,
+    activeSignatureRoleCode,
+  );
 
   const handleScaffoldChange = (value: string) => {
     rememberRecentScaffold(value);
@@ -627,6 +742,7 @@ export function NovaInspecaoForm({
         {
           role_code: requirement.role_code,
           role_label: signatureRequirementLabel(requirement),
+          signer_user_id: selectedSigner.id,
           signer_name: selectedSigner.name,
           signer_company: defaultSignerCompany || undefined,
           signer_position: defaultSignerPosition || undefined,
@@ -635,7 +751,7 @@ export function NovaInspecaoForm({
       ]);
       setSignerId("");
       setSignerCompanyId("");
-      setSignerPosition(defaultSignerPosition);
+      setSignerPosition("");
       setSignatureRoleCode("");
       clearSignature();
       toast.success("Assinatura registrada.");
@@ -684,6 +800,7 @@ export function NovaInspecaoForm({
         signature: collectedSignatures[0]?.signature_data,
         signatures: collectedSignatures.map((signature) => ({
           role_code: signature.role_code,
+          signer_user_id: signature.signer_user_id,
           signer_name: signature.signer_name,
           signer_company: signature.signer_company,
           signer_position: signature.signer_position,
@@ -1151,7 +1268,7 @@ export function NovaInspecaoForm({
           <p className="text-[11px] text-muted-foreground">
             Política:{" "}
             <span className="font-semibold text-foreground">
-              {selectedPolicy?.name ?? "Nenhuma política ativa"}
+              {signaturePolicyDisplayName(selectedPolicy)}
             </span>
           </p>
           <div className="grid gap-2">
@@ -1253,7 +1370,11 @@ export function NovaInspecaoForm({
                 setSignerId("");
                 setSignerPosition("");
               }}
-              disabled={!activeSignatureRoleCode || signerCompanyOptions.length === 0}
+              disabled={
+                !activeSignatureRoleCode ||
+                signerCompanyOptions.length === 0 ||
+                (isSupervisorRequirement && !canSwitchOperationalSignerCompany)
+              }
             >
               <SelectTrigger className="h-8 text-[11px] rounded-md">
                 <SelectValue placeholder="Selecionar empresa..." />
@@ -1279,12 +1400,7 @@ export function NovaInspecaoForm({
                 );
                 setSignerId(value);
                 setSignerPosition(
-                  signer?.position ??
-                    signer?.department ??
-                    (activeSignatureRequirement
-                      ? signatureRequirementLabel(activeSignatureRequirement)
-                      : "") ??
-                    "",
+                  signerPositionForRequirement(signer ?? null, activeSignatureRoleCode),
                 );
               }}
               disabled={!effectiveSignerCompanyId || filteredSignerOptions.length === 0}
@@ -1315,7 +1431,7 @@ export function NovaInspecaoForm({
         </div>
         {activeSignatureRoleCode && filteredSignerOptions.length === 0 && (
           <p className="text-[10px] font-semibold text-amber-700">
-            Nenhum usuário ativo encontrado para este perfil e empresa.
+            {emptySignerMessage(activeSignatureRoleCode)}
           </p>
         )}
 

@@ -55,6 +55,7 @@ export type OfflineInspectionChecklistItem = {
 
 export type OfflineInspectionSignature = {
   role_code: string;
+  signer_user_id?: string;
   signer_name: string;
   signer_company?: string;
   signer_position?: string;
