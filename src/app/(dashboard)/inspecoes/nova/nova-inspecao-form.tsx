@@ -922,7 +922,10 @@ export function NovaInspecaoForm({
               <SelectTrigger className="h-8 text-[11px] rounded-md">
                 <SelectValue placeholder="Selecionar andaime..." />
               </SelectTrigger>
-              <SelectContent className="max-h-72">
+              <SelectContent
+                className="-ml-1.5 !max-h-[min(17rem,50vh)] !w-[calc(100vw-2.25rem)] !min-w-0 max-w-[27rem] overflow-hidden sm:ml-0 sm:!w-[var(--radix-select-trigger-width)] sm:max-w-none sm:!max-h-80"
+                viewportClassName="max-h-[min(15rem,44vh)] !min-w-0 overflow-y-auto sm:max-h-72"
+              >
                 <div className="sticky top-0 z-10 border-b border-border bg-popover p-2">
                   <Input
                     value={scaffoldSearch}
@@ -961,66 +964,127 @@ export function NovaInspecaoForm({
           </div>
         </div>
         {selectedScaffold && (
-          <div className="space-y-3 border border-border bg-muted/20 p-3">
-            <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:grid-cols-[1fr_auto_auto]">
-              <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
-              <ReadonlyInfo label="Status" value={selectedScaffold.status} />
-              <ReadonlyInfo
-                label="Tipo"
-                value={scaffoldTypeLabel(selectedScaffold.type)}
-                className="col-span-2 sm:col-span-1"
-              />
+          <>
+            <div className="space-y-3 border border-border bg-muted/20 p-3 lg:hidden">
+              <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:grid-cols-[1fr_auto_auto]">
+                <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
+                <ReadonlyInfo label="Status" value={selectedScaffold.status} />
+                <ReadonlyInfo
+                  label="Tipo"
+                  value={scaffoldTypeLabel(selectedScaffold.type)}
+                  className="col-span-2 sm:col-span-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+                <ReadonlyInfo label="Area" value={selectedScaffold.area} compact />
+                <ReadonlyInfo
+                  label="Localizacao"
+                  value={selectedScaffold.location}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Empresa"
+                  value={selectedScaffold.company ?? "-"}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Responsavel"
+                  value={selectedScaffold.responsible}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Dimensoes"
+                  value={[
+                    `${selectedScaffold.height} m alt.`,
+                    selectedScaffold.width
+                      ? `${selectedScaffold.width} m larg.`
+                      : null,
+                    selectedScaffold.length
+                      ? `${selectedScaffold.length} m comp.`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" / ")}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Carga"
+                  value={
+                    selectedScaffold.max_load
+                      ? `${selectedScaffold.max_load} kg`
+                      : "-"
+                  }
+                />
+                <ReadonlyInfo
+                  label="Validade"
+                  value={formatNullableDate(selectedScaffold.validity_date)}
+                />
+                <ReadonlyInfo
+                  label="Ultima inspecao"
+                  value={formatNullableDate(selectedScaffold.lastInspectionDate)}
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
-              <ReadonlyInfo label="Area" value={selectedScaffold.area} compact />
-              <ReadonlyInfo
-                label="Localizacao"
-                value={selectedScaffold.location}
-                compact
-              />
-              <ReadonlyInfo
-                label="Empresa"
-                value={selectedScaffold.company ?? "-"}
-                compact
-              />
-              <ReadonlyInfo
-                label="Responsavel"
-                value={selectedScaffold.responsible}
-                compact
-              />
-              <ReadonlyInfo
-                label="Dimensoes"
-                value={[
-                  `${selectedScaffold.height} m alt.`,
-                  selectedScaffold.width
-                    ? `${selectedScaffold.width} m larg.`
-                    : null,
-                  selectedScaffold.length
-                    ? `${selectedScaffold.length} m comp.`
-                    : null,
-                ]
-                  .filter(Boolean)
-                  .join(" / ")}
-                compact
-              />
-              <ReadonlyInfo
-                label="Carga"
-                value={
-                  selectedScaffold.max_load
-                    ? `${selectedScaffold.max_load} kg`
-                    : "-"
-                }
-              />
-              <ReadonlyInfo
-                label="Validade"
-                value={formatNullableDate(selectedScaffold.validity_date)}
-              />
-              <ReadonlyInfo
-                label="Ultima inspecao"
-                value={formatNullableDate(selectedScaffold.lastInspectionDate)}
-              />
+            <div className="hidden space-y-3 border border-border bg-muted/20 p-3 lg:block">
+              <div className="grid grid-cols-3 gap-x-8 gap-y-3 border-b border-border pb-3">
+                <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
+                <ReadonlyInfo label="Status" value={selectedScaffold.status} />
+                <ReadonlyInfo
+                  label="Tipo"
+                  value={scaffoldTypeLabel(selectedScaffold.type)}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-x-8 gap-y-3">
+                <ReadonlyInfo label="Area" value={selectedScaffold.area} compact />
+                <ReadonlyInfo
+                  label="Localizacao"
+                  value={selectedScaffold.location}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Empresa"
+                  value={selectedScaffold.company ?? "-"}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Responsavel"
+                  value={selectedScaffold.responsible}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Dimensoes"
+                  value={[
+                    `${selectedScaffold.height} m alt.`,
+                    selectedScaffold.width
+                      ? `${selectedScaffold.width} m larg.`
+                      : null,
+                    selectedScaffold.length
+                      ? `${selectedScaffold.length} m comp.`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" / ")}
+                  compact
+                />
+                <ReadonlyInfo
+                  label="Carga maxima"
+                  value={
+                    selectedScaffold.max_load
+                      ? `${selectedScaffold.max_load} kg`
+                      : "-"
+                  }
+                />
+                <ReadonlyInfo
+                  label="Validade"
+                  value={formatNullableDate(selectedScaffold.validity_date)}
+                />
+                <ReadonlyInfo
+                  label="Ultima inspecao"
+                  value={formatNullableDate(selectedScaffold.lastInspectionDate)}
+                />
+              </div>
             </div>
-          </div>
+          </>
         )}
         <div className="space-y-1.5">
           <Label className="text-[10px] uppercase tracking-wider font-bold">
