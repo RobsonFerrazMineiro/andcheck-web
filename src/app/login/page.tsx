@@ -23,10 +23,6 @@ export default function LoginPage() {
         >
           <LoginForm />
         </Suspense>
-        <div className="mt-4 text-center text-xs text-muted-foreground space-y-0.5">
-          <p>admin@andcheck.com / andcheck@2025</p>
-          <p>inspetor@andcheck.com / inspetor@2025</p>
-        </div>
       </div>
     </main>
   );

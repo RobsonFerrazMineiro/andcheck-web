@@ -61,7 +61,7 @@ export function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@andcheck.com"
+            placeholder="email@empresa.com"
             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm
                        placeholder:text-muted-foreground focus:outline-none focus:ring-2
                        focus:ring-ring focus:border-transparent transition"
