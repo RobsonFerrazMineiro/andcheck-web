@@ -181,6 +181,9 @@ export function MobileContextSwitcher({
     if (!open) return;
 
     function handlePointerDown(event: PointerEvent) {
+      const target = event.target as Element | null;
+      if (target?.closest("[data-slot='select-content']")) return;
+
       if (!containerRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
