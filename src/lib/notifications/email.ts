@@ -1,120 +1,195 @@
 import "server-only";
 
+import { Resend } from "resend";
+
+export type EmailProviderName = "mock" | "resend" | "unsupported";
+
 export type SendEmailInput = {
   to: string;
   subject: string;
   html: string;
-  text: string;
+  text?: string;
+  replyTo?: string;
 };
 
 export type SendEmailResult = {
-  provider: string;
+  success: boolean;
+  provider: EmailProviderName;
   providerMessageId?: string;
+  error?: string;
+};
+
+export interface EmailProvider {
+  send(input: SendEmailInput): Promise<SendEmailResult>;
+}
+
+type ResendClient = {
+  emails: {
+    send(input: {
+      from: string;
+      to: string | string[];
+      subject: string;
+      html: string;
+      text?: string;
+      replyTo?: string;
+    }): Promise<{
+      data?: { id?: string } | null;
+      error?: { message?: string; name?: string } | null;
+    }>;
+  };
 };
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
-  const provider = (process.env.EMAIL_PROVIDER || "mock").toLowerCase();
-  void input;
+  return getEmailProvider().send(input);
+}
 
-  if (provider !== "mock") {
-    throw new Error(
-      `Envio real de e-mail não implementado para EMAIL_PROVIDER=${provider}. Configure um adapter antes de habilitar o canal.`,
-    );
+export function getEmailProvider(): EmailProvider {
+  const provider = normalizeProvider(process.env.EMAIL_PROVIDER);
+  if (provider === "resend") return createResendEmailProvider();
+  if (provider === "unsupported") {
+    return createUnsupportedEmailProvider(process.env.EMAIL_PROVIDER);
   }
+  return createMockEmailProvider();
+}
 
+export function createMockEmailProvider(): EmailProvider {
   return {
-    provider: "mock",
-    providerMessageId: `mock_${Date.now()}_${Math.random()
-      .toString(36)
-      .slice(2)}`,
+    async send(input) {
+      const normalized = normalizeEmail(input.to);
+      if (!normalized) {
+        return {
+          success: false,
+          provider: "mock",
+          error: "Destinatario de e-mail invalido.",
+        };
+      }
+
+      return {
+        success: true,
+        provider: "mock",
+        providerMessageId: `mock_${stableHash([
+          normalized,
+          input.subject,
+          input.text ?? input.html,
+        ].join("|"))}`,
+      };
+    },
   };
 }
 
-export function renderNotificationEmail({
-  title,
-  message,
-  companyName,
-  workspaceName,
-  entityLabel,
-  status,
-  actionUrl,
-  createdAt,
-}: {
-  title: string;
-  message: string;
-  companyName?: string | null;
-  workspaceName?: string | null;
-  entityLabel?: string | null;
-  status?: string | null;
-  actionUrl: string;
-  createdAt: Date;
-}) {
-  const rows = [
-    ["Empresa", companyName],
-    ["Area", workspaceName],
-    ["TAG/Entidade", entityLabel],
-    ["Status", status],
-    ["Data/hora", createdAt.toLocaleString("pt-BR")],
-  ].filter(([, value]) => Boolean(value));
+export function createResendEmailProvider(options?: {
+  apiKey?: string;
+  from?: string;
+  client?: ResendClient;
+}): EmailProvider {
+  return {
+    async send(input) {
+      const normalized = normalizeEmail(input.to);
+      if (!normalized) {
+        return {
+          success: false,
+          provider: "resend",
+          error: "Destinatario de e-mail invalido.",
+        };
+      }
 
-  const text = [
-    title,
-    "",
-    message,
-    "",
-    ...rows.map(([label, value]) => `${label}: ${value}`),
-    "",
-    `Acesse o AndCheck: ${actionUrl}`,
-    "",
-    "Mensagem automática. Não responda este e-mail.",
-  ].join("\n");
+      const apiKey = options?.apiKey ?? process.env.RESEND_API_KEY;
+      const from = (options?.from ?? process.env.EMAIL_FROM)?.trim();
+      if (!apiKey) {
+        return {
+          success: false,
+          provider: "resend",
+          error: "RESEND_API_KEY nao configurada.",
+        };
+      }
+      if (!from) {
+        return {
+          success: false,
+          provider: "resend",
+          error: "EMAIL_FROM nao configurado.",
+        };
+      }
 
-  const details = rows
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:6px 0;color:#64748b">${label}</td><td style="padding:6px 0;text-align:right;font-weight:600;color:#0f172a">${value}</td></tr>`,
-    )
-    .join("");
+      try {
+        const client = options?.client ?? new Resend(apiKey);
+        const result = await client.emails.send({
+          from,
+          to: normalized,
+          subject: input.subject,
+          html: input.html,
+          text: input.text,
+          replyTo: input.replyTo,
+        });
 
-  const html = `<!doctype html>
-<html>
-  <body style="margin:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:24px">
-      <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden">
-            <tr>
-              <td style="padding:20px 24px;border-bottom:1px solid #e2e8f0">
-                <strong style="font-size:14px;letter-spacing:.08em;text-transform:uppercase">AndCheck</strong>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:24px">
-                <h1 style="margin:0 0 12px;font-size:20px;line-height:1.3">${escapeHtml(title)}</h1>
-                <p style="margin:0 0 20px;color:#334155;line-height:1.5">${escapeHtml(message)}</p>
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:10px 0;margin-bottom:20px">${details}</table>
-                <a href="${escapeHtml(actionUrl)}" style="display:inline-block;background:#0f172a;color:#ffffff;text-decoration:none;border-radius:6px;padding:10px 14px;font-weight:700;font-size:13px">Acessar AndCheck</a>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:16px 24px;background:#f8fafc;color:#64748b;font-size:12px">
-                Mensagem automática. Não responda este e-mail.
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>`;
+        if (result.error) {
+          return {
+            success: false,
+            provider: "resend",
+            error: sanitizeProviderError(result.error.message ?? result.error.name),
+          };
+        }
 
-  return { html, text };
+        return {
+          success: true,
+          provider: "resend",
+          providerMessageId: result.data?.id,
+        };
+      } catch (error) {
+        return {
+          success: false,
+          provider: "resend",
+          error: sanitizeProviderError(error),
+        };
+      }
+    },
+  };
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+function createUnsupportedEmailProvider(providerName?: string): EmailProvider {
+  return {
+    async send() {
+      return {
+        success: false,
+        provider: "unsupported",
+        error: `EMAIL_PROVIDER=${providerName ?? ""} nao suportado.`,
+      };
+    },
+  };
+}
+
+export function normalizeEmail(value: string | null | undefined) {
+  const email = value?.trim().toLowerCase();
+  if (!email) return null;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+  return email;
+}
+
+function normalizeProvider(
+  value: string | null | undefined,
+): EmailProviderName {
+  if (!value || value.toLowerCase() === "mock") return "mock";
+  if (value.toLowerCase() === "resend") return "resend";
+  return "unsupported";
+}
+
+function sanitizeProviderError(error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "Falha ao enviar e-mail.";
+
+  return message
+    .replace(/re_[A-Za-z0-9_\-]+/g, "re_***")
+    .replace(/Bearer\s+[A-Za-z0-9._\-]+/gi, "Bearer ***")
+    .slice(0, 1000);
+}
+
+function stableHash(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index++) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash.toString(36);
 }

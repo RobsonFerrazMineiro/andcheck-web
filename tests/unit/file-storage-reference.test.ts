@@ -15,7 +15,7 @@ describe("stored file references", () => {
     expect(isStoredFileReference("https://example.com/file.pdf")).toBe(false);
     expect(() =>
       assertStoredFileReference("https://example.com/file.pdf", "Documento"),
-    ).toThrow("Documento deve usar uma referencia de storage");
+    ).toThrow("Documento deve usar uma referência de storage");
   });
 
   it("rejects base64 payloads", () => {
@@ -24,6 +24,6 @@ describe("stored file references", () => {
         "data:image/png;base64,abc123",
         "Evidencia",
       ),
-    ).toThrow("dados Base64 nao sao aceitos");
+    ).toThrow("dados Base64 não são aceitos");
   });
 });

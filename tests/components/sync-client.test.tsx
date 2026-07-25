@@ -94,7 +94,7 @@ describe("SyncClient", () => {
   it("lets the user keep the server version for a conflict", async () => {
     render(<SyncClient />);
 
-    expect(await screen.findByText("Conflito de sincronizacao")).toBeVisible();
+    expect(await screen.findByText("Conflito de sincronização")).toBeVisible();
     expect(screen.getAllByText("Alterar status da NC")[0]).toBeVisible();
     expect(screen.getAllByText("nc-1")[0]).toBeVisible();
     fireEvent.click(screen.getAllByText("Ver dados locais")[0]);

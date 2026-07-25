@@ -14,7 +14,7 @@ import {
 describe("input-validation", () => {
   it("normalizes required text and rejects empty values", () => {
     expect(requiredText("  Andaime  ", "Nome")).toBe("Andaime");
-    expect(() => requiredText("", "Nome")).toThrow("Nome e obrigatorio.");
+    expect(() => requiredText("", "Nome")).toThrow("Nome é obrigatório.");
   });
 
   it("validates ids and emails", () => {
@@ -22,7 +22,7 @@ describe("input-validation", () => {
     expect(optionalId("none", "Responsavel")).toBeNull();
     expect(requiredEmail(" ADMIN@ANDCHECK.COM ")).toBe("admin@andcheck.com");
     expect(() => requiredId("abc/123", "Registro")).toThrow(
-      "Registro invalido.",
+      "Registro inválido.",
     );
   });
 
@@ -35,6 +35,6 @@ describe("input-validation", () => {
     expect(enumValue("liberado", ["liberado", "vencido"], "Status")).toBe(
       "liberado",
     );
-    expect(() => enumValue("x", ["a"], "Tipo")).toThrow("Tipo invalido.");
+    expect(() => enumValue("x", ["a"], "Tipo")).toThrow("Tipo inválido.");
   });
 });

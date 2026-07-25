@@ -657,7 +657,7 @@ export async function updateNonConformityStatus(formData: FormData) {
       message: `A não conformidade ${nc.code} foi encerrada.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
-      channels: ["INTERNAL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: nc.code,
         status: updated.status,
@@ -675,7 +675,7 @@ export async function updateNonConformityStatus(formData: FormData) {
       message: `A não conformidade ${nc.code} foi enviada para verificação.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
-      channels: ["INTERNAL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: nc.code,
         status: updated.status,
@@ -798,7 +798,7 @@ export async function updateNonConformityResponsible(formData: FormData) {
       message: `A não conformidade ${nc.code} foi atribuída para tratamento.`,
       entityType: "NONCONFORMITY",
       entityId: nc.id,
-      channels: ["INTERNAL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: nc.code,
         status: updated.status,

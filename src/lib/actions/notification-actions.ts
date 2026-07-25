@@ -626,6 +626,22 @@ export async function getEmailChannelStatus() {
       detail: "RESEND_API_KEY não configurada.",
     };
   }
+  if (provider === "resend" && !process.env.EMAIL_FROM) {
+    return {
+      status: "CONFIG_ERROR" as const,
+      label: "Erro de configuração",
+      available: false,
+      detail: "EMAIL_FROM não configurado.",
+    };
+  }
+  if (provider === "resend") {
+    return {
+      status: "CONFIGURED" as const,
+      label: "Configurado",
+      available: true,
+      detail: "Envio real por Resend configurado.",
+    };
+  }
 
   if (provider === "sendgrid" && !process.env.SENDGRID_API_KEY) {
     return {
@@ -675,6 +691,10 @@ export async function getEmailTechnicalConfiguration() {
       { name: "EMAIL_PROVIDER", configured: Boolean(process.env.EMAIL_PROVIDER) },
       { name: "EMAIL_FROM", configured: Boolean(process.env.EMAIL_FROM) },
       { name: "RESEND_API_KEY", configured: Boolean(process.env.RESEND_API_KEY) },
+      {
+        name: "EMAIL_NOTIFICATIONS_ENABLED",
+        configured: Boolean(process.env.EMAIL_NOTIFICATIONS_ENABLED),
+      },
       { name: "SENDGRID_API_KEY", configured: Boolean(process.env.SENDGRID_API_KEY) },
       { name: "SMTP_HOST", configured: Boolean(process.env.SMTP_HOST) },
       { name: "SMTP_PORT", configured: Boolean(process.env.SMTP_PORT) },

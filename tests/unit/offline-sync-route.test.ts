@@ -218,7 +218,7 @@ describe("sync route", () => {
 
     await expect(response.json()).resolves.toMatchObject({
       status: "conflict",
-      error: "Andaime AND-001 foi alterado no servidor antes da sincronizacao.",
+      error: "Andaime AND-001 foi alterado no servidor antes da sincronização.",
     });
     expect(mocks.updateScaffold).not.toHaveBeenCalled();
   });
@@ -380,7 +380,7 @@ describe("sync route", () => {
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toMatchObject({
       status: "conflict",
-      error: "NC NC-001 foi alterada no servidor antes da sincronizacao.",
+      error: "NC NC-001 foi alterada no servidor antes da sincronização.",
     });
     expect(mocks.updateNonConformityStatus).not.toHaveBeenCalled();
     expect(mocks.createAuditLog).toHaveBeenCalledWith(

@@ -195,7 +195,7 @@ const INSPECTION_RESULT_NOTIFICATION: Record<
     type: "INSPECTION_APPROVED",
     severity: "SUCCESS",
     label: "aprovada",
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
   },
   aprovado_com_ressalvas: {
     type: "INSPECTION_WITH_REMARKS",
@@ -917,10 +917,11 @@ export async function createInspection(data: {
     message: `A inspeção do andaime ${inspection.scaffold_code} foi realizada por ${inspection.inspector_name}.`,
     entityType: "INSPECTION",
     entityId: inspection.id,
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
     metadata: {
       entityLabel: inspection.scaffold_code,
       status: inspection.result,
+      area: scaffold.area,
       inspectorName: inspection.inspector_name,
     },
   });
@@ -941,13 +942,11 @@ export async function createInspection(data: {
       message: `O andaime ${scaffold.code} foi ${newStatus} após inspeção.`,
       entityType: "SCAFFOLD",
       entityId: scaffold.id,
-      channels:
-        newStatus === "liberado"
-          ? ["INTERNAL"]
-          : ["INTERNAL", "EMAIL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: scaffold.code,
         status: scaffold.status,
+        area: scaffold.area,
         inspectionId: inspection.id,
       },
     });
@@ -967,6 +966,7 @@ export async function createInspection(data: {
     metadata: {
       entityLabel: inspection.scaffold_code,
       status: inspection.result,
+      area: scaffold.area,
       inspectorName: inspection.inspector_name,
     },
   });

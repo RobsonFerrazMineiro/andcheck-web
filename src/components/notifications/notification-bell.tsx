@@ -2,7 +2,10 @@
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
-import { markNotificationAsRead } from "@/lib/actions/notification-actions";
+import {
+  getNotificationBellData,
+  markNotificationAsRead,
+} from "@/lib/actions/notification-actions";
 import {
   notificationSeverityTone,
   SEMANTIC_TONE_CLASSES,
@@ -27,8 +30,8 @@ export type BellNotification = {
 };
 
 export function NotificationBell({
-  unreadCount,
-  latest,
+  unreadCount: initialUnreadCount,
+  latest: initialLatest,
   className,
   buttonClassName,
   panelClassName,
@@ -40,12 +43,25 @@ export function NotificationBell({
   panelClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [bellData, setBellData] = useState({
+    unreadCount: initialUnreadCount,
+    latest: initialLatest,
+  });
   const [isPending, startTransition] = useTransition();
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const { toggleMenu } = useExclusiveMenu(open, setOpen);
 
   useDialogFocus(panelRef, open, () => setOpen(false));
+
+  useEffect(() => {
+    if (!open) return;
+
+    startTransition(async () => {
+      const nextBellData = await getNotificationBellData();
+      setBellData(nextBellData);
+    });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -85,9 +101,9 @@ export function NotificationBell({
         onClick={toggleMenu}
       >
         <Bell className="size-4" />
-        {unreadCount > 0 && (
+        {bellData.unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-4 text-destructive-foreground">
-            {unreadCount > 99 ? "99+" : unreadCount}
+            {bellData.unreadCount > 99 ? "99+" : bellData.unreadCount}
           </span>
         )}
       </Button>
@@ -111,13 +127,13 @@ export function NotificationBell({
                 Notificações
               </p>
               <p className="text-xs text-muted-foreground">
-                {unreadCount} não lida(s)
+                {bellData.unreadCount} não lida(s)
               </p>
             </div>
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {latest.length === 0 ? (
+            {bellData.latest.length === 0 ? (
               <EmptyState
                 icon={Bell}
                 title="Nenhuma notificação recente"
@@ -125,7 +141,7 @@ export function NotificationBell({
                 className="border-0 py-6 shadow-none"
               />
             ) : (
-              latest.map((notification) => (
+              bellData.latest.map((notification) => (
                 <div
                   key={notification.id}
                   className="border-b p-3 last:border-b-0"
@@ -162,6 +178,17 @@ export function NotificationBell({
                             onClick={() => {
                               startTransition(async () => {
                                 await markNotificationAsRead(notification.id);
+                                setBellData((current) => ({
+                                  unreadCount: Math.max(
+                                    0,
+                                    current.unreadCount - 1,
+                                  ),
+                                  latest: current.latest.map((item) =>
+                                    item.id === notification.id
+                                      ? { ...item, status: "READ" }
+                                      : item,
+                                  ),
+                                }));
                               });
                             }}
                           >

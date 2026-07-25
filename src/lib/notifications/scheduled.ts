@@ -9,15 +9,22 @@ import {
 } from "@prisma/client";
 
 const WARNING_WINDOWS = new Set([7, 3, 1, 0]);
+const APP_TIME_ZONE = "America/Fortaleza";
+const DAY_MS = 1000 * 60 * 60 * 24;
 const FINAL_NC_STATUSES = [
   NonConformityStatus.CLOSED,
   NonConformityStatus.CANCELLED,
 ];
 
 export async function runDailyNotificationChecks(now = new Date()) {
-  const today = startOfDay(now);
-  const maxDate = addDays(today, 7);
+  const today = now;
+  const maxDate = addDays(today, 8);
   const result = {
+    processed: 0,
+    created: 0,
+    sent: 0,
+    failed: 0,
+    ignored: 0,
     scaffoldExpiring: 0,
     scaffoldExpired: 0,
     nonConformityExpiring: 0,
@@ -66,7 +73,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
     if (!scaffold.validity_date) continue;
     const days = daysUntil(today, scaffold.validity_date);
     if (days < 0) {
-      await createNotification({
+      await notify(result, {
         companyId: scaffold.companyId,
         workspaceId: scaffold.workspaceId,
         type: "SCAFFOLD_EXPIRED",
@@ -76,17 +83,18 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "SCAFFOLD",
         entityId: scaffold.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: scaffold.validity_date,
+        referenceDate: dedupeReference(scaffold.validity_date, days),
         metadata: {
           entityLabel: scaffold.code,
           status: scaffold.status,
           area: scaffold.area,
           validityDate: scaffold.validity_date.toISOString(),
+          daysOverdue: Math.abs(days),
         },
       });
       result.scaffoldExpired++;
     } else if (WARNING_WINDOWS.has(days)) {
-      await createNotification({
+      await notify(result, {
         companyId: scaffold.companyId,
         workspaceId: scaffold.workspaceId,
         type: "SCAFFOLD_EXPIRING_SOON",
@@ -96,12 +104,13 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "SCAFFOLD",
         entityId: scaffold.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: scaffold.validity_date,
+        referenceDate: dedupeReference(scaffold.validity_date, days),
         metadata: {
           entityLabel: scaffold.code,
           status: scaffold.status,
           area: scaffold.area,
           validityDate: scaffold.validity_date.toISOString(),
+          daysUntilDue: days,
         },
       });
       result.scaffoldExpiring++;
@@ -112,7 +121,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
     if (!nc.dueDate) continue;
     const days = daysUntil(today, nc.dueDate);
     if (days < 0) {
-      await createNotification({
+      await notify(result, {
         companyId: nc.companyId,
         workspaceId: nc.workspaceId,
         userId: nc.responsibleUserId,
@@ -123,17 +132,18 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "NONCONFORMITY",
         entityId: nc.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: nc.dueDate,
+        referenceDate: dedupeReference(nc.dueDate, days),
         metadata: {
           entityLabel: nc.code,
           status: nc.status,
           scaffoldCode: nc.scaffold.code,
           dueDate: nc.dueDate.toISOString(),
+          daysOverdue: Math.abs(days),
         },
       });
       result.nonConformityExpired++;
     } else if (WARNING_WINDOWS.has(days)) {
-      await createNotification({
+      await notify(result, {
         companyId: nc.companyId,
         workspaceId: nc.workspaceId,
         userId: nc.responsibleUserId,
@@ -144,12 +154,13 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "NONCONFORMITY",
         entityId: nc.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: nc.dueDate,
+        referenceDate: dedupeReference(nc.dueDate, days),
         metadata: {
           entityLabel: nc.code,
           status: nc.status,
           scaffoldCode: nc.scaffold.code,
           dueDate: nc.dueDate.toISOString(),
+          daysUntilDue: days,
         },
       });
       result.nonConformityExpiring++;
@@ -160,7 +171,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
     if (!document.expiryDate || !document.companyId) continue;
     const days = daysUntil(today, document.expiryDate);
     if (days < 0) {
-      await createNotification({
+      await notify(result, {
         companyId: document.companyId,
         workspaceId: document.workspaceId,
         type: "DOCUMENT_EXPIRED",
@@ -170,17 +181,18 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "DOCUMENT",
         entityId: document.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: document.expiryDate,
+        referenceDate: dedupeReference(document.expiryDate, days),
         metadata: {
           entityLabel: document.title,
           status: document.status,
           category: document.category,
           expiryDate: document.expiryDate.toISOString(),
+          daysOverdue: Math.abs(days),
         },
       });
       result.documentExpired++;
     } else if (WARNING_WINDOWS.has(days)) {
-      await createNotification({
+      await notify(result, {
         companyId: document.companyId,
         workspaceId: document.workspaceId,
         type: "DOCUMENT_EXPIRING_SOON",
@@ -190,12 +202,13 @@ export async function runDailyNotificationChecks(now = new Date()) {
         entityType: "DOCUMENT",
         entityId: document.id,
         channels: ["INTERNAL", "EMAIL"],
-        referenceDate: document.expiryDate,
+        referenceDate: dedupeReference(document.expiryDate, days),
         metadata: {
           entityLabel: document.title,
           status: document.status,
           category: document.category,
           expiryDate: document.expiryDate.toISOString(),
+          daysUntilDue: days,
         },
       });
       result.documentExpiring++;
@@ -208,7 +221,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
     const expired = days < 0;
     if (!expired && !WARNING_WINDOWS.has(days)) continue;
 
-    await createNotification({
+    await notify(result, {
       companyId: document.companyId,
       workspaceId: document.workspaceId,
       type: expired
@@ -226,13 +239,14 @@ export async function runDailyNotificationChecks(now = new Date()) {
       entityType: "SCAFFOLD",
       entityId: document.scaffold_id,
       channels: ["INTERNAL", "EMAIL"],
-      referenceDate: document.expires_at,
+      referenceDate: dedupeReference(document.expires_at, days),
       metadata: {
         entityLabel: document.scaffold.code,
         status: document.type,
         area: document.scaffold.area,
         documentTitle: document.title,
         expiryDate: document.expires_at.toISOString(),
+        ...(expired ? { daysOverdue: Math.abs(days) } : { daysUntilDue: days }),
       },
     });
 
@@ -243,10 +257,30 @@ export async function runDailyNotificationChecks(now = new Date()) {
   return result;
 }
 
-function startOfDay(date: Date) {
-  const value = new Date(date);
-  value.setHours(0, 0, 0, 0);
-  return value;
+type DailyNotificationResult = Awaited<ReturnType<typeof runDailyNotificationChecks>>;
+type NotificationInput = Parameters<typeof createNotification>[0];
+
+async function notify(
+  result: DailyNotificationResult,
+  input: NotificationInput,
+) {
+  result.processed++;
+  try {
+    const created = await createNotification(input);
+    result.created += created.length;
+    result.sent += created.filter((notification) => notification.status === "SENT").length;
+    result.failed += created.filter(
+      (notification) => notification.status === "FAILED",
+    ).length;
+    if (created.length === 0) result.ignored++;
+  } catch {
+    result.failed++;
+  }
+}
+
+function dedupeReference(date: Date, days: number) {
+  const day = date.toISOString().slice(0, 10);
+  return `${day}:${days < 0 ? "EXPIRED" : `D-${days}`}`;
 }
 
 function addDays(date: Date, days: number) {
@@ -256,8 +290,18 @@ function addDays(date: Date, days: number) {
 }
 
 function daysUntil(today: Date, target: Date) {
-  const targetDay = startOfDay(target);
-  return Math.floor(
-    (targetDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  return dayNumber(target) - dayNumber(today);
+}
+
+function dayNumber(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const year = Number(parts.find((part) => part.type === "year")?.value);
+  const month = Number(parts.find((part) => part.type === "month")?.value);
+  const day = Number(parts.find((part) => part.type === "day")?.value);
+  return Math.floor(Date.UTC(year, month - 1, day) / DAY_MS);
 }

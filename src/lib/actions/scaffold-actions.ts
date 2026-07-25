@@ -407,7 +407,7 @@ export async function createScaffold(
       message: `O andaime ${scaffold.code} foi criado e esta em montagem.`,
       entityType: "SCAFFOLD",
       entityId: scaffold.id,
-      channels: ["INTERNAL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: scaffold.code,
         status: scaffold.status,
@@ -513,7 +513,7 @@ const STATUS_NOTIFICATION: Partial<
     type: "SCAFFOLD_RELEASED",
     severity: "SUCCESS",
     label: "liberado",
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
   },
   reprovado: {
     type: "SCAFFOLD_REJECTED",
@@ -531,7 +531,7 @@ const STATUS_NOTIFICATION: Partial<
     type: "SCAFFOLD_DISASSEMBLED",
     severity: "INFO",
     label: "desmontado",
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
   },
 };
 
@@ -692,7 +692,7 @@ export async function dismantleScaffold(
     message: `O andaime ${scaffold.code} foi desmontado.`,
     entityType: "SCAFFOLD",
     entityId: scaffold.id,
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
     metadata: {
       entityLabel: scaffold.code,
       status: scaffold.status,

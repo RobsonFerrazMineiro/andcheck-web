@@ -372,7 +372,7 @@ export async function createDocument(formData: FormData) {
       message: `O documento ${document.title} foi anexado ao acervo técnico.`,
       entityType: "DOCUMENT",
       entityId: document.id,
-      channels: ["INTERNAL"],
+      channels: ["INTERNAL", "EMAIL"],
       metadata: {
         entityLabel: document.title,
         status: document.status,
@@ -633,7 +633,7 @@ export async function addScaffoldDocument(data: {
     message: `O documento ${doc.title} foi anexado ao andaime ${scaffold.code}.`,
     entityType: "SCAFFOLD",
     entityId: scaffold.id,
-    channels: ["INTERNAL"],
+    channels: ["INTERNAL", "EMAIL"],
     metadata: {
       entityLabel: scaffold.code,
       status: doc.type,

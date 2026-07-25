@@ -4,18 +4,23 @@ import {
   CRITICAL_DEFAULT_EMAIL_ROLES,
   NOTIFICATION_DEFAULT_SEVERITY,
   normalizeChannels,
-  notificationEntityPath,
 } from "@/lib/notifications/catalog";
 import { AuditAction, AuditEntityType, createAuditLog } from "@/lib/audit";
-import { renderNotificationEmail, sendEmail } from "@/lib/notifications/email";
+import { normalizeEmail, sendEmail } from "@/lib/notifications/email";
+import { buildNotificationEmail } from "@/lib/notifications/email-template";
 import { prisma } from "@/lib/prisma";
-import { sanitizeForLog } from "@/lib/safe-log";
 import {
+  CompanyWorkspaceRole,
   Prisma,
   type NotificationChannel,
   type NotificationSeverity,
   type NotificationType,
 } from "@prisma/client";
+
+const WORKSPACE_NOTIFICATION_RECIPIENT_ROLES = [
+  CompanyWorkspaceRole.OWNER,
+  CompanyWorkspaceRole.HSE_MANAGER,
+];
 
 type CreateNotificationInput = {
   companyId: string;
@@ -36,6 +41,8 @@ type NotificationRecipient = {
   id: string;
   name: string;
   email: string;
+  companyId: string;
+  workspaceId: string;
   roleCodes: string[];
 };
 
@@ -52,7 +59,7 @@ export async function createNotification(input: CreateNotificationInput) {
         where: {
           userId_companyId_type: {
             userId: recipient.id,
-            companyId: input.companyId,
+            companyId: recipient.companyId,
             type: input.type,
           },
         },
@@ -134,7 +141,27 @@ export async function createNotification(input: CreateNotificationInput) {
       });
 
       if (shouldSendEmail) {
-        await sendNotificationEmail(notificationWithContext, recipient.email);
+        try {
+          const delivery = await sendNotificationEmail(
+            notificationWithContext,
+            recipient,
+          );
+          if (delivery) {
+            notificationWithContext.status = delivery.status;
+          }
+        } catch {
+          await prisma.notification
+            .update({
+              where: { id: notificationWithContext.id },
+              data: {
+                status: "FAILED",
+                failedAt: new Date(),
+                error: "Falha inesperada ao enviar e-mail.",
+              },
+            })
+            .catch(() => undefined);
+          notificationWithContext.status = "FAILED";
+        }
       }
     }
 
@@ -148,6 +175,8 @@ export async function createNotification(input: CreateNotificationInput) {
 export async function sendNotificationEmail(
   notification: {
     id: string;
+    type: NotificationType;
+    severity: NotificationSeverity;
     title: string;
     message: string;
     entityType: string | null;
@@ -157,46 +186,61 @@ export async function sendNotificationEmail(
     company: { name: string } | null;
     workspace: { name: string } | null;
   },
-  recipientEmail?: string | null,
+  recipient?: string | Pick<NotificationRecipient, "name" | "email"> | null,
 ) {
-  const email = recipientEmail?.trim();
-  if (!email) return;
+  const recipientEmail =
+    typeof recipient === "string" ? recipient : recipient?.email;
+  const email = normalizeEmail(recipientEmail);
+  if (!email) {
+    await prisma.notification.update({
+      where: { id: notification.id },
+      data: {
+        status: "FAILED",
+        failedAt: new Date(),
+        error: "Destinatario de e-mail invalido.",
+      },
+    });
+    return { status: "FAILED" as const };
+  }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const actionUrl = `${baseUrl}${notificationEntityPath(
-    notification.entityType,
-    notification.entityId,
-  )}`;
   const metadata =
     notification.metadata &&
     typeof notification.metadata === "object" &&
     !Array.isArray(notification.metadata)
       ? (notification.metadata as Record<string, unknown>)
       : {};
-  const subject = `[AndCheck] ${notification.title}`;
-  const { html, text } = renderNotificationEmail({
+  const emailContent = buildNotificationEmail({
     title: notification.title,
     message: notification.message,
+    severity: notification.severity,
+    notificationType: notification.type,
+    recipientName: typeof recipient === "string" ? null : recipient?.name,
     companyName: notification.company?.name,
     workspaceName: notification.workspace?.name,
-    entityLabel: stringValue(metadata.entityLabel),
-    status: stringValue(metadata.status),
-    actionUrl,
-    createdAt: notification.createdAt,
+    entityType: notification.entityType,
+    entityId: notification.entityId,
+    metadata,
+    occurredAt: notification.createdAt,
   });
 
   const log = await prisma.emailDeliveryLog.create({
     data: {
       notificationId: notification.id,
       recipientEmail: email,
-      subject,
+      subject: emailContent.subject,
       status: "PENDING",
       provider: process.env.EMAIL_PROVIDER || "mock",
     },
   });
 
-  try {
-    const result = await sendEmail({ to: email, subject, html, text });
+  const result = await sendEmail({
+    to: email,
+    subject: emailContent.subject,
+    html: emailContent.html,
+    text: emailContent.text,
+  });
+
+  if (result.success) {
     await prisma.$transaction([
       prisma.emailDeliveryLog.update({
         where: { id: log.id },
@@ -209,11 +253,12 @@ export async function sendNotificationEmail(
       }),
       prisma.notification.update({
         where: { id: notification.id },
-        data: { sentAt: new Date(), error: null },
+        data: { status: "SENT", sentAt: new Date(), error: null },
       }),
     ]);
-  } catch (error) {
-    const message = stringifySanitizedError(error);
+    return { status: "SENT" as const };
+  } else {
+    const message = result.error ?? "Falha ao enviar e-mail.";
     await prisma.$transaction([
       prisma.emailDeliveryLog.update({
         where: { id: log.id },
@@ -226,30 +271,47 @@ export async function sendNotificationEmail(
       prisma.notification.update({
         where: { id: notification.id },
         data: {
+          status: "FAILED",
           failedAt: new Date(),
           error: message,
         },
       }),
     ]);
+    return { status: "FAILED" as const };
   }
 }
 
-function stringifySanitizedError(error: unknown) {
-  const sanitized = sanitizeForLog(error);
-  return typeof sanitized === "string"
-    ? sanitized
-    : JSON.stringify(sanitized).slice(0, 2000);
-}
-
 async function resolveRecipients(input: CreateNotificationInput) {
+  const companyWhere = input.workspaceId
+    ? {
+        OR: [
+          { companyId: input.companyId },
+          {
+            tenantCompany: {
+              workspaceLinks: {
+                some: {
+                  workspaceId: input.workspaceId,
+                  active: true,
+                  role: { in: WORKSPACE_NOTIFICATION_RECIPIENT_ROLES },
+                },
+              },
+            },
+          },
+        ],
+      }
+    : { companyId: input.companyId };
   const users = await prisma.user.findMany({
     where: {
       is_active: true,
       ...(input.userId
-        ? { id: input.userId }
-        : {
-            companyId: input.companyId,
+        ? {
+            id: input.userId,
             ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+            ...companyWhere,
+          }
+        : {
+            ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+            ...companyWhere,
           }),
     },
     include: {
@@ -264,6 +326,8 @@ async function resolveRecipients(input: CreateNotificationInput) {
     id: user.id,
     name: user.name,
     email: user.email,
+    companyId: user.companyId,
+    workspaceId: user.workspaceId,
     roleCodes:
       user.roles.length > 0
         ? user.roles.map((userRole) => userRole.role.code)
@@ -299,7 +363,7 @@ function buildDedupeKey(
     input.referenceDate instanceof Date
       ? input.referenceDate.toISOString().slice(0, 10)
       : input.referenceDate
-        ? String(input.referenceDate).slice(0, 10)
+        ? String(input.referenceDate)
         : new Date().toISOString().slice(0, 10);
 
   return [
@@ -311,10 +375,6 @@ function buildDedupeKey(
     input.entityId ?? "id:null",
     referenceDate,
   ].join(":");
-}
-
-function stringValue(value: unknown) {
-  return typeof value === "string" ? value : null;
 }
 
 function isMissingNotificationTables(error: unknown) {
