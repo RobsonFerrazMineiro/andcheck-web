@@ -99,7 +99,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
         workspaceId: scaffold.workspaceId,
         type: "SCAFFOLD_EXPIRING_SOON",
         severity: "WARNING",
-        title: `Andaime ${scaffold.code} proximo do vencimento`,
+        title: `Andaime ${scaffold.code} próximo do vencimento`,
         message: `O andaime ${scaffold.code} vence em ${days} dia(s).`,
         entityType: "SCAFFOLD",
         entityId: scaffold.id,
@@ -149,7 +149,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
         userId: nc.responsibleUserId,
         type: "NONCONFORMITY_EXPIRING_SOON",
         severity: "WARNING",
-        title: `NC ${nc.code} proxima do vencimento`,
+        title: `NC ${nc.code} próxima do vencimento`,
         message: `A não conformidade ${nc.code} vence em ${days} dia(s).`,
         entityType: "NONCONFORMITY",
         entityId: nc.id,
@@ -197,7 +197,7 @@ export async function runDailyNotificationChecks(now = new Date()) {
         workspaceId: document.workspaceId,
         type: "DOCUMENT_EXPIRING_SOON",
         severity: "WARNING",
-        title: `Documento ${document.title} proximo do vencimento`,
+        title: `Documento ${document.title} próximo do vencimento`,
         message: `O documento ${document.title} vence em ${days} dia(s).`,
         entityType: "DOCUMENT",
         entityId: document.id,
@@ -232,9 +232,9 @@ export async function runDailyNotificationChecks(now = new Date()) {
         : "WARNING",
       title: expired
         ? `Documento ${document.title} vencido`
-        : `Documento ${document.title} proximo do vencimento`,
+        : `Documento ${document.title} próximo do vencimento`,
       message: expired
-        ? `O documento ${document.title} do andaime ${document.scaffold.code} esta vencido.`
+        ? `O documento ${document.title} do andaime ${document.scaffold.code} está vencido.`
         : `O documento ${document.title} do andaime ${document.scaffold.code} vence em ${days} dia(s).`,
       entityType: "SCAFFOLD",
       entityId: document.scaffold_id,

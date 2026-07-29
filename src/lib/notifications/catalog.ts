@@ -11,21 +11,21 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   SCAFFOLD_INTERDICTED: "Andaime interditado",
   SCAFFOLD_DISASSEMBLED: "Andaime desmontado",
   SCAFFOLD_EXPIRED: "Andaime vencido",
-  SCAFFOLD_EXPIRING_SOON: "Andaime proximo do vencimento",
-  INSPECTION_PENDING: "Inspecao pendente",
-  INSPECTION_COMPLETED: "Inspecao realizada",
-  INSPECTION_APPROVED: "Inspecao aprovada",
-  INSPECTION_REJECTED: "Inspecao reprovada",
-  INSPECTION_WITH_REMARKS: "Inspecao com ressalvas",
+  SCAFFOLD_EXPIRING_SOON: "Andaime próximo do vencimento",
+  INSPECTION_PENDING: "Inspeção pendente",
+  INSPECTION_COMPLETED: "Inspeção realizada",
+  INSPECTION_APPROVED: "Inspeção aprovada",
+  INSPECTION_REJECTED: "Inspeção reprovada",
+  INSPECTION_WITH_REMARKS: "Inspeção com ressalvas",
   NONCONFORMITY_OPENED: "NC aberta",
   NONCONFORMITY_IN_PROGRESS: "NC em tratamento",
   NONCONFORMITY_CORRECTED: "NC corrigida",
   NONCONFORMITY_CLOSED: "NC encerrada",
   NONCONFORMITY_EXPIRED: "NC vencida",
-  NONCONFORMITY_EXPIRING_SOON: "NC proxima do vencimento",
+  NONCONFORMITY_EXPIRING_SOON: "NC próxima do vencimento",
   DOCUMENT_ATTACHED: "Documento anexado",
   DOCUMENT_EXPIRED: "Documento vencido",
-  DOCUMENT_EXPIRING_SOON: "Documento proximo do vencimento",
+  DOCUMENT_EXPIRING_SOON: "Documento próximo do vencimento",
 };
 
 export const NOTIFICATION_DEFAULT_SEVERITY: Record<
@@ -81,7 +81,7 @@ export const NOTIFICATION_ENTITY_GROUPS: Record<NotificationType, string> = {
 
 export const NOTIFICATION_GROUP_LABELS: Record<string, string> = {
   SCAFFOLD: "Andaimes",
-  INSPECTION: "Inspecoes",
+  INSPECTION: "Inspeções",
   NONCONFORMITY: "NCs",
   DOCUMENT: "Documentos",
 };
@@ -90,7 +90,7 @@ export const NOTIFICATION_SEVERITY_LABELS: Record<NotificationSeverity, string> 
   INFO: "Info",
   SUCCESS: "Sucesso",
   WARNING: "Alerta",
-  CRITICAL: "Critica",
+  CRITICAL: "Crítica",
 };
 
 export const CRITICAL_DEFAULT_EMAIL_ROLES = new Set([

@@ -73,7 +73,7 @@ const EVENT_LABELS: Partial<Record<NotificationType, string>> = {
 const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "Ativo",
   ARCHIVED: "Arquivado",
-  ASSIGNED: "Atribuída",
+  ASSIGNED: "Em correção",
   CANCELLED: "Cancelada",
   CLOSED: "Encerrada",
   CRITICAL: "Crítica",
@@ -310,6 +310,8 @@ function normalizeDisplayText(value: string) {
     .replaceAll("Nao conformidade", "Não conformidade")
     .replaceAll("proximo", "próximo")
     .replaceAll("Proximo", "Próximo")
+    .replaceAll("proxima", "próxima")
+    .replaceAll("Proxima", "Próxima")
     .replaceAll("esta vencido", "está vencido")
     .replaceAll("esta vencida", "está vencida");
 }

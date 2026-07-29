@@ -23,6 +23,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
+import { humanizeCode } from "@/lib/human-readable";
 import {
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
@@ -174,7 +175,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
       <MobileFilterPanel
         title="Filtros globais"
         description="Todos os indicadores, rankings, mapa e exportações usam a mesma seleção."
-        summary={`${data.range.label} · ${filters.companyId === "all" ? "Todas empresas" : data.filterOptions.companies.find((item) => item.id === filters.companyId)?.name ?? "Empresa"} · ${filters.status === "all" ? "Todos status" : filters.status}`}
+        summary={`${data.range.label} · ${filters.companyId === "all" ? "Todas empresas" : data.filterOptions.companies.find((item) => item.id === filters.companyId)?.name ?? "Empresa"} · ${filters.status === "all" ? "Todos status" : data.filterOptions.statuses.find((item) => item.value === filters.status)?.label ?? humanizeCode(filters.status)}`}
       >
       <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
         <div className="mb-3 flex items-center gap-2">

@@ -89,7 +89,7 @@ function parseWorkspaceForm(formData: FormData) {
   );
   const city = optionalText(formData.get("city"), "Cidade", 120);
   const state = optionalText(formData.get("state"), "Estado", 2)?.toUpperCase() ?? null;
-  const address = optionalText(formData.get("address"), "Endereco", 240);
+  const address = optionalText(formData.get("address"), "Endereço", 240);
   const latitude = parseOptionalNumber(formData.get("latitude"), "Latitude", {
     min: -90,
     max: 90,

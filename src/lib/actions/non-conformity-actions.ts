@@ -30,6 +30,14 @@ import {
 } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications/service";
+import {
+  NON_CONFORMITY_CRITICAL_EVIDENCE_REQUIRED_MESSAGE,
+  NON_CONFORMITY_REVIEW_EVIDENCE_REQUIRED_MESSAGE,
+  NON_CONFORMITY_TREATMENT_EVIDENCE_REQUIRED_MESSAGE,
+  canRequestNonConformityVerification,
+  getNonConformityTreatmentEvidenceCount,
+} from "@/lib/non-conformity-evidence-policy";
+import { humanizeCode } from "@/lib/human-readable";
 
 type NonConformityAuditValue = Prisma.InputJsonObject;
 
@@ -42,6 +50,11 @@ const RESPONSIBLE_ROLE_CODES = [
 const INLINE_EVIDENCE_REFERENCE_MAX_LENGTH = 15 * 1024 * 1024;
 const HSE_ROLE_CODES = ["HSE_HYDRO", "HSE_GERENCIADORA", "HSE_EMPRESA"];
 const FINAL_STATUSES = ["CLOSED", "CANCELLED"];
+const CORRECTION_STATUSES: NonConformityStatus[] = [
+  NonConformityStatus.ASSIGNED,
+  NonConformityStatus.IN_PROGRESS,
+  NonConformityStatus.REJECTED,
+];
 const NC_BLOCKED_SCAFFOLD_STATUSES: ScaffoldStatus[] = [
   ScaffoldStatus.reprovado,
   ScaffoldStatus.interditado,
@@ -269,7 +282,15 @@ function assertAllowedTransition(
 
   if (!allowed[currentStatus]?.includes(nextStatus)) {
     throw new Error(
-      `Transição não permitida: ${currentStatus} para ${nextStatus}.`,
+      `Transição não permitida: ${humanizeCode(currentStatus)} para ${humanizeCode(nextStatus)}.`,
+    );
+  }
+}
+
+function assertCorrectionEvidenceEditable(status: NonConformityStatus) {
+  if (!CORRECTION_STATUSES.includes(status)) {
+    throw new Error(
+      "Evidências de correção só podem ser alteradas enquanto a NC estiver em tratativa.",
     );
   }
 }
@@ -280,16 +301,16 @@ function statusDescription(
   nextStatus: NonConformityStatus,
 ) {
   if (currentStatus === "OPEN" && nextStatus === "ASSIGNED") {
-    return `Responsável atribuído e NC ${code} movida para Em Correção`;
+    return `Responsável atribuído e NC ${code} movida para Em correção`;
   }
   if (
     ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(currentStatus) &&
     nextStatus === "PENDING_VERIFICATION"
   ) {
-    return `Solicitacao de verificacao registrada para a NC ${code}`;
+    return `Solicitação de verificação registrada para a NC ${code}`;
   }
-  if (nextStatus === "CLOSED") return `Correcao da NC ${code} aceita e encerrada`;
-  if (nextStatus === "REJECTED") return `Correcao da NC ${code} rejeitada`;
+  if (nextStatus === "CLOSED") return `Correção da NC ${code} aceita e encerrada`;
+  if (nextStatus === "REJECTED") return `Correção da NC ${code} rejeitada`;
   if (nextStatus === "CANCELLED") return `NC ${code} cancelada`;
   return `Status da NC ${code} alterado`;
 }
@@ -402,7 +423,7 @@ export async function logNonConformityStatusChanged({
   await writeNonConformityAudit({
     id: nonConformityId,
     action: AuditAction.STATUS_CHANGE,
-    description: `Status da não conformidade ${nc.code} alterado de ${oldStatus ?? "-"} para ${newStatus ?? "-"}`,
+    description: `Status da não conformidade ${nc.code} alterado de ${humanizeCode(oldStatus) || "-"} para ${humanizeCode(newStatus) || "-"}`,
     oldValue: { status: oldStatus },
     newValue: { status: newStatus },
   });
@@ -536,6 +557,11 @@ export async function updateNonConformityStatus(formData: FormData) {
     include: {
       checklistItems: {
         include: {
+          checklistEntry: {
+            select: {
+              critical: true,
+            },
+          },
           _count: { select: { evidences: true } },
         },
       },
@@ -577,10 +603,18 @@ export async function updateNonConformityStatus(formData: FormData) {
     await requirePermission("non_conformities.update");
   }
 
-  const itemEvidenceCount = nc.checklistItems.reduce(
-    (total, item) => total + item._count.evidences,
-    0,
-  );
+  const treatmentEvidenceCount = getNonConformityTreatmentEvidenceCount(nc);
+
+  if (
+    parsedNextStatus === NonConformityStatus.PENDING_VERIFICATION &&
+    !canRequestNonConformityVerification(nc)
+  ) {
+    throw new Error(
+      treatmentEvidenceCount === 0
+        ? NON_CONFORMITY_TREATMENT_EVIDENCE_REQUIRED_MESSAGE
+        : NON_CONFORMITY_CRITICAL_EVIDENCE_REQUIRED_MESSAGE,
+    );
+  }
 
   if (parsedNextStatus === NonConformityStatus.CLOSED) {
     if (nc.status !== NonConformityStatus.PENDING_VERIFICATION) {
@@ -588,10 +622,8 @@ export async function updateNonConformityStatus(formData: FormData) {
         "A NC só pode ser encerrada quando estiver Aguardando Verificação.",
       );
     }
-    if (nc._count.evidences + itemEvidenceCount === 0) {
-      throw new Error(
-        "Anexe pelo menos uma evidência por item antes de encerrar a NC.",
-      );
+    if (treatmentEvidenceCount === 0) {
+      throw new Error(NON_CONFORMITY_REVIEW_EVIDENCE_REQUIRED_MESSAGE);
     }
     if (!comment) {
       throw new Error("Informe o comentario de encerramento.");
@@ -965,14 +997,7 @@ export async function addNonConformityItemEvidence(formData: FormData) {
   if (FINAL_STATUSES.includes(nc.status)) {
     throw new Error("NC encerrada ou cancelada fica somente leitura.");
   }
-  const correctionStatuses: NonConformityStatus[] = [
-    NonConformityStatus.ASSIGNED,
-    NonConformityStatus.IN_PROGRESS,
-    NonConformityStatus.REJECTED,
-  ];
-  if (!correctionStatuses.includes(nc.status)) {
-    throw new Error("Evidências de correção só podem ser anexadas em correção.");
-  }
+  assertCorrectionEvidenceEditable(nc.status);
 
   const evidence = await prisma.nonConformityItemEvidence.create({
     data: {
@@ -999,6 +1024,88 @@ export async function addNonConformityItemEvidence(formData: FormData) {
       nonConformityItemId,
       checklistEntryId: item.checklistEntryId,
       checklistItem: item.checklistEntry.item_label,
+      evidenceType: evidence.type,
+      title: evidence.title,
+      fileName: evidence.fileName,
+      fileSize: evidence.fileSize,
+      mimeType: evidence.mimeType,
+      observation: evidence.observation,
+    },
+  });
+}
+
+export async function deleteNonConformityItemEvidence(formData: FormData) {
+  await requireWorkflowRole(
+    RESPONSIBLE_ROLE_CODES,
+    "Somente Planejamento, Supervisor ou Encarregado podem remover evidências de correção.",
+  );
+  const scope = await getDataScope();
+  const evidenceId = requiredId(formData.get("evidenceId"), "Evidência");
+
+  const evidence = await prisma.nonConformityItemEvidence.findUnique({
+    where: { id: evidenceId },
+    include: {
+      nonConformityItem: {
+        include: {
+          checklistEntry: { select: { item_label: true } },
+          nonConformity: true,
+        },
+      },
+    },
+  });
+
+  if (!evidence) throw new Error("Evidência não encontrada.");
+  const nc = evidence.nonConformityItem.nonConformity;
+  assertRecordInDataScope(scope, nc);
+  assertCorrectionEvidenceEditable(nc.status);
+
+  await prisma.nonConformityItemEvidence.delete({ where: { id: evidence.id } });
+
+  await writeNonConformityAudit({
+    id: nc.id,
+    action: AuditAction.DELETE,
+    description: `Evidência ${evidence.fileName} removida do item ${evidence.nonConformityItem.checklistEntry.item_label} da NC ${nc.code}`,
+    oldValue: {
+      evidenceId: evidence.id,
+      nonConformityItemId: evidence.nonConformityItemId,
+      checklistEntryId: evidence.nonConformityItem.checklistEntryId,
+      checklistItem: evidence.nonConformityItem.checklistEntry.item_label,
+      evidenceType: evidence.type,
+      title: evidence.title,
+      fileName: evidence.fileName,
+      fileSize: evidence.fileSize,
+      mimeType: evidence.mimeType,
+      observation: evidence.observation,
+    },
+  });
+}
+
+export async function deleteNonConformityEvidence(formData: FormData) {
+  await requireWorkflowRole(
+    RESPONSIBLE_ROLE_CODES,
+    "Somente Planejamento, Supervisor ou Encarregado podem remover evidências de correção.",
+  );
+  const scope = await getDataScope();
+  const evidenceId = requiredId(formData.get("evidenceId"), "Evidência");
+
+  const evidence = await prisma.nonConformityEvidence.findUnique({
+    where: { id: evidenceId },
+    include: { nonConformity: true },
+  });
+
+  if (!evidence) throw new Error("Evidência não encontrada.");
+  const nc = evidence.nonConformity;
+  assertRecordInDataScope(scope, nc);
+  assertCorrectionEvidenceEditable(nc.status);
+
+  await prisma.nonConformityEvidence.delete({ where: { id: evidence.id } });
+
+  await writeNonConformityAudit({
+    id: nc.id,
+    action: AuditAction.DELETE,
+    description: `Evidência ${evidence.fileName} removida da NC ${nc.code}`,
+    oldValue: {
+      evidenceId: evidence.id,
       evidenceType: evidence.type,
       title: evidence.title,
       fileName: evidence.fileName,

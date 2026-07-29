@@ -8,6 +8,7 @@ import {
   getInspectionSignerOptions,
 } from "@/lib/actions/signature-policy-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { humanizeCode } from "@/lib/human-readable";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -208,7 +209,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
           companyName: profile.companyName,
           workspaceName: profile.workspaceName,
           roleCodes: profile.roleCodes,
-          roleName: profile.roleNames[0] ?? profile.roleCodes[0] ?? "",
+          roleName: profile.roleNames[0] ?? humanizeCode(profile.roleCodes[0]),
           position: profile.position ?? profile.department ?? "",
         }}
       />

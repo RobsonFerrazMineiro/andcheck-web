@@ -17,6 +17,8 @@ import { notFound } from "next/navigation";
 import type {
   AuditTimelineItem,
   HistoryEvent,
+  HistoryEventDetail,
+  HistoryEventType,
 } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -36,6 +38,12 @@ import {
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
+import {
+  humanizeCode,
+  humanizeChecklistCategory,
+  humanizeChecklistValue,
+} from "@/lib/human-readable";
+import { canRequestNonConformityVerification } from "@/lib/non-conformity-evidence-policy";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -112,6 +120,8 @@ type NonConformityDetail = {
     id: string;
     action: string;
     description: string;
+    oldValue: unknown;
+    newValue: unknown;
     createdAt: Date;
     user: { id: string; name: string; email: string } | null;
   }>;
@@ -183,6 +193,137 @@ function hasAnyRole(roleCodes: string[], allowed: string[]) {
 
 function isCorrectionStatus(status: string) {
   return ["ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(status);
+}
+
+function valueRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function stringValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function formatHistoryDate(value: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return format(date, "dd/MM/yyyy HH:mm");
+}
+
+function stripHistoryInternalIds(value: string) {
+  return value
+    .replace(/\bcm[a-z0-9]{18,}\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function ncHistorySummary(entry: NonConformityDetail["history"][number]) {
+  const description = entry.description.toLocaleLowerCase("pt-BR");
+  const after = valueRecord(entry.newValue);
+  const status = stringValue(after.status);
+
+  if (entry.action === "CREATE") return "Criou a NC";
+  if (entry.action === "UPLOAD") return "Anexou evidência";
+  if (description.includes("coment")) return "Comentou na NC";
+  if (description.includes("prazo")) return "Alterou prazo";
+  if (description.includes("responsável")) return "Responsável definido";
+  if (status === "PENDING_VERIFICATION") return "Solicitou verificação";
+  if (status === "CLOSED") return "Verificação aprovada";
+  if (status === "REJECTED") return "Verificação rejeitada";
+  if (status === "ASSIGNED") return "Reabriu a NC";
+  if (entry.action === "COMPLETE") return "Encerrada";
+  if (entry.action === "UPDATE") return "Atualizou a NC";
+  if (entry.action === "STATUS_CHANGE") return "Alterou status";
+  return humanizeCode(entry.action) || "Atualizou a NC";
+}
+
+function ncHistoryEventType(
+  entry: NonConformityDetail["history"][number],
+): HistoryEventType {
+  const description = entry.description.toLocaleLowerCase("pt-BR");
+  const status = stringValue(valueRecord(entry.newValue).status);
+
+  if (entry.action === "CREATE") return "create";
+  if (entry.action === "UPLOAD") return "photo";
+  if (description.includes("coment")) return "comment";
+  if (description.includes("prazo")) return "deadline";
+  if (description.includes("responsável")) return "responsible";
+  if (status === "PENDING_VERIFICATION") return "status";
+  if (status === "CLOSED") return "inspection";
+  if (status === "REJECTED") return "failure";
+  if (status === "ASSIGNED") return "status";
+  if (entry.action === "COMPLETE") return "inspection";
+  return "update";
+}
+
+function ncHistoryTone(entry: NonConformityDetail["history"][number]) {
+  const description = entry.description.toLocaleLowerCase("pt-BR");
+  const status = stringValue(valueRecord(entry.newValue).status);
+
+  if (status === "REJECTED") return "critical" as const;
+  if (status === "CLOSED") return "success" as const;
+  if (entry.action === "CREATE") return "success" as const;
+  if (entry.action === "UPLOAD") return "neutral" as const;
+  if (description.includes("responsável")) return "neutral" as const;
+  if (description.includes("prazo")) return "warning" as const;
+  if (status === "PENDING_VERIFICATION") return "warning" as const;
+  if (status === "ASSIGNED") return "warning" as const;
+  return "neutral" as const;
+}
+
+function ncHistoryDetails(
+  entry: NonConformityDetail["history"][number],
+): HistoryEventDetail[] {
+  const before = valueRecord(entry.oldValue);
+  const after = valueRecord(entry.newValue);
+  const details: HistoryEventDetail[] = [];
+  const beforeStatus = stringValue(before.status);
+  const afterStatus = stringValue(after.status);
+  const comment = stringValue(after.comment);
+  const reason = stringValue(after.reason);
+  const fileName = stringValue(after.fileName);
+  const title = stringValue(after.title);
+  const dueBefore = stringValue(before.dueDate);
+  const dueAfter = stringValue(after.dueDate);
+  const responsibleBefore = stringValue(before.responsibleName);
+  const responsibleAfter = stringValue(after.responsibleName);
+
+  if (beforeStatus || afterStatus) {
+    details.push({
+      label: "Status",
+      before: beforeStatus ? humanizeCode(beforeStatus) : null,
+      after: afterStatus ? humanizeCode(afterStatus) : null,
+    });
+  }
+  if (responsibleBefore || responsibleAfter) {
+    details.push({
+      label: "Responsável",
+      before: responsibleBefore,
+      after: responsibleAfter,
+    });
+  }
+  if (dueBefore || dueAfter) {
+    details.push({
+      label: "Prazo",
+      before: formatHistoryDate(dueBefore),
+      after: formatHistoryDate(dueAfter),
+    });
+  }
+  if (comment) details.push({ label: "Observação", value: comment });
+  if (reason) details.push({ label: "Motivo", value: reason });
+  if (fileName || title) {
+    details.push({ label: "Evidência", value: title ?? fileName });
+  }
+  if (entry.description) {
+    details.push({
+      label: "Resumo",
+      value: stripHistoryInternalIds(entry.description),
+    });
+  }
+
+  return details.slice(0, 6);
 }
 
 function Badge({
@@ -276,18 +417,15 @@ export default async function NonConformityDetailPage({ params }: Props) {
   const responsible = nc.responsibleUser?.name ?? "-";
   const ncHistoryEvents: HistoryEvent[] = nc.history.map((entry) => ({
     id: `nc-history-${entry.id}`,
-    type: "non_conformity",
+    type: ncHistoryEventType(entry),
     actorName: entry.user?.name ?? "Sistema",
-    summary: entry.description || entry.action,
+    summary: ncHistorySummary(entry),
     createdAt:
       entry.createdAt instanceof Date
         ? entry.createdAt.toISOString()
         : entry.createdAt,
-    tone: "neutral",
-    details: [{ label: "Ação", value: entry.action }],
-    metadata: {
-      company,
-    },
+    tone: ncHistoryTone(entry),
+    details: ncHistoryDetails(entry),
   }));
   const [canUpdate, access] = await Promise.all([
     canCurrentUser("non_conformities.update"),
@@ -302,15 +440,17 @@ export default async function NonConformityDetailPage({ params }: Props) {
   const isHse = hasAnyRole(roleCodes, HSE_ROLE_CODES);
   const isResponsibleProfile = hasAnyRole(roleCodes, RESPONSIBLE_ROLE_CODES);
   const isFinal = FINAL_STATUSES.includes(nc.status);
+  const hasTreatmentEvidence = canRequestNonConformityVerification(nc);
   const canAssign =
     canUpdate &&
     !isFinal &&
     ["OPEN", "ASSIGNED", "IN_PROGRESS", "REJECTED"].includes(nc.status);
   const canRequestVerification =
-    isResponsibleProfile && isCorrectionStatus(nc.status);
+    isResponsibleProfile && isCorrectionStatus(nc.status) && hasTreatmentEvidence;
   const canReview = isHse && nc.status === "PENDING_VERIFICATION";
   const canChangeDueDate = isHse && !isFinal;
   const canAddEvidence = isResponsibleProfile && isCorrectionStatus(nc.status);
+  const canDeleteEvidence = canAddEvidence;
   const canComment =
     !isFinal && (isResponsibleProfile || isHse);
   const canCancel =
@@ -363,6 +503,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             canChangeDueDate={canChangeDueDate}
             canComment={canComment}
             canCancel={canCancel}
+            hasTreatmentEvidence={hasTreatmentEvidence}
           />
         </div>
       </div>
@@ -480,7 +621,8 @@ export default async function NonConformityDetailPage({ params }: Props) {
                       {item.checklistEntry.item_label}
                     </p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                      {item.checklistEntry.category} - {item.checklistEntry.value}
+                      {humanizeChecklistCategory(item.checklistEntry.category)}{" "}
+                      - {humanizeChecklistValue(item.checklistEntry.value)}
                       {item.checklistEntry.critical ? " - Crítico" : ""}
                     </p>
                     {item.checklistEntry.observation && (
@@ -505,6 +647,8 @@ export default async function NonConformityDetailPage({ params }: Props) {
                         fileName={evidence.fileName}
                         mimeType={evidence.mimeType}
                         observation={evidence.observation}
+                        canDelete={canDeleteEvidence}
+                        evidenceKind="item"
                         galleryItems={item.evidences.map((galleryEvidence) => ({
                           id: galleryEvidence.id,
                           fileUrl: galleryEvidence.fileUrl,
@@ -533,7 +677,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
               >
                 <div className="min-w-0 space-y-2">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                    {EVIDENCE_LABELS[evidence.type] ?? evidence.type} - {evidence.fileName}
+                    {EVIDENCE_LABELS[evidence.type] ?? humanizeCode(evidence.type)} - {evidence.fileName}
                   </p>
                   <LazyNonConformityEvidencePreview
                     id={evidence.id}
@@ -541,6 +685,8 @@ export default async function NonConformityDetailPage({ params }: Props) {
                     fileName={evidence.fileName}
                     mimeType={evidence.mimeType}
                     observation={evidence.observation}
+                    canDelete={canDeleteEvidence}
+                    evidenceKind="general"
                   />
                 </div>
                 <p className="text-[10px] text-muted-foreground font-mono shrink-0">

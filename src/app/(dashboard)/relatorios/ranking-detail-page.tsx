@@ -65,7 +65,7 @@ export function RankingDetailPage({
         <div className="divide-y divide-border md:hidden">
           {rows.length === 0 ? (
             <p className="px-4 py-6 text-center text-[11px] text-muted-foreground">
-              Sem dados no periodo.
+              Sem dados no período.
             </p>
           ) : (
             rows.map((row, index) => (

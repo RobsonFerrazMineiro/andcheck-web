@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import {
   scaffoldStatusTone,
@@ -222,7 +223,7 @@ export function AndaimesClient({
                       <p
                         className={`mt-1 truncate text-muted-foreground ${typography.sectionDescription}`}
                       >
-                        {TYPE_LABELS[scaffold.type] ?? scaffold.type}
+                        {TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
                         {scaffold.height ? ` · ${scaffold.height}m` : ""}
                       </p>
                     </div>

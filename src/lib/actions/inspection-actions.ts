@@ -28,6 +28,7 @@ import {
   calculateScaffoldStatus,
   hasCriticalChecklistFailure,
 } from "@/lib/inspection-outcome";
+import { humanizeCode } from "@/lib/human-readable";
 import {
   ChecklistValue,
   InspectionResult,
@@ -137,7 +138,7 @@ function parseInspectionInput(data: {
       min: 0,
       max: 365,
     }),
-    notes: optionalText(data.notes, "Observacoes", 2000) ?? undefined,
+    notes: optionalText(data.notes, "Observações", 2000) ?? undefined,
     photos: (data.photos ?? []).map((photo) =>
       requiredText(photo, "Foto da inspeção", MAX_INLINE_IMAGE_DATA_LENGTH),
     ),
@@ -305,7 +306,7 @@ export async function getInspections() {
 export async function getInspectionById(id: string) {
   await requireAnyPermission(["read.all", "read.own_company"]);
   const scope = await getDataScope();
-  const inspectionId = requiredId(id, "Inspecao");
+  const inspectionId = requiredId(id, "Inspeção");
 
   const inspection = await prisma.inspection.findFirst({
     where: { id: inspectionId, ...dataScopeWhere(scope) },
@@ -832,7 +833,7 @@ export async function createInspection(data: {
     entityId: inspection.id,
     entityLabel: `${inspection.scaffold_code}-${inspection.id.slice(-6)}`,
     action: AuditAction.CREATE,
-    description: `Inspecao ${inspection.id} criada para o andaime ${inspection.scaffold_code}`,
+    description: `Inspeção ${inspection.id} criada para o andaime ${inspection.scaffold_code}`,
     newValue: {
       scaffold_id: inspection.scaffold_id,
       scaffold_code: inspection.scaffold_code,
@@ -893,7 +894,7 @@ export async function createInspection(data: {
     entityId: scaffold.id,
     entityLabel: scaffold.code,
     action: AuditAction.STATUS_CHANGE,
-    description: `Inspecao ${inspection.id} alterou o status do andaime ${scaffold.code} para ${scaffold.status}`,
+    description: `Inspeção ${inspection.id} alterou o status do andaime ${scaffold.code} para ${humanizeCode(scaffold.status)}`,
     oldValue: {
       status: oldScaffold?.status ?? null,
       validity_date: oldScaffold?.validity_date?.toISOString() ?? null,
@@ -913,7 +914,7 @@ export async function createInspection(data: {
     workspaceId: scaffold.workspaceId,
     type: "INSPECTION_COMPLETED",
     severity: "INFO",
-    title: `Inspecao do andaime ${inspection.scaffold_code} realizada`,
+    title: `Inspeção do andaime ${inspection.scaffold_code} realizada`,
     message: `A inspeção do andaime ${inspection.scaffold_code} foi realizada por ${inspection.inspector_name}.`,
     entityType: "INSPECTION",
     entityId: inspection.id,
@@ -938,8 +939,8 @@ export async function createInspection(data: {
         newStatus === "liberado"
           ? "SUCCESS"
           : "WARNING",
-      title: `Andaime ${scaffold.code} ${newStatus}`,
-      message: `O andaime ${scaffold.code} foi ${newStatus} após inspeção.`,
+      title: `Andaime ${scaffold.code} ${humanizeCode(newStatus).toLocaleLowerCase("pt-BR")}`,
+      message: `O andaime ${scaffold.code} foi ${humanizeCode(newStatus).toLocaleLowerCase("pt-BR")} após inspeção.`,
       entityType: "SCAFFOLD",
       entityId: scaffold.id,
       channels: ["INTERNAL", "EMAIL"],
@@ -958,7 +959,7 @@ export async function createInspection(data: {
     workspaceId: scaffold.workspaceId,
     type: resultNotification.type,
     severity: resultNotification.severity,
-    title: `Inspecao ${resultNotification.label}: ${inspection.scaffold_code}`,
+    title: `Inspeção ${resultNotification.label}: ${inspection.scaffold_code}`,
     message: `A inspeção do andaime ${inspection.scaffold_code} foi ${resultNotification.label}.`,
     entityType: "INSPECTION",
     entityId: inspection.id,

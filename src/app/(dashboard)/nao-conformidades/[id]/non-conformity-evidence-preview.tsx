@@ -1,11 +1,16 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, FileText, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, X, XCircle } from "lucide-react";
 import Image from "next/image";
-import { useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useId, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
+import {
+  deleteNonConformityEvidence,
+  deleteNonConformityItemEvidence,
+} from "@/lib/actions/non-conformity-actions";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   getDocumentExtension,
@@ -29,6 +34,8 @@ export type NonConformityEvidencePreviewProps = {
   mimeType: string | null;
   observation: string | null;
   galleryItems?: EvidencePreviewItem[];
+  canDelete?: boolean;
+  evidenceKind?: "item" | "general";
 };
 
 export function NonConformityEvidencePreview({
@@ -38,9 +45,14 @@ export function NonConformityEvidencePreview({
   mimeType,
   observation,
   galleryItems,
+  canDelete = false,
+  evidenceKind = "item",
 }: NonConformityEvidencePreviewProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [showFullName, setShowFullName] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isDeleting, startDeleteTransition] = useTransition();
   const document = { fileUrl, fileName, mimeType };
   const viewUrl = getDocumentViewUrl(document);
   const isImage = isImageDocument(document);
@@ -93,33 +105,88 @@ export function NonConformityEvidencePreview({
     );
   }
 
+  function deleteEvidence() {
+    if (!id || isDeleting) return;
+    const confirmed = window.confirm(
+      "Remover esta evidência da tratativa da NC?",
+    );
+    if (!confirmed) return;
+
+    const formData = new FormData();
+    formData.set("evidenceId", id);
+    const action =
+      evidenceKind === "general"
+        ? deleteNonConformityEvidence
+        : deleteNonConformityItemEvidence;
+
+    startDeleteTransition(async () => {
+      try {
+        await action(formData);
+        toast.success("Evidência removida.");
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : "Não foi possível remover a evidência.",
+        );
+      }
+    });
+  }
+
+  const deleteButton =
+    canDelete && id ? (
+      <button
+        type="button"
+        onClick={deleteEvidence}
+        disabled={isDeleting}
+        aria-label={`Remover evidência ${fileName}`}
+        title="Remover evidência"
+        className="absolute right-0 top-0 z-10 flex size-4 items-center justify-center bg-transparent text-red-700 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <X className="size-3" />
+      </button>
+    ) : null;
+
   if (!isImage) {
     return (
-      <>
-        <button
-          type="button"
-          onClick={openPreview}
-          aria-label={`Abrir evidência ${fileName || extension}`}
-          className="flex min-h-16 min-w-40 items-start gap-2 bg-transparent p-0 text-left hover:opacity-80 transition-opacity"
-        >
-          <span className="flex h-16 w-16 items-center justify-center border border-dashed border-border bg-muted/20">
+      <div className="inline-flex w-16 flex-col items-start gap-1">
+        <span className="relative h-16 w-16">
+          <button
+            type="button"
+            onClick={openPreview}
+            aria-label={`Abrir evidência ${fileName || extension}`}
+            className="flex h-16 w-16 items-center justify-center border border-dashed border-border bg-muted/20 hover:opacity-80 transition-opacity"
+          >
             <span className="flex flex-col items-center gap-0.5">
               <FileText className="h-6 w-6 text-muted-foreground" />
               <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
                 {extension}
               </span>
             </span>
-          </span>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-foreground">
-              {getDocumentFileName(document)}
+          </button>
+          {deleteButton}
+        </span>
+        <button
+          type="button"
+          onClick={() => setShowFullName((current) => !current)}
+          aria-label={`Exibir nome do arquivo ${fileName}`}
+          title={getDocumentFileName(document)}
+          className="w-16 bg-transparent p-0 text-left"
+        >
+          <p
+            className={`text-[9px] font-medium leading-tight text-muted-foreground ${
+              showFullName ? "break-words" : "truncate"
+            }`}
+          >
+            {getDocumentFileName(document)}
+          </p>
+          {observation && (
+            <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">
+              {observation}
             </p>
-            {observation && (
-              <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">
-                {observation}
-              </p>
-            )}
-          </div>
+          )}
         </button>
 
         {open && (
@@ -129,28 +196,46 @@ export function NonConformityEvidencePreview({
             onClose={() => setOpen(false)}
           />
         )}
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="inline-flex w-16 flex-col items-start gap-1">
+      <span className="relative h-16 w-16">
+        <button
+          type="button"
+          onClick={openPreview}
+          aria-label={`Abrir evidência ${fileName || "imagem anexada"}`}
+          className="block h-16 w-16 bg-transparent p-0 hover:opacity-80 transition-opacity"
+        >
+          <Image
+            src={fileUrl}
+            alt="Evidência anexada"
+            width={64}
+            height={64}
+            unoptimized
+            className="h-16 w-16 object-cover"
+          />
+        </button>
+        {deleteButton}
+      </span>
       <button
         type="button"
-        onClick={openPreview}
-        aria-label={`Abrir evidência ${fileName || "imagem anexada"}`}
-        className="flex min-h-16 items-start gap-2 bg-transparent p-0 text-left hover:opacity-80 transition-opacity"
+        onClick={() => setShowFullName((current) => !current)}
+        aria-label={`Exibir nome do arquivo ${fileName}`}
+        title={getDocumentFileName(document)}
+        className="w-16 bg-transparent p-0 text-left"
       >
-        <Image
-          src={fileUrl}
-          alt="Evidência anexada"
-          width={64}
-          height={64}
-          unoptimized
-          className="h-16 w-16 object-cover"
-        />
+        <p
+          className={`text-[9px] font-medium leading-tight text-muted-foreground ${
+            showFullName ? "break-words" : "truncate"
+          }`}
+        >
+          {getDocumentFileName(document)}
+        </p>
         {observation && (
-          <p className="text-[10px] text-muted-foreground line-clamp-3">
+          <p className="mt-0.5 line-clamp-2 text-[9px] text-muted-foreground">
             {observation}
           </p>
         )}
@@ -229,6 +314,6 @@ export function NonConformityEvidencePreview({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

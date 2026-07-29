@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
 import { localDb } from "@/lib/offline/local-db";
 import type { SyncQueueItem } from "@/lib/offline/types";
 import {
@@ -63,7 +64,25 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 function actionLabel(action: string) {
-  return ACTION_LABELS[action] ?? action;
+  return ACTION_LABELS[action] ?? humanizeCode(action);
+}
+
+function friendlySyncError(error: string | null | undefined) {
+  if (!error) return "-";
+  const normalized = error.toLocaleLowerCase("pt-BR");
+  if (normalized.includes("network") || normalized.includes("fetch")) {
+    return "Não foi possível conectar ao servidor. Tente sincronizar novamente.";
+  }
+  if (normalized.includes("unauthorized") || normalized.includes("forbidden")) {
+    return "Sua sessão não tem permissão para sincronizar este registro.";
+  }
+  if (normalized.includes("conflict")) {
+    return "Existe uma versão mais recente no servidor.";
+  }
+  if (normalized.includes("required") || normalized.includes("obrigatório")) {
+    return "Faltam informações obrigatórias para sincronizar este registro.";
+  }
+  return error;
 }
 
 function payloadString(payload: Record<string, unknown>, key: string) {
@@ -325,7 +344,7 @@ export function SyncClient() {
                         <p className="text-[12px] font-bold text-foreground">
                           {actionLabel(item.action)}
                         </p>
-                        <p className="mt-0.5 truncate font-mono text-[10px] text-muted-foreground">
+                        <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
                           {entityLabel(item)}
                         </p>
                       </div>
@@ -346,7 +365,7 @@ export function SyncClient() {
                       </p>
                       {item.lastError && (
                         <p className="col-span-2 break-words text-red-700">
-                          {item.lastError}
+                          {friendlySyncError(item.lastError)}
                         </p>
                       )}
                     </div>
@@ -413,21 +432,14 @@ export function SyncClient() {
                         {formatDate(item.createdAt)}
                       </td>
                       <td className="px-4 py-3 font-semibold">
-                        <div className="space-y-1">
-                          <p>{actionLabel(item.action)}</p>
-                          <p className="font-mono text-[10px] font-normal text-muted-foreground">
-                            {item.action}
-                          </p>
-                        </div>
+                        {actionLabel(item.action)}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         <div className="space-y-1">
                           <p className="font-medium text-foreground">
                             {entityLabel(item)}
                           </p>
-                          <p className="font-mono text-[10px]">
-                            {item.entityType} / {item.entityId}
-                          </p>
+                          <p className="text-[10px]">{humanizeCode(item.entityType)}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -439,7 +451,7 @@ export function SyncClient() {
                       </td>
                       <td className="max-w-80 px-4 py-3 text-xs text-muted-foreground">
                         <div className="space-y-2">
-                          <p>{item.lastError ?? "-"}</p>
+                          <p>{friendlySyncError(item.lastError)}</p>
                           {(item.status === "failed" ||
                             item.status === "conflict") && (
                             <details className="rounded-md border border-border bg-muted/30 p-2">

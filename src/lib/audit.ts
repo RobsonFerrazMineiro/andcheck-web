@@ -323,6 +323,11 @@ export async function getAuditLogs({
       ],
     });
   }
+  if (!action && entityType !== "NOTIFICATION") {
+    andConditions.push({
+      action: { not: AuditAction.NOTIFICATION_CREATED },
+    });
+  }
   if (andConditions.length > 0) where.AND = andConditions;
 
   const skip = Math.max(page - 1, 0) * pageSize;

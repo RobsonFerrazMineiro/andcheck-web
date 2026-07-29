@@ -14,6 +14,7 @@ import {
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { humanizeCode } from "@/lib/human-readable";
 
 type StatusKey =
   | "em_montagem"
@@ -97,7 +98,7 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
   const cfg: StatusConfig = STATUS_MAP[status as StatusKey] ?? {
-    label: status?.toUpperCase() ?? "-",
+    label: humanizeCode(status).toLocaleUpperCase("pt-BR") || "-",
     icon: Clock,
   };
   const visualClass = statusClass(status);

@@ -28,7 +28,7 @@ import Link from "next/link";
 const FILTERS: { value: NotificationFilter; label: string }[] = [
   { value: "all", label: "Todas" },
   { value: "unread", label: "Não lidas" },
-  { value: "critical", label: "Criticas" },
+  { value: "critical", label: "Críticas" },
   { value: "scaffolds", label: "Andaimes" },
   { value: "inspections", label: "Inspeções" },
   { value: "nonconformities", label: "NCs" },
@@ -249,8 +249,8 @@ function formatDate(value: string) {
 }
 
 function severityLabel(severity: string) {
-  if (severity === "CRITICAL") return "Critica";
-  if (severity === "WARNING") return "Atencao";
+  if (severity === "CRITICAL") return "Crítica";
+  if (severity === "WARNING") return "Atenção";
   if (severity === "SUCCESS") return "Sucesso";
   return "Info";
 }

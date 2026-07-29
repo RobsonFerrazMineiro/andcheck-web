@@ -11,6 +11,6 @@ describe("StatusBadge", () => {
 
   it("renders fallback labels for unknown statuses", () => {
     render(<StatusBadge status="custom_status" />);
-    expect(screen.getByText("CUSTOM_STATUS")).toBeInTheDocument();
+    expect(screen.getByText("CUSTOM STATUS")).toBeInTheDocument();
   });
 });

@@ -8,6 +8,7 @@ import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 
 import checklistTemplate from "@/lib/checklist-template";
+import { humanizeCode } from "@/lib/human-readable";
 
 // Mapa de referência normativa: item_label → referência
 // Construído uma única vez a partir do template (source of truth)
@@ -450,7 +451,7 @@ export async function generateInspectionPDF(
     ["Validade", `${inspection.validity_days || 7} dias (ate ${validDate})`],
     ["Responsável", inspection.scaffold?.responsible ?? "—"],
     ["Empresa", inspection.scaffold?.empresa ?? "—"],
-    ["Status", statusLabel[inspection.result] ?? inspection.result],
+    ["Status", statusLabel[inspection.result] ?? humanizeCode(inspection.result)],
   ];
 
   const gridStartY = y;

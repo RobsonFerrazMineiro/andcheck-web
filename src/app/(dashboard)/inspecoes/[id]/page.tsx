@@ -37,6 +37,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
+import { humanizeCode } from "@/lib/human-readable";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -171,7 +172,7 @@ function NcBadge({ value }: { value: string }) {
         (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
       }
     >
-      {NC_STATUS_LABELS[value] ?? value}
+      {NC_STATUS_LABELS[value] ?? humanizeCode(value)}
     </span>
   );
 }
@@ -449,7 +450,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               <TechRow
                 icon={Layers}
                 label="Tipo"
-                value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
+                value={TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
               />
               <TechRow
                 icon={Ruler}
@@ -694,7 +695,8 @@ export default async function InspectionDetailPage({ params }: Props) {
                   <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
                     Classificação
                   </span>
-                  {NC_CLASSIFICATION_LABELS[nc.classification] ?? nc.classification}
+                  {NC_CLASSIFICATION_LABELS[nc.classification] ??
+                    humanizeCode(nc.classification)}
                 </p>
                 <p className="text-[11px] text-muted-foreground font-mono">
                   <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">

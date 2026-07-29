@@ -39,6 +39,7 @@ import {
   calculateInspectionResult,
   calculateScaffoldStatus,
 } from "@/lib/inspection-outcome";
+import { humanizeCode } from "@/lib/human-readable";
 import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
@@ -230,7 +231,7 @@ function friendlySignerRoleName(roleCode?: string) {
     HSE_GERENCIADORA: "HSE Gerenciadora",
     HSE_HYDRO: "HSE da Contratante",
   };
-  return roleCode ? labels[roleCode] ?? roleCode : "";
+  return roleCode ? labels[roleCode] ?? humanizeCode(roleCode) : "";
 }
 
 function primaryMatchingRoleCode(
@@ -968,7 +969,10 @@ export function NovaInspecaoForm({
             <div className="space-y-3 border border-border bg-muted/20 p-3 lg:hidden">
               <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:grid-cols-[1fr_auto_auto]">
                 <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
-                <ReadonlyInfo label="Status" value={selectedScaffold.status} />
+                <ReadonlyInfo
+                  label="Status"
+                  value={humanizeCode(selectedScaffold.status)}
+                />
                 <ReadonlyInfo
                   label="Tipo"
                   value={scaffoldTypeLabel(selectedScaffold.type)}
@@ -1028,7 +1032,10 @@ export function NovaInspecaoForm({
             <div className="hidden space-y-3 border border-border bg-muted/20 p-3 lg:block">
               <div className="grid grid-cols-3 gap-x-8 gap-y-3 border-b border-border pb-3">
                 <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
-                <ReadonlyInfo label="Status" value={selectedScaffold.status} />
+                <ReadonlyInfo
+                  label="Status"
+                  value={humanizeCode(selectedScaffold.status)}
+                />
                 <ReadonlyInfo
                   label="Tipo"
                   value={scaffoldTypeLabel(selectedScaffold.type)}

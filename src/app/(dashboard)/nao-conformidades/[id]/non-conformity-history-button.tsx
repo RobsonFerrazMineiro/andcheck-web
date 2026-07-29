@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import {
   auditItemsToHistoryEvents,
   HistoryDrawerButton,
+  normalizeHistoryEvents,
   type AuditTimelineItem,
   type HistoryEvent,
 } from "@/components/shared/audit-timeline";
@@ -19,12 +20,12 @@ export function NonConformityHistoryButton({
   historyEvents,
 }: NonConformityHistoryButtonProps) {
   const events = useMemo(
-    () =>
-      [...auditItemsToHistoryEvents(auditTimeline), ...historyEvents].sort(
-        (left, right) =>
-          new Date(right.createdAt).getTime() -
-          new Date(left.createdAt).getTime(),
-      ),
+    () => {
+      if (historyEvents.length > 0) {
+        return normalizeHistoryEvents(historyEvents);
+      }
+      return normalizeHistoryEvents(auditItemsToHistoryEvents(auditTimeline));
+    },
     [auditTimeline, historyEvents],
   );
 

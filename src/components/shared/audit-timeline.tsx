@@ -29,6 +29,7 @@ import {
   type SemanticTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { humanizeCode } from "@/lib/human-readable";
 
 export type HistoryEventType =
   | "create"
@@ -67,7 +68,6 @@ export type HistoryEvent = {
     browser?: string | null;
     device?: string | null;
     os?: string | null;
-    ip?: string | null;
   };
 };
 
@@ -126,20 +126,22 @@ const TECHNICAL_KEYS = new Set([
   "entity_type",
   "tenantCompanyId",
   "tenant_company_id",
+  "company",
+  "companyId",
+  "workspace",
+  "workspaceId",
   "workspace_id",
   "userAgent",
   "sessionId",
 ]);
 
 const RELEVANT_DETAIL_KEYS = new Set([
-  "action",
   "area",
   "classification",
   "code",
-  "company",
-  "companyId",
   "department",
   "description",
+  "comment",
   "dismantleReason",
   "dismantleReasonDescription",
   "dueDate",
@@ -149,12 +151,15 @@ const RELEVANT_DETAIL_KEYS = new Set([
   "name",
   "notes",
   "reason",
+  "requiresNewInspection",
   "responsible",
+  "responsibleName",
   "responsibleUserId",
   "result",
   "role",
   "roleCode",
   "scaffoldCode",
+  "scaffoldReturnedToPendingRelease",
   "status",
   "tag",
   "title",
@@ -162,8 +167,6 @@ const RELEVANT_DETAIL_KEYS = new Set([
   "validity_date",
   "validityDate",
   "validity_days",
-  "workspace",
-  "workspaceId",
 ]);
 
 const FIELD_LABELS: Record<string, string> = {
@@ -173,6 +176,7 @@ const FIELD_LABELS: Record<string, string> = {
   code: "Código",
   company: "Empresa",
   companyId: "Empresa",
+  comment: "Observação",
   department: "Departamento",
   description: "Descrição",
   dismantleReason: "Motivo da desmontagem",
@@ -184,12 +188,15 @@ const FIELD_LABELS: Record<string, string> = {
   name: "Nome",
   notes: "Observações",
   reason: "Motivo",
+  requiresNewInspection: "Nova inspeção necessária",
   responsible: "Responsável",
+  responsibleName: "Responsável",
   responsibleUserId: "Responsável",
   result: "Resultado",
   role: "Perfil",
   roleCode: "Perfil",
   scaffoldCode: "Andaime",
+  scaffoldReturnedToPendingRelease: "Andaime voltou para pendente de liberação",
   status: "Status",
   tag: "TAG",
   title: "Título",
@@ -217,9 +224,13 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 const VALUE_LABELS: Record<string, string> = {
-  ASSIGNED: "Atribuída",
+  ASSIGNED: "Em correção",
   CANCELLED: "Cancelado",
   CLOSED: "Encerrada",
+  CL_FAIL: "Não conforme",
+  CL_NA: "Não aplicável",
+  CL_OK: "Conforme",
+  CL_WARN: "Com ressalva",
   IN_PROGRESS: "Em tratamento",
   LOW: "Baixa",
   MEDIUM: "Média",
@@ -258,7 +269,7 @@ function getString(value: unknown, key: string) {
 }
 
 function labelField(key: string) {
-  return FIELD_LABELS[key] ?? key.replaceAll("_", " ");
+  return FIELD_LABELS[key] ?? humanizeCode(key);
 }
 
 function humanizeValue(value: unknown): string {
@@ -271,7 +282,7 @@ function humanizeValue(value: unknown): string {
       const date = new Date(value);
       if (!Number.isNaN(date.getTime())) return format(date, "dd/MM/yyyy HH:mm");
     }
-    return VALUE_LABELS[value] ?? value.replaceAll("_", " ");
+    return VALUE_LABELS[value] ?? humanizeCode(value);
   }
   if (Array.isArray(value)) return `${value.length} item(ns)`;
   return "Dados registrados";
@@ -288,11 +299,20 @@ function stripInternalIds(value: string) {
     .trim();
 }
 
+function normalizedText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
 function entityFromDescription(description: string) {
-  const normalized = description.toLowerCase();
-  if (normalized.includes("andaime")) return "Andaime";
+  const normalized = normalizedText(description);
+  if (normalized.includes("conformidade") || /\bnc\b/.test(normalized)) {
+    return "Não conformidade";
+  }
   if (normalized.includes("inspe")) return "Inspeção";
-  if (normalized.includes("conformidade")) return "Não conformidade";
+  if (normalized.includes("andaime")) return "Andaime";
   if (normalized.includes("document")) return "Documento";
   if (normalized.includes("usu")) return "Usuário";
   if (normalized.includes("empresa")) return "Empresa";
@@ -306,23 +326,66 @@ function humanSummaryFromAuditItem(item: AuditTimelineItem, fallback: string) {
     getString(item.newValue, "entityType") ??
     getString(item.oldValue, "entityType");
   const entityLabel =
-    (entityType ? ENTITY_LABELS[entityType] ?? entityType : null) ??
+    (entityType ? ENTITY_LABELS[entityType] ?? humanizeCode(entityType) : null) ??
     entityFromDescription(item.description);
+  const description = normalizedText(item.description);
+
+  if (description.includes("consulta publica")) return "Consultou status";
+  if (description.includes("checklist")) return "Registrou checklist";
+  if (description.includes("responsavel atribuido")) return "Responsável definido";
+  if (
+    description.includes("solicitacao de verificacao")
+  ) {
+    return "Solicitou verificação";
+  }
+  if (
+    description.includes("correcao da nc")
+  ) {
+    if (newStatus === "REJECTED") return "Verificação rejeitada";
+    if (newStatus === "CLOSED") return "Verificação aprovada";
+    if (newStatus === "PENDING_VERIFICATION") return "Solicitou verificação";
+    return "Atualizou correção";
+  }
 
   if (item.action === "STATUS_CHANGE" && newStatus) {
+    if (entityType === "NON_CONFORMITY" || entityLabel === "Não conformidade") {
+      if (newStatus === "PENDING_VERIFICATION") return "Solicitou verificação";
+      if (newStatus === "CLOSED") return "Verificação aprovada";
+      if (newStatus === "REJECTED") return "Verificação rejeitada";
+      if (newStatus === "ASSIGNED") return "Reabriu a NC";
+    }
+    if (entityType === "INSPECTION" || entityLabel === "Inspeção") {
+      if (newStatus === "aprovado") return "Aprovou inspeção";
+      if (newStatus === "reprovado") return "Reprovou inspeção";
+    }
+    if (entityType === "SCAFFOLD" || entityLabel === "Andaime") {
+      if (newStatus === "liberado") return "Liberou andaime";
+      if (newStatus === "interditado") return "Interditou andaime";
+      if (newStatus === "reprovado") return "Reprovou andaime";
+      if (newStatus === "desmontado") return "Desmontou andaime";
+    }
     return `${entityLabel ?? "Registro"} ${humanizeValue(newStatus)}`.trim();
   }
   if (item.action === "COMPLETE") {
-    return entityLabel ? `${entityLabel} concluído` : "Etapa concluída";
+    return entityLabel ? `${entityLabel} concluído` : "Concluiu etapa";
   }
-  if (item.action === "DELETE") return `${entityLabel ?? "Registro"} removido`;
+  if (item.action === "DELETE") return "Removeu registro";
   if (item.action === "CREATE" || item.action.endsWith("_CREATED")) {
-    return `${entityLabel ?? "Registro"} criado`;
+    if (entityLabel === "Não conformidade") return "Criou a NC";
+    return entityLabel
+      ? `Criou ${entityLabel.toLocaleLowerCase("pt-BR")}`
+      : "Criou registro";
   }
   if (item.action === "UPDATE" || item.action.endsWith("_UPDATED")) {
-    return `${entityLabel ?? "Registro"} atualizado`;
+    if (entityLabel === "Não conformidade") return "Atualizou a NC";
+    return entityLabel
+      ? `Atualizou ${entityLabel.toLocaleLowerCase("pt-BR")}`
+      : "Atualizou registro";
   }
   if (item.action.includes("DOCUMENT") || item.action === "UPLOAD") {
+    if (item.description.toLocaleLowerCase("pt-BR").includes("evid")) {
+      return "Anexou evidência";
+    }
     return "Documento anexado";
   }
   if (item.action.includes("SIGN")) return "Assinatura registrada";
@@ -330,7 +393,7 @@ function humanSummaryFromAuditItem(item: AuditTimelineItem, fallback: string) {
   return stripInternalIds(fallback);
 }
 
-function changedDetails(oldValue: unknown, newValue: unknown) {
+function changedDetails(oldValue: unknown, newValue: unknown, action?: string) {
   if (!isRecord(oldValue) && !isRecord(newValue)) return [];
 
   const before = isRecord(oldValue) ? oldValue : {};
@@ -341,6 +404,28 @@ function changedDetails(oldValue: unknown, newValue: unknown) {
     .filter((key) => RELEVANT_DETAIL_KEYS.has(key))
     .filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]))
     .filter((key) => hasUsefulValue(before[key]) || hasUsefulValue(after[key]))
+    .filter((key) => {
+      if (
+        key === "requiresNewInspection" ||
+        key === "scaffoldReturnedToPendingRelease"
+      ) {
+        return before[key] === true || after[key] === true;
+      }
+      return true;
+    })
+    .filter(
+      (key) =>
+        action !== "CREATE" ||
+        [
+          "classification",
+          "dueDate",
+          "result",
+          "status",
+          "validity_date",
+          "validityDate",
+          "validity_days",
+        ].includes(key),
+    )
     .map((key) => ({
       label: labelField(key),
       before: humanizeValue(before[key]),
@@ -397,7 +482,53 @@ function actionMeta(action: string): {
     return { type: "signature", tone: "success", label: "Assinatura" };
   }
 
-  return { type: "update", tone: "disabled", label: action.replaceAll("_", " ") };
+  return { type: "update", tone: "disabled", label: humanizeCode(action) };
+}
+
+function auditItemHistoryType(
+  item: AuditTimelineItem,
+  fallback: HistoryEventType,
+): HistoryEventType {
+  const newStatus =
+    getString(item.newValue, "status") ?? getString(item.newValue, "result");
+  const entityType =
+    getString(item.newValue, "entityType") ??
+    getString(item.oldValue, "entityType") ??
+    entityFromDescription(item.description);
+  const description = item.description.toLocaleLowerCase("pt-BR");
+
+  if (description.includes("respons")) return "responsible";
+  if (description.includes("prazo")) return "deadline";
+  if (description.includes("coment")) return "comment";
+  if (description.includes("evid")) return "photo";
+  if (entityType === "NON_CONFORMITY" || entityType === "Não conformidade") {
+    if (newStatus === "CLOSED") return "inspection";
+    if (newStatus === "REJECTED") return "failure";
+    if (newStatus) return "status";
+    return "non_conformity";
+  }
+  if (entityType === "INSPECTION" || entityType === "Inspeção") return "inspection";
+  if (item.action === "STATUS_CHANGE") {
+    if (["reprovado", "interditado"].includes(newStatus ?? "")) return "failure";
+    if (["aprovado", "liberado"].includes(newStatus ?? "")) return "inspection";
+  }
+  return fallback;
+}
+
+function auditItemTone(item: AuditTimelineItem, fallback: SemanticTone): SemanticTone {
+  const newStatus =
+    getString(item.newValue, "status") ?? getString(item.newValue, "result");
+
+  if (["REJECTED", "reprovado", "interditado", "CANCELLED"].includes(newStatus ?? "")) {
+    return "critical";
+  }
+  if (["CLOSED", "aprovado", "liberado"].includes(newStatus ?? "")) {
+    return "success";
+  }
+  if (["PENDING_VERIFICATION", "ASSIGNED", "pendente_liberacao"].includes(newStatus ?? "")) {
+    return "warning";
+  }
+  return fallback;
 }
 
 function auditItemToHistoryEvent(item: AuditTimelineItem): HistoryEvent {
@@ -405,25 +536,114 @@ function auditItemToHistoryEvent(item: AuditTimelineItem): HistoryEvent {
 
   return {
     id: item.id,
-    type: meta.type,
+    type: auditItemHistoryType(item, meta.type),
     actorName: item.userName ?? "Sistema",
     summary: humanSummaryFromAuditItem(item, item.description || meta.label),
     createdAt: item.createdAt,
-    tone: meta.tone,
-    details: changedDetails(item.oldValue, item.newValue),
+    tone: auditItemTone(item, meta.tone),
+    details: changedDetails(item.oldValue, item.newValue, item.action),
     metadata: {
-      company: item.companyName,
-      workspace: item.workspaceName,
       browser: item.browserName,
       device: item.deviceType,
       os: item.osName,
-      ip: item.ipAddress,
     },
   };
 }
 
 export function auditItemsToHistoryEvents(items: AuditTimelineItem[]) {
-  return items.map(auditItemToHistoryEvent);
+  return normalizeHistoryEvents(items.map(auditItemToHistoryEvent));
+}
+
+function eventTime(event: HistoryEvent) {
+  return new Date(event.createdAt).getTime();
+}
+
+function detailSignature(details: HistoryEventDetail[] | undefined) {
+  return (details ?? [])
+    .map((detail) =>
+      [detail.label, detail.before ?? "", detail.after ?? "", detail.value ?? ""].join(":"),
+    )
+    .sort()
+    .join("|");
+}
+
+function eventStatus(event: HistoryEvent) {
+  return (event.details ?? []).find((detail) => detail.label === "Status")?.after;
+}
+
+function eventBusinessGroup(event: HistoryEvent) {
+  const text = `${event.summary} ${(event.details ?? [])
+    .map((detail) => `${detail.label} ${detail.value ?? ""}`)
+    .join(" ")}`.toLocaleLowerCase("pt-BR");
+
+  if (text.includes("evid")) return "evidence";
+  if (text.includes("coment")) return "comment";
+  if (text.includes("respons")) return "responsible";
+  if (text.includes("prazo")) return "deadline";
+  if (text.includes("verifica")) return "verification";
+  if (text.includes("status")) return "status";
+  return null;
+}
+
+function isUsefulEvent(event: HistoryEvent) {
+  return Boolean(
+    event.summary.trim() ||
+      (event.details?.length ?? 0) > 0 ||
+      metadataDetails(event).length > 0,
+  );
+}
+
+function sameBusinessMoment(current: HistoryEvent, previous: HistoryEvent) {
+  const timeGap = Math.abs(eventTime(current) - eventTime(previous));
+  if (timeGap > 5_000) return false;
+
+  const sameActor = current.actorName === previous.actorName;
+  const currentStatus = eventStatus(current);
+  const previousStatus = eventStatus(previous);
+  const sameStatus = currentStatus && previousStatus && currentStatus === previousStatus;
+  const sameDetails = detailSignature(current.details) === detailSignature(previous.details);
+  const currentGroup = eventBusinessGroup(current);
+  const previousGroup = eventBusinessGroup(previous);
+  const sameBusinessGroup = currentGroup && currentGroup === previousGroup;
+
+  return sameActor && (sameStatus || sameDetails || sameBusinessGroup);
+}
+
+function mergeEvents(primary: HistoryEvent, secondary: HistoryEvent): HistoryEvent {
+  const detailsBySignature = new Map<string, HistoryEventDetail>();
+  [...(secondary.details ?? []), ...(primary.details ?? [])].forEach((detail) => {
+    detailsBySignature.set(
+      [detail.label, detail.before ?? "", detail.after ?? "", detail.value ?? ""].join(":"),
+      detail,
+    );
+  });
+
+  return {
+    ...primary,
+    details: Array.from(detailsBySignature.values()),
+    metadata: {
+      ...secondary.metadata,
+      ...primary.metadata,
+    },
+  };
+}
+
+export function normalizeHistoryEvents(events: HistoryEvent[]) {
+  const sorted = [...events]
+    .filter(isUsefulEvent)
+    .sort((left, right) => eventTime(left) - eventTime(right));
+
+  const deduped = sorted.reduce<HistoryEvent[]>((result, event) => {
+    const previous = result[result.length - 1];
+    if (previous && sameBusinessMoment(event, previous)) {
+      result[result.length - 1] = mergeEvents(event, previous);
+      return result;
+    }
+    result.push(event);
+    return result;
+  }, []);
+
+  return deduped.reverse();
 }
 
 function formatDateTime(value: Date | string) {
@@ -474,10 +694,7 @@ function metadataDetails(event: HistoryEvent): HistoryEventDetail[] {
     .join(" • ");
 
   return [
-    { label: "Empresa", value: metadata.company },
-    { label: "Workspace", value: metadata.workspace },
     { label: "Dispositivo", value: device || null },
-    { label: "IP", value: metadata.ip },
   ].filter((item) => item.value);
 }
 
@@ -488,8 +705,10 @@ export function HistoryTimelineCompact({
   showFullHistoryAction = true,
   variant = "compact",
 }: HistoryTimelineCompactProps) {
-  const visibleEvents = events.slice(0, initialLimit);
-  const hasMoreEvents = showFullHistoryAction && events.length > initialLimit;
+  const normalizedEvents = useMemo(() => normalizeHistoryEvents(events), [events]);
+  const visibleEvents = normalizedEvents.slice(0, initialLimit);
+  const hasMoreEvents =
+    showFullHistoryAction && normalizedEvents.length > initialLimit;
   const isPage = variant === "page";
 
   return (
@@ -511,16 +730,16 @@ export function HistoryTimelineCompact({
             </p>
             <p className="mt-0.5 text-[9px] text-muted-foreground">
               {isPage
-                ? `${events.length} evento(s) nesta página`
-                : `Últimos ${Math.min(initialLimit, events.length)} de ${
-                    events.length
+                ? `${normalizedEvents.length} evento(s) nesta página`
+                : `${Math.min(initialLimit, normalizedEvents.length)} de ${
+                    normalizedEvents.length
                   } evento(s)`}
             </p>
           </div>
         </div>
       </div>
 
-      {events.length === 0 ? (
+      {normalizedEvents.length === 0 ? (
         <EmptyState
           icon={History}
           title="Nenhum evento de auditoria"
@@ -554,8 +773,9 @@ export function HistoryDrawerButton({
   const [visibleCount, setVisibleCount] = useState(initialLimit);
   const containerRef = useRef<HTMLDivElement>(null);
   const { toggleMenu } = useExclusiveMenu(open, setOpen);
-  const visibleEvents = events.slice(0, visibleCount);
-  const hasMore = visibleCount < events.length;
+  const normalizedEvents = useMemo(() => normalizeHistoryEvents(events), [events]);
+  const visibleEvents = normalizedEvents.slice(0, visibleCount);
+  const hasMore = visibleCount < normalizedEvents.length;
 
   useEffect(() => {
     if (!open) return;
@@ -612,7 +832,7 @@ export function HistoryDrawerButton({
                   {dropdownTitle}
                 </p>
                 <p className="mt-0.5 text-[9px] text-muted-foreground">
-                  {events.length} evento(s)
+                  {normalizedEvents.length} evento(s)
                 </p>
               </div>
               <Button
@@ -627,7 +847,7 @@ export function HistoryDrawerButton({
               </Button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {events.length === 0 ? (
+              {normalizedEvents.length === 0 ? (
                 <EmptyState
                   icon={History}
                   title="Nenhum evento de auditoria"
@@ -699,6 +919,7 @@ function HistoryEventRow({
 }) {
   const toneClasses = SEMANTIC_TONE_CLASSES[event.tone];
   const details = [...(event.details ?? []), ...metadataDetails(event)];
+  const hasDetails = details.length > 0;
   const isPage = variant === "page";
   const entity = event.details?.find((detail) => detail.label === "Entidade")?.value;
 
@@ -706,13 +927,17 @@ function HistoryEventRow({
     <li className="bg-card">
       <button
         type="button"
-        onClick={onToggle}
-        className={`grid w-full items-center gap-2 text-left hover:bg-muted/30 max-[520px]:grid-cols-[24px_minmax(0,1fr)_26px] max-[520px]:gap-x-2 ${
+        onClick={() => {
+          if (hasDetails) onToggle();
+        }}
+        className={`grid w-full items-center gap-2 text-left ${
+          hasDetails ? "hover:bg-muted/30" : "cursor-default"
+        } max-[520px]:grid-cols-[24px_minmax(0,1fr)_26px] max-[520px]:gap-x-2 ${
           isPage
             ? "grid-cols-[minmax(150px,0.9fr)_minmax(180px,1.35fr)_minmax(130px,0.8fr)_96px_28px] px-4 py-2.5"
             : "grid-cols-[minmax(112px,0.85fr)_minmax(0,1.3fr)_96px_26px] px-2.5 py-1.5"
         }`}
-        aria-expanded={expanded}
+        aria-expanded={hasDetails ? expanded : undefined}
       >
         <div className="flex min-w-0 items-center gap-2 max-[520px]:contents">
           <span className={`flex size-5 shrink-0 items-center justify-center rounded-md bg-muted ${toneClasses.icon}`}>
@@ -740,14 +965,16 @@ function HistoryEventRow({
           {formatDateTime(event.createdAt)}
         </p>
         <span
-          className="ml-auto flex size-6 items-center justify-center rounded-md border border-border bg-card text-muted-foreground max-[520px]:col-start-3 max-[520px]:row-span-2 max-[520px]:row-start-1"
+          className={`ml-auto flex size-6 items-center justify-center rounded-md border border-border bg-card text-muted-foreground max-[520px]:col-start-3 max-[520px]:row-span-2 max-[520px]:row-start-1 ${
+            hasDetails ? "" : "invisible"
+          }`}
           aria-hidden="true"
         >
           {expanded ? <Minus className="size-3.5" /> : <Plus className="size-3.5" />}
         </span>
       </button>
 
-      {expanded && (
+      {expanded && hasDetails && (
         <div
           className={`border-t border-border bg-muted/15 py-1.5 max-[520px]:pl-8 ${
             isPage ? "px-4 pl-11" : "px-2.5 pl-9"

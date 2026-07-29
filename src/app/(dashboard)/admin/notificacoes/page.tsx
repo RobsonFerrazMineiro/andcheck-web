@@ -13,6 +13,8 @@ import {
   resendNotificationEmail,
 } from "@/lib/actions/notification-actions";
 import { typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
+import { NOTIFICATION_TYPE_LABELS } from "@/lib/notifications/catalog";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Bell, BellOff, RefreshCw } from "lucide-react";
 
@@ -28,6 +30,13 @@ type AdminNotificationFailure = {
     workspace: { name: string } | null;
   };
 };
+
+function notificationTypeLabel(type: string) {
+  return (
+    NOTIFICATION_TYPE_LABELS[type as keyof typeof NOTIFICATION_TYPE_LABELS] ??
+    humanizeCode(type)
+  );
+}
 
 export default async function AdminNotificationsPage() {
   const data = await getAdminNotificationData();
@@ -101,7 +110,7 @@ export default async function AdminNotificationsPage() {
                           {log.notification.title}
                         </p>
                         <Badge className="mt-1" variant="outline">
-                          {log.notification.type}
+                          {notificationTypeLabel(log.notification.type)}
                         </Badge>
                       </div>
                       <form action={resendAction} className="shrink-0">
@@ -150,7 +159,7 @@ export default async function AdminNotificationsPage() {
                           {log.notification.title}
                         </div>
                         <Badge className="mt-1" variant="outline">
-                          {log.notification.type}
+                          {notificationTypeLabel(log.notification.type)}
                         </Badge>
                       </td>
                       <td className="py-3 pr-4 text-muted-foreground">

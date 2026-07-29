@@ -320,18 +320,18 @@ export async function getExecutiveDashboard(
   );
 
   const kpis: Kpi[] = [
-    buildKpi("totalScaffolds", "Total de Andaimes", scaffolds.length, previousScaffolds.length, "neutral", "Total de andaimes criados no periodo filtrado."),
-    buildKpi("releasedScaffolds", "Andaimes Liberados", releasedScaffolds.length, previousReleasedScaffolds.length, "success", "Andaimes com status liberado no periodo filtrado."),
-    buildKpi("interdictedScaffolds", "Andaimes Interditados", interdictedScaffolds.length, previousScaffolds.filter((item) => item.status === "interditado").length, "critical", "Andaimes atualmente interditados no periodo filtrado."),
+    buildKpi("totalScaffolds", "Total de andaimes", scaffolds.length, previousScaffolds.length, "neutral", "Total de andaimes criados no período filtrado."),
+    buildKpi("releasedScaffolds", "Andaimes liberados", releasedScaffolds.length, previousReleasedScaffolds.length, "success", "Andaimes com status liberado no período filtrado."),
+    buildKpi("interdictedScaffolds", "Andaimes interditados", interdictedScaffolds.length, previousScaffolds.filter((item) => item.status === "interditado").length, "critical", "Andaimes atualmente interditados no período filtrado."),
     buildKpi("expiredScaffolds", "Andaimes Vencidos", expiredScaffolds.length, previousExpiredScaffolds.length, "critical", "Andaimes vencidos por status ou data de validade."),
-    buildKpi("inspections", "Inspeções Realizadas", inspections.length, previousInspections.length, "neutral", "Inspeções registradas dentro do periodo filtrado."),
+    buildKpi("inspections", "Inspeções realizadas", inspections.length, previousInspections.length, "neutral", "Inspeções registradas dentro do período filtrado."),
     buildKpi("approvalRate", "Taxa de Aprovação", approvalRate, previousApprovalRate, "success", "Percentual de inspeções aprovadas ou aprovadas com ressalvas.", "%"),
     buildKpi("conformanceIndex", "Índice de Conformidade", conformanceIndex, previousConformanceIndex, "success", "Combina inspeções sem reprovação e NCs abertas para indicar estabilidade operacional.", "%"),
     buildKpi("openNcs", "NCs Abertas", openNcs.length, previousOpenNcs.length, "warning", "Não conformidades ainda não encerradas."),
-    buildKpi("closedNcs", "NCs Encerradas", closedNcs.length, previousClosedNcs.length, "success", "Não conformidades encerradas dentro do periodo filtrado."),
+    buildKpi("closedNcs", "NCs encerradas", closedNcs.length, previousClosedNcs.length, "success", "Não conformidades encerradas dentro do período filtrado."),
     buildKpi("avgCorrection", "Tempo Médio de Correção", averageCorrectionDays, previousAverageCorrectionDays, "warning", "Tempo médio entre abertura e encerramento das NCs.", " dias"),
     buildKpi("utilizationRate", "Taxa de Utilização dos Andaimes", utilizationRate, previousUtilizationRate, "neutral", "Percentual de andaimes ativos em uso, pendentes ou interditados.", "%"),
-    buildKpi("criticalNotifications", "Notificações Críticas", criticalNotifications.length, previousCriticalNotifications.length, "critical", "Notificações críticas geradas no periodo filtrado."),
+    buildKpi("criticalNotifications", "Notificações críticas", criticalNotifications.length, previousCriticalNotifications.length, "critical", "Notificações críticas geradas no período filtrado."),
   ];
 
   const series = buildSeries(range, filters.period ?? "month", {

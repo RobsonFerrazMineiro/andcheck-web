@@ -45,6 +45,7 @@ import { createOfflineId } from "@/lib/offline/types";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import { uploadFile } from "@/lib/upload-file";
 import { toast } from "sonner";
+import { NON_CONFORMITY_TREATMENT_EVIDENCE_REQUIRED_MESSAGE } from "@/lib/non-conformity-evidence-policy";
 
 function isStorageNotConfiguredError(error: unknown) {
   return (
@@ -74,6 +75,7 @@ type Props = {
   canChangeDueDate: boolean;
   canComment: boolean;
   canCancel: boolean;
+  hasTreatmentEvidence: boolean;
 };
 
 type Modal =
@@ -94,6 +96,18 @@ function evidenceTypeFromFile(file: File) {
   if (file.type.startsWith("image/")) return "PHOTO";
   if (file.type === "application/pdf") return "PDF";
   return "DOCUMENT";
+}
+
+function friendlyActionError(error: unknown, fallback: string) {
+  if (!(error instanceof Error) || !error.message.trim()) return fallback;
+  if (
+    /server components render/i.test(error.message) ||
+    /digest/i.test(error.message) ||
+    /prisma|constraint|foreign key|unique/i.test(error.message)
+  ) {
+    return fallback;
+  }
+  return error.message;
 }
 
 async function updateCachedNonConformity(
@@ -170,6 +184,7 @@ export function NonConformityOperations({
   canChangeDueDate,
   canComment,
   canCancel,
+  hasTreatmentEvidence,
 }: Props) {
   const router = useRouter();
   const [modal, setModal] = useState<Modal>(null);
@@ -196,7 +211,9 @@ export function NonConformityOperations({
         setModal(null);
         router.refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Não foi possível executar a ação.");
+        setError(
+          friendlyActionError(err, "Não foi possível executar a ação. Revise os dados e tente novamente."),
+        );
       }
     });
   }
@@ -234,15 +251,18 @@ export function NonConformityOperations({
         }
       } catch (err) {
         setError(
-          err instanceof Error
-            ? err.message
-            : "Não foi possível salvar a ação offline.",
+          friendlyActionError(err, "Não foi possível salvar a ação offline."),
         );
       }
     });
   }
 
   async function submitStatus(nextStatus: string, comment = "") {
+    if (nextStatus === "PENDING_VERIFICATION" && !hasTreatmentEvidence) {
+      setError(NON_CONFORMITY_TREATMENT_EVIDENCE_REQUIRED_MESSAGE);
+      return;
+    }
+
     if ((await checkServerConnectivity()) === "offline") {
       await updateCachedNonConformity(id, {
         status: nextStatus,
@@ -347,9 +367,9 @@ export function NonConformityOperations({
 
   return (
     <>
-      <div className="flex flex-col items-end gap-2">
+      <div className="relative flex flex-col items-end gap-2">
         {error && (
-          <p className="basis-full text-right text-[11px] font-medium text-red-700">
+          <p className="absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-red-200 bg-card px-3 py-2 text-right text-[12px] font-medium leading-snug text-red-700 shadow-sm">
             {error}
           </p>
         )}
@@ -747,17 +767,15 @@ export function NonConformityItemEvidenceButton({
         setOpen(false);
         router.refresh();
       } catch (err) {
+        const message = friendlyActionError(
+          err,
+          "Não foi possível anexar a evidência.",
+        );
         toast.error(
-          err instanceof Error
-            ? err.message
-            : "Não foi possível anexar a evidência.",
+          message,
           { id: toastId },
         );
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Não foi possível anexar a evidência.",
-        );
+        setError(message);
       }
     });
   }

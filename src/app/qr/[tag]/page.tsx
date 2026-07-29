@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { getScaffoldByTag } from "@/lib/actions/scaffold-actions";
+import { humanizeCode } from "@/lib/human-readable";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -169,7 +170,7 @@ export default async function QRPage({ params }: Props) {
               </p>
             </div>
             <span className="text-[11px] font-semibold text-white/60 bg-white/8 px-3 py-1 rounded-md">
-              {TYPE_LABELS[scaffold.type] ?? scaffold.type}
+              {TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
             </span>
           </div>
 
@@ -238,7 +239,7 @@ export default async function QRPage({ params }: Props) {
             style={{ background: "#ea6a12", color: "#fff" }}
           >
             <ClipboardCheck className="w-4 h-4" />
-            Realizar Nova Inspecao
+            Realizar nova inspeção
           </Link>
         )}
 

@@ -28,6 +28,7 @@ import {
   requiredNumber,
   requiredText,
 } from "@/lib/input-validation";
+import { humanizeCode } from "@/lib/human-readable";
 import { createNotification } from "@/lib/notifications/service";
 import {
   ScaffoldStatus,
@@ -69,7 +70,7 @@ function parseScaffoldInput(data: {
       undefined,
     responsible: requiredText(data.responsible, "Responsável técnico", 140),
     company: optionalText(data.company, "Empresa montadora", 160) ?? undefined,
-    notes: optionalText(data.notes, "Observacoes", 1000) ?? undefined,
+    notes: optionalText(data.notes, "Observações", 1000) ?? undefined,
     latitude: optionalNumber(data.latitude, "Latitude", { min: -90, max: 90 }) ?? undefined,
     longitude: optionalNumber(data.longitude, "Longitude", { min: -180, max: 180 }) ?? undefined,
     location_description:
@@ -552,7 +553,7 @@ export async function updateScaffoldStatus(id: string, status: ScaffoldStatus) {
     entityId: scaffold.id,
     entityLabel: scaffold.code,
     action: AuditAction.STATUS_CHANGE,
-    description: `Status do andaime ${scaffold.code} alterado de ${oldScaffold?.status ?? "-"} para ${scaffold.status}`,
+    description: `Status do andaime ${scaffold.code} alterado de ${humanizeCode(oldScaffold?.status) || "-"} para ${humanizeCode(scaffold.status)}`,
     oldValue: { status: oldScaffold?.status ?? null },
     newValue: { status: scaffold.status },
     companyId: scaffold.companyId,
@@ -613,7 +614,7 @@ export async function completeAssembly(id: string) {
     workspaceId: scaffold.workspaceId,
     type: "INSPECTION_PENDING",
     severity: "WARNING",
-    title: `Inspecao pendente: ${scaffold.code}`,
+    title: `Inspeção pendente: ${scaffold.code}`,
     message: `O andaime ${scaffold.code} concluiu montagem e aguarda inspeção para liberação.`,
     entityType: "SCAFFOLD",
     entityId: scaffold.id,

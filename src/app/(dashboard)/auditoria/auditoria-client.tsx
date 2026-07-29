@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
 import type { SemanticTone } from "@/lib/semantic-tones";
 
 export type AuditRow = {
@@ -144,7 +145,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 }
 
 function labelEntity(entityType: string) {
-  return ENTITY_LABELS[entityType] ?? entityType;
+  return ENTITY_LABELS[entityType] ?? humanizeCode(entityType);
 }
 
 function getRecordString(value: unknown, key: string) {
@@ -180,8 +181,39 @@ function getEventMeta(row: AuditRow): {
     return { label: "Reenviou e-mail", shortLabel: "REENVIO", tone: "warning" };
   }
   if (row.action === "STATUS_CHANGE") {
+    if (row.entityType === "NON_CONFORMITY") {
+      if (newStatus === "PENDING_VERIFICATION") {
+        return { label: "Solicitou verificação", shortLabel: "VERIFICAÇÃO", tone: "warning" };
+      }
+      if (newStatus === "CLOSED") {
+        return { label: "Verificação aprovada", shortLabel: "APROVAÇÃO", tone: "success" };
+      }
+      if (newStatus === "REJECTED") {
+        return { label: "Verificação rejeitada", shortLabel: "REJEIÇÃO", tone: "critical" };
+      }
+      if (newStatus === "ASSIGNED") {
+        return { label: "Reabriu a NC", shortLabel: "REABERTURA", tone: "warning" };
+      }
+    }
+    if (row.entityType === "INSPECTION") {
+      if (newStatus === "aprovado") {
+        return { label: "Aprovou inspeção", shortLabel: "APROVAÇÃO", tone: "success" };
+      }
+      if (newStatus === "reprovado") {
+        return { label: "Reprovou inspeção", shortLabel: "REPROVAÇÃO", tone: "critical" };
+      }
+    }
     if (newStatus === "desmontado") {
       return { label: "Desmontou andaime", shortLabel: "DESMONTAGEM", tone: "disabled" };
+    }
+    if (newStatus === "liberado") {
+      return { label: "Liberou andaime", shortLabel: "LIBERAÇÃO", tone: "success" };
+    }
+    if (newStatus === "interditado") {
+      return { label: "Interditou andaime", shortLabel: "INTERDIÇÃO", tone: "critical" };
+    }
+    if (newStatus === "reprovado") {
+      return { label: "Reprovou andaime", shortLabel: "REPROVAÇÃO", tone: "critical" };
     }
     return {
       label:
@@ -200,7 +232,7 @@ function getEventMeta(row: AuditRow): {
     if (row.entityType === "WORKSPACE") return { label: "Criou workspace", shortLabel: "CRIAÇÃO", tone: "success" };
     if (row.entityType === "SCAFFOLD") return { label: "Criou andaime", shortLabel: "CRIAÇÃO", tone: "success" };
     if (row.entityType === "INSPECTION") return { label: "Criou inspeção", shortLabel: "CRIAÇÃO", tone: "success" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Criou não conformidade", shortLabel: "CRIAÇÃO", tone: "success" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Criou a NC", shortLabel: "CRIAÇÃO", tone: "success" };
     return { label: "Criou registro", shortLabel: "CRIAÇÃO", tone: "success" };
   }
   if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
@@ -211,7 +243,7 @@ function getEventMeta(row: AuditRow): {
     if (row.entityType === "COMPANY") return { label: "Atualizou empresa", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
     if (row.entityType === "WORKSPACE") return { label: "Atualizou workspace", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
     if (row.entityType === "SCAFFOLD") return { label: "Atualizou andaime", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
-    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou não conformidade", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
+    if (row.entityType === "NON_CONFORMITY") return { label: "Atualizou a NC", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
     return { label: "Atualizou registro", shortLabel: "ATUALIZAÇÃO", tone: "warning" };
   }
   if (row.entityType === "INSPECTION" && newStatus === "aprovado") {
@@ -230,14 +262,14 @@ function getEventMeta(row: AuditRow): {
     return { label: "Concluiu etapa", shortLabel: "CONCLUSÃO", tone: "success" };
   }
   return {
-    label: row.action.replaceAll("_", " ").toLowerCase(),
-    shortLabel: row.action.replaceAll("_", " "),
+    label: humanizeCode(row.action).toLocaleLowerCase("pt-BR"),
+    shortLabel: humanizeCode(row.action),
     tone: "disabled",
   };
 }
 
 function labelAction(rowOrAction: AuditRow | string) {
-  if (typeof rowOrAction === "string") return rowOrAction.replaceAll("_", " ");
+  if (typeof rowOrAction === "string") return humanizeCode(rowOrAction);
   return getEventMeta(rowOrAction).label;
 }
 
@@ -355,13 +387,12 @@ const AUDIT_TECHNICAL_KEYS = new Set([
 ]);
 
 const AUDIT_RELEVANT_DETAIL_KEYS = new Set([
-  "action",
   "area",
   "classification",
   "code",
-  "companyId",
   "department",
   "description",
+  "comment",
   "dueDate",
   "email",
   "fileName",
@@ -369,12 +400,15 @@ const AUDIT_RELEVANT_DETAIL_KEYS = new Set([
   "name",
   "notes",
   "reason",
+  "requiresNewInspection",
   "responsible",
+  "responsibleName",
   "responsibleUserId",
   "result",
   "role",
   "roleCode",
   "scaffoldCode",
+  "scaffoldReturnedToPendingRelease",
   "status",
   "tag",
   "title",
@@ -382,11 +416,10 @@ const AUDIT_RELEVANT_DETAIL_KEYS = new Set([
   "validity_date",
   "validityDate",
   "validity_days",
-  "workspaceId",
 ]);
 
 const AUDIT_VALUE_LABELS: Record<string, string> = {
-  ASSIGNED: "Atribuída",
+  ASSIGNED: "Em correção",
   CANCELLED: "Cancelado",
   CLOSED: "Encerrada",
   IN_PROGRESS: "Em tratamento",
@@ -414,16 +447,23 @@ const AUDIT_DETAIL_LABELS: Record<string, string> = {
   area: "Área",
   code: "Código",
   companyId: "Empresa",
+  comment: "Observação",
   department: "Departamento",
   description: "Descrição",
   dueDate: "Prazo",
   email: "E-mail",
   name: "Nome",
+  reason: "Motivo",
+  requiresNewInspection: "Nova inspeção necessária",
+  responsible: "Responsável",
+  responsibleName: "Responsável",
+  responsibleUserId: "Responsável",
   result: "Resultado",
   role: "Perfil",
   roleCode: "Perfil",
   scaffoldCode: "Andaime",
   scaffoldId: "Andaime",
+  scaffoldReturnedToPendingRelease: "Andaime voltou para pendente de liberação",
   status: "Status",
   tag: "TAG",
   title: "Título",
@@ -434,7 +474,7 @@ const AUDIT_DETAIL_LABELS: Record<string, string> = {
 };
 
 function auditDetailLabel(key: string) {
-  return AUDIT_DETAIL_LABELS[key] ?? key.replaceAll("_", " ");
+  return AUDIT_DETAIL_LABELS[key] ?? humanizeCode(key);
 }
 
 function auditValueLabel(value: unknown): string {
@@ -447,7 +487,7 @@ function auditValueLabel(value: unknown): string {
       const date = new Date(value);
       if (!Number.isNaN(date.getTime())) return format(date, "dd/MM/yyyy HH:mm");
     }
-    return AUDIT_VALUE_LABELS[value] ?? value.replaceAll("_", " ");
+    return AUDIT_VALUE_LABELS[value] ?? humanizeCode(value);
   }
   if (Array.isArray(value)) return `${value.length} item(ns)`;
   return "Dados registrados";
@@ -470,6 +510,15 @@ function auditChangedDetails(
       (key) =>
         auditValueLabel(before[key]) !== "-" || auditValueLabel(after[key]) !== "-",
     )
+    .filter((key) => {
+      if (
+        key === "requiresNewInspection" ||
+        key === "scaffoldReturnedToPendingRelease"
+      ) {
+        return before[key] === true || after[key] === true;
+      }
+      return true;
+    })
     .map((key) => ({
       label: auditDetailLabel(key),
       before: auditValueLabel(before[key]),
@@ -479,17 +528,33 @@ function auditChangedDetails(
 }
 
 function auditRowType(row: AuditRow): HistoryEventType {
+  const newStatus = getRecordString(row.newValue, "status");
+  const description = row.description.toLocaleLowerCase("pt-BR");
+
   if (row.action.includes("FAIL")) return "failure";
   if (row.action.includes("SYNC")) return "sync";
   if (row.action === "CREATE" || row.action.endsWith("_CREATED")) return "create";
-  if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) return "update";
   if (row.action === "DELETE" || row.action.includes("REMOVED")) return "delete";
-  if (row.action === "STATUS_CHANGE") return "status";
+  if (row.entityType === "NON_CONFORMITY") {
+    if (description.includes("respons")) return "responsible";
+    if (description.includes("prazo")) return "deadline";
+    if (description.includes("coment")) return "comment";
+    if (description.includes("evid")) return "photo";
+    if (newStatus === "CLOSED") return "inspection";
+    if (newStatus === "REJECTED") return "failure";
+    if (newStatus) return "status";
+    return "non_conformity";
+  }
+  if (row.action === "STATUS_CHANGE") {
+    if (["reprovado", "interditado"].includes(newStatus ?? "")) return "failure";
+    if (["liberado", "aprovado"].includes(newStatus ?? "")) return "inspection";
+    return "status";
+  }
   if (row.action.includes("COMMENT")) return "comment";
   if (row.action.includes("DOCUMENT") || row.action === "UPLOAD") return "document";
   if (row.action.includes("SIGN")) return "signature";
   if (row.entityType === "INSPECTION") return "inspection";
-  if (row.entityType === "NON_CONFORMITY") return "non_conformity";
+  if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) return "update";
   return "update";
 }
 
@@ -498,8 +563,29 @@ function compactHistorySummary(row: AuditRow) {
     getRecordString(row.newValue, "status") ??
     getRecordString(row.newValue, "result");
   const entity = labelEntity(row.entityType);
+  const meta = getEventMeta(row);
+  const description = row.description
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
+
+  if (description.includes("consulta publica")) return "Consultou status";
+  if (description.includes("checklist")) return "Registrou checklist";
+  if (description.includes("responsavel atribuido")) return "Responsável definido";
+  if (description.includes("solicitacao de verificacao")) {
+    return "Solicitou verificação";
+  }
+  if (description.includes("correcao da nc")) {
+    if (newStatus === "REJECTED") return "Verificação rejeitada";
+    if (newStatus === "CLOSED") return "Verificação aprovada";
+    if (newStatus === "PENDING_VERIFICATION") return "Solicitou verificação";
+    return "Atualizou correção";
+  }
 
   if (row.action === "STATUS_CHANGE" && newStatus) {
+    if (row.entityType === "NON_CONFORMITY") return meta.label;
+    if (row.entityType === "INSPECTION") return meta.label;
+    if (row.entityType === "SCAFFOLD") return meta.label;
     return `${entity} ${auditValueLabel(newStatus)}`;
   }
   if (row.action === "COMPLETE") return `${entity} concluído`;
@@ -507,14 +593,19 @@ function compactHistorySummary(row: AuditRow) {
     return `${entity} removido`;
   }
   if (row.action.includes("DOCUMENT") || row.action === "UPLOAD") {
+    if (row.description.toLocaleLowerCase("pt-BR").includes("evid")) {
+      return "Anexou evidência";
+    }
     return "Documento anexado";
   }
   if (row.action.includes("SIGN")) return "Assinatura registrada";
   if (row.action.includes("NOTIFICATION")) return getEventMeta(row).label;
   if (row.action === "CREATE" || row.action.endsWith("_CREATED")) {
+    if (row.entityType === "NON_CONFORMITY") return "Criou a NC";
     return `${entity} criado`;
   }
   if (row.action === "UPDATE" || row.action.endsWith("_UPDATED")) {
+    if (row.entityType === "NON_CONFORMITY") return "Atualizou a NC";
     return `${entity} atualizado`;
   }
 
@@ -537,16 +628,12 @@ function auditRowToHistoryEvent(row: AuditRow): HistoryEvent {
     tone: meta.tone,
     details: [
       { label: "Entidade", value: entityDisplay(row) },
-      { label: "Tipo de evento", value: labelAction(row) },
       ...auditChangedDetails(row.oldValue, row.newValue),
     ],
     metadata: {
-      company: row.companyId,
-      workspace: row.workspaceId,
       browser: row.browserName,
       device: row.deviceType,
       os: row.osName,
-      ip: row.ipAddress,
     },
   };
 }
@@ -569,8 +656,6 @@ function exportRowsToExcel(rows: AuditRow[]) {
     "Descrição",
     "Empresa",
     "Workspace",
-    "IP",
-    "Sessão",
     "Navegador",
     "Sistema Operacional",
     "Dispositivo",
@@ -586,8 +671,6 @@ function exportRowsToExcel(rows: AuditRow[]) {
         friendlyDescription(row),
         row.companyId ?? "-",
         row.workspaceId ?? "-",
-        row.ipAddress ?? "-",
-        row.sessionId ? row.sessionId.slice(0, 12) : "-",
         row.browserName ?? "-",
         row.osName ?? "-",
         row.deviceType ?? "-",

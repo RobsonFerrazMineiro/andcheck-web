@@ -12,16 +12,13 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import {
-  nonConformityStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
+import { humanizeCode } from "@/lib/human-readable";
 
 type LinkedInspection = {
   id: string;
@@ -34,6 +31,7 @@ type LinkedInspection = {
 type LinkedNonConformity = {
   id: string;
   code: string;
+  createdAt?: Date | string;
   status: string;
   classification: string;
   dueDate: Date | string | null;
@@ -65,27 +63,23 @@ const NC_STATUS_LABELS: Record<string, string> = {
 };
 
 const NC_STATUS_STYLE: Record<string, string> = {
-  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
-  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
-  IN_PROGRESS:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
-  PENDING_VERIFICATION:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
-      .badge,
-  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
-  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
-  CANCELLED:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
+  OPEN: "border-sky-300 bg-sky-50 text-sky-700",
+  ASSIGNED: "border-amber-300 bg-amber-50 text-amber-700",
+  IN_PROGRESS: "border-amber-300 bg-amber-50 text-amber-700",
+  PENDING_VERIFICATION: "border-amber-300 bg-amber-50 text-amber-700",
+  CLOSED: "border-emerald-300 bg-emerald-50 text-emerald-700",
+  REJECTED: "border-red-300 bg-red-50 text-red-700",
+  CANCELLED: "border-slate-300 bg-slate-50 text-slate-600",
 };
 
 function NcBadge({ value }: { value: string }) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
-        NC_STATUS_STYLE[value] ?? SEMANTIC_TONE_CLASSES.disabled.badge
+        NC_STATUS_STYLE[value] ?? "border-border bg-muted text-muted-foreground"
       }`}
     >
-      {NC_STATUS_LABELS[value] ?? value}
+      {NC_STATUS_LABELS[value] ?? humanizeCode(value)}
     </span>
   );
 }
@@ -98,6 +92,14 @@ function CountBadge({ count }: { count: number }) {
       {count}
     </span>
   );
+}
+
+function recordTime(record: LinkedInspection | LinkedNonConformity) {
+  const value =
+    "date" in record ? record.date : (record.createdAt ?? record.dueDate);
+  if (!value) return 0;
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
 }
 
 export function LinkedRecordsButton({
@@ -114,7 +116,11 @@ export function LinkedRecordsButton({
   const isInspections = type === "inspections";
   const title = isInspections ? "Inspeções" : "Não Conformidades";
   const Icon = isInspections ? ClipboardCheck : ShieldAlert;
-  const visibleRecords = records.slice(0, visibleCount);
+  const sortedRecords = useMemo(
+    () => [...records].sort((left, right) => recordTime(right) - recordTime(left)),
+    [records],
+  );
+  const visibleRecords = sortedRecords.slice(0, visibleCount);
   const hasMore = visibleCount < records.length;
   const allHref = isInspections
     ? `/inspecoes?scaffold_id=${encodeURIComponent(scaffoldId)}&scaffold_code=${encodeURIComponent(scaffoldCode)}`
@@ -253,10 +259,7 @@ function InspectionRow({ inspection }: { inspection: LinkedInspection }) {
       className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
     >
       <div className="min-w-0">
-        <p className="truncate font-mono text-[11px] font-semibold text-foreground">
-          {inspection.id}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
           <span className="inline-flex min-w-0 items-center gap-1">
             <User className="size-3" />
             <span className="truncate">{inspection.inspector_name}</span>
@@ -283,30 +286,28 @@ function NonConformityRow({
 }: {
   nonConformity: LinkedNonConformity;
 }) {
+  const classification =
+    NC_CLASSIFICATION_LABELS[nonConformity.classification] ??
+    humanizeCode(nonConformity.classification);
+
   return (
     <Link
       href={`/nao-conformidades/${nonConformity.id}`}
       className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
     >
-      <div className="min-w-0">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <p className="truncate font-mono text-[11px] font-semibold text-foreground">
           {nonConformity.code}
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          <span className="rounded-md border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-            {NC_CLASSIFICATION_LABELS[nonConformity.classification] ??
-              nonConformity.classification}
+        <span className="rounded-md border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          {classification}
+        </span>
+        <NcBadge value={nonConformity.status} />
+        {nonConformity.dueDate && (
+          <span className="text-[10px] text-muted-foreground">
+            Prazo: {format(new Date(nonConformity.dueDate), "dd/MM/yyyy")}
           </span>
-          <NcBadge value={nonConformity.status} />
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-          <span>
-            Responsável: {nonConformity.responsibleUser?.name ?? "Não atribuído"}
-          </span>
-          {nonConformity.dueDate && (
-            <span>Prazo: {format(new Date(nonConformity.dueDate), "dd/MM/yyyy")}</span>
-          )}
-        </div>
+        )}
       </div>
       <ChevronRight className="mt-1 size-3.5 text-muted-foreground/50" />
     </Link>

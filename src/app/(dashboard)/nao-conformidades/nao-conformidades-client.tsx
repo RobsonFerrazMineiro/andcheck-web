@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { surface, typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import {
   nonConformityStatusTone,
@@ -336,7 +337,7 @@ export function NaoConformidadesClient({
 
       <MobileFilterPanel
         description="Busque e refine a lista de não conformidades."
-        summary={`${filtered.length}/${nonConformities.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? statusFilter} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? classificationFilter}`}
+        summary={`${filtered.length}/${nonConformities.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? humanizeCode(statusFilter)} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? humanizeCode(classificationFilter)}`}
       >
         <FilterShell
           title="Filtros"

@@ -661,7 +661,7 @@ export function ScaffoldDocumentSection({
                 {deleteTarget.title}
               </p>
               <p className={`${typography.bodyMuted} text-muted-foreground`}>
-                {deleteTarget.type}
+                {docTypeLabel(deleteTarget.type)}
               </p>
             </div>
           ) : null

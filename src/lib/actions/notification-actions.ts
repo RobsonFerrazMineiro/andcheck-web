@@ -422,7 +422,7 @@ export async function updateNotificationPreferenceValue(input: {
 
   const critical = defaultCriticalTypes.has(type);
   if (critical && channel === "internal" && !input.enabled) {
-    throw new Error("Notificacoes criticas exigem canal interno.");
+    throw new Error("Notificações críticas exigem canal interno.");
   }
 
   const current = await prisma.notificationPreference

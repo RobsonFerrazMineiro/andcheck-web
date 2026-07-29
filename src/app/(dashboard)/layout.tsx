@@ -16,6 +16,7 @@ import {
 import { getNotificationBellData } from "@/lib/actions/notification-actions";
 import { getContextSwitcherData } from "@/lib/context-switcher";
 import type { ContextSwitcherData } from "@/lib/context-switcher";
+import { humanizeCode } from "@/lib/human-readable";
 import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
@@ -43,7 +44,7 @@ function getRoleLabel(roleCodes: string[], legacyRole?: string) {
     roleCodes.includes(roleCode),
   );
   if (primaryRole) return ROLE_LABELS[primaryRole];
-  if (roleCodes[0]) return roleCodes[0];
+  if (roleCodes[0]) return humanizeCode(roleCodes[0]);
   if (legacyRole === "admin") return "Admin";
   if (legacyRole === "inspector") return "Inspetor";
   return "Viewer";

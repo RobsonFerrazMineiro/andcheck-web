@@ -7,6 +7,7 @@ import {
   scaffoldStatusTone,
   SEMANTIC_TONE_HEX,
 } from "@/lib/semantic-tones";
+import { humanizeCode } from "@/lib/human-readable";
 
 export interface ScaffoldPin {
   id: string;
@@ -157,7 +158,7 @@ function truncateText(value: string, maxLength: number) {
 function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
   const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
   const statusLabel =
-    STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
+    STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
   const location = isShortText(scaffold.locationDescription)
     ? scaffold.locationDescription
     : "";
@@ -165,7 +166,7 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
   const lastInspection = scaffold.lastInspection
     ? `${formatDate(scaffold.lastInspection.date)} - ${
         RESULT_LABEL[scaffold.lastInspection.result] ??
-        scaffold.lastInspection.result
+        humanizeCode(scaffold.lastInspection.result)
       }`
     : "";
 
@@ -204,12 +205,12 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
 function buildFullPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
   const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
   const statusLabel =
-    STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
+    STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
   const validityDate = formatDate(scaffold.validity_date);
   const lastInspection = scaffold.lastInspection
     ? `${formatDate(scaffold.lastInspection.date)} - ${
         RESULT_LABEL[scaffold.lastInspection.result] ??
-        scaffold.lastInspection.result
+        humanizeCode(scaffold.lastInspection.result)
       }`
     : "Sem inspeção registrada";
 
@@ -354,7 +355,7 @@ export function OperationalMap({
     scaffolds.forEach((scaffold) => {
       const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
       const statusLabel =
-        STATUS_LABEL[scaffold.effectiveStatus] ?? scaffold.effectiveStatus;
+        STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
       const markerLabel = `${scaffold.code} - ${statusLabel} - ${scaffold.area}`;
       const marker = L.marker([scaffold.latitude, scaffold.longitude], {
         icon: createPin(color),

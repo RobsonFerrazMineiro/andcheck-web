@@ -6,6 +6,7 @@ import { useRef } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { typography } from "@/lib/design-system";
+import { humanizeCode } from "@/lib/human-readable";
 import type { AuditRow } from "./auditoria-client";
 
 export type AuditDetailDialogProps = {
@@ -29,7 +30,7 @@ function formatJson(value: unknown) {
 }
 
 function normalizeToken(value: string) {
-  return value.replaceAll("_", " ");
+  return humanizeCode(value);
 }
 
 function formatValue(value: unknown): string {
@@ -60,7 +61,7 @@ function formatValue(value: unknown): string {
     const compact = Object.entries(value)
       .filter(([, item]) => item !== null && item !== undefined && item !== "")
       .slice(0, 3)
-      .map(([key, item]) => `${key.replaceAll("_", " ")}: ${formatValue(item)}`);
+      .map(([key, item]) => `${humanizeCode(key)}: ${formatValue(item)}`);
     return compact.length ? compact.join(" | ") : "-";
   }
   return String(value);
@@ -84,7 +85,7 @@ function comparisonRows(row: AuditRow) {
   }
 
   return keys.map((key) => ({
-    field: key.replaceAll("_", " "),
+    field: humanizeCode(key),
     before: formatValue(oldObject[key]),
     after: formatValue(newObject[key]),
   }));
@@ -173,15 +174,10 @@ export function AuditDetailDialog({
             <Detail label="Usuário" value={row.userName ?? "Sistema"} />
             <Detail label="Perfil" value={row.userRole ?? "-"} />
             <Detail
-              label="Sessão"
-              value={row.sessionId ? row.sessionId.slice(0, 12) : "-"}
-            />
-            <Detail
               label="Data/Hora"
               value={format(new Date(row.createdAt), "dd/MM/yyyy HH:mm:ss")}
             />
             <Detail label="Empresa/Planta" value={companyLabel} />
-            <Detail label="IP" value={row.ipAddress ?? "-"} />
             <Detail
               label="Dispositivo/Navegador"
               value={

@@ -29,6 +29,7 @@ import {
 } from "@/components/shared/audit-timeline";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
+import { humanizeCode } from "@/lib/human-readable";
 
 const TYPE_LABELS: Record<string, string> = {
   tubular: "Tubular",
@@ -225,6 +226,24 @@ function getStringField(value: unknown, field: string) {
   return typeof item === "string" && item.trim() ? item : null;
 }
 
+function normalizedText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
+}
+
+function stripOperationalNoise(value: string) {
+  return value
+    .replace(/\bcm[a-z0-9]{18,}\b/gi, "")
+    .replace(/\bNC-\d{4}-\d{4}\b/gi, "NC")
+    .replace(/\bAND-\d{4}-\d{4}\b/gi, "andaime")
+    .replace(/\s+/g, " ")
+    .replace(/\s+\./g, ".")
+    .trim()
+    .replace(/\.$/, "");
+}
+
 function operationalTimelineLabel(log: {
   action: string;
   entityType: string;
@@ -232,31 +251,107 @@ function operationalTimelineLabel(log: {
   newValue: unknown;
 }) {
   const status = getStringField(log.newValue, "status");
+  const description = normalizedText(log.description);
+
+  if (description.includes("consulta publica")) return "Consultou status";
+  if (description.includes("checklist")) return "Registrou checklist";
+  if (description.includes("responsavel atribuido")) return "Responsável definido";
+  if (description.includes("solicitacao de verificacao")) {
+    return "Solicitou verificação";
+  }
+  if (description.includes("correcao da nc")) {
+    if (status === "REJECTED") return "Verificação rejeitada";
+    if (status === "CLOSED") return "Verificação aprovada";
+    if (status === "PENDING_VERIFICATION") return "Solicitou verificação";
+    return "Atualizou correção";
+  }
+
   if (log.action === "CREATE" && log.entityType === "SCAFFOLD") {
-    return "Andaime criado";
+    return "Criou andaime";
   }
   if (log.action === "COMPLETE" && log.entityType === "SCAFFOLD") {
-    return "Montagem concluída";
+    return "Concluiu montagem";
   }
   if (log.action === "STATUS_CHANGE" && status === "liberado") {
-    return "Primeira liberação";
+    return "Liberou andaime";
   }
   if (log.action === "STATUS_CHANGE" && status === "desmontado") {
-    return "Andaime desmontado";
+    return "Desmontou andaime";
+  }
+  if (log.action === "STATUS_CHANGE" && status === "interditado") {
+    return "Interditou andaime";
+  }
+  if (log.action === "STATUS_CHANGE" && status === "reprovado") {
+    return "Reprovou andaime";
   }
   if (log.entityType === "INSPECTION" && status === "aprovado") {
-    return "Inspeção aprovada";
+    return "Aprovou inspeção";
   }
   if (log.entityType === "INSPECTION" && status === "reprovado") {
-    return "Inspeção reprovada";
+    return "Reprovou inspeção";
   }
   if (log.entityType === "NON_CONFORMITY" && log.action === "CREATE") {
-    return "NC aberta";
+    return "Criou a NC";
+  }
+  if (log.entityType === "NON_CONFORMITY" && status === "PENDING_VERIFICATION") {
+    return "Solicitou verificação";
+  }
+  if (log.entityType === "NON_CONFORMITY" && status === "REJECTED") {
+    return "Verificação rejeitada";
+  }
+  if (log.entityType === "NON_CONFORMITY" && status === "CANCELLED") {
+    return "Cancelou a NC";
+  }
+  if (log.entityType === "NON_CONFORMITY" && status === "ASSIGNED") {
+    return "Responsável definido";
   }
   if (log.entityType === "NON_CONFORMITY" && status === "CLOSED") {
-    return "NC encerrada";
+    return "Encerrou a NC";
   }
-  return log.description.endsWith(".") ? log.description.slice(0, -1) : log.description;
+  if (log.entityType === "DOCUMENT") {
+    return log.action === "DELETE" ? "Removeu documento" : "Documento anexado";
+  }
+  return stripOperationalNoise(log.description) || "Registro atualizado";
+}
+
+const ARCHIVED_RELEVANT_DETAIL_KEYS = new Set([
+  "classification",
+  "comment",
+  "description",
+  "dismantleReason",
+  "dismantleReasonDescription",
+  "dueDate",
+  "reason",
+  "requiresNewInspection",
+  "responsibleName",
+  "result",
+  "scaffoldReturnedToPendingRelease",
+  "status",
+  "title",
+  "validityDate",
+  "validity_date",
+]);
+
+const ARCHIVED_DETAIL_LABELS: Record<string, string> = {
+  classification: "Classificação",
+  comment: "Observação",
+  description: "Descrição",
+  dismantleReason: "Motivo da desmontagem",
+  dismantleReasonDescription: "Observação",
+  dueDate: "Prazo",
+  reason: "Motivo",
+  requiresNewInspection: "Nova inspeção necessária",
+  responsibleName: "Responsável",
+  result: "Resultado",
+  scaffoldReturnedToPendingRelease: "Andaime voltou para pendente de liberação",
+  status: "Status",
+  title: "Título",
+  validityDate: "Validade",
+  validity_date: "Validade",
+};
+
+function archivedAuditDetailLabel(key: string) {
+  return ARCHIVED_DETAIL_LABELS[key] ?? humanizeCode(key);
 }
 
 function archivedAuditValueLabel(value: unknown): string {
@@ -264,7 +359,7 @@ function archivedAuditValueLabel(value: unknown): string {
   if (value instanceof Date) return format(value, "dd/MM/yyyy HH:mm");
   if (typeof value === "boolean") return value ? "Sim" : "Não";
   if (typeof value === "number") return String(value);
-  if (typeof value === "string") return value.replaceAll("_", " ");
+  if (typeof value === "string") return humanizeCode(value);
   if (Array.isArray(value)) return `${value.length} item(ns)`;
   return "Dados registrados";
 }
@@ -279,33 +374,91 @@ function archivedAuditDetails(
   const after = isRecord(newValue) ? newValue : {};
 
   return Array.from(new Set([...Object.keys(before), ...Object.keys(after)]))
-    .filter((key) => !["id", "createdAt", "updatedAt"].includes(key))
+    .filter(
+      (key) =>
+        ![
+          "action",
+          "company",
+          "companyId",
+          "createdAt",
+          "created_at",
+          "id",
+          "scaffoldId",
+          "scaffold_id",
+          "tenantCompanyId",
+          "updatedAt",
+          "updated_at",
+          "workspace",
+          "workspaceId",
+          "workspace_id",
+        ].includes(key),
+    )
+    .filter((key) => ARCHIVED_RELEVANT_DETAIL_KEYS.has(key))
     .filter((key) => JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+    .filter((key) => {
+      if (
+        key === "requiresNewInspection" ||
+        key === "scaffoldReturnedToPendingRelease"
+      ) {
+        return before[key] === true || after[key] === true;
+      }
+      return true;
+    })
+    .filter(
+      (key) =>
+        !isRecord(before) ||
+        Object.keys(before).length > 0 ||
+        [
+          "classification",
+          "dismantleReason",
+          "dismantleReasonDescription",
+          "dueDate",
+          "result",
+          "status",
+          "validityDate",
+          "validity_date",
+        ].includes(key),
+    )
     .map((key) => ({
-      label: key.replaceAll("_", " "),
+      label: archivedAuditDetailLabel(key),
       before: archivedAuditValueLabel(before[key]),
       after: archivedAuditValueLabel(after[key]),
-    }));
+    }))
+    .slice(0, 6);
 }
 
 function archivedAuditType(log: ArchivedAuditLog): HistoryEventType {
+  const status = getStringField(log.newValue, "status");
   if (log.action === "CREATE" || log.action.endsWith("_CREATED")) return "create";
   if (log.action === "DELETE" || log.action.includes("REMOVED")) return "delete";
   if (log.action === "STATUS_CHANGE") return "status";
   if (log.entityType === "INSPECTION") return "inspection";
-  if (log.entityType === "NON_CONFORMITY") return "non_conformity";
+  if (log.entityType === "NON_CONFORMITY") {
+    if (status === "CLOSED") return "inspection";
+    if (status === "REJECTED" || status === "CANCELLED") return "failure";
+    if (status === "PENDING_VERIFICATION") return "status";
+    if (status === "ASSIGNED") return "responsible";
+    return "non_conformity";
+  }
   if (log.entityType === "DOCUMENT") return "document";
   return "update";
 }
 
 function archivedAuditTone(log: ArchivedAuditLog) {
   const status = getStringField(log.newValue, "status");
-  if (log.action === "DELETE" || status === "reprovado" || status === "interditado") {
+  if (
+    log.action === "DELETE" ||
+    status === "reprovado" ||
+    status === "interditado" ||
+    status === "REJECTED" ||
+    status === "CANCELLED"
+  ) {
     return "critical" as const;
   }
   if (status === "liberado" || status === "aprovado" || status === "CLOSED") {
     return "success" as const;
   }
+  if (log.action === "CREATE") return "success" as const;
   if (log.action === "STATUS_CHANGE" || log.action === "COMPLETE") {
     return "warning" as const;
   }
@@ -314,7 +467,6 @@ function archivedAuditTone(log: ArchivedAuditLog) {
 
 function archivedAuditToHistoryEvent(
   log: ArchivedAuditLog,
-  scaffold: ArchivedScaffold,
 ): HistoryEvent {
   return {
     id: log.id,
@@ -323,14 +475,7 @@ function archivedAuditToHistoryEvent(
     summary: operationalTimelineLabel(log),
     createdAt: log.createdAt,
     tone: archivedAuditTone(log),
-    details: [
-      { label: "Entidade", value: log.entityType.replaceAll("_", " ") },
-      ...archivedAuditDetails(log.oldValue, log.newValue),
-    ],
-    metadata: {
-      company: scaffold.tenantCompany?.name ?? scaffold.company,
-      workspace: scaffold.workspace?.name,
-    },
+    details: archivedAuditDetails(log.oldValue, log.newValue),
   };
 }
 
@@ -365,7 +510,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
   const previousStatus = getStringField(dismantleLog?.oldValue, "status");
   const lastOperationalStatus =
     previousStatus && previousStatus !== "desmontado"
-      ? (SCAFFOLD_STATUS_LABELS[previousStatus] ?? previousStatus.toUpperCase())
+      ? (SCAFFOLD_STATUS_LABELS[previousStatus] ?? humanizeCode(previousStatus))
       : "-";
   const dismantleReason =
     getStringField(dismantleLog?.newValue, "dismantleReason") ?? "-";
@@ -375,7 +520,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
   const dismantleResponsible = dismantleLog?.userName ?? "-";
   const operationalTimeline = [...auditLogs].reverse();
   const operationalHistoryEvents = operationalTimeline.map((log) =>
-    archivedAuditToHistoryEvent(log, scaffold),
+    archivedAuditToHistoryEvent(log),
   );
   const hdrs = await headers();
   const host = hdrs.get("host") ?? "localhost:3000";
@@ -442,7 +587,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Construction}
             label="Tipo do Andaime"
-            value={TYPE_LABELS[scaffold.type] ?? scaffold.type}
+            value={TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
           />
           <ArchiveRow
             icon={Building2}
@@ -547,7 +692,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
               label="Resultado"
               value={
                 INSPECTION_RESULT_LABELS[lastInspection.result] ??
-                lastInspection.result
+                humanizeCode(lastInspection.result)
               }
             />
             <ArchiveRow
@@ -614,7 +759,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
                   {nc.title}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {NC_STATUS_LABELS[nc.status] ?? nc.status}
+                  {NC_STATUS_LABELS[nc.status] ?? humanizeCode(nc.status)}
                 </p>
                 <p className="font-mono text-[11px] text-muted-foreground">
                   {formatDate(nc.dueDate)}
@@ -646,7 +791,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
                   {document.title}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {DOCUMENT_TYPE_LABELS[document.type] ?? document.type}
+                  {DOCUMENT_TYPE_LABELS[document.type] ?? humanizeCode(document.type)}
                 </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   {document.file_name}

@@ -19,6 +19,7 @@ import {
   storeUploadedFile,
   type UploadCategory,
 } from "@/lib/file-storage";
+import { humanizeCode } from "@/lib/human-readable";
 import {
   dataUrlToFile,
   isOfflineFileReference,
@@ -401,9 +402,9 @@ async function logOfflineSyncEvent({
   await createAuditLog({
     entityType: AuditEntityType.SETTINGS,
     entityId: item.id,
-    entityLabel: item.action,
+    entityLabel: humanizeCode(item.action),
     action: AuditAction.UPDATE,
-    description: `Sincronizacao offline ${status}: ${item.action}`,
+    description: `Sincronização offline ${humanizeCode(status)}: ${humanizeCode(item.action)}`,
     newValue: {
       queueId: item.id,
       action: item.action,
