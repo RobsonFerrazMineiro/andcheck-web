@@ -13,12 +13,15 @@ type EditableScaffoldRecord = {
   status: string;
   location: string;
   area: string;
+  areaId?: string | null;
   height: number;
   width: number | null;
   length: number | null;
   max_load: number | null;
   responsible: string;
+  responsibleUserId?: string | null;
   company: string | null;
+  mountingCompanyId?: string | null;
   notes: string | null;
   latitude: number | null;
   longitude: number | null;

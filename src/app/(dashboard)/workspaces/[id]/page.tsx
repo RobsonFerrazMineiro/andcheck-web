@@ -1,11 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   ActionMenu,
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
-import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
+import {
+  createOperationalArea,
+  getWorkspaceDetail,
+  setOperationalAreaActive,
+  updateOperationalArea,
+} from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { typography } from "@/lib/design-system";
 import {
@@ -17,6 +24,7 @@ import {
   FileText,
   MapPin,
   Pencil,
+  Plus,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -52,6 +60,14 @@ type WorkspaceDetail = {
       type: keyof typeof TYPE_LABELS;
       active: boolean;
     };
+  }>;
+  operationalAreas: Array<{
+    id: string;
+    name: string;
+    code: string | null;
+    description: string | null;
+    isActive: boolean;
+    _count: { scaffolds: number };
   }>;
   _count: {
     companyLinks: number;
@@ -151,6 +167,66 @@ export default async function WorkspaceDetailPage({
                   <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
                   <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietária" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
                 </Link>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-lg">
+        <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Áreas operacionais</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {canManage && (
+            <form action={createOperationalArea} className="grid gap-2 rounded-lg border bg-muted/15 p-3 md:grid-cols-[1fr_120px_1.5fr_auto]">
+              <input type="hidden" name="workspaceId" value={workspace.id} />
+              <Input name="name" placeholder="Nome da área" required className="h-9 rounded-md text-xs" />
+              <Input name="code" placeholder="Código" className="h-9 rounded-md text-xs" />
+              <Input name="description" placeholder="Descrição" className="h-9 rounded-md text-xs" />
+              <Button type="submit" size="sm" className="h-9 rounded-md text-xs"><Plus className="size-3.5" /> Adicionar</Button>
+            </form>
+          )}
+
+          {workspace.operationalAreas.length === 0 ? (
+            <EmptyState
+              icon={MapPin}
+              title="Nenhuma área operacional"
+              description="Cadastre as áreas do workspace para padronizar o formulário de novos andaimes."
+              className="border-dashed"
+            />
+          ) : (
+            <div className="space-y-2">
+              {workspace.operationalAreas.map((area) => (
+                <div key={area.id} className="rounded-lg border bg-muted/10 p-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="break-words text-sm font-semibold">{area.name}</p>
+                        {area.code && <Badge variant="outline" className="rounded-md text-[9px]">{area.code}</Badge>}
+                        <Badge variant={area.isActive ? "default" : "secondary"} className="rounded-md text-[9px]">{area.isActive ? "Ativa" : "Inativa"}</Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">{area.description || "Sem descrição"} · {area._count.scaffolds} andaime(s)</p>
+                    </div>
+                    {canManage && (
+                      <form action={setOperationalAreaActive.bind(null, area.id, !area.isActive)}>
+                        <Button type="submit" variant="outline" size="sm" className="h-8 rounded-md text-xs">
+                          {area.isActive ? "Desativar" : "Ativar"}
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                  {canManage && (
+                    <details className="mt-3">
+                      <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Editar</summary>
+                      <form action={updateOperationalArea} className="mt-2 grid gap-2 md:grid-cols-[1fr_120px_1.5fr_auto]">
+                        <input type="hidden" name="areaId" value={area.id} />
+                        <Input name="name" defaultValue={area.name} required className="h-9 rounded-md text-xs" />
+                        <Input name="code" defaultValue={area.code ?? ""} className="h-9 rounded-md text-xs" />
+                        <Input name="description" defaultValue={area.description ?? ""} className="h-9 rounded-md text-xs" />
+                        <Button type="submit" size="sm" variant="outline" className="h-9 rounded-md text-xs">Salvar</Button>
+                      </form>
+                    </details>
+                  )}
+                </div>
               ))}
             </div>
           )}

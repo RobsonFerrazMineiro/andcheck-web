@@ -241,6 +241,7 @@ model Company {
   nonConformities            NonConformity[]
   auditLogs                  AuditLog[]
   scaffoldDocuments          ScaffoldDocument[]
+  mountedScaffolds           Scaffold[]                  @relation("ScaffoldMountingCompany")
   documents                  Document[]
   notifications              Notification[]
   notificationPreferences    NotificationPreference[]
@@ -282,9 +283,29 @@ model Workspace {
   inspectionSignatures       InspectionSignature[]
   companyLinks               CompanyWorkspace[]
   auditRetentionPolicy       AuditRetentionPolicy?
+  operationalAreas           OperationalArea[]
 
   @@index([ownerCompanyId, active])
   @@map("workspaces")
+}
+
+model OperationalArea {
+  id             String     @id @default(cuid())
+  name           String
+  normalizedName String
+  code           String?
+  description    String?
+  isActive       Boolean    @default(true)
+  workspace      Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId    String
+  scaffolds      Scaffold[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([workspaceId, normalizedName])
+  @@index([workspaceId])
+  @@index([workspaceId, isActive])
+  @@map("operational_areas")
 }
 
 model AuditRetentionPolicy {
@@ -345,10 +366,16 @@ model Scaffold {
   longitude            Float?
   location_description String?
 
-  tenantCompany Company   @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  companyId     String    @default("company-hydro-alunorte")
-  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
-  workspaceId   String    @default("workspace-hydro-murucupi")
+  tenantCompany     Company          @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  companyId         String           @default("company-hydro-alunorte")
+  workspace         Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict)
+  workspaceId       String           @default("workspace-hydro-murucupi")
+  operationalArea   OperationalArea? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  areaId            String?
+  mountingCompany   Company?         @relation("ScaffoldMountingCompany", fields: [mountingCompanyId], references: [id], onDelete: SetNull)
+  mountingCompanyId String?
+  responsibleUser   User?            @relation("ScaffoldResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
+  responsibleUserId String?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -359,6 +386,9 @@ model Scaffold {
 
   @@index([companyId])
   @@index([workspaceId])
+  @@index([areaId])
+  @@index([mountingCompanyId])
+  @@index([responsibleUserId])
   @@index([workspaceId, companyId])
   @@index([companyId, status, code])
   @@index([workspaceId, status, code])
@@ -660,6 +690,7 @@ model User {
   nonConformityEvidences     NonConformityEvidence[]
   nonConformityItemEvidences NonConformityItemEvidence[]
   nonConformityHistory       NonConformityHistory[]
+  responsibleScaffolds       Scaffold[]                  @relation("ScaffoldResponsible")
 
   @@index([companyId])
   @@index([workspaceId])

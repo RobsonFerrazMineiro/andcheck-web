@@ -37,12 +37,15 @@ interface ScaffoldForm {
   type: string;
   location: string;
   area: string;
+  areaId: string;
   height: string;
   width: string;
   length: string;
   max_load: string;
   responsible: string;
+  responsibleUserId: string;
   company: string;
+  mountingCompanyId: string;
   notes: string;
 }
 
@@ -50,14 +53,66 @@ const INITIAL: ScaffoldForm = {
   type: "tubular",
   location: "",
   area: "",
+  areaId: "",
   height: "",
   width: "",
   length: "",
   max_load: "",
   responsible: "",
+  responsibleUserId: "",
   company: "",
+  mountingCompanyId: "",
   notes: "",
 };
+
+type NewScaffoldFormContext = {
+  workspace: { id: string; name: string; code: string } | null;
+  operationalAreas: Array<{ id: string; name: string; code: string | null }>;
+  mountingCompanies: Array<{ id: string; name: string; code: string }>;
+  responsibles: Array<{
+    id: string;
+    name: string;
+    companyId: string;
+    tenantCompany: { name: string };
+  }>;
+  defaults: {
+    areaId: string | null;
+    mountingCompanyId: string | null;
+    responsibleUserId: string | null;
+  };
+};
+
+const NEW_SCAFFOLD_CONTEXT_CACHE_KEY = "scaffold:new-form-context";
+
+function withContextDefaults(
+  initial: ScaffoldForm,
+  context?: NewScaffoldFormContext,
+) {
+  if (!context) return initial;
+  const next = { ...initial };
+  const defaultArea = context.operationalAreas.find(
+    (area) => area.id === context.defaults.areaId,
+  );
+  if (defaultArea) {
+    next.areaId = defaultArea.id;
+    next.area = defaultArea.name;
+  }
+  const defaultCompany = context.mountingCompanies.find(
+    (company) => company.id === context.defaults.mountingCompanyId,
+  );
+  if (defaultCompany) {
+    next.mountingCompanyId = defaultCompany.id;
+    next.company = defaultCompany.name;
+  }
+  const defaultResponsible = context.responsibles.find(
+    (user) => user.id === context.defaults.responsibleUserId,
+  );
+  if (defaultResponsible) {
+    next.responsibleUserId = defaultResponsible.id;
+    next.responsible = defaultResponsible.name;
+  }
+  return next;
+}
 
 const SCAFFOLD_CREATE_UI_DIAGNOSTICS_ENABLED =
   process.env.NODE_ENV === "development" ||
@@ -134,12 +189,15 @@ type EditableScaffold = {
   type: string;
   location: string;
   area: string;
+  areaId?: string | null;
   height: number;
   width: number | null;
   length: number | null;
   max_load: number | null;
   responsible: string;
+  responsibleUserId?: string | null;
   company: string | null;
+  mountingCompanyId?: string | null;
   notes: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -148,9 +206,11 @@ type EditableScaffold = {
 export default function NovoAndaimeForm({
   mode = "create",
   scaffold,
+  formContext,
 }: {
   mode?: "create" | "edit";
   scaffold?: EditableScaffold;
+  formContext?: NewScaffoldFormContext;
 }) {
   const router = useRouter();
   const isEdit = mode === "edit" && Boolean(scaffold);
@@ -160,16 +220,22 @@ export default function NovoAndaimeForm({
           type: scaffold.type,
           location: scaffold.location,
           area: scaffold.area,
+          areaId: scaffold.areaId ?? "",
           height: String(scaffold.height),
           width: scaffold.width === null ? "" : String(scaffold.width),
           length: scaffold.length === null ? "" : String(scaffold.length),
           max_load:
             scaffold.max_load === null ? "" : String(scaffold.max_load),
           responsible: scaffold.responsible,
+          responsibleUserId: scaffold.responsibleUserId ?? "",
           company: scaffold.company ?? "",
+          mountingCompanyId: scaffold.mountingCompanyId ?? "",
           notes: scaffold.notes ?? "",
         }
-      : INITIAL,
+      : withContextDefaults(INITIAL, formContext),
+  );
+  const [context, setContext] = useState<NewScaffoldFormContext | undefined>(
+    formContext,
   );
   const [latitude, setLatitude] = useState<number | null>(
     scaffold?.latitude ?? null,
@@ -192,6 +258,22 @@ export default function NovoAndaimeForm({
     return () => window.clearTimeout(timeout);
   }, []);
 
+  useEffect(() => {
+    if (formContext) {
+      localDb.metadata
+        .set(NEW_SCAFFOLD_CONTEXT_CACHE_KEY, formContext)
+        .catch(() => undefined);
+      return;
+    }
+
+    localDb.metadata
+      .get<NewScaffoldFormContext>(NEW_SCAFFOLD_CONTEXT_CACHE_KEY)
+      .then((cached) => {
+        if (cached) setContext(cached);
+      })
+      .catch(() => undefined);
+  }, [formContext]);
+
   const set =
     (field: keyof ScaffoldForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -211,6 +293,14 @@ export default function NovoAndaimeForm({
       elapsedMs: Math.round(performance.now() - createUiStartedAt),
     });
     try {
+      if (!form.area.trim() || !form.responsible.trim()) {
+        toast.error("Informe área operacional e responsável técnico.", {
+          id: toastId,
+        });
+        savingRef.current = false;
+        setSaving(false);
+        return;
+      }
       const payload: OfflineCreateScaffoldPayload = {
         type: form.type as
           | "tubular"
@@ -220,12 +310,15 @@ export default function NovoAndaimeForm({
           | "torre",
         location: form.location.trim(),
         area: form.area.trim(),
+        areaId: form.areaId || undefined,
         height: parseFloat(form.height) || 0,
         width: form.width ? parseFloat(form.width) : undefined,
         length: form.length ? parseFloat(form.length) : undefined,
         max_load: form.max_load ? parseFloat(form.max_load) : undefined,
         responsible: form.responsible.trim(),
+        responsibleUserId: form.responsibleUserId || undefined,
         company: form.company.trim() || undefined,
+        mountingCompanyId: form.mountingCompanyId || undefined,
         notes: form.notes.trim() || undefined,
         latitude: latitude ?? undefined,
         longitude: longitude ?? undefined,
@@ -273,8 +366,12 @@ export default function NovoAndaimeForm({
           status: "em_montagem",
           location: payload.location,
           area: payload.area,
+          areaId: payload.areaId,
           height: payload.height,
           responsible: payload.responsible,
+          responsibleUserId: payload.responsibleUserId,
+          company: payload.company,
+          mountingCompanyId: payload.mountingCompanyId,
           validity_date: null,
           _count: { inspections: 0 },
           syncStatus: "pending",
@@ -421,20 +518,49 @@ export default function NovoAndaimeForm({
                 />
               </Field>
               <Field label="Área / Setor *">
-                <Input
-                  placeholder="Ex: Manutenção Industrial"
-                  value={form.area}
-                  onChange={set("area")}
-                  list={`${datalistId}-areas`}
-                  required
-                  className="rounded-md h-9 text-[12px]"
-                />
-                <SmartSuggestion
-                  value={suggestions.area}
-                  onApply={(value) =>
-                    setForm((current) => ({ ...current, area: value }))
-                  }
-                />
+                {context?.operationalAreas.length ? (
+                  <Select
+                    value={form.areaId || undefined}
+                    onValueChange={(value) => {
+                      const area = context.operationalAreas.find(
+                        (item) => item.id === value,
+                      );
+                      setForm((current) => ({
+                        ...current,
+                        areaId: value,
+                        area: area?.name ?? current.area,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                      <SelectValue placeholder="Selecione a área operacional" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {context.operationalAreas.map((area) => (
+                        <SelectItem key={area.id} value={area.id}>
+                          {area.code ? `${area.code} - ${area.name}` : area.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <>
+                    <Input
+                      placeholder="Ex: Manutenção Industrial"
+                      value={form.area}
+                      onChange={set("area")}
+                      list={`${datalistId}-areas`}
+                      required
+                      className="rounded-md h-9 text-[12px]"
+                    />
+                    <SmartSuggestion
+                      value={suggestions.area}
+                      onApply={(value) =>
+                        setForm((current) => ({ ...current, area: value }))
+                      }
+                    />
+                  </>
+                )}
               </Field>
             </div>
             <Field label="Geolocalização (opcional)">
@@ -503,35 +629,96 @@ export default function NovoAndaimeForm({
           <FormSection title="Responsabilidade Técnica">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Responsável Técnico *">
-                <Input
-                  placeholder="Nome do responsável"
-                  value={form.responsible}
-                  onChange={set("responsible")}
-                  list={`${datalistId}-responsibles`}
-                  required
-                  className="rounded-md h-9 text-[12px]"
-                />
-                <SmartSuggestion
-                  value={suggestions.responsible}
-                  onApply={(value) =>
-                    setForm((current) => ({ ...current, responsible: value }))
-                  }
-                />
+                {context?.responsibles.length ? (
+                  <Select
+                    value={form.responsibleUserId || undefined}
+                    onValueChange={(value) => {
+                      const responsible = context.responsibles.find(
+                        (item) => item.id === value,
+                      );
+                      setForm((current) => ({
+                        ...current,
+                        responsibleUserId: value,
+                        responsible: responsible?.name ?? current.responsible,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                      <SelectValue placeholder="Selecione o responsável técnico" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {context.responsibles.map((responsible) => (
+                        <SelectItem key={responsible.id} value={responsible.id}>
+                          {responsible.name} - {responsible.tenantCompany.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <>
+                    <Input
+                      placeholder="Nome do responsável"
+                      value={form.responsible}
+                      onChange={set("responsible")}
+                      list={`${datalistId}-responsibles`}
+                      required
+                      className="rounded-md h-9 text-[12px]"
+                    />
+                    <SmartSuggestion
+                      value={suggestions.responsible}
+                      onApply={(value) =>
+                        setForm((current) => ({
+                          ...current,
+                          responsible: value,
+                        }))
+                      }
+                    />
+                  </>
+                )}
               </Field>
               <Field label="Empresa Montadora">
-                <Input
-                  placeholder="Nome da empresa"
-                  value={form.company}
-                  onChange={set("company")}
-                  list={`${datalistId}-companies`}
-                  className="rounded-md h-9 text-[12px]"
-                />
-                <SmartSuggestion
-                  value={suggestions.company}
-                  onApply={(value) =>
-                    setForm((current) => ({ ...current, company: value }))
-                  }
-                />
+                {context?.mountingCompanies.length ? (
+                  <Select
+                    value={form.mountingCompanyId || undefined}
+                    onValueChange={(value) => {
+                      const company = context.mountingCompanies.find(
+                        (item) => item.id === value,
+                      );
+                      setForm((current) => ({
+                        ...current,
+                        mountingCompanyId: value,
+                        company: company?.name ?? current.company,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                      <SelectValue placeholder="Selecione a empresa montadora" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {context.mountingCompanies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.code} - {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <>
+                    <Input
+                      placeholder="Nome da empresa"
+                      value={form.company}
+                      onChange={set("company")}
+                      list={`${datalistId}-companies`}
+                      className="rounded-md h-9 text-[12px]"
+                    />
+                    <SmartSuggestion
+                      value={suggestions.company}
+                      onApply={(value) =>
+                        setForm((current) => ({ ...current, company: value }))
+                      }
+                    />
+                  </>
+                )}
               </Field>
             </div>
           </FormSection>

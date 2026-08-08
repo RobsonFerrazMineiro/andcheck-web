@@ -79,12 +79,15 @@ export type OfflineCreateScaffoldPayload = {
   type: "tubular" | "fachadeiro" | "multidirecional" | "suspenso" | "torre";
   location: string;
   area: string;
+  areaId?: string;
   height: number;
   width?: number;
   length?: number;
   max_load?: number;
   responsible: string;
+  responsibleUserId?: string;
   company?: string;
+  mountingCompanyId?: string;
   notes?: string;
   latitude?: number;
   longitude?: number;

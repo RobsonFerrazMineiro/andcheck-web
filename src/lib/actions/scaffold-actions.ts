@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import {
+  getCurrentUserAccess,
   requireAnyPermission,
   requirePermission,
   requireRole,
@@ -113,6 +114,74 @@ function parseScaffoldInput(data: {
 }
 
 // ── Listar todos ──────────────────────────────────────────────────────────────
+async function resolveScaffoldReferenceFields(
+  input: ReturnType<typeof parseScaffoldInput>,
+  ids: {
+    areaId?: string;
+    mountingCompanyId?: string;
+    responsibleUserId?: string;
+  },
+  workspaceId: string,
+) {
+  const [area, mountingCompanyLink, responsibleUser] = await Promise.all([
+    ids.areaId
+      ? prisma.operationalArea.findFirst({
+          where: { id: ids.areaId, workspaceId, isActive: true },
+          select: { id: true, name: true },
+        })
+      : null,
+    ids.mountingCompanyId
+      ? prisma.companyWorkspace.findFirst({
+          where: {
+            workspaceId,
+            companyId: ids.mountingCompanyId,
+            role: "SCAFFOLD_COMPANY",
+            active: true,
+            company: { active: true, type: "SCAFFOLD_COMPANY" },
+          },
+          select: { company: { select: { id: true, name: true } } },
+        })
+      : null,
+    ids.responsibleUserId
+      ? prisma.user.findFirst({
+          where: {
+            id: ids.responsibleUserId,
+            workspaceId,
+            is_active: true,
+            roles: {
+              some: {
+                role: {
+                  code: { in: ["ENCARREGADO", "SUPERVISOR_ENCARREGADO"] },
+                },
+              },
+            },
+          },
+          select: { id: true, name: true },
+        })
+      : null,
+  ]);
+
+  if (ids.areaId && !area) {
+    throw new Error("Area operacional invalida ou inativa para este workspace.");
+  }
+  if (ids.mountingCompanyId && !mountingCompanyLink) {
+    throw new Error("Empresa montadora invalida para este workspace.");
+  }
+  if (ids.responsibleUserId && !responsibleUser) {
+    throw new Error("Responsavel tecnico invalido para este workspace.");
+  }
+
+  return {
+    ...input,
+    area: area?.name ?? input.area,
+    areaId: area?.id ?? null,
+    company: mountingCompanyLink?.company.name ?? input.company,
+    mountingCompanyId: mountingCompanyLink?.company.id ?? null,
+    responsible: responsibleUser?.name ?? input.responsible,
+    responsibleUserId: responsibleUser?.id ?? null,
+  };
+}
+
 export async function getScaffolds() {
   await requireAnyPermission(["read.all", "read.own_company"]);
   const scope = await getDataScope();
@@ -347,18 +416,110 @@ export async function getScaffoldByTag(tag: string) {
   return scaffold;
 }
 
+const OPERATIONAL_AUTO_COMPANY_ROLES = new Set([
+  "PLANEJAMENTO",
+  "SUPERVISOR",
+  "ENCARREGADO",
+  "SUPERVISOR_ENCARREGADO",
+  "MONTADOR_LIDER",
+]);
+
+export async function getNewScaffoldFormContext() {
+  await requirePermission("scaffolds.create");
+  const [scope, access] = await Promise.all([
+    getDataScope(),
+    getCurrentUserAccess(),
+  ]);
+  const creationContext = getOwnedCreationContext(scope);
+
+  const [workspace, operationalAreas, mountingCompanyLinks, responsibles] =
+    await Promise.all([
+      prisma.workspace.findUnique({
+        where: { id: creationContext.workspaceId },
+        select: { id: true, name: true, code: true },
+      }),
+      prisma.operationalArea.findMany({
+        where: { workspaceId: creationContext.workspaceId, isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, code: true },
+      }),
+      prisma.companyWorkspace.findMany({
+        where: {
+          workspaceId: creationContext.workspaceId,
+          role: "SCAFFOLD_COMPANY",
+          active: true,
+          company: { active: true, type: "SCAFFOLD_COMPANY" },
+        },
+        orderBy: { company: { name: "asc" } },
+        select: {
+          company: { select: { id: true, name: true, code: true } },
+        },
+      }),
+      prisma.user.findMany({
+        where: {
+          workspaceId: creationContext.workspaceId,
+          is_active: true,
+          roles: {
+            some: {
+              role: {
+                code: { in: ["ENCARREGADO", "SUPERVISOR_ENCARREGADO"] },
+              },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          companyId: true,
+          tenantCompany: { select: { name: true } },
+        },
+      }),
+    ]);
+
+  const mountingCompanies = mountingCompanyLinks.map((link) => link.company);
+  const canAutoSelectCompany = Boolean(
+    access?.roleCodes.some((roleCode) =>
+      OPERATIONAL_AUTO_COMPANY_ROLES.has(roleCode),
+    ),
+  );
+  const defaultMountingCompany =
+    canAutoSelectCompany && access
+      ? mountingCompanies.find((company) => company.id === access.companyId)
+      : null;
+
+  return {
+    workspace,
+    operationalAreas,
+    mountingCompanies,
+    responsibles,
+    defaults: {
+      areaId:
+        operationalAreas.length === 1 ? operationalAreas[0]?.id ?? null : null,
+      mountingCompanyId: defaultMountingCompany?.id ?? null,
+      responsibleUserId:
+        access && responsibles.some((user) => user.id === access.userId)
+          ? access.userId
+          : null,
+    },
+  };
+}
+
 // ── Criar ─────────────────────────────────────────────────────────────────────
 export async function createScaffold(
   data: {
     type: ScaffoldType;
     location: string;
     area: string;
+    areaId?: string;
     height: number;
     width?: number;
     length?: number;
     max_load?: number;
     responsible: string;
+    responsibleUserId?: string;
     company?: string;
+    mountingCompanyId?: string;
     notes?: string;
     latitude?: number;
     longitude?: number;
@@ -404,13 +565,16 @@ export async function createScaffold(
         workspaceId: scope.actorWorkspaceId,
       }
     : getOwnedCreationContext(scope);
-  const tenantCompany =
-    selectedCompany ??
-    (await prisma.company.findUnique({
-      where: { id: creationContext.companyId },
-      select: { name: true },
-    }));
-  timer.mark("04 Resolve tenant company");
+  const resolvedInput = await resolveScaffoldReferenceFields(
+    input,
+    {
+      areaId: data.areaId,
+      mountingCompanyId: data.mountingCompanyId,
+      responsibleUserId: data.responsibleUserId,
+    },
+    creationContext.workspaceId,
+  );
+  timer.mark("04 Resolve form references");
 
   const code = await generateNextScaffoldTag(attempt);
   timer.mark("05 Generate code", { code });
@@ -418,9 +582,8 @@ export async function createScaffold(
   try {
     const scaffold = await prisma.scaffold.create({
       data: {
-        ...input,
+        ...resolvedInput,
         ...creationContext,
-        company: tenantCompany?.name ?? input.company,
         code,
         tag: code, // QR Code usa o mesmo código fixo e legível
         status: "em_montagem",
@@ -479,7 +642,7 @@ export async function createScaffold(
     const isUniqueViolation =
       err instanceof Error && err.message.includes("Unique constraint");
     if (isUniqueViolation) {
-      return createScaffold(input, attempt + 1);
+      return createScaffold(data, attempt + 1);
     }
     throw err;
   }
@@ -491,12 +654,15 @@ export async function updateScaffold(
     type: ScaffoldType;
     location: string;
     area: string;
+    areaId?: string;
     height: number;
     width?: number;
     length?: number;
     max_load?: number;
     responsible: string;
+    responsibleUserId?: string;
     company?: string;
+    mountingCompanyId?: string;
     notes?: string;
     latitude?: number;
     longitude?: number;
@@ -511,10 +677,20 @@ export async function updateScaffold(
     where: { id: scaffoldId },
   });
   assertRecordInDataScope(scope, oldScaffold);
+  if (!oldScaffold) throw new Error("Andaime não encontrado.");
+  const resolvedInput = await resolveScaffoldReferenceFields(
+    input,
+    {
+      areaId: data.areaId,
+      mountingCompanyId: data.mountingCompanyId,
+      responsibleUserId: data.responsibleUserId,
+    },
+    oldScaffold.workspaceId,
+  );
 
   const scaffold = await prisma.scaffold.update({
     where: { id: scaffoldId },
-    data: input,
+    data: resolvedInput,
   });
 
   await createAuditLog({

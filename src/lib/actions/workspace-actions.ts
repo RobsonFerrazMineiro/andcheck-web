@@ -9,7 +9,7 @@ import {
   requireAnyPermission,
   requireRole,
 } from "@/lib/authz";
-import { WORKSPACE_CONTEXT_COOKIE } from "@/lib/data-scope";
+import { getDataScope, WORKSPACE_CONTEXT_COOKIE } from "@/lib/data-scope";
 import {
   enumValue,
   optionalNumber as parseOptionalNumber,
@@ -45,6 +45,36 @@ function workspaceSnapshot(workspace: WorkspaceSnapshot) {
     description: workspace.description,
     status: workspace.active ? "ACTIVE" : "INACTIVE",
   };
+}
+
+function normalizeOperationalAreaName(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("pt-BR");
+}
+
+function parseOperationalAreaForm(formData: FormData) {
+  const name = requiredText(formData.get("name"), "Área operacional", 120);
+  return {
+    name,
+    normalizedName: normalizeOperationalAreaName(name),
+    code: optionalText(formData.get("code"), "Código", 40),
+    description: optionalText(formData.get("description"), "Descrição", 400),
+  };
+}
+
+async function assertCanManageWorkspaceAreas(workspaceId: string) {
+  await requireAnyPermission(["workspaces.manage"]);
+  const access = await getCurrentUserAccess();
+  if (access?.roleCodes.includes("SUPER_ADMIN")) return;
+
+  const scope = await getDataScope();
+  if (!scope.workspaceIds?.includes(workspaceId)) {
+    throw new Error("Workspace fora do escopo permitido.");
+  }
 }
 
 function normalizeCode(value: string) {
@@ -188,6 +218,10 @@ export async function getWorkspaceDetail(id: string) {
           },
         },
       },
+      operationalAreas: {
+        orderBy: [{ isActive: "desc" }, { name: "asc" }],
+        include: { _count: { select: { scaffolds: true } } },
+      },
       _count: {
         select: {
           companyLinks: { where: { active: true } },
@@ -200,6 +234,115 @@ export async function getWorkspaceDetail(id: string) {
       },
     },
   });
+}
+
+export async function createOperationalArea(formData: FormData) {
+  const workspaceId = requiredId(formData.get("workspaceId"), "Workspace");
+  await assertCanManageWorkspaceAreas(workspaceId);
+  const input = parseOperationalAreaForm(formData);
+
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: workspaceId },
+    select: { id: true, name: true, ownerCompanyId: true },
+  });
+  if (!workspace) throw new Error("Workspace não encontrado.");
+
+  const area = await prisma.operationalArea.create({
+    data: { ...input, workspaceId },
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.WORKSPACE,
+    entityId: workspace.id,
+    entityLabel: workspace.name,
+    action: AuditAction.UPDATE,
+    description: `Área operacional ${area.name} criada no workspace ${workspace.name}`,
+    newValue: {
+      operationalAreaId: area.id,
+      name: area.name,
+      code: area.code,
+      isActive: area.isActive,
+    },
+    companyId: workspace.ownerCompanyId,
+    workspaceId: workspace.id,
+  });
+
+  revalidatePath(`/workspaces/${workspace.id}`);
+  revalidatePath("/andaimes/novo");
+}
+
+export async function updateOperationalArea(formData: FormData) {
+  const areaId = requiredId(formData.get("areaId"), "Área operacional");
+  const current = await prisma.operationalArea.findUnique({
+    where: { id: areaId },
+    include: { workspace: { select: { id: true, name: true, ownerCompanyId: true } } },
+  });
+  if (!current) throw new Error("Área operacional não encontrada.");
+  await assertCanManageWorkspaceAreas(current.workspaceId);
+  const input = parseOperationalAreaForm(formData);
+
+  const area = await prisma.operationalArea.update({
+    where: { id: areaId },
+    data: input,
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.WORKSPACE,
+    entityId: current.workspace.id,
+    entityLabel: current.workspace.name,
+    action: AuditAction.UPDATE,
+    description: `Área operacional ${area.name} atualizada`,
+    oldValue: {
+      operationalAreaId: current.id,
+      name: current.name,
+      code: current.code,
+      description: current.description,
+      isActive: current.isActive,
+    },
+    newValue: {
+      operationalAreaId: area.id,
+      name: area.name,
+      code: area.code,
+      description: area.description,
+      isActive: area.isActive,
+    },
+    companyId: current.workspace.ownerCompanyId,
+    workspaceId: current.workspace.id,
+  });
+
+  revalidatePath(`/workspaces/${current.workspace.id}`);
+  revalidatePath("/andaimes/novo");
+}
+
+export async function setOperationalAreaActive(id: string, isActive: boolean) {
+  const areaId = requiredId(id, "Área operacional");
+  const current = await prisma.operationalArea.findUnique({
+    where: { id: areaId },
+    include: { workspace: { select: { id: true, name: true, ownerCompanyId: true } } },
+  });
+  if (!current) throw new Error("Área operacional não encontrada.");
+  if (current.isActive === isActive) return;
+  await assertCanManageWorkspaceAreas(current.workspaceId);
+
+  const area = await prisma.operationalArea.update({
+    where: { id: areaId },
+    data: { isActive },
+  });
+
+  await createAuditLog({
+    entityType: AuditEntityType.WORKSPACE,
+    entityId: current.workspace.id,
+    entityLabel: current.workspace.name,
+    action: AuditAction.UPDATE,
+    description: `Área operacional ${area.name} ${isActive ? "ativada" : "desativada"}`,
+    oldValue: { operationalAreaId: current.id, isActive: current.isActive },
+    newValue: { operationalAreaId: area.id, isActive: area.isActive },
+    companyId: current.workspace.ownerCompanyId,
+    workspaceId: current.workspace.id,
+  });
+
+  revalidatePath(`/workspaces/${current.workspace.id}`);
+  revalidatePath("/andaimes/novo");
 }
 
 export async function createWorkspace(formData: FormData) {

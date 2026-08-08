@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { canCurrentUser } from "@/lib/authz";
+import { getNewScaffoldFormContext } from "@/lib/actions/scaffold-actions";
 import NovoAndaimeForm from "./novo-andaime-form";
 
 export default async function NovoAndaimePage() {
@@ -10,5 +11,7 @@ export default async function NovoAndaimePage() {
     redirect("/andaimes");
   }
 
-  return <NovoAndaimeForm />;
+  const formContext = await getNewScaffoldFormContext();
+
+  return <NovoAndaimeForm formContext={formContext} />;
 }
