@@ -40,6 +40,39 @@ import {
 
 const SCAFFOLD_TYPES = Object.values(ScaffoldType);
 const SCAFFOLD_STATUSES = Object.values(ScaffoldStatus);
+const SCAFFOLD_CREATE_DIAGNOSTICS_ENABLED =
+  process.env.NODE_ENV === "development" ||
+  process.env.SCAFFOLD_CREATE_DIAGNOSTICS === "true" ||
+  process.env.RELEASE_FLOW_DIAGNOSTICS === "true";
+
+function createScaffoldFlowTimer() {
+  const startedAt = performance.now();
+  let previousAt = startedAt;
+  const marks: string[] = [];
+
+  return {
+    mark(label: string, detail?: Record<string, unknown>) {
+      if (!SCAFFOLD_CREATE_DIAGNOSTICS_ENABLED) return;
+      const now = performance.now();
+      const stepMs = Math.round(now - previousAt);
+      const totalMs = Math.round(now - startedAt);
+      previousAt = now;
+      const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+      marks.push(`${label}: ${stepMs}ms total=${totalMs}ms${detailLabel}`);
+    },
+    finish(detail?: Record<string, unknown>) {
+      if (!SCAFFOLD_CREATE_DIAGNOSTICS_ENABLED) return;
+      const totalMs = Math.round(performance.now() - startedAt);
+      const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+      console.info(
+        `[scaffold-create-flow] total=${totalMs}ms${detailLabel}\n` +
+          marks
+            .map((mark) => `[scaffold-create-flow] ${mark}`)
+            .join("\n"),
+      );
+    },
+  };
+}
 
 function parseScaffoldInput(data: {
   type: ScaffoldType;
@@ -333,9 +366,14 @@ export async function createScaffold(
   },
   attempt = 0,
 ): Promise<Awaited<ReturnType<typeof prisma.scaffold.create>>> {
+  const timer = createScaffoldFlowTimer();
   await requirePermission("scaffolds.create");
   const scope = await getDataScope();
+  timer.mark("01 RBAC");
+
   const input = parseScaffoldInput(data);
+  timer.mark("02 Parse input");
+
   const requestedCompany = input.company?.trim();
   const selectedCompany =
     scope.isGlobal && requestedCompany
@@ -355,6 +393,11 @@ export async function createScaffold(
           select: { id: true, name: true },
         })
       : null;
+  timer.mark("03 Resolve selected company", {
+    global: scope.isGlobal,
+    selected: Boolean(selectedCompany),
+  });
+
   const creationContext = scope.isGlobal
     ? {
         companyId: selectedCompany?.id ?? scope.actorCompanyId,
@@ -367,8 +410,11 @@ export async function createScaffold(
       where: { id: creationContext.companyId },
       select: { name: true },
     }));
+  timer.mark("04 Resolve tenant company");
 
   const code = await generateNextScaffoldTag(attempt);
+  timer.mark("05 Generate code", { code });
+
   try {
     const scaffold = await prisma.scaffold.create({
       data: {
@@ -380,6 +426,8 @@ export async function createScaffold(
         status: "em_montagem",
       },
     });
+    timer.mark("06 Persist scaffold", { scaffoldId: scaffold.id });
+
     await createAuditLog({
       entityType: AuditEntityType.SCAFFOLD,
       entityId: scaffold.id,
@@ -399,6 +447,8 @@ export async function createScaffold(
       companyId: scaffold.companyId,
       workspaceId: scaffold.workspaceId,
     });
+    timer.mark("07 Audit log");
+
     await createNotification({
       companyId: scaffold.companyId,
       workspaceId: scaffold.workspaceId,
@@ -415,10 +465,14 @@ export async function createScaffold(
         area: scaffold.area,
       },
     });
+    timer.mark("08 Notification");
+
     revalidatePath("/andaimes");
     revalidatePath("/dashboard");
     revalidatePath("/mapa");
     revalidatePath(`/andaimes/${scaffold.id}`);
+    timer.mark("09 Revalidation", { paths: 4 });
+    timer.finish({ scaffoldId: scaffold.id, code: scaffold.code });
     return scaffold;
   } catch (err: unknown) {
     // Conflito de unique constraint por concorrência → tenta novamente

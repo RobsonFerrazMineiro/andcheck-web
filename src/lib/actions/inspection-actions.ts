@@ -47,6 +47,9 @@ const CHECKLIST_VALUES = Object.values(ChecklistValue);
 const INSPECTION_RESULTS = Object.values(InspectionResult);
 const MAX_SIGNATURE_DATA_LENGTH = 350_000;
 const MAX_INLINE_IMAGE_DATA_LENGTH = 1_500_000;
+const RELEASE_FLOW_DIAGNOSTICS_ENABLED =
+  process.env.NODE_ENV === "development" ||
+  process.env.RELEASE_FLOW_DIAGNOSTICS === "true";
 
 const SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES: Record<string, string[]> = {
   SUPERVISOR_ENCARREGADO: [
@@ -87,6 +90,33 @@ function friendlySignerRoleName(roleCode?: string) {
     HSE_HYDRO: "HSE da Contratante",
   };
   return roleCode ? labels[roleCode] ?? roleCode : "";
+}
+
+function createReleaseFlowTimer() {
+  const startedAt = performance.now();
+  let previousAt = startedAt;
+  const marks: string[] = [];
+
+  return {
+    mark(label: string, detail?: Record<string, unknown>) {
+      if (!RELEASE_FLOW_DIAGNOSTICS_ENABLED) return;
+      const now = performance.now();
+      const stepMs = Math.round(now - previousAt);
+      const totalMs = Math.round(now - startedAt);
+      previousAt = now;
+      const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+      marks.push(`${label}: ${stepMs}ms total=${totalMs}ms${detailLabel}`);
+    },
+    finish(detail?: Record<string, unknown>) {
+      if (!RELEASE_FLOW_DIAGNOSTICS_ENABLED) return;
+      const totalMs = Math.round(performance.now() - startedAt);
+      const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+      console.info(
+        `[release-flow] total=${totalMs}ms${detailLabel}\n` +
+          marks.map((mark) => `[release-flow] ${mark}`).join("\n"),
+      );
+    },
+  };
 }
 
 function parseInspectionInput(data: {
@@ -580,14 +610,27 @@ export async function createInspection(data: {
     photo?: string;
   }[];
 }) {
+  const timer = createReleaseFlowTimer();
   await requireAnyPermission(["inspections.create", "inspections.finalize"]);
   await assertActiveCompanyForCreation("inspections.create");
   const scope = await getDataScope();
+  timer.mark("01 RBAC");
+
   const input = parseInspectionInput(data);
+  timer.mark("02 Parse input", {
+    checklistItems: input.checklist.length,
+    signatures: input.signatures?.length ?? 0,
+    photos: input.photos?.length ?? 0,
+  });
+
   const oldScaffold = await prisma.scaffold.findUnique({
     where: { id: input.scaffold_id },
   });
   assertRecordInDataScope(scope, oldScaffold);
+  timer.mark("03 Load scaffold", {
+    scaffoldId: input.scaffold_id,
+    previousStatus: oldScaffold?.status,
+  });
 
   const activeNonConformity = await findActiveNonConformity(input.scaffold_id);
   if (activeNonConformity) {
@@ -595,6 +638,7 @@ export async function createInspection(data: {
       "Não é possível iniciar nova inspeção enquanto houver não conformidade ativa para este andaime.",
     );
   }
+  timer.mark("04 Check active NC");
 
   input.photos?.forEach((photo) =>
     assertStoredFileOrInlineImageReference(photo, "Foto da inspeção"),
@@ -618,10 +662,15 @@ export async function createInspection(data: {
       assertStoredFileOrInlineImageReference(item.photo, "Foto do checklist");
     }
   });
+  timer.mark("05 Validate files/checklist");
+
   const currentAccess = await getCurrentUserAccess();
+  timer.mark("06 Load current access");
 
   const { checklist, signatures, ...inspectionData } = input;
   const calculatedResult = calculateInspectionResult(checklist);
+  timer.mark("07 Calculate result", { result: calculatedResult });
+
   const policy = await resolveInspectionSignaturePolicyForScaffold(
     input.scaffold_id,
   );
@@ -632,6 +681,11 @@ export async function createInspection(data: {
   const providedSignatures = (signatures ?? []).filter(
     (signature) => signature.signer_name.trim() && signature.signature_data,
   );
+  timer.mark("08 Load signature policy", {
+    required: requiredSignatures.length,
+    provided: providedSignatures.length,
+  });
+
   const validatedSignatures = await Promise.all(
     providedSignatures.map(async (signature) => {
       if (!signature.signer_user_id) {
@@ -737,6 +791,10 @@ export async function createInspection(data: {
       };
     }),
   );
+  timer.mark("09 Validate signatures", {
+    validated: validatedSignatures.length,
+  });
+
   const pendingSignatures = requiredSignatures.filter((requirement) => {
     const signedCount = validatedSignatures.filter(
       (signature) => signature.role_code === requirement.role_code,
@@ -754,6 +812,7 @@ export async function createInspection(data: {
         ".",
     );
   }
+  timer.mark("10 Check pending signatures");
 
   const inspection = await prisma.inspection.create({
     data: {
@@ -796,6 +855,10 @@ export async function createInspection(data: {
       },
     },
   });
+  timer.mark("11 Persist inspection", {
+    inspectionId: inspection.id,
+    checklistItems: inspection.checklist.length,
+  });
 
   // Atualizar status e validade do andaime conforme resultado
   const validityDate =
@@ -806,6 +869,10 @@ export async function createInspection(data: {
   // Se há item crítico reprovado → INTERDITADO; reprovado simples → REPROVADO; aprovado → LIBERADO
   const hasCriticalFail = hasCriticalChecklistFailure(checklist);
   const newStatus = calculateScaffoldStatus(calculatedResult, checklist);
+  timer.mark("12 Generate validity/status", {
+    newStatus,
+    validityDate: validityDate?.toISOString() ?? null,
+  });
 
   const scaffold = await prisma.scaffold.update({
     where: { id: input.scaffold_id },
@@ -814,6 +881,10 @@ export async function createInspection(data: {
       validity_date: validityDate,
       released_at: newStatus === "liberado" ? new Date() : undefined,
     },
+  });
+  timer.mark("13 Persist scaffold status", {
+    scaffoldId: scaffold.id,
+    status: scaffold.status,
   });
 
   const nonConformingItems = inspection.checklist.filter((item) =>
@@ -826,6 +897,9 @@ export async function createInspection(data: {
     failedItems: nonConformingItems,
     hasCriticalFail,
     currentUserId: currentAccess?.userId,
+  });
+  timer.mark("14 Process NCs", {
+    nonConformingItems: nonConformingItems.length,
   });
 
   await createAuditLog({
@@ -853,6 +927,7 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
+  timer.mark("15 Audit inspection create");
 
   await createAuditLog({
     entityType: AuditEntityType.INSPECTION,
@@ -868,6 +943,7 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
+  timer.mark("16 Audit inspection complete");
 
   for (const signature of validatedSignatures) {
     await createAuditLog({
@@ -888,6 +964,9 @@ export async function createInspection(data: {
       workspaceId: scaffold.workspaceId,
     });
   }
+  timer.mark("17 Audit signatures", {
+    signatures: validatedSignatures.length,
+  });
 
   await createAuditLog({
     entityType: AuditEntityType.SCAFFOLD,
@@ -908,6 +987,7 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
+  timer.mark("18 Audit scaffold status");
 
   await createNotification({
     companyId: scaffold.companyId,
@@ -926,6 +1006,7 @@ export async function createInspection(data: {
       inspectorName: inspection.inspector_name,
     },
   });
+  timer.mark("19 Notification inspection completed");
 
   if (newStatus === "liberado" || newStatus === "reprovado") {
     await createNotification({
@@ -952,6 +1033,9 @@ export async function createInspection(data: {
       },
     });
   }
+  timer.mark("20 Notification scaffold status", {
+    sent: newStatus === "liberado" || newStatus === "reprovado",
+  });
 
   const resultNotification = INSPECTION_RESULT_NOTIFICATION[inspection.result];
   await createNotification({
@@ -971,8 +1055,28 @@ export async function createInspection(data: {
       inspectorName: inspection.inspector_name,
     },
   });
+  timer.mark("21 Notification result");
+  timer.mark("22 Revalidation", { paths: 0 });
+  timer.finish({
+    inspectionId: inspection.id,
+    scaffoldId: scaffold.id,
+    scaffoldStatus: scaffold.status,
+  });
 
-  return { id: inspection.id };
+  return {
+    id: inspection.id,
+    inspection: {
+      id: inspection.id,
+      result: inspection.result,
+      validityDays: inspection.validity_days,
+    },
+    scaffold: {
+      id: scaffold.id,
+      status: scaffold.status,
+      releasedAt: scaffold.released_at?.toISOString() ?? null,
+      validityDate: scaffold.validity_date?.toISOString() ?? null,
+    },
+  };
 }
 
 // ── Stats gerais ──────────────────────────────────────────────────────────────

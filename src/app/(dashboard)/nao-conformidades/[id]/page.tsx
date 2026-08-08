@@ -38,6 +38,7 @@ import {
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
+import { sanitizeForLog } from "@/lib/safe-log";
 import {
   humanizeCode,
   humanizeChecklistCategory,
@@ -404,7 +405,10 @@ export default async function NonConformityDetailPage({ params }: Props) {
       entityId: nc.id,
     });
   } catch (error) {
-    console.error("Failed to load non conformity audit timeline:", error);
+    console.error(
+      "Failed to load non conformity audit timeline:",
+      sanitizeForLog(error),
+    );
   }
 
   const auditTimelineForClient = auditTimeline.map((item) => ({
@@ -463,7 +467,10 @@ export default async function NonConformityDetailPage({ params }: Props) {
     try {
       responsibleOptions = await getNonConformityResponsibleOptions();
     } catch (error) {
-      console.error("Failed to load non conformity responsible options:", error);
+      console.error(
+        "Failed to load non conformity responsible options:",
+        sanitizeForLog(error),
+      );
     }
   }
 

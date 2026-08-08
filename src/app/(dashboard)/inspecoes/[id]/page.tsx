@@ -22,6 +22,7 @@ import { notFound } from "next/navigation";
 
 import { PdfDownloadButton } from "@/components/inspection/pdf-download-button";
 import { PrintButton } from "@/components/inspection/print-button";
+import { ReleaseFlowProbe } from "./release-flow-probe";
 import { LinkedRecordsButton } from "@/components/scaffold/linked-records-button";
 import {
   ActionMenu,
@@ -250,6 +251,10 @@ export default async function InspectionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5 max-w-4xl mx-auto pb-10">
+      <ReleaseFlowProbe
+        inspectionId={inspection.id}
+        scaffoldStatus={scaffold?.status}
+      />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Link

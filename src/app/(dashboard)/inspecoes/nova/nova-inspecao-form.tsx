@@ -66,6 +66,16 @@ const ChecklistSection = dynamic(
   },
 );
 
+const RELEASE_UI_DIAGNOSTICS_ENABLED =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_RELEASE_FLOW_DIAGNOSTICS === "true";
+
+function logReleaseUi(message: string, detail?: Record<string, unknown>) {
+  if (!RELEASE_UI_DIAGNOSTICS_ENABLED) return;
+  const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+  console.info(`[release-ui] ${message}${detailLabel}`);
+}
+
 type ScaffoldOption = {
   id: string;
   code: string;
@@ -772,12 +782,20 @@ export function NovaInspecaoForm({
 
   const handleSubmit = async () => {
     if (!canSubmit || !selectedScaffold) return;
+    const releaseUiStartedAt = performance.now();
+    logReleaseUi("click.................... 0ms", {
+      scaffoldId: selectedScaffold.id,
+      scaffoldCode: selectedScaffold.code,
+    });
     // Previne duplo clique via ref (guard extra além do state)
     if (submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
 
     const toastId = toast.loading("Salvando inspeção...");
+    logReleaseUi("server action starting", {
+      elapsedMs: Math.round(performance.now() - releaseUiStartedAt),
+    });
     try {
       const checklist = checklistTemplate.flatMap((cat, ci) =>
         cat.items.map((item, ii) => ({
@@ -873,7 +891,32 @@ export function NovaInspecaoForm({
         throw error;
       });
       if (!created) return;
+      const serverReturnedAt = performance.now();
+      logReleaseUi("server returned", {
+        elapsedMs: Math.round(serverReturnedAt - releaseUiStartedAt),
+        inspectionId: created.inspection.id,
+        scaffoldStatus: created.scaffold.status,
+        validityDate: created.scaffold.validityDate,
+      });
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
+      if (RELEASE_UI_DIAGNOSTICS_ENABLED) {
+        sessionStorage.setItem(
+          "andcheck:release-flow",
+          JSON.stringify({
+            clickedAt: releaseUiStartedAt,
+            serverReturnedAt,
+            navigationStartedAt: performance.now(),
+            inspectionId: created.inspection.id,
+            scaffoldId: created.scaffold.id,
+            scaffoldStatus: created.scaffold.status,
+            validityDate: created.scaffold.validityDate,
+          }),
+        );
+      }
+      logReleaseUi("navigation started", {
+        elapsedMs: Math.round(performance.now() - releaseUiStartedAt),
+        href: `/inspecoes/${created.id}`,
+      });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {
       toast.error(

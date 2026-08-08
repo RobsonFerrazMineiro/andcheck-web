@@ -172,6 +172,7 @@ export function LinkedRecordsButton({
       {open && (
         <div
           role="dialog"
+          aria-modal="false"
           aria-label={title}
           className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-xl max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
         >

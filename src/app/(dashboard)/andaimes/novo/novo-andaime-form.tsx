@@ -59,6 +59,17 @@ const INITIAL: ScaffoldForm = {
   notes: "",
 };
 
+const SCAFFOLD_CREATE_UI_DIAGNOSTICS_ENABLED =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_SCAFFOLD_CREATE_DIAGNOSTICS === "true" ||
+  process.env.NEXT_PUBLIC_RELEASE_FLOW_DIAGNOSTICS === "true";
+
+function logScaffoldCreateUi(message: string, detail?: Record<string, unknown>) {
+  if (!SCAFFOLD_CREATE_UI_DIAGNOSTICS_ENABLED) return;
+  const detailLabel = detail ? ` ${JSON.stringify(detail)}` : "";
+  console.info(`[scaffold-create-ui] ${message}${detailLabel}`);
+}
+
 const SCAFFOLD_PREFS_KEY = "andcheck:intelligence:scaffold-form";
 
 type ScaffoldFormPreferences = {
@@ -189,11 +200,16 @@ export default function NovoAndaimeForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (savingRef.current) return;
+    const createUiStartedAt = performance.now();
+    logScaffoldCreateUi("click.................... 0ms", { mode });
 
     savingRef.current = true;
     setSaving(true);
 
     const toastId = toast.loading("Salvando andaime...");
+    logScaffoldCreateUi("server action starting", {
+      elapsedMs: Math.round(performance.now() - createUiStartedAt),
+    });
     try {
       const payload: OfflineCreateScaffoldPayload = {
         type: form.type as
@@ -286,7 +302,17 @@ export default function NovoAndaimeForm({
       }
 
       const created = await createScaffold(payload);
+      const serverReturnedAt = performance.now();
+      logScaffoldCreateUi("server returned", {
+        elapsedMs: Math.round(serverReturnedAt - createUiStartedAt),
+        scaffoldId: created.id,
+        status: created.status,
+      });
       toast.success("Andaime cadastrado com sucesso.", { id: toastId });
+      logScaffoldCreateUi("navigation started", {
+        elapsedMs: Math.round(performance.now() - createUiStartedAt),
+        href: `/andaimes/${created.id}`,
+      });
       router.push("/andaimes/" + created.id);
     } catch (err) {
       const msg =
