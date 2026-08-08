@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { sanitizeForLog } from "@/lib/safe-log";
+import { after } from "next/server";
 import {
   assertActiveCompanyForCreation,
   getCurrentUserAccess,
@@ -686,14 +687,19 @@ export async function createInspection(data: {
     provided: providedSignatures.length,
   });
 
-  const validatedSignatures = await Promise.all(
-    providedSignatures.map(async (signature) => {
-      if (!signature.signer_user_id) {
-        throw new Error("Assinante invalido. Selecione um usuario cadastrado.");
-      }
-
-      const signer = await prisma.user.findUnique({
-        where: { id: signature.signer_user_id },
+  const signerIds = Array.from(
+    new Set(
+      providedSignatures.map((signature) => {
+        if (!signature.signer_user_id) {
+          throw new Error("Assinante invalido. Selecione um usuario cadastrado.");
+        }
+        return signature.signer_user_id;
+      }),
+    ),
+  );
+  const signers = signerIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: signerIds } },
         select: {
           id: true,
           name: true,
@@ -709,7 +715,16 @@ export async function createInspection(data: {
             },
           },
         },
-      });
+      })
+    : [];
+  const signersById = new Map(signers.map((signer) => [signer.id, signer]));
+
+  const validatedSignatures = providedSignatures.map((signature) => {
+      if (!signature.signer_user_id) {
+        throw new Error("Assinante invalido. Selecione um usuario cadastrado.");
+      }
+
+      const signer = signersById.get(signature.signer_user_id);
 
       if (!signer || !signer.is_active) {
         throw new Error("Assinante inexistente ou inativo.");
@@ -789,8 +804,7 @@ export async function createInspection(data: {
         signer_company_id: signer.companyId,
         signature_data: signature.signature_data,
       };
-    }),
-  );
+    });
   timer.mark("09 Validate signatures", {
     validated: validatedSignatures.length,
   });
@@ -814,52 +828,6 @@ export async function createInspection(data: {
   }
   timer.mark("10 Check pending signatures");
 
-  const inspection = await prisma.inspection.create({
-    data: {
-      ...inspectionData,
-      companyId: oldScaffold?.companyId,
-      workspaceId: oldScaffold?.workspaceId,
-      result: calculatedResult,
-      validity_days:
-        calculatedResult === "reprovado" ? 0 : input.validity_days,
-      signatures: {
-        create: validatedSignatures.map((signature) => ({
-          role_code: signature.role_code,
-          user_id: signature.signer_user_id,
-          signer_name: signature.signer_name,
-          signer_company: signature.signer_company,
-          signer_position: signature.signer_position ?? null,
-          signature_data: signature.signature_data,
-          companyId: signature.signer_company_id,
-          workspaceId: oldScaffold?.workspaceId,
-        })),
-      },
-      checklist: { create: checklist },
-    },
-    select: {
-      id: true,
-      scaffold_id: true,
-      scaffold_code: true,
-      inspector_name: true,
-      result: true,
-      validity_days: true,
-      checklist: {
-        select: {
-          id: true,
-          item_label: true,
-          category: true,
-          value: true,
-          critical: true,
-          observation: true,
-        },
-      },
-    },
-  });
-  timer.mark("11 Persist inspection", {
-    inspectionId: inspection.id,
-    checklistItems: inspection.checklist.length,
-  });
-
   // Atualizar status e validade do andaime conforme resultado
   const validityDate =
     calculatedResult !== "reprovado" && input.validity_days > 0
@@ -874,13 +842,63 @@ export async function createInspection(data: {
     validityDate: validityDate?.toISOString() ?? null,
   });
 
-  const scaffold = await prisma.scaffold.update({
-    where: { id: input.scaffold_id },
-    data: {
-      status: newStatus,
-      validity_date: validityDate,
-      released_at: newStatus === "liberado" ? new Date() : undefined,
-    },
+  const [inspection, scaffold] = await prisma.$transaction(async (tx) => {
+    const createdInspection = await tx.inspection.create({
+      data: {
+        ...inspectionData,
+        companyId: oldScaffold?.companyId,
+        workspaceId: oldScaffold?.workspaceId,
+        result: calculatedResult,
+        validity_days:
+          calculatedResult === "reprovado" ? 0 : input.validity_days,
+        signatures: {
+          create: validatedSignatures.map((signature) => ({
+            role_code: signature.role_code,
+            user_id: signature.signer_user_id,
+            signer_name: signature.signer_name,
+            signer_company: signature.signer_company,
+            signer_position: signature.signer_position ?? null,
+            signature_data: signature.signature_data,
+            companyId: signature.signer_company_id,
+            workspaceId: oldScaffold?.workspaceId,
+          })),
+        },
+        checklist: { create: checklist },
+      },
+      select: {
+        id: true,
+        scaffold_id: true,
+        scaffold_code: true,
+        inspector_name: true,
+        result: true,
+        validity_days: true,
+        checklist: {
+          select: {
+            id: true,
+            item_label: true,
+            category: true,
+            value: true,
+            critical: true,
+            observation: true,
+          },
+        },
+      },
+    });
+    timer.mark("11 Persist inspection", {
+      inspectionId: createdInspection.id,
+      checklistItems: createdInspection.checklist.length,
+    });
+
+    const updatedScaffold = await tx.scaffold.update({
+      where: { id: input.scaffold_id },
+      data: {
+        status: newStatus,
+        validity_date: validityDate,
+        released_at: newStatus === "liberado" ? new Date() : undefined,
+      },
+    });
+
+    return [createdInspection, updatedScaffold] as const;
   });
   timer.mark("13 Persist scaffold status", {
     scaffoldId: scaffold.id,
@@ -902,7 +920,10 @@ export async function createInspection(data: {
     nonConformingItems: nonConformingItems.length,
   });
 
-  await createAuditLog({
+  after(async () => {
+    const sideEffectsStartedAt = performance.now();
+    try {
+      await createAuditLog({
     entityType: AuditEntityType.INSPECTION,
     entityId: inspection.id,
     entityLabel: `${inspection.scaffold_code}-${inspection.id.slice(-6)}`,
@@ -927,8 +948,6 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
-  timer.mark("15 Audit inspection create");
-
   await createAuditLog({
     entityType: AuditEntityType.INSPECTION,
     entityId: inspection.id,
@@ -943,8 +962,6 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
-  timer.mark("16 Audit inspection complete");
-
   for (const signature of validatedSignatures) {
     await createAuditLog({
       entityType: AuditEntityType.SIGNATURE,
@@ -964,10 +981,6 @@ export async function createInspection(data: {
       workspaceId: scaffold.workspaceId,
     });
   }
-  timer.mark("17 Audit signatures", {
-    signatures: validatedSignatures.length,
-  });
-
   await createAuditLog({
     entityType: AuditEntityType.SCAFFOLD,
     entityId: scaffold.id,
@@ -987,8 +1000,6 @@ export async function createInspection(data: {
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
   });
-  timer.mark("18 Audit scaffold status");
-
   await createNotification({
     companyId: scaffold.companyId,
     workspaceId: scaffold.workspaceId,
@@ -1006,8 +1017,6 @@ export async function createInspection(data: {
       inspectorName: inspection.inspector_name,
     },
   });
-  timer.mark("19 Notification inspection completed");
-
   if (newStatus === "liberado" || newStatus === "reprovado") {
     await createNotification({
       companyId: scaffold.companyId,
@@ -1033,10 +1042,6 @@ export async function createInspection(data: {
       },
     });
   }
-  timer.mark("20 Notification scaffold status", {
-    sent: newStatus === "liberado" || newStatus === "reprovado",
-  });
-
   const resultNotification = INSPECTION_RESULT_NOTIFICATION[inspection.result];
   await createNotification({
     companyId: scaffold.companyId,
@@ -1055,8 +1060,21 @@ export async function createInspection(data: {
       inspectorName: inspection.inspector_name,
     },
   });
-  timer.mark("21 Notification result");
-  timer.mark("22 Revalidation", { paths: 0 });
+      if (RELEASE_FLOW_DIAGNOSTICS_ENABLED) {
+        console.info("[release-flow] post-response side effects", {
+          inspectionId: inspection.id,
+          elapsedMs: Math.round(performance.now() - sideEffectsStartedAt),
+        });
+      }
+    } catch (error) {
+      console.error(
+        "Inspection post-response side effects failed:",
+        sanitizeForLog(error),
+      );
+    }
+  });
+  timer.mark("15 Schedule audit/notifications after response");
+  timer.mark("16 Revalidation", { paths: 0 });
   timer.finish({
     inspectionId: inspection.id,
     scaffoldId: scaffold.id,
