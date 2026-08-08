@@ -23,6 +23,7 @@ import {
   dismantleScaffold,
 } from "@/lib/actions/scaffold-actions";
 import {
+  browserIsOnline,
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
 } from "@/lib/offline/connectivity";
@@ -84,28 +85,65 @@ export function ScaffoldActionsBar({
     });
   }
 
+  async function saveCompleteAssemblyOffline(toastId: string | number) {
+    const completedAt = new Date().toISOString();
+    await updateLocalScaffoldStatus("pendente_liberacao", {
+      assembly_completed_at: completedAt,
+    });
+    await localDb.syncQueue.upsertLatest({
+      id: createOfflineId("scaffold_complete_assembly"),
+      action: "scaffold.assembly.complete",
+      entityType: "scaffold",
+      entityId: scaffoldId,
+      payload: { id: scaffoldId },
+    });
+    toast.success("Montagem salva offline para sincronização.", {
+      id: toastId,
+    });
+    if (canNavigateAfterOfflineWrite()) {
+      router.push("/sincronizacao");
+    }
+  }
+
+  async function saveDismantleOffline(toastId: string | number) {
+    const dismantledAt = new Date().toISOString();
+    await updateLocalScaffoldStatus("desmontado", {
+      dismantled_at: dismantledAt,
+    });
+    await localDb.syncQueue.upsertLatest({
+      id: createOfflineId("scaffold_dismantle"),
+      action: "scaffold.dismantle",
+      entityType: "scaffold",
+      entityId: scaffoldId,
+      payload: {
+        id: scaffoldId,
+        reason: dismantleReason,
+        reasonDescription: dismantleReasonDescription.trim() || undefined,
+      },
+    });
+    setDismantleOpen(false);
+    toast.success("Desmontagem salva offline para sincronização.", {
+      id: toastId,
+    });
+    if (canNavigateAfterOfflineWrite()) {
+      router.push("/sincronizacao");
+    }
+  }
+
+  async function shouldFallbackOfflineAfterError() {
+    return (
+      !browserIsOnline() ||
+      (await checkServerConnectivity({ timeoutMs: 1_500, force: true })) ===
+        "offline"
+    );
+  }
+
   function handleCompleteAssembly() {
     startTransition(async () => {
       const toastId = toast.loading("Concluindo montagem...");
       try {
-        if ((await checkServerConnectivity()) === "offline") {
-          const completedAt = new Date().toISOString();
-          await updateLocalScaffoldStatus("pendente_liberacao", {
-            assembly_completed_at: completedAt,
-          });
-          await localDb.syncQueue.upsertLatest({
-            id: createOfflineId("scaffold_complete_assembly"),
-            action: "scaffold.assembly.complete",
-            entityType: "scaffold",
-            entityId: scaffoldId,
-            payload: { id: scaffoldId },
-          });
-          toast.success("Montagem salva offline para sincronização.", {
-            id: toastId,
-          });
-          if (canNavigateAfterOfflineWrite()) {
-            router.push("/sincronizacao");
-          }
+        if (!browserIsOnline()) {
+          await saveCompleteAssemblyOffline(toastId);
           return;
         }
 
@@ -115,6 +153,11 @@ export function ScaffoldActionsBar({
         });
         router.refresh();
       } catch (error) {
+        if (await shouldFallbackOfflineAfterError()) {
+          await saveCompleteAssemblyOffline(toastId);
+          return;
+        }
+
         toast.error(
           error instanceof Error
             ? error.message
@@ -143,29 +186,8 @@ export function ScaffoldActionsBar({
     startTransition(async () => {
       const toastId = toast.loading("Registrando desmontagem...");
       try {
-        if ((await checkServerConnectivity()) === "offline") {
-          const dismantledAt = new Date().toISOString();
-          await updateLocalScaffoldStatus("desmontado", {
-            dismantled_at: dismantledAt,
-          });
-          await localDb.syncQueue.upsertLatest({
-            id: createOfflineId("scaffold_dismantle"),
-            action: "scaffold.dismantle",
-            entityType: "scaffold",
-            entityId: scaffoldId,
-            payload: {
-              id: scaffoldId,
-              reason: dismantleReason,
-              reasonDescription: dismantleReasonDescription.trim() || undefined,
-            },
-          });
-          setDismantleOpen(false);
-          toast.success("Desmontagem salva offline para sincronização.", {
-            id: toastId,
-          });
-          if (canNavigateAfterOfflineWrite()) {
-            router.push("/sincronizacao");
-          }
+        if (!browserIsOnline()) {
+          await saveDismantleOffline(toastId);
           return;
         }
 
@@ -177,6 +199,11 @@ export function ScaffoldActionsBar({
         toast.success("Desmontagem registrada.", { id: toastId });
         router.refresh();
       } catch (error) {
+        if (await shouldFallbackOfflineAfterError()) {
+          await saveDismantleOffline(toastId);
+          return;
+        }
+
         toast.error("Não foi possível registrar a desmontagem.", {
           id: toastId,
         });

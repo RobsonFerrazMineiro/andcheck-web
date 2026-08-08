@@ -25,6 +25,9 @@ import {
 type OfflineContextValue = {
   status: ConnectivityStatus;
   isOnline: boolean;
+  isChecking: boolean;
+  lastCheckedAt?: string;
+  latency?: number;
   summary: SyncSummary;
   lastSyncAt?: string;
   refresh: () => Promise<void>;
@@ -32,7 +35,8 @@ type OfflineContextValue = {
 };
 
 const OfflineContext = createContext<OfflineContextValue | null>(null);
-const AUTO_SYNC_INTERVAL_MS = 10_000;
+const ONLINE_POLL_INTERVAL_MS = 60_000;
+const OFFLINE_BACKOFF_INTERVALS_MS = [5_000, 10_000, 20_000, 30_000, 60_000];
 
 function hasAutoSyncCandidates(summary: SyncSummary) {
   return summary.pending > 0 || summary.syncing > 0;
@@ -41,22 +45,46 @@ function hasAutoSyncCandidates(summary: SyncSummary) {
 export function OfflineProvider({ children }: { children: ReactNode }) {
   const [isOnline, setIsOnline] = useState(() => browserIsOnline());
   const [status, setStatus] = useState<ConnectivityStatus>("online");
+  const [isChecking, setIsChecking] = useState(false);
+  const [lastCheckedAt, setLastCheckedAt] = useState<string | undefined>();
+  const [latency, setLatency] = useState<number | undefined>();
   const [summary, setSummary] = useState<SyncSummary>(EMPTY_SYNC_SUMMARY);
   const [lastSyncAt, setLastSyncAt] = useState<string | undefined>();
   const queueRefreshTimerRef = useRef<number | null>(null);
+  const pollTimerRef = useRef<number | null>(null);
+  const offlineBackoffStepRef = useRef(0);
+
+  const updateConnectivity = useCallback(async ({ force = false } = {}) => {
+    setIsChecking(true);
+    const startedAt = performance.now();
+    try {
+      const connectivity = await checkServerConnectivity({ force });
+      const checkedAt = new Date().toISOString();
+      const nextLatency = Math.round(performance.now() - startedAt);
+
+      setLastCheckedAt(checkedAt);
+      setLatency(nextLatency);
+      setIsOnline(connectivity === "online");
+      if (connectivity === "online") {
+        offlineBackoffStepRef.current = 0;
+      }
+
+      return connectivity;
+    } finally {
+      setIsChecking(false);
+    }
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
-      const connectivity = await checkServerConnectivity();
-      const [nextSummary, nextLastSyncAt] = await Promise.all([
+      const [connectivity, nextSummary, nextLastSyncAt] = await Promise.all([
+        updateConnectivity(),
         localDb.syncQueue.summary(),
         localDb.metadata.get<string>("lastSyncAt"),
       ]);
 
       setSummary(nextSummary);
       setLastSyncAt(nextLastSyncAt);
-
-      setIsOnline(connectivity === "online");
 
       if (connectivity === "offline") {
         setStatus("offline");
@@ -68,10 +96,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     } catch {
       setStatus(browserIsOnline() ? "sync-error" : "offline");
     }
-  }, []);
+  }, [updateConnectivity]);
 
   const syncNow = useCallback(async () => {
-    const connectivity = await checkServerConnectivity();
+    const connectivity = await updateConnectivity({ force: true });
     if (connectivity === "offline") {
       setIsOnline(false);
       setStatus("offline");
@@ -93,12 +121,12 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     } catch {
       setStatus("sync-error");
     }
-  }, []);
+  }, [updateConnectivity]);
 
   const autoSyncIfReady = useCallback(async () => {
     try {
       const [connectivity, nextSummary] = await Promise.all([
-        checkServerConnectivity(),
+        updateConnectivity(),
         localDb.syncQueue.summary(),
       ]);
 
@@ -111,24 +139,54 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     } catch {
       setStatus(browserIsOnline() ? "sync-error" : "offline");
     }
-  }, [refresh, syncNow]);
+  }, [refresh, syncNow, updateConnectivity]);
 
   useEffect(() => {
-    queueMicrotask(() => void autoSyncIfReady());
-    const interval = window.setInterval(
-      () => void autoSyncIfReady(),
-      AUTO_SYNC_INTERVAL_MS,
-    );
+    function clearPollTimer() {
+      if (pollTimerRef.current) {
+        window.clearTimeout(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    }
+
+    function scheduleNextPoll() {
+      clearPollTimer();
+      const browserOnline = browserIsOnline();
+      const delay = browserOnline
+        ? ONLINE_POLL_INTERVAL_MS
+        : OFFLINE_BACKOFF_INTERVALS_MS[
+            Math.min(
+              offlineBackoffStepRef.current,
+              OFFLINE_BACKOFF_INTERVALS_MS.length - 1,
+            )
+          ];
+
+      if (!browserOnline) {
+        offlineBackoffStepRef.current += 1;
+      }
+
+      pollTimerRef.current = window.setTimeout(() => {
+        void autoSyncIfReady().finally(scheduleNextPoll);
+      }, delay);
+    }
+
+    queueMicrotask(() => {
+      void autoSyncIfReady().finally(scheduleNextPoll);
+    });
 
     function handleOnline() {
+      offlineBackoffStepRef.current = 0;
+      clearPollTimer();
       setIsOnline(true);
-      void syncNow();
+      void syncNow().finally(scheduleNextPoll);
     }
 
     function handleOffline() {
+      clearPollTimer();
       setIsOnline(false);
       setStatus("offline");
-      void refresh();
+      void localDb.syncQueue.summary().then(setSummary);
+      scheduleNextPoll();
     }
 
     function handleQueueUpdated() {
@@ -142,38 +200,61 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
       }, 250);
     }
 
+    function handleFocus() {
+      clearPollTimer();
+      void autoSyncIfReady().finally(scheduleNextPoll);
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState !== "visible") return;
+      handleFocus();
+    }
+
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     window.addEventListener("andcheck:sync-queue-updated", handleQueueUpdated);
-    window.addEventListener("focus", autoSyncIfReady);
-    document.addEventListener("visibilitychange", autoSyncIfReady);
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.clearInterval(interval);
       if (queueRefreshTimerRef.current) {
         window.clearTimeout(queueRefreshTimerRef.current);
       }
+      clearPollTimer();
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener(
         "andcheck:sync-queue-updated",
         handleQueueUpdated,
       );
-      window.removeEventListener("focus", autoSyncIfReady);
-      document.removeEventListener("visibilitychange", autoSyncIfReady);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [autoSyncIfReady, refresh, syncNow]);
+  }, [autoSyncIfReady, syncNow]);
 
   const value = useMemo(
     () => ({
       status,
       isOnline,
+      isChecking,
+      lastCheckedAt,
+      latency,
       summary,
       lastSyncAt,
       refresh,
       syncNow,
     }),
-    [isOnline, lastSyncAt, refresh, status, summary, syncNow],
+    [
+      isChecking,
+      isOnline,
+      lastCheckedAt,
+      lastSyncAt,
+      latency,
+      refresh,
+      status,
+      summary,
+      syncNow,
+    ],
   );
 
   return (

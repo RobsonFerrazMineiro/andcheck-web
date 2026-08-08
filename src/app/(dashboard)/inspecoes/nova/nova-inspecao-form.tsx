@@ -40,7 +40,10 @@ import {
   calculateScaffoldStatus,
 } from "@/lib/inspection-outcome";
 import { humanizeCode } from "@/lib/human-readable";
-import { checkServerConnectivity } from "@/lib/offline/connectivity";
+import {
+  browserIsOnline,
+  checkServerConnectivity,
+} from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import {
@@ -810,7 +813,7 @@ export function NovaInspecaoForm({
         checklist,
       };
 
-      if ((await checkServerConnectivity()) === "offline") {
+      const saveInspectionOffline = async () => {
         const offlineId = createOfflineId("inspection");
         const scaffoldStatus = calculateScaffoldStatus(payload.result, checklist);
         const validityDate =
@@ -850,10 +853,26 @@ export function NovaInspecaoForm({
         setSavedOffline(true);
         setSubmitting(false);
         router.replace("/sincronizacao");
+      };
+
+      if (!browserIsOnline()) {
+        await saveInspectionOffline();
         return;
       }
 
-      const created = await createInspection(payload);
+      const created = await createInspection(payload).catch(async (error) => {
+        if (
+          !browserIsOnline() ||
+          (await checkServerConnectivity({ timeoutMs: 1_500, force: true })) ===
+            "offline"
+        ) {
+          await saveInspectionOffline();
+          return null;
+        }
+
+        throw error;
+      });
+      if (!created) return;
       toast.success("Inspeção registrada com sucesso!", { id: toastId });
       router.replace("/inspecoes/" + created.id);
     } catch (err) {

@@ -2,6 +2,7 @@ import {
   browserIsOnline,
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
+  resetConnectivityStateForTests,
 } from "@/lib/offline/connectivity";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -15,6 +16,7 @@ function setNavigatorOnline(value: boolean) {
 describe("offline connectivity", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    resetConnectivityStateForTests();
     setNavigatorOnline(true);
     vi.stubGlobal(
       "fetch",
@@ -24,6 +26,7 @@ describe("offline connectivity", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    resetConnectivityStateForTests();
     vi.unstubAllGlobals();
   });
 
@@ -59,37 +62,47 @@ describe("offline connectivity", () => {
     );
   });
 
-  it("retries before returning offline when the connectivity endpoint fails once", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 503 }));
-
-    const result = checkServerConnectivity();
-    await vi.advanceTimersByTimeAsync(250);
-
-    await expect(result).resolves.toBe("online");
-    expect(fetch).toHaveBeenCalledTimes(2);
-  });
-
-  it("returns offline when the connectivity endpoint keeps failing", async () => {
-    vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 503 }));
-
-    const result = checkServerConnectivity();
-    await vi.advanceTimersByTimeAsync(250);
-
-    await expect(result).resolves.toBe("offline");
-  });
-
-  it("retries when the connectivity request times out once", async () => {
+  it("deduplicates simultaneous connectivity checks", async () => {
+    let resolveFetch: ((response: Response) => void) | undefined;
     vi.mocked(fetch).mockImplementationOnce(
       () =>
-        new Promise((_resolve, reject) => {
-          window.setTimeout(() => reject(new DOMException("Aborted", "AbortError")), 10);
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+
+    const first = checkServerConnectivity();
+    const second = checkServerConnectivity();
+    resolveFetch?.(new Response(null, { status: 204 }));
+
+    await expect(first).resolves.toBe("online");
+    await expect(second).resolves.toBe("online");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns offline when the connectivity endpoint fails", async () => {
+    vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 503 }));
+
+    await expect(checkServerConnectivity()).resolves.toBe("offline");
+  });
+
+  it("returns offline when the connectivity request times out", async () => {
+    vi.mocked(fetch).mockImplementation(
+      (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          const signal = init?.signal;
+          if (signal instanceof AbortSignal) {
+            signal.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            });
+          }
         }),
     );
 
     const result = checkServerConnectivity({ timeoutMs: 5 });
-    await vi.advanceTimersByTimeAsync(300);
+    await vi.advanceTimersByTimeAsync(5);
 
-    await expect(result).resolves.toBe("online");
-    expect(fetch).toHaveBeenCalledTimes(2);
+    await expect(result).resolves.toBe("offline");
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
