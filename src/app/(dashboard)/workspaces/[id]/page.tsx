@@ -1,18 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   ActionMenu,
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
-import {
-  createOperationalArea,
-  getWorkspaceDetail,
-  setOperationalAreaActive,
-  updateOperationalArea,
-} from "@/lib/actions/workspace-actions";
+import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
 import { typography } from "@/lib/design-system";
 import {
@@ -24,12 +17,11 @@ import {
   FileText,
   MapPin,
   Pencil,
-  Plus,
-  Save,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OperationalAreasManager } from "./operational-areas-manager";
 import { WorkspaceStatusButton } from "./workspace-status-button";
 
 const TYPE_LABELS = {
@@ -176,80 +168,12 @@ export default async function WorkspaceDetailPage({
 
       <Card className="rounded-lg">
         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Áreas operacionais</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          {canManage && (
-            <form action={createOperationalArea} className="grid gap-2 border border-border bg-muted/20 p-2 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto]">
-              <input type="hidden" name="workspaceId" value={workspace.id} />
-              <Input name="name" placeholder="Nome da área" required className="h-8 rounded-md text-xs" />
-              <Input name="code" placeholder="Código" className="h-8 rounded-md text-xs" />
-              <Input name="description" placeholder="Descrição" className="h-8 rounded-md text-xs" />
-              <Button type="submit" size="sm" className="h-8 rounded-md text-xs"><Plus className="size-3.5" /> Adicionar</Button>
-            </form>
-          )}
-
-          {workspace.operationalAreas.length === 0 ? (
-            <EmptyState
-              icon={MapPin}
-              title="Nenhuma área operacional"
-              description="Cadastre as áreas do workspace para padronizar o formulário de novos andaimes."
-              className="border-dashed"
-            />
-          ) : (
-            <div className="overflow-x-auto border border-border">
-              <table className="w-full min-w-[760px] text-sm">
-                <thead className="bg-muted/40">
-                  <tr className="border-b border-border text-left text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                    <th className="px-3 py-2">Área</th>
-                    <th className="px-3 py-2">Código</th>
-                    <th className="px-3 py-2">Descrição</th>
-                    <th className="px-3 py-2 text-right">Andaimes</th>
-                    <th className="px-3 py-2">Status</th>
-                    {canManage && <th className="px-3 py-2 text-right">Ações</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {workspace.operationalAreas.map((area) => (
-                    <tr key={area.id} className="border-b border-border/70 last:border-0">
-                      <td className="px-3 py-2 align-top font-medium">{area.name}</td>
-                      <td className="px-3 py-2 align-top">
-                        {area.code ? <span className="font-mono text-xs">{area.code}</span> : <span className="text-muted-foreground">-</span>}
-                      </td>
-                      <td className="max-w-md px-3 py-2 align-top text-xs text-muted-foreground">{area.description || "Sem descrição"}</td>
-                      <td className="px-3 py-2 text-right align-top font-mono text-xs">{area._count.scaffolds}</td>
-                      <td className="px-3 py-2 align-top">
-                        <Badge variant={area.isActive ? "default" : "secondary"} className="rounded-md text-[9px]">{area.isActive ? "Ativa" : "Inativa"}</Badge>
-                      </td>
-                      {canManage && (
-                        <td className="px-3 py-2 align-top">
-                          <div className="flex justify-end gap-2">
-                            <details className="group relative">
-                              <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium hover:bg-muted">
-                                <Pencil className="size-3.5" /> Editar
-                              </summary>
-                              <div className="mt-2 w-[360px] border border-border bg-card p-3 shadow-sm">
-                                <form action={updateOperationalArea} className="grid gap-2 sm:grid-cols-[1fr_110px]">
-                                  <input type="hidden" name="areaId" value={area.id} />
-                                  <Input name="name" defaultValue={area.name} required className="h-8 rounded-md text-xs" />
-                                  <Input name="code" defaultValue={area.code ?? ""} className="h-8 rounded-md text-xs" />
-                                  <Input name="description" defaultValue={area.description ?? ""} className="h-8 rounded-md text-xs sm:col-span-2" />
-                                  <Button type="submit" size="sm" variant="outline" className="h-8 rounded-md text-xs sm:col-span-2"><Save className="size-3.5" /> Salvar</Button>
-                                </form>
-                              </div>
-                            </details>
-                            <form action={setOperationalAreaActive.bind(null, area.id, !area.isActive)}>
-                              <Button type="submit" variant="outline" size="sm" className="h-8 rounded-md text-xs">
-                                {area.isActive ? "Desativar" : "Ativar"}
-                              </Button>
-                            </form>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+        <CardContent>
+          <OperationalAreasManager
+            workspaceId={workspace.id}
+            canManage={canManage}
+            areas={workspace.operationalAreas}
+          />
         </CardContent>
       </Card>
     </div>

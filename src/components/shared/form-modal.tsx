@@ -37,6 +37,9 @@ export function FormModal({
       aria-labelledby="form-modal-title"
       aria-describedby={description ? "form-modal-description" : undefined}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
     >
       <div
         className={cn(
