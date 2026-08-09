@@ -14,6 +14,7 @@ function hasRequiredDelegates(client: PrismaClient) {
     notification?: unknown;
     notificationPreference?: unknown;
     emailDeliveryLog?: unknown;
+    operationalArea?: unknown;
   };
 
   return Boolean(
@@ -21,7 +22,8 @@ function hasRequiredDelegates(client: PrismaClient) {
       delegatedClient.document &&
       delegatedClient.notification &&
       delegatedClient.notificationPreference &&
-      delegatedClient.emailDeliveryLog,
+      delegatedClient.emailDeliveryLog &&
+      delegatedClient.operationalArea,
   );
 }
 
