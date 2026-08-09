@@ -25,6 +25,7 @@ import {
   MapPin,
   Pencil,
   Plus,
+  Save,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -175,14 +176,14 @@ export default async function WorkspaceDetailPage({
 
       <Card className="rounded-lg">
         <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Áreas operacionais</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {canManage && (
-            <form action={createOperationalArea} className="grid gap-2 rounded-lg border bg-muted/15 p-3 md:grid-cols-[1fr_120px_1.5fr_auto]">
+            <form action={createOperationalArea} className="grid gap-2 border border-border bg-muted/20 p-2 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto]">
               <input type="hidden" name="workspaceId" value={workspace.id} />
-              <Input name="name" placeholder="Nome da área" required className="h-9 rounded-md text-xs" />
-              <Input name="code" placeholder="Código" className="h-9 rounded-md text-xs" />
-              <Input name="description" placeholder="Descrição" className="h-9 rounded-md text-xs" />
-              <Button type="submit" size="sm" className="h-9 rounded-md text-xs"><Plus className="size-3.5" /> Adicionar</Button>
+              <Input name="name" placeholder="Nome da área" required className="h-8 rounded-md text-xs" />
+              <Input name="code" placeholder="Código" className="h-8 rounded-md text-xs" />
+              <Input name="description" placeholder="Descrição" className="h-8 rounded-md text-xs" />
+              <Button type="submit" size="sm" className="h-8 rounded-md text-xs"><Plus className="size-3.5" /> Adicionar</Button>
             </form>
           )}
 
@@ -194,40 +195,59 @@ export default async function WorkspaceDetailPage({
               className="border-dashed"
             />
           ) : (
-            <div className="space-y-2">
-              {workspace.operationalAreas.map((area) => (
-                <div key={area.id} className="rounded-lg border bg-muted/10 p-3">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="break-words text-sm font-semibold">{area.name}</p>
-                        {area.code && <Badge variant="outline" className="rounded-md text-[9px]">{area.code}</Badge>}
+            <div className="overflow-x-auto border border-border">
+              <table className="w-full min-w-[760px] text-sm">
+                <thead className="bg-muted/40">
+                  <tr className="border-b border-border text-left text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <th className="px-3 py-2">Área</th>
+                    <th className="px-3 py-2">Código</th>
+                    <th className="px-3 py-2">Descrição</th>
+                    <th className="px-3 py-2 text-right">Andaimes</th>
+                    <th className="px-3 py-2">Status</th>
+                    {canManage && <th className="px-3 py-2 text-right">Ações</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {workspace.operationalAreas.map((area) => (
+                    <tr key={area.id} className="border-b border-border/70 last:border-0">
+                      <td className="px-3 py-2 align-top font-medium">{area.name}</td>
+                      <td className="px-3 py-2 align-top">
+                        {area.code ? <span className="font-mono text-xs">{area.code}</span> : <span className="text-muted-foreground">-</span>}
+                      </td>
+                      <td className="max-w-md px-3 py-2 align-top text-xs text-muted-foreground">{area.description || "Sem descrição"}</td>
+                      <td className="px-3 py-2 text-right align-top font-mono text-xs">{area._count.scaffolds}</td>
+                      <td className="px-3 py-2 align-top">
                         <Badge variant={area.isActive ? "default" : "secondary"} className="rounded-md text-[9px]">{area.isActive ? "Ativa" : "Inativa"}</Badge>
-                      </div>
-                      <p className="mt-1 text-xs text-muted-foreground">{area.description || "Sem descrição"} · {area._count.scaffolds} andaime(s)</p>
-                    </div>
-                    {canManage && (
-                      <form action={setOperationalAreaActive.bind(null, area.id, !area.isActive)}>
-                        <Button type="submit" variant="outline" size="sm" className="h-8 rounded-md text-xs">
-                          {area.isActive ? "Desativar" : "Ativar"}
-                        </Button>
-                      </form>
-                    )}
-                  </div>
-                  {canManage && (
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Editar</summary>
-                      <form action={updateOperationalArea} className="mt-2 grid gap-2 md:grid-cols-[1fr_120px_1.5fr_auto]">
-                        <input type="hidden" name="areaId" value={area.id} />
-                        <Input name="name" defaultValue={area.name} required className="h-9 rounded-md text-xs" />
-                        <Input name="code" defaultValue={area.code ?? ""} className="h-9 rounded-md text-xs" />
-                        <Input name="description" defaultValue={area.description ?? ""} className="h-9 rounded-md text-xs" />
-                        <Button type="submit" size="sm" variant="outline" className="h-9 rounded-md text-xs">Salvar</Button>
-                      </form>
-                    </details>
-                  )}
-                </div>
-              ))}
+                      </td>
+                      {canManage && (
+                        <td className="px-3 py-2 align-top">
+                          <div className="flex justify-end gap-2">
+                            <details className="group relative">
+                              <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium hover:bg-muted">
+                                <Pencil className="size-3.5" /> Editar
+                              </summary>
+                              <div className="mt-2 w-[360px] border border-border bg-card p-3 shadow-sm">
+                                <form action={updateOperationalArea} className="grid gap-2 sm:grid-cols-[1fr_110px]">
+                                  <input type="hidden" name="areaId" value={area.id} />
+                                  <Input name="name" defaultValue={area.name} required className="h-8 rounded-md text-xs" />
+                                  <Input name="code" defaultValue={area.code ?? ""} className="h-8 rounded-md text-xs" />
+                                  <Input name="description" defaultValue={area.description ?? ""} className="h-8 rounded-md text-xs sm:col-span-2" />
+                                  <Button type="submit" size="sm" variant="outline" className="h-8 rounded-md text-xs sm:col-span-2"><Save className="size-3.5" /> Salvar</Button>
+                                </form>
+                              </div>
+                            </details>
+                            <form action={setOperationalAreaActive.bind(null, area.id, !area.isActive)}>
+                              <Button type="submit" variant="outline" size="sm" className="h-8 rounded-md text-xs">
+                                {area.isActive ? "Desativar" : "Ativar"}
+                              </Button>
+                            </form>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
