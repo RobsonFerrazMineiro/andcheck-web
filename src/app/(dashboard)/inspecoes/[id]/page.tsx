@@ -238,8 +238,6 @@ export default async function InspectionDetailPage({ params }: Props) {
       ? format(addDays(inspection.date, inspection.validity_days), "dd/MM/yyyy")
       : null;
 
-  const docNum =
-    inspection.scaffold_code + "-" + format(inspection.date, "yyyyMMdd");
   const linkedNonConformities = inspection.nonConformities.map((nc) => ({
     ...nc,
     responsibleUser: null,
@@ -265,15 +263,15 @@ export default async function InspectionDetailPage({ params }: Props) {
           >
             <ArrowLeft className="w-4 h-4 text-muted-foreground" />
           </Link>
-          <div className="min-w-0 text-[10px] text-muted-foreground uppercase tracking-widest">
+          <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/inspecoes" className="hover:text-foreground">
               Inspeções
             </Link>
             <span className="mx-1.5">/</span>
-            <span className="text-foreground font-semibold font-mono">
-              {docNum}
+            <span className="text-foreground font-mono">
+              {inspection.scaffold_code}
             </span>
-          </div>
+          </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <LinkedRecordsButton
@@ -331,21 +329,20 @@ export default async function InspectionDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="bg-sidebar border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
+      <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/40">
-              <ClipboardCheck className="size-4" />
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40 mb-1">
               AndCheck • Inspeções
-            </div>
+            </p>
             <h2 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
-              {docNum}
+              {inspection.scaffold_code}
             </h2>
             <p className="text-[11px] text-primary-foreground/60 mt-0.5">
-              NR-18 · NR-35 · ABNT NBR 6494
+              {scaffold?.location ?? "Registro de inspeção"}
             </p>
           </div>
-          <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex flex-col items-start gap-2 shrink-0 sm:items-end">
             <StatusBadge status={inspection.result} size="xl" />
             {validadeDate && (
               <p className="text-[10px] text-primary-foreground/60">
