@@ -945,8 +945,11 @@ export function AuditoriaClient({
           </SelectContent>
         </Select>
         </FilterField>
-        <div className="flex items-end sm:w-[170px]">
-        <button className="h-8 w-full rounded-md bg-accent px-4 text-accent-foreground text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex w-full justify-end">
+        <button
+          type="submit"
+          className="h-8 min-w-40 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
+        >
           Filtrar
         </button>
         </div>

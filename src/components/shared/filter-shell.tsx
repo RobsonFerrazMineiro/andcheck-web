@@ -21,6 +21,14 @@ export function FilterShell({
     <div
       className={cn("rounded-lg border border-border bg-card p-4 shadow-sm", className)}
     >
+      <style>
+        {`
+          .andcheck-filter-field [data-slot="input"],
+          .andcheck-filter-field [data-slot="select-trigger"] {
+            background-color: var(--muted) !important;
+          }
+        `}
+      </style>
       <div className="mb-3 flex min-w-0 items-center gap-2">
         <Filter className="size-4 shrink-0 text-muted-foreground" />
         <p className={`${typography.sectionLabel} text-muted-foreground`}>
@@ -49,7 +57,12 @@ export function FilterField({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0 space-y-1.5", className)}>
+    <div
+      className={cn(
+        "andcheck-filter-field min-w-0 space-y-1.5",
+        className,
+      )}
+    >
       <span className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </span>
