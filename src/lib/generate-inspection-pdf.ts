@@ -41,6 +41,13 @@ export interface InspectionForPDF {
   notes?: string | null;
   photos?: string[] | null;
   signature?: string | null;
+  signatures?: Array<{
+    role_code: string;
+    signer_name: string;
+    signer_company?: string | null;
+    signer_position?: string | null;
+    signature_data?: string | null;
+  }>;
   checklist: ChecklistItem[];
   scaffold?: {
     id: string;
@@ -73,9 +80,15 @@ async function imageSourceToDataUrl(source?: string | null) {
 }
 
 async function resolveInspectionAssets(inspection: InspectionForPDF) {
-  const [photos, signature, checklist] = await Promise.all([
+  const [photos, signature, signatures, checklist] = await Promise.all([
     Promise.all((inspection.photos ?? []).map(imageSourceToDataUrl)),
     imageSourceToDataUrl(inspection.signature),
+    Promise.all(
+      (inspection.signatures ?? []).map(async (sig) => ({
+        ...sig,
+        signature_data: await imageSourceToDataUrl(sig.signature_data),
+      })),
+    ),
     Promise.all(
       inspection.checklist.map(async (item) => ({
         ...item,
@@ -88,6 +101,7 @@ async function resolveInspectionAssets(inspection: InspectionForPDF) {
     ...inspection,
     photos: photos.filter((photo): photo is string => Boolean(photo)),
     signature,
+    signatures,
     checklist,
   };
 }
@@ -269,6 +283,85 @@ function dataGrid(
   // borda externa desenhada por último para não ser coberta pelos fundos cinza
   rect(doc, x, y, w, totalH, null, C.navyDark, 0.4);
   return ry + 4;
+}
+
+function drawSignatureBox({
+  doc,
+  x,
+  y,
+  w,
+  h,
+  title,
+  signatureData,
+  signerName,
+  signerMeta,
+  muted = false,
+}: {
+  doc: jsPDF;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  title: string;
+  signatureData?: string | null;
+  signerName: string;
+  signerMeta?: string | null;
+  muted?: boolean;
+}) {
+  rect(doc, x, y, w, h, C.white, C.navyDark, 0.3);
+  rect(doc, x, y, w, 6.5, C.navyDark, null);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.2);
+  st(doc, C.white);
+  doc.text(title, x + w / 2, y + 4.5, { align: "center" });
+
+  if (signatureData) {
+    try {
+      doc.addImage(signatureData, "PNG", x + 6, y + 9, w - 12, 18);
+    } catch {
+      // ignora se imagem inválida
+    }
+  } else {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    st(doc, muted ? C.grayMid : C.grayDark);
+    doc.text("Assinatura não registrada", x + w / 2, y + 20, {
+      align: "center",
+    });
+  }
+
+  hline(doc, y + 31.5, x + 6, x + w - 6, C.grayMid, 0.35);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.3);
+  st(doc, muted ? C.grayMid : C.grayDark);
+  doc.text(doc.splitTextToSize(signerName, w - 12)[0] as string, x + w / 2, y + 35.2, {
+    align: "center",
+  });
+
+  if (signerMeta) {
+    doc.setFontSize(5.2);
+    st(doc, C.grayMid);
+    doc.text(doc.splitTextToSize(signerMeta, w - 12)[0] as string, x + w / 2, y + 38.2, {
+      align: "center",
+    });
+  }
+}
+
+function isOperationalSignatureRole(roleCode: string) {
+  return (
+    roleCode === "SUPERVISOR_ENCARREGADO" ||
+    roleCode === "SUPERVISOR" ||
+    roleCode === "ENCARREGADO"
+  );
+}
+
+function isHseSignatureRole(roleCode: string) {
+  return (
+    roleCode === "HSE_AUTORIZADO" ||
+    roleCode === "HSE_EMPRESA" ||
+    roleCode === "HSE_GERENCIADORA" ||
+    roleCode === "HSE_HYDRO"
+  );
 }
 
 function addPageHeader(doc: jsPDF, docNum: string, now: string) {
@@ -838,89 +931,43 @@ export async function generateInspectionPDF(
     CW,
   );
 
+  const signatures = inspection.signatures ?? [];
+  const operationalSignature = signatures.find((signature) =>
+    isOperationalSignatureRole(signature.role_code),
+  );
+  const hseSignature = signatures.find((signature) =>
+    isHseSignatureRole(signature.role_code),
+  );
   const sigW = (CW - 6) / 2;
   const sigH = 40;
 
-  rect(doc, M, y, sigW, sigH, C.white, C.navyDark, 0.3);
-  rect(doc, M, y, sigW, 6.5, C.navyDark, null);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  st(doc, C.white);
-  doc.text("ASSINATURA DO INSPETOR RESPONSÁVEL", M + sigW / 2, y + 4.5, {
-    align: "center",
-  });
-
-  // Imagem da assinatura digital (se disponível)
-  if (inspection.signature) {
-    try {
-      const sigImgW = sigW - 12;
-      const sigImgH = 20;
-      const sigImgX = M + 6;
-      const sigImgY = y + 9;
-      doc.addImage(
-        inspection.signature,
-        "PNG",
-        sigImgX,
-        sigImgY,
-        sigImgW,
-        sigImgH,
-      );
-    } catch {
-      // ignora se imagem inválida
-    }
-  }
-
-  hline(doc, y + 35, M + 6, M + sigW - 6, C.grayMid, 0.35);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  st(doc, C.grayDark);
-  doc.text(inspection.inspector_name, M + sigW / 2, y + 39, {
-    align: "center",
-  });
-
-  const qrBX = M + sigW + 6;
-  rect(doc, qrBX, y, sigW, sigH, C.white, C.navyDark, 0.3);
-  rect(doc, qrBX, y, sigW, 6.5, C.navyDark, null);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  st(doc, C.white);
-  doc.text("VERIFICAÇÃO E RASTREABILIDADE ONLINE", qrBX + sigW / 2, y + 4.5, {
-    align: "center",
-  });
-
-  const qrSz = 26,
-    qrBQX = qrBX + 4,
-    qrBQY = y + 9;
-  rect(
+  drawSignatureBox({
     doc,
-    qrBQX - 1,
-    qrBQY - 1,
-    qrSz + 2,
-    qrSz + 2,
-    [245, 247, 250],
-    C.navyDark,
-    0.25,
-  );
-  doc.addImage(qrDataUrl, "PNG", qrBQX, qrBQY, qrSz, qrSz);
+    x: M,
+    y,
+    w: sigW,
+    h: sigH,
+    title: "ASSINATURA DO RESPONSÁVEL OPERACIONAL",
+    signatureData: operationalSignature?.signature_data ?? inspection.signature,
+    signerName: operationalSignature?.signer_name ?? inspection.inspector_name,
+    signerMeta:
+      operationalSignature?.signer_position ??
+      operationalSignature?.signer_company ??
+      null,
+  });
 
-  const txtX = qrBX + qrSz + 10;
-  const txtMaxW = sigW - qrSz - 16;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-  st(doc, C.navyDark);
-  doc.text("ACESSO AO SISTEMA", txtX, y + 14);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
-  st(doc, C.grayMid);
-  const qrDesc = doc.splitTextToSize(
-    "Escaneie para consultar status atual, validade e histórico de inspeções deste andaime.",
-    txtMaxW,
-  ) as string[];
-  doc.text(qrDesc, txtX, y + 20);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(6);
-  st(doc, C.orangeEng);
-  doc.text(docNum, txtX, y + 36);
+  drawSignatureBox({
+    doc,
+    x: M + sigW + 6,
+    y,
+    w: sigW,
+    h: sigH,
+    title: "ASSINATURA DO RESPONSÁVEL HSE",
+    signatureData: hseSignature?.signature_data ?? null,
+    signerName: hseSignature?.signer_name ?? "Assinatura HSE não registrada",
+    signerMeta: hseSignature?.signer_position ?? hseSignature?.signer_company ?? null,
+    muted: !hseSignature?.signature_data,
+  });
 
   // ── RODAPÉ — todas as páginas ─────────────────────────────────────────────
   const totalPages = doc.getNumberOfPages();
@@ -946,7 +993,7 @@ export async function generateInspectionPDF(
     doc.setFontSize(5.5);
     st(doc, [100, 116, 139]);
     doc.text(
-      `Emitido em: ${now}  ·  Este documento é válido somente com assinatura do inspetor responsável`,
+      `Emitido em: ${now}  ·  Este documento é válido com as assinaturas dos responsáveis operacional e HSE`,
       M + 3,
       FY + 9,
     );

@@ -88,6 +88,8 @@ type InspectionDetail = {
     role_code: string;
     signer_name: string;
     signer_company: string | null;
+    signer_position: string | null;
+    signature_data: string | null;
     signed_at: Date;
     role: { code: string; name: string };
   }>;
@@ -294,6 +296,13 @@ export default async function InspectionDetailPage({ params }: Props) {
               notes: inspection.notes,
               photos: inspection.photos,
               signature: inspection.signature,
+              signatures: inspection.signatures.map((signature) => ({
+                role_code: signature.role_code,
+                signer_name: signature.signer_name,
+                signer_company: signature.signer_company,
+                signer_position: signature.signer_position,
+                signature_data: signature.signature_data,
+              })),
               checklist: inspection.checklist,
               scaffold: scaffold
                 ? {

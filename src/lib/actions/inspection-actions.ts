@@ -378,6 +378,7 @@ export async function getInspectionById(id: string) {
           signer_name: true,
           signer_company: true,
           signer_position: true,
+          signature_data: true,
           signed_at: true,
           created_at: true,
           role: true,
