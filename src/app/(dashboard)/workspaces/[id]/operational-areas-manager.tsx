@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Pencil, Plus, Save } from "lucide-react";
+import { CheckCircle2, MapPin, Pencil, Plus, Power, Save, XCircle } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { FormModal } from "@/components/shared/form-modal";
@@ -13,6 +13,7 @@ import {
   setOperationalAreaActive,
   updateOperationalArea,
 } from "@/lib/actions/workspace-actions";
+import { surface, typography } from "@/lib/design-system";
 
 type OperationalArea = {
   id: string;
@@ -33,13 +34,16 @@ export function OperationalAreasManager({
   areas: OperationalArea[];
 }) {
   const [editingArea, setEditingArea] = useState<OperationalArea | null>(null);
+  const tableGrid = canManage
+    ? "lg:grid-cols-[minmax(160px,1.2fr)_100px_minmax(220px,1.4fr)_72px_82px_72px]"
+    : "lg:grid-cols-[minmax(160px,1.2fr)_100px_minmax(220px,1.4fr)_72px_82px]";
 
   return (
     <div className="space-y-3">
       {canManage && (
         <form
           action={createOperationalArea}
-          className="grid gap-2 border border-border bg-muted/20 p-2 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto]"
+          className="grid gap-2 rounded-lg border border-border bg-muted/20 p-3 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto]"
         >
           <input type="hidden" name="workspaceId" value={workspaceId} />
           <Input
@@ -48,13 +52,17 @@ export function OperationalAreasManager({
             required
             className="h-8 rounded-md text-xs"
           />
-          <Input name="code" placeholder="Código" className="h-8 rounded-md text-xs" />
+          <Input
+            name="code"
+            placeholder="Código"
+            className="h-8 rounded-md text-xs"
+          />
           <Input
             name="description"
             placeholder="Descrição"
             className="h-8 rounded-md text-xs"
           />
-          <Button type="submit" size="sm" className="h-8 rounded-md text-xs">
+          <Button type="submit" size="sm" className="h-8">
             <Plus className="size-3.5" /> Adicionar
           </Button>
         </form>
@@ -68,81 +76,88 @@ export function OperationalAreasManager({
           className="border-dashed"
         />
       ) : (
-        <div className="overflow-x-auto border border-border">
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="bg-muted/40">
-              <tr className="border-b border-border text-left text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                <th className="px-3 py-2">Área</th>
-                <th className="px-3 py-2">Código</th>
-                <th className="px-3 py-2">Descrição</th>
-                <th className="px-3 py-2 text-right">Andaimes</th>
-                <th className="px-3 py-2">Status</th>
-                {canManage && <th className="px-3 py-2 text-right">Ações</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {areas.map((area) => (
-                <tr
-                  key={area.id}
-                  className="border-b border-border/70 last:border-0"
+        <div className="max-w-full overflow-hidden rounded-lg border border-border bg-card">
+          <div
+            className={`hidden gap-2 border-b lg:grid ${tableGrid} ${surface.tableHeader}`}
+          >
+            <span>Área</span>
+            <span>Código</span>
+            <span>Descrição</span>
+            <span className="text-right">Andaimes</span>
+            <span>Status</span>
+            {canManage && <span className="text-right">Ações</span>}
+          </div>
+          {areas.map((area, index) => (
+            <div
+              key={area.id}
+              className={`flex items-start gap-3 px-4 py-3 lg:grid ${tableGrid} lg:items-center lg:gap-2 lg:px-3 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
+            >
+              <div className="min-w-0 flex-1">
+                <p
+                  className={`break-words text-foreground lg:truncate ${typography.bodyStrong}`}
                 >
-                  <td className="px-3 py-2 align-top font-medium">{area.name}</td>
-                  <td className="px-3 py-2 align-top">
-                    {area.code ? (
-                      <span className="font-mono text-xs">{area.code}</span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
+                  {area.name}
+                </p>
+                <p
+                  className={`mt-1 break-all text-muted-foreground lg:hidden ${typography.codeMuted}`}
+                >
+                  {area.code || "Sem código"}
+                </p>
+              </div>
+              <p
+                className={`hidden break-all text-muted-foreground lg:block ${typography.codeMuted}`}
+              >
+                {area.code || "-"}
+              </p>
+              <p
+                className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}
+              >
+                {area.description || "Sem descrição"}
+              </p>
+              <p className={`hidden text-right lg:block ${typography.code}`}>
+                {area._count.scaffolds}
+              </p>
+              <AreaStatusBadge active={area.isActive} />
+              {canManage && (
+                <div className="flex justify-end gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    title="Editar"
+                    aria-label={`Editar área ${area.name}`}
+                    onClick={() => setEditingArea(area)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <form
+                    action={setOperationalAreaActive.bind(
+                      null,
+                      area.id,
+                      !area.isActive,
                     )}
-                  </td>
-                  <td className="max-w-md px-3 py-2 align-top text-xs text-muted-foreground">
-                    {area.description || "Sem descrição"}
-                  </td>
-                  <td className="px-3 py-2 text-right align-top font-mono text-xs">
-                    {area._count.scaffolds}
-                  </td>
-                  <td className="px-3 py-2 align-top">
-                    <Badge
-                      variant={area.isActive ? "default" : "secondary"}
-                      className="rounded-md text-[9px]"
+                  >
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      size="icon-sm"
+                      title={area.isActive ? "Desativar" : "Ativar"}
+                      aria-label={
+                        area.isActive
+                          ? `Desativar área ${area.name}`
+                          : `Ativar área ${area.name}`
+                      }
                     >
-                      {area.isActive ? "Ativa" : "Inativa"}
-                    </Badge>
-                  </td>
-                  {canManage && (
-                    <td className="px-3 py-2 align-top">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="h-8 rounded-md text-xs"
-                          onClick={() => setEditingArea(area)}
-                        >
-                          <Pencil className="size-3.5" /> Editar
-                        </Button>
-                        <form
-                          action={setOperationalAreaActive.bind(
-                            null,
-                            area.id,
-                            !area.isActive,
-                          )}
-                        >
-                          <Button
-                            type="submit"
-                            variant="outline"
-                            size="sm"
-                            className="h-8 rounded-md text-xs"
-                          >
-                            {area.isActive ? "Desativar" : "Ativar"}
-                          </Button>
-                        </form>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <Power />
+                    </Button>
+                  </form>
+                </div>
+              )}
+            </div>
+          ))}
+          <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
+            {areas.length} registro(s) • Áreas operacionais
+          </div>
         </div>
       )}
 
@@ -190,5 +205,23 @@ export function OperationalAreasManager({
         )}
       </FormModal>
     </div>
+  );
+}
+
+function AreaStatusBadge({ active }: { active: boolean }) {
+  const Icon = active ? CheckCircle2 : XCircle;
+
+  return (
+    <Badge
+      variant="outline"
+      className={`w-fit rounded-md ${typography.badge} ${
+        active
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-slate-200 bg-slate-100 text-slate-600"
+      }`}
+    >
+      <Icon className="size-2.5" />
+      {active ? "Ativa" : "Inativa"}
+    </Badge>
   );
 }

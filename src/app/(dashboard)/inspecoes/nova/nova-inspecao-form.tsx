@@ -1387,14 +1387,6 @@ export function NovaInspecaoForm({
           <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             Assinaturas obrigatórias
           </h3>
-          <button
-            type="button"
-            onClick={clearSignature}
-            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <RotateCcw className="w-3 h-3" />
-            Limpar
-          </button>
         </div>
 
         <div className="space-y-2">
@@ -1568,7 +1560,16 @@ export function NovaInspecaoForm({
           </p>
         )}
 
-        <div className="relative border border-dashed border-border bg-muted/20">
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={clearSignature}
+            className="ml-auto inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <RotateCcw className="size-3" />
+            Limpar
+          </button>
+          <div className="relative border border-dashed border-border bg-muted/20">
           <canvas
             ref={canvasRef}
             width={800}
@@ -1625,6 +1626,7 @@ export function NovaInspecaoForm({
               Assine com o dedo ou mouse acima
             </p>
           )}
+          </div>
         </div>
         <button
           type="button"

@@ -1,16 +1,16 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
   ActionMenu,
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
+import { Badge } from "@/components/ui/badge";
 import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import {
   ArrowLeft,
   Building2,
+  CheckCircle2,
   ClipboardCheck,
   ClipboardList,
   Construction,
@@ -18,6 +18,7 @@ import {
   MapPin,
   Pencil,
   Users,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -86,21 +87,72 @@ export default async function WorkspaceDetailPage({
   const workspace = workspaceResult as WorkspaceDetail;
 
   const indicators = [
-    { label: "Empresas", value: workspace._count.companyLinks, icon: Building2 },
-    { label: "Usuários", value: workspace._count.users, icon: Users },
-    { label: "Andaimes", value: workspace._count.scaffolds, icon: Construction },
-    { label: "Inspeções", value: workspace._count.inspections, icon: ClipboardCheck },
-    { label: "Não Conformidades", value: workspace._count.nonConformities, icon: ClipboardList },
-    { label: "Documentos", value: workspace._count.scaffoldDocuments, icon: FileText },
+    {
+      label: "Empresas",
+      value: workspace._count.companyLinks,
+      icon: Building2,
+      iconClass: "text-blue-600",
+      borderClass: "border-l-4 border-l-blue-500",
+      valueClass: "text-blue-700",
+    },
+    {
+      label: "Usuários",
+      value: workspace._count.users,
+      icon: Users,
+      iconClass: "text-green-600",
+      borderClass: "border-l-4 border-l-green-500",
+      valueClass: "text-green-700",
+    },
+    {
+      label: "Andaimes",
+      value: workspace._count.scaffolds,
+      icon: Construction,
+      iconClass: "text-amber-600",
+      borderClass: "border-l-4 border-l-amber-500",
+      valueClass: "text-amber-700",
+    },
+    {
+      label: "Inspeções",
+      value: workspace._count.inspections,
+      icon: ClipboardCheck,
+      iconClass: "text-violet-600",
+      borderClass: "border-l-4 border-l-violet-500",
+      valueClass: "text-violet-700",
+    },
+    {
+      label: "Não conformidades",
+      value: workspace._count.nonConformities,
+      icon: ClipboardList,
+      iconClass: "text-rose-600",
+      borderClass: "border-l-4 border-l-rose-500",
+      valueClass: "text-rose-700",
+    },
+    {
+      label: "Documentos",
+      value: workspace._count.scaffoldDocuments,
+      icon: FileText,
+      iconClass: "text-slate-600",
+      borderClass: "border-l-4 border-l-slate-500",
+      valueClass: "text-slate-700",
+    },
   ];
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><MapPin className="size-4" /> AndCheck • Workspaces</p>
-          <h1 className={`${typography.pageTitle} text-foreground`}>{workspace.name}</h1>
-          <p className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}>{workspace.code}</p>
+          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            <MapPin className="size-4" />
+            AndCheck • Workspaces
+          </p>
+          <h1 className={`${typography.pageTitle} text-foreground`}>
+            {workspace.name}
+          </h1>
+          <p
+            className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}
+          >
+            {workspace.code}
+          </p>
         </div>
         <ActionMenu className="justify-end sm:w-auto">
           {canManage && (
@@ -125,27 +177,85 @@ export default async function WorkspaceDetailPage({
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className="break-words text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-xl font-bold">{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => (
+          <Kpi key={indicator.label} {...indicator} />
+        ))}
       </div>
 
-      <Card className="rounded-lg">
-        <CardHeader><CardTitle>Dados Gerais</CardTitle></CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Info label="Nome" value={workspace.name} />
-          <Info label="Código" value={workspace.code} mono />
-          <Info label="Empresa proprietária" value={workspace.ownerCompany.name} />
-          <Info label="Status" value={workspace.active ? "Ativo" : "Inativo"} />
-          <Info label="Cidade / Estado" value={[workspace.city, workspace.state].filter(Boolean).join(" / ") || "Não informado"} />
-          <Info label="Endereço" value={workspace.address ?? "Não informado"} />
-          <Info label="Coordenadas" value={workspace.latitude === null || workspace.longitude === null ? "Não informadas" : `${workspace.latitude.toFixed(6)}, ${workspace.longitude.toFixed(6)}`} mono />
-          <Info label="Data de criação" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(workspace.createdAt)} />
-          <div className="sm:col-span-2 lg:col-span-4"><Info label="Descrição" value={workspace.description ?? "Não informada"} /></div>
-        </CardContent>
-      </Card>
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className={surface.panelHeader}>
+          <div className="flex items-center gap-2">
+            <MapPin className={surface.panelHeaderIcon} />
+            <h2 className={surface.panelHeaderTitle}>Dados gerais</h2>
+          </div>
+        </div>
+        <div className="space-y-4 p-4">
+          <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-muted/20 p-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <p className="break-words text-[18px] font-bold leading-tight text-foreground">
+                {workspace.name}
+              </p>
+              <p
+                className={`mt-0.5 break-all text-muted-foreground ${typography.codeMuted}`}
+              >
+                {workspace.code}
+              </p>
+            </div>
+            <WorkspaceStatusPill active={workspace.active} />
+          </div>
 
-      <Card className="rounded-lg">
-        <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Empresas vinculadas</CardTitle></CardHeader>
-        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Info
+              label="Empresa proprietária"
+              value={workspace.ownerCompany.name}
+            />
+            <Info
+              label="Cidade / Estado"
+              value={
+                [workspace.city, workspace.state].filter(Boolean).join(" / ") ||
+                "Não informado"
+              }
+            />
+            <Info
+              label="Endereço"
+              value={workspace.address ?? "Não informado"}
+            />
+            <Info
+              label="Data de criação"
+              value={new Intl.DateTimeFormat("pt-BR", {
+                dateStyle: "long",
+              }).format(workspace.createdAt)}
+            />
+            <Info
+              label="Coordenadas"
+              value={
+                workspace.latitude === null || workspace.longitude === null
+                  ? "Não informadas"
+                  : `${workspace.latitude.toFixed(6)}, ${workspace.longitude.toFixed(6)}`
+              }
+              mono
+            />
+            <div className="sm:col-span-2 lg:col-span-3">
+              <Info
+                label="Descrição"
+                value={workspace.description ?? "Não informada"}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className={surface.panelHeader}>
+          <div className="flex items-center gap-2">
+            <Building2 className={surface.panelHeaderIcon} />
+            <h2 className={surface.panelHeaderTitle}>Empresas vinculadas</h2>
+          </div>
+          <p className={surface.panelHeaderSubtitle}>
+            {workspace.companyLinks.length} registro(s)
+          </p>
+        </div>
+        <div className="p-4">
           {workspace.companyLinks.length === 0 ? (
             <EmptyState
               icon={Building2}
@@ -154,32 +264,141 @@ export default async function WorkspaceDetailPage({
               className="border-dashed"
             />
           ) : (
-            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+            <div className="andcheck-long-list grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {workspace.companyLinks.map(({ company, role }) => (
-                <Link key={company.id} href={`/empresas/${company.id}`} className="andcheck-lift flex min-w-0 items-center justify-between gap-3 border bg-muted/15 p-3 hover:bg-muted/40">
-                  <div className="min-w-0"><p className="truncate text-xs font-bold">{company.name}</p><p className="font-mono text-[10px] text-muted-foreground">{company.code}</p></div>
-                  <div className="flex shrink-0 flex-col items-end gap-1"><Badge variant="outline" className="rounded-md text-[9px]">{role === "OWNER" ? "Proprietária" : TYPE_LABELS[company.type]}</Badge><span className={`text-[9px] font-bold uppercase ${company.active ? "text-emerald-700" : "text-muted-foreground"}`}>{company.active ? "Ativa" : "Inativa"}</span></div>
+                <Link
+                  key={company.id}
+                  href={`/empresas/${company.id}`}
+                  className="andcheck-lift flex min-h-24 min-w-0 flex-col justify-between rounded-lg border border-border bg-card p-3 shadow-sm hover:bg-primary/5"
+                >
+                  <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p
+                        className={`break-words text-foreground sm:truncate ${typography.bodyStrong}`}
+                      >
+                        {company.name}
+                      </p>
+                      <p
+                        className={`mt-1 break-all text-muted-foreground ${typography.codeMuted}`}
+                      >
+                        {company.code}
+                      </p>
+                    </div>
+                    <WorkspaceStatusPill active={company.active} compact />
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={`w-fit max-w-full rounded-md ${typography.badge}`}
+                  >
+                    {role === "OWNER"
+                      ? "Proprietária"
+                      : TYPE_LABELS[company.type]}
+                  </Badge>
                 </Link>
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card className="rounded-lg">
-        <CardHeader><CardTitle className="flex items-center gap-2"><MapPin className="size-4" /> Áreas operacionais</CardTitle></CardHeader>
-        <CardContent>
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className={surface.panelHeader}>
+          <div className="flex items-center gap-2">
+            <MapPin className={surface.panelHeaderIcon} />
+            <h2 className={surface.panelHeaderTitle}>Áreas operacionais</h2>
+          </div>
+          <p className={surface.panelHeaderSubtitle}>
+            {workspace.operationalAreas.length} registro(s)
+          </p>
+        </div>
+        <div className="p-4">
           <OperationalAreasManager
             workspaceId={workspace.id}
             canManage={canManage}
             areas={workspace.operationalAreas}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }
 
-function Info({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
-  return <div className="min-w-0"><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className={`mt-1 break-words text-sm font-medium ${mono ? "font-mono" : ""}`}>{value}</p></div>;
+function Info({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className={`${typography.sectionLabel} text-muted-foreground`}>
+        {label}
+      </p>
+      <p
+        className={`mt-1 break-words text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function Kpi({
+  icon: Icon,
+  label,
+  value,
+  iconClass,
+  borderClass,
+  valueClass,
+}: {
+  icon: typeof Building2;
+  label: string;
+  value: number;
+  iconClass: string;
+  borderClass: string;
+  valueClass: string;
+}) {
+  return (
+    <div
+      className={`andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 ${borderClass}`}
+    >
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p
+          className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
+        >
+          {label}
+        </p>
+        <Icon className={`h-4 w-4 shrink-0 ${iconClass}`} />
+      </div>
+      <p className={`${typography.kpiValue} leading-none ${valueClass}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function WorkspaceStatusPill({
+  active,
+  compact = false,
+}: {
+  active: boolean;
+  compact?: boolean;
+}) {
+  const Icon = active ? CheckCircle2 : XCircle;
+
+  return (
+    <span
+      className={`inline-flex w-fit shrink-0 items-center gap-1 rounded-md border ${
+        active
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-slate-200 bg-slate-100 text-slate-600"
+      } ${compact ? `${typography.badge} px-1.5 py-0.5` : `${typography.badgeLg} px-2.5 py-1`}`}
+    >
+      <Icon className={compact ? "size-2.5" : "size-3"} />
+      {active ? "Ativo" : "Inativo"}
+    </span>
+  );
 }

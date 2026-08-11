@@ -223,7 +223,7 @@ export default async function DashboardLayout({
         <ConnectivityIndicator />
 
         {/* Page content */}
-        <div className="mx-auto w-full max-w-7xl min-w-0 flex-1 overflow-hidden p-4 md:p-6">
+        <div className="mx-auto w-full max-w-7xl min-w-0 flex-1 overflow-hidden px-4 pb-4 pt-10 md:p-6">
           {children}
         </div>
         <Toaster richColors position="top-right" closeButton />
