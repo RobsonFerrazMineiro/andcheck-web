@@ -29,6 +29,7 @@ import type { DashboardMapPreviewProps } from "@/components/dashboard/dashboard-
 import type { InspectionPerformanceChartProps } from "@/components/dashboard/inspection-performance-chart";
 import { EmptyState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getDashboardMetrics } from "@/lib/dashboard-metrics";
 import { getContextCapabilities } from "@/lib/data-scope";
@@ -133,22 +134,20 @@ export default async function DashboardPage() {
         </div>
         <div className="flex gap-2 shrink-0">
           {canCreateScaffold && (
-            <Link
-              href="/andaimes/novo"
-              className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Novo Andaime
-            </Link>
+            <Button asChild size="sm">
+              <Link href="/andaimes/novo">
+                <Plus className="w-3.5 h-3.5" />
+                Novo Andaime
+              </Link>
+            </Button>
           )}
           {canCreateInspection && (
-            <Link
-              href="/inspecoes/nova"
-              className={`inline-flex h-8 items-center gap-1.5 rounded-md border border-border/70 px-3 text-foreground hover:bg-muted ${typography.action}`}
-            >
-              <ClipboardCheck className="w-3.5 h-3.5" />
-              Nova Inspeção
-            </Link>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/inspecoes/nova">
+                <ClipboardCheck className="w-3.5 h-3.5" />
+                Nova Inspeção
+              </Link>
+            </Button>
           )}
         </div>
       </div>

@@ -28,6 +28,7 @@ import {
   requiredId,
   requiredText,
 } from "@/lib/input-validation";
+import { DOCUMENT_CATEGORY_LABELS } from "@/lib/document-types";
 import { roleHasPermission, type PermissionCode } from "@/lib/rbac";
 import { createNotification } from "@/lib/notifications/service";
 
@@ -40,16 +41,6 @@ const DOCUMENT_VIEW_PERMISSIONS: PermissionCode[] = [
   "read.own_company",
 ];
 
-const DOCUMENT_CATEGORY_LABELS: Record<DocumentCategory, string> = {
-  ART: "ART",
-  RRT: "RRT",
-  PROJETO_ESTRUTURAL: "Projeto Estrutural",
-  MEMORIAL_CALCULO: "Memorial de Calculo",
-  CROQUI: "Croqui",
-  PLANO_MONTAGEM: "Plano de Montagem",
-  CERTIFICADO_TECNICO: "Certificado Tecnico",
-  OUTRO: "Outros",
-};
 const INLINE_SCAFFOLD_DOCUMENT_REFERENCE_MAX_LENGTH = 10 * 1024 * 1024;
 
 function hasAccessPermission(

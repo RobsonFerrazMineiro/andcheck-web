@@ -26,6 +26,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { surface, typography } from "@/lib/design-system";
+import { getExpirationFilterLabel } from "@/lib/filter-labels";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
   scaffoldStatusTone,
@@ -124,17 +125,6 @@ const LEGEND_FILTERS: LegendFilter[] = [
   },
 ];
 
-const STATUS_DOT: Record<string, string> = {
-  liberado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("liberado")].dot,
-  em_montagem: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("em_montagem")].dot,
-  pendente_liberacao:
-    SEMANTIC_TONE_CLASSES[scaffoldStatusTone("pendente_liberacao")].dot,
-  reprovado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("reprovado")].dot,
-  interditado: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("interditado")].dot,
-  vencido: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("vencido")].dot,
-  pendente: SEMANTIC_TONE_CLASSES[scaffoldStatusTone("pendente")].dot,
-};
-
 function filterLabel(activeStatus: string | null) {
   if (!activeStatus) return "Todos os status";
   return (
@@ -144,9 +134,13 @@ function filterLabel(activeStatus: string | null) {
 }
 
 function dueFilterLabel(dueFilter: string) {
-  if (dueFilter === "expiring_soon") return "Prestes a vencer (7 dias)";
-  if (dueFilter === "expiring_today") return "Vencendo hoje";
-  return "Todos os vencimentos";
+  return dueFilter === "all"
+    ? "Todos os vencimentos"
+    : getExpirationFilterLabel(dueFilter);
+}
+
+function getScaffoldStatusDot(status: string) {
+  return SEMANTIC_TONE_CLASSES[scaffoldStatusTone(status)].dot;
 }
 
 function matchesDueFilter(validityDate: string | null, dueFilter: string) {
@@ -302,7 +296,9 @@ export function MapaOperacionalClient({
                 <SelectItem value="expiring_soon">
                   Prestes a vencer (7 dias)
                 </SelectItem>
-                <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+                <SelectItem value="expiring_today">
+                  {getExpirationFilterLabel("expiring_today")}
+                </SelectItem>
               </SelectContent>
             </Select>
             {(activeStatus ||
@@ -397,8 +393,7 @@ export function MapaOperacionalClient({
                 <div
                   className={
                     "size-2 shrink-0 rounded-full " +
-                    (STATUS_DOT[scaffold.effectiveStatus] ??
-                      SEMANTIC_TONE_CLASSES.disabled.dot)
+                    getScaffoldStatusDot(scaffold.effectiveStatus)
                   }
                 />
                 <MapPin className="size-3.5 shrink-0 text-muted-foreground/30" />
@@ -507,8 +502,7 @@ export function MapaOperacionalClient({
                   <div
                     className={
                       "size-2 shrink-0 rounded-full " +
-                      (STATUS_DOT[scaffold.effectiveStatus] ??
-                        SEMANTIC_TONE_CLASSES.disabled.dot)
+                      getScaffoldStatusDot(scaffold.effectiveStatus)
                     }
                   />
                   <div className="min-w-0 flex-1">

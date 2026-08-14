@@ -971,20 +971,32 @@ export function AuditoriaClient({
             Pagina {page} de {totalPages}
           </p>
           <div className="flex items-center gap-2">
-            <Link
-              href={buildHref(currentFilters, Math.max(page - 1, 1))}
-              className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted aria-disabled:opacity-40"
-              aria-disabled={page <= 1}
+            <Button
+              asChild
+              variant="outline"
+              size="icon-sm"
+              className={page <= 1 ? "pointer-events-none opacity-40" : ""}
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </Link>
-            <Link
-              href={buildHref(currentFilters, Math.min(page + 1, totalPages))}
-              className="inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground hover:bg-muted aria-disabled:opacity-40"
-              aria-disabled={page >= totalPages}
+              <Link
+                href={buildHref(currentFilters, Math.max(page - 1, 1))}
+                aria-disabled={page <= 1}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="icon-sm"
+              className={page >= totalPages ? "pointer-events-none opacity-40" : ""}
             >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+              <Link
+                href={buildHref(currentFilters, Math.min(page + 1, totalPages))}
+                aria-disabled={page >= totalPages}
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   SEMANTIC_TONE_HEX,
 } from "@/lib/semantic-tones";
 import { humanizeCode } from "@/lib/human-readable";
+import { getInspectionResultLabel } from "@/lib/inspection-results";
 
 export interface ScaffoldPin {
   id: string;
@@ -26,34 +27,9 @@ export interface ScaffoldPin {
   lastInspection?: { date: string; result: string } | null;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  liberado: SEMANTIC_TONE_HEX[scaffoldStatusTone("liberado")],
-  em_montagem: SEMANTIC_TONE_HEX[scaffoldStatusTone("em_montagem")],
-  pendente_liberacao:
-    SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente_liberacao")],
-  reprovado: SEMANTIC_TONE_HEX[scaffoldStatusTone("reprovado")],
-  interditado: SEMANTIC_TONE_HEX[scaffoldStatusTone("interditado")],
-  vencido: SEMANTIC_TONE_HEX[scaffoldStatusTone("vencido")],
-  desmontado: SEMANTIC_TONE_HEX[scaffoldStatusTone("desmontado")],
-  pendente: SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente")],
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  liberado: "Liberado",
-  em_montagem: "Em montagem",
-  pendente_liberacao: "Pendente",
-  reprovado: "Reprovado",
-  interditado: "Interditado",
-  vencido: "Vencido",
-  desmontado: "Desmontado",
-  pendente: "Pendente",
-};
-
-const RESULT_LABEL: Record<string, string> = {
-  aprovado: "Aprovado",
-  aprovado_com_ressalvas: "Aprovado c/ ressalvas",
-  reprovado: "Reprovado",
-};
+function scaffoldStatusColor(status: string) {
+  return SEMANTIC_TONE_HEX[scaffoldStatusTone(status)];
+}
 
 function createPin(color: string) {
   return L.divIcon({
@@ -156,17 +132,15 @@ function truncateText(value: string, maxLength: number) {
 }
 
 function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
-  const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
-  const statusLabel =
-    STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
+  const color = scaffoldStatusColor(scaffold.effectiveStatus);
+  const statusLabel = humanizeCode(scaffold.effectiveStatus);
   const location = isShortText(scaffold.locationDescription)
     ? scaffold.locationDescription
     : "";
   const validityDate = formatDate(scaffold.validity_date);
   const lastInspection = scaffold.lastInspection
     ? `${formatDate(scaffold.lastInspection.date)} - ${
-        RESULT_LABEL[scaffold.lastInspection.result] ??
-        humanizeCode(scaffold.lastInspection.result)
+        getInspectionResultLabel(scaffold.lastInspection.result)
       }`
     : "";
 
@@ -203,14 +177,12 @@ function buildCompactPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
 }
 
 function buildFullPopup(scaffold: ScaffoldPin, showCompanyName: boolean) {
-  const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
-  const statusLabel =
-    STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
+  const color = scaffoldStatusColor(scaffold.effectiveStatus);
+  const statusLabel = humanizeCode(scaffold.effectiveStatus);
   const validityDate = formatDate(scaffold.validity_date);
   const lastInspection = scaffold.lastInspection
     ? `${formatDate(scaffold.lastInspection.date)} - ${
-        RESULT_LABEL[scaffold.lastInspection.result] ??
-        humanizeCode(scaffold.lastInspection.result)
+        getInspectionResultLabel(scaffold.lastInspection.result)
       }`
     : "Sem inspeção registrada";
 
@@ -353,9 +325,8 @@ export function OperationalMap({
 
     // Adiciona novos markers
     scaffolds.forEach((scaffold) => {
-      const color = STATUS_COLOR[scaffold.effectiveStatus] ?? "#6b7280";
-      const statusLabel =
-        STATUS_LABEL[scaffold.effectiveStatus] ?? humanizeCode(scaffold.effectiveStatus);
+      const color = scaffoldStatusColor(scaffold.effectiveStatus);
+      const statusLabel = humanizeCode(scaffold.effectiveStatus);
       const markerLabel = `${scaffold.code} - ${statusLabel} - ${scaffold.area}`;
       const marker = L.marker([scaffold.latitude, scaffold.longitude], {
         icon: createPin(color),

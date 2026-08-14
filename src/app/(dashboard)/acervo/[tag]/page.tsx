@@ -27,49 +27,13 @@ import {
   type HistoryEventDetail,
   type HistoryEventType,
 } from "@/components/shared/audit-timeline";
+import { NonConformityBadge } from "@/components/shared/non-conformity-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
+import { getDocumentTypeLabel } from "@/lib/document-types";
 import { humanizeCode } from "@/lib/human-readable";
+import { getInspectionResultLabel } from "@/lib/inspection-results";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
-
-const SCAFFOLD_STATUS_LABELS: Record<string, string> = {
-  em_montagem: "EM MONTAGEM",
-  pendente_liberacao: "PENDENTE LIBERAÇÃO",
-  liberado: "LIBERADO",
-  reprovado: "REPROVADO",
-  interditado: "INTERDITADO",
-  vencido: "VENCIDO",
-};
-
-const INSPECTION_RESULT_LABELS: Record<string, string> = {
-  aprovado: "Aprovado",
-  aprovado_com_ressalvas: "Aprovado com ressalvas",
-  reprovado: "Reprovado",
-};
-
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  ART: "ART",
-  RRT: "RRT",
-  PROJETO: "Projeto Estrutural",
-  PROJETO_ESTRUTURAL: "Projeto Estrutural",
-  MEMORIAL_CALCULO: "Memorial de Cálculo",
-  CROQUI: "Croqui",
-  CERTIFICADO: "Certificado Técnico",
-  PLANO_MONTAGEM: "Plano de Montagem",
-  CERTIFICADO_TECNICO: "Certificado Técnico",
-  PROCEDIMENTO: "Outros",
-  OUTRO: "Outros",
-};
-
-const NC_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
 
 type ArchivedAuditLog = {
   id: string;
@@ -503,7 +467,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
   const previousStatus = getStringField(dismantleLog?.oldValue, "status");
   const lastOperationalStatus =
     previousStatus && previousStatus !== "desmontado"
-      ? (SCAFFOLD_STATUS_LABELS[previousStatus] ?? humanizeCode(previousStatus))
+      ? humanizeCode(previousStatus).toLocaleUpperCase("pt-BR")
       : "-";
   const dismantleReason =
     getStringField(dismantleLog?.newValue, "dismantleReason") ?? "-";
@@ -683,10 +647,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
             <ArchiveRow
               icon={CheckCircle2}
               label="Resultado"
-              value={
-                INSPECTION_RESULT_LABELS[lastInspection.result] ??
-                humanizeCode(lastInspection.result)
-              }
+              value={getInspectionResultLabel(lastInspection.result)}
             />
             <ArchiveRow
               icon={User}
@@ -751,9 +712,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
                 <p className="truncate text-[11px] text-foreground">
                   {nc.title}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {NC_STATUS_LABELS[nc.status] ?? humanizeCode(nc.status)}
-                </p>
+                <NonConformityBadge value={nc.status} size="xs" />
                 <p className="font-mono text-[11px] text-muted-foreground">
                   {formatDate(nc.dueDate)}
                 </p>
@@ -784,7 +743,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
                   {document.title}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {DOCUMENT_TYPE_LABELS[document.type] ?? humanizeCode(document.type)}
+                  {getDocumentTypeLabel(document.type)}
                 </p>
                 <p className="truncate text-[11px] text-muted-foreground">
                   {document.file_name}

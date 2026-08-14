@@ -52,6 +52,7 @@ import {
   type OfflineCreateInspectionPayload,
 } from "@/lib/offline/types";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 
 const ChecklistSection = dynamic(
@@ -180,17 +181,6 @@ function rememberRecentScaffold(id: string) {
 function formatNullableDate(value: string | null) {
   if (!value) return "-";
   return format(new Date(value), "dd/MM/yyyy");
-}
-
-function scaffoldTypeLabel(value: string) {
-  const labels: Record<string, string> = {
-    tubular: "Tubular",
-    fachadeiro: "Fachadeiro",
-    multidirecional: "Multidirecional",
-    suspenso: "Suspenso",
-    torre: "Torre",
-  };
-  return labels[value] ?? value;
 }
 
 const SIGNATURE_REQUIREMENT_ELIGIBLE_ROLES: Record<string, string[]> = {
@@ -1038,7 +1028,7 @@ export function NovaInspecaoForm({
                 />
                 <ReadonlyInfo
                   label="Tipo"
-                  value={scaffoldTypeLabel(selectedScaffold.type)}
+                  value={getScaffoldTypeLabel(selectedScaffold.type)}
                   className="col-span-2 sm:col-span-1"
                 />
               </div>
@@ -1101,7 +1091,7 @@ export function NovaInspecaoForm({
                 />
                 <ReadonlyInfo
                   label="Tipo"
-                  value={scaffoldTypeLabel(selectedScaffold.type)}
+                  value={getScaffoldTypeLabel(selectedScaffold.type)}
                 />
               </div>
               <div className="grid grid-cols-3 gap-x-8 gap-y-3">
@@ -1663,15 +1653,19 @@ export function NovaInspecaoForm({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
-        <Link
-          href="/inspecoes"
-          aria-disabled={submitting}
-          className={`inline-flex items-center justify-center h-8 px-5 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors ${
+        <Button
+          asChild
+          type="button"
+          variant="outline"
+          size="sm"
+          className={`text-[10px] font-bold uppercase tracking-widest ${
             submitting ? "pointer-events-none opacity-50" : ""
           }`}
         >
-          Cancelar
-        </Link>
+          <Link href="/inspecoes" aria-disabled={submitting}>
+            Cancelar
+          </Link>
+        </Button>
         <Button
           type="button"
           disabled={!canSubmit}

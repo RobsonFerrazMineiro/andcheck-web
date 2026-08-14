@@ -17,6 +17,7 @@ import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -26,6 +27,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
+import { getExpirationFilterLabel } from "@/lib/filter-labels";
+import {
+  getScaffoldStatusLabel,
+  SCAFFOLD_STATUS_FILTER_OPTIONS,
+} from "@/lib/scaffold-status";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import {
@@ -85,6 +91,14 @@ export function AndaimesClient({
       (expirationFilter === "expiring_today" && daysToExpire === 0);
     return matchSearch && matchStatus && matchExpiration;
   });
+  const statusSummary =
+    statusFilter === "all"
+      ? "Todos status"
+      : getScaffoldStatusLabel(statusFilter);
+  const expirationSummary =
+    expirationFilter === "all"
+      ? "Todos vencimentos"
+      : getExpirationFilterLabel(expirationFilter);
 
   return (
     <div className="space-y-5">
@@ -104,13 +118,12 @@ export function AndaimesClient({
           </p>
         </div>
         {canCreateScaffold && (
-          <Link
-            href="/andaimes/novo"
-            className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md bg-accent px-4 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Cadastrar Andaime
-          </Link>
+          <Button asChild size="sm" className="shrink-0">
+            <Link href="/andaimes/novo">
+              <Plus className="w-3.5 h-3.5" />
+              Cadastrar Andaime
+            </Link>
+          </Button>
         )}
       </div>
 
@@ -122,7 +135,7 @@ export function AndaimesClient({
 
       <MobileFilterPanel
         description="Busque e refine a lista de andaimes."
-        summary={`${filtered.length}/${scaffolds.length} · ${statusFilter === "all" ? "Todos status" : statusFilter} · ${expirationFilter === "all" ? "Todos vencimentos" : expirationFilter}`}
+        summary={`${filtered.length}/${scaffolds.length} · ${statusSummary} · ${expirationSummary}`}
       >
         <FilterShell
           title="Filtros"
@@ -147,11 +160,11 @@ export function AndaimesClient({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os Status</SelectItem>
-              <SelectItem value="liberado">Liberado</SelectItem>
-              <SelectItem value="pendente">Pendente</SelectItem>
-              <SelectItem value="reprovado">Reprovado</SelectItem>
-              <SelectItem value="vencido">Vencido</SelectItem>
-              <SelectItem value="em_montagem">Em Montagem</SelectItem>
+              {SCAFFOLD_STATUS_FILTER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           </FilterField>
@@ -165,7 +178,9 @@ export function AndaimesClient({
               <SelectItem value="expiring_soon">
                 Prestes a vencer (7 dias)
               </SelectItem>
-              <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+              <SelectItem value="expiring_today">
+                {getExpirationFilterLabel("expiring_today")}
+              </SelectItem>
             </SelectContent>
           </Select>
           </FilterField>
@@ -185,13 +200,12 @@ export function AndaimesClient({
           description="Cadastre o primeiro ativo para iniciar o controle operacional do ciclo de vida."
           action={
             canCreateScaffold ? (
-            <Link
-              href="/andaimes/novo"
-              className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground ${typography.action}`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Cadastrar
-            </Link>
+              <Button asChild size="sm">
+                <Link href="/andaimes/novo">
+                  <Plus className="w-3.5 h-3.5" />
+                  Cadastrar
+                </Link>
+              </Button>
             ) : null
           }
         />

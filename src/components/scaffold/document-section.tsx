@@ -38,6 +38,10 @@ import {
   getDocumentExtension,
   getDocumentViewUrl,
 } from "@/lib/document-view";
+import {
+  DOCUMENT_TYPE_OPTIONS,
+  getDocumentTypeLabel,
+} from "@/lib/document-types";
 import { SEMANTIC_TONE_CLASSES } from "@/lib/semantic-tones";
 import { typography } from "@/lib/design-system";
 import { uploadFile } from "@/lib/upload-file";
@@ -51,25 +55,6 @@ function isStorageNotConfiguredError(error: unknown) {
 }
 
 // ── Tipos e constantes ────────────────────────────────────────────────────────
-
-const DOC_TYPES = [
-  {
-    value: "ART",
-    label: "ART — Anotação de Responsabilidade Técnica",
-    priority: true,
-  },
-  {
-    value: "RRT",
-    label: "RRT — Registro de Responsabilidade Técnica",
-    priority: true,
-  },
-  { value: "MEMORIAL_CALCULO", label: "Memorial de Cálculo", priority: true },
-  { value: "CROQUI", label: "Croqui", priority: true },
-  { value: "PROJETO", label: "Projeto Estrutural", priority: false },
-  { value: "PROCEDIMENTO", label: "Procedimento de Montagem", priority: false },
-  { value: "CERTIFICADO", label: "Certificado", priority: false },
-  { value: "OUTRO", label: "Outro", priority: false },
-] as const;
 
 const ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx";
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -91,7 +76,7 @@ export type ScaffoldDocumentMetadata = {
 };
 
 function docTypeLabel(type: string) {
-  return DOC_TYPES.find((d) => d.value === type)?.label.split(" — ")[0] ?? type;
+  return getDocumentTypeLabel(type);
 }
 
 function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
@@ -259,7 +244,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               onChange={(e) => setType(e.target.value)}
               className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             >
-              {DOC_TYPES.map((d) => (
+              {DOCUMENT_TYPE_OPTIONS.map((d) => (
                 <option key={d.value} value={d.value}>
                   {d.label}
                 </option>

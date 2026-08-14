@@ -26,6 +26,7 @@ import {
   type OfflineCreateScaffoldPayload,
   type OfflineUpdateScaffoldPayload,
 } from "@/lib/offline/types";
+import { SCAFFOLD_TYPE_OPTIONS } from "@/lib/scaffold-types";
 
 const LocationPicker = dynamic(
   () =>
@@ -485,13 +486,11 @@ export default function NovoAndaimeForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="tubular">Tubular</SelectItem>
-                    <SelectItem value="fachadeiro">Fachadeiro</SelectItem>
-                    <SelectItem value="multidirecional">
-                      Multidirecional
-                    </SelectItem>
-                    <SelectItem value="suspenso">Suspenso</SelectItem>
-                    <SelectItem value="torre">Torre</SelectItem>
+                    {SCAFFOLD_TYPE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </Field>
@@ -774,7 +773,7 @@ export default function NovoAndaimeForm({
             <Button
               type="submit"
               disabled={saving || savedOffline}
-              className="rounded-md text-[11px] uppercase tracking-widest h-9 bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="h-9 rounded-md text-[11px] uppercase tracking-widest"
             >
               {saving || savedOffline ? (
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />

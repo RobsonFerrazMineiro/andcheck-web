@@ -20,20 +20,7 @@ import {
 
 import { EmptyState } from "@/components/shared/empty-state";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
-import {
-  scaffoldStatusTone,
-  SEMANTIC_TONE_HEX,
-} from "@/lib/semantic-tones";
-
-const STATUS_COLORS: Record<string, string> = {
-  liberado: SEMANTIC_TONE_HEX[scaffoldStatusTone("liberado")],
-  em_montagem: SEMANTIC_TONE_HEX[scaffoldStatusTone("em_montagem")],
-  pendente_liberacao:
-    SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente_liberacao")],
-  interditado: SEMANTIC_TONE_HEX[scaffoldStatusTone("interditado")],
-  vencido: SEMANTIC_TONE_HEX[scaffoldStatusTone("vencido")],
-  desmontado: SEMANTIC_TONE_HEX[scaffoldStatusTone("desmontado")],
-};
+import { getScaffoldStatusColor } from "@/lib/scaffold-status";
 
 const tooltipStyle = {
   background: "var(--card)",
@@ -138,7 +125,7 @@ export function StatusDistributionChart({
           {data.map((item) => (
             <Cell
               key={item.status}
-              fill={STATUS_COLORS[item.status] ?? "#94a3b8"}
+              fill={getScaffoldStatusColor(item.status)}
             />
           ))}
         </Pie>
@@ -183,5 +170,3 @@ export function InspectorProductivityChart({
     </ResponsiveContainer>
   );
 }
-
-export { STATUS_COLORS };

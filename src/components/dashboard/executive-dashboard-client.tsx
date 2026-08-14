@@ -25,11 +25,10 @@ import { typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
 import { humanizeCode } from "@/lib/human-readable";
 import {
-  scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
-  SEMANTIC_TONE_HEX,
   type SemanticTone,
 } from "@/lib/semantic-tones";
+import { getScaffoldStatusColor } from "@/lib/scaffold-status";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import {
@@ -90,16 +89,6 @@ const PERIODS = [
   { value: "quarter", label: "Trimestre" },
   { value: "year", label: "Ano" },
 ];
-
-const STATUS_COLORS: Record<string, string> = {
-  liberado: SEMANTIC_TONE_HEX[scaffoldStatusTone("liberado")],
-  em_montagem: SEMANTIC_TONE_HEX[scaffoldStatusTone("em_montagem")],
-  pendente_liberacao:
-    SEMANTIC_TONE_HEX[scaffoldStatusTone("pendente_liberacao")],
-  interditado: SEMANTIC_TONE_HEX[scaffoldStatusTone("interditado")],
-  vencido: SEMANTIC_TONE_HEX[scaffoldStatusTone("vencido")],
-  desmontado: SEMANTIC_TONE_HEX[scaffoldStatusTone("desmontado")],
-};
 
 export function ExecutiveDashboardClient({ data }: Props) {
   const router = useRouter();
@@ -299,7 +288,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
                     <div className="flex min-w-0 items-center gap-2">
                       <span
                         className="size-2.5 shrink-0 rounded-sm"
-                        style={{ background: STATUS_COLORS[item.status] ?? "#94a3b8" }}
+                        style={{ background: getScaffoldStatusColor(item.status) }}
                       />
                       <span className="truncate text-sm font-medium">{item.label}</span>
                     </div>
@@ -529,7 +518,7 @@ function ManagementMap({ data }: Props) {
               <div key={status} className="flex items-center gap-2">
                 <span
                   className="size-2.5 rounded-full"
-                  style={{ background: STATUS_COLORS[status] ?? "#64748b" }}
+                  style={{ background: getScaffoldStatusColor(status) }}
                 />
                 <span>{label}</span>
               </div>

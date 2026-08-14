@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { surface, typography } from "@/lib/design-system";
+import { getExpirationFilterLabel } from "@/lib/filter-labels";
 import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 
@@ -184,6 +185,17 @@ export function NaoConformidadesClient({
     (nc) => nc.classification === "CRITICAL",
   ).length;
   const vencidas = nonConformities.filter(isOverdue).length;
+  const statusSummary =
+    statusFilter === "all"
+      ? "Todos status"
+      : (STATUS_LABELS[statusFilter] ?? humanizeCode(statusFilter));
+  const classificationSummary =
+    classificationFilter === "all"
+      ? "Todas classes"
+      : (CLASSIFICATION_LABELS[classificationFilter] ??
+        humanizeCode(classificationFilter));
+  const dueSummary =
+    dueFilter === "all" ? "Todos prazos" : getExpirationFilterLabel(dueFilter);
 
   return (
     <div className="space-y-5">
@@ -283,7 +295,7 @@ export function NaoConformidadesClient({
 
       <MobileFilterPanel
         description="Busque e refine a lista de não conformidades."
-        summary={`${filtered.length}/${nonConformities.length} · ${statusFilter === "all" ? "Todos status" : STATUS_LABELS[statusFilter] ?? humanizeCode(statusFilter)} · ${classificationFilter === "all" ? "Todas classes" : CLASSIFICATION_LABELS[classificationFilter] ?? humanizeCode(classificationFilter)}`}
+        summary={`${filtered.length}/${nonConformities.length} · ${statusSummary} · ${classificationSummary} · ${dueSummary}`}
       >
         <FilterShell
           title="Filtros"
@@ -371,11 +383,15 @@ export function NaoConformidadesClient({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos prazos</SelectItem>
-              <SelectItem value="overdue">Vencidas</SelectItem>
+              <SelectItem value="overdue">
+                {getExpirationFilterLabel("overdue")}
+              </SelectItem>
               <SelectItem value="expiring_soon">
                 Prestes a vencer (7 dias)
               </SelectItem>
-              <SelectItem value="expiring_today">Vencendo hoje</SelectItem>
+              <SelectItem value="expiring_today">
+                {getExpirationFilterLabel("expiring_today")}
+              </SelectItem>
             </SelectContent>
           </Select>
           </FilterField>

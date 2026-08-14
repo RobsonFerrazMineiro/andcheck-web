@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { getScaffoldMapData } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getContextCapabilities } from "@/lib/data-scope";
@@ -119,13 +120,12 @@ export default async function MapaPage() {
           </p>
         </div>
         {canCreateScaffold && (
-          <Link
-            href="/andaimes/novo"
-            className="inline-flex h-8 w-full min-w-0 shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90 sm:w-auto"
-          >
-            <Construction className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Novo Andaime</span>
-          </Link>
+          <Button asChild size="sm" className="w-full min-w-0 shrink-0 sm:w-auto">
+            <Link href="/andaimes/novo">
+              <Construction className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Novo Andaime</span>
+            </Link>
+          </Button>
         )}
       </div>
 
