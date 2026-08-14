@@ -300,7 +300,7 @@ function DetailRow({
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0">
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground w-36 shrink-0">
+      <p className={`${typography.sectionLabel} w-36 shrink-0 text-muted-foreground`}>
         {label}
       </p>
       <div className="text-[12px] text-foreground font-medium text-right flex-1 min-w-0 break-words">
@@ -323,7 +323,7 @@ function Section({
     <section className="bg-card border border-border shadow-sm overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
         <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+        <p className={`${typography.panelTitle} text-foreground`}>
           {title}
         </p>
       </div>

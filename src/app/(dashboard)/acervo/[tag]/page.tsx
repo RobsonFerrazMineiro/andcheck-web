@@ -31,6 +31,7 @@ import { NonConformityBadge } from "@/components/shared/non-conformity-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
+import { typography } from "@/lib/design-system";
 import { getDocumentTypeLabel } from "@/lib/document-types";
 import { humanizeCode } from "@/lib/human-readable";
 import { getInspectionResultLabel } from "@/lib/inspection-results";
@@ -494,7 +495,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`${typography.sectionLabel} text-muted-foreground`}>
             <Link href="/acervo" className="hover:text-foreground">
               Acervo de Andaimes
             </Link>
@@ -787,7 +788,7 @@ function ArchiveCard({
       <div className="flex items-center justify-between border-b-2 border-border bg-muted/40 px-4 py-2.5">
         <div className="flex items-center gap-2">
           <Icon className="size-3.5 text-muted-foreground/60" />
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <h2 className={`${typography.panelTitle} text-foreground`}>
             {title}
           </h2>
         </div>
@@ -815,7 +816,7 @@ function ArchiveRow({
     <div className="flex items-center gap-3 px-4 py-2.5">
       <Icon className="size-3.5 shrink-0 text-muted-foreground/40" />
       <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
-        <p className="shrink-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className={`shrink-0 ${typography.sectionLabel} text-muted-foreground`}>
           {label}
         </p>
         <p className="truncate text-right text-[11px] font-semibold text-foreground">
@@ -874,7 +875,7 @@ function LifecycleStrip({
             )}
             <div className="relative z-10 mt-1 size-3 shrink-0 rounded-full border-2 border-sidebar-primary bg-card md:mx-auto md:mt-0" />
             <div className="md:mt-3 md:text-center">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className={`${typography.sectionLabel} text-muted-foreground`}>
                 {item.label}
               </p>
               <p className="mt-1 font-mono text-[11px] font-semibold text-foreground">

@@ -61,7 +61,7 @@ const ChecklistSection = dynamic(
   {
     loading: () => (
       <div className="bg-card border border-border shadow-sm p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className={`${typography.panelTitle} text-muted-foreground`}>
           Carregando checklist...
         </p>
       </div>
@@ -965,7 +965,7 @@ export function NovaInspecaoForm({
       />
 
       <div className="bg-card border border-border shadow-sm p-5 space-y-4">
-        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
           Informações Gerais
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1226,7 +1226,7 @@ export function NovaInspecaoForm({
             <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
           )}
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+            <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
               Resultado calculado
             </p>
             <StatusBadge status={autoResult} size="lg" />
@@ -1248,7 +1248,7 @@ export function NovaInspecaoForm({
       )}
 
       <div className="bg-card border border-border shadow-sm p-5 space-y-3">
-        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
           Registro Fotográfico
         </h3>
 
@@ -1374,7 +1374,7 @@ export function NovaInspecaoForm({
 
       {/* Assinatura Digital */}
       <div className="bg-card border border-border shadow-sm p-5 space-y-3">
-        <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-2">
+        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
           Observações Gerais
         </h3>
         <Textarea
@@ -1387,7 +1387,7 @@ export function NovaInspecaoForm({
 
       <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-4">
         <div className="flex items-center justify-between border-b border-border pb-2">
-          <h3 className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <h3 className={`${typography.sectionLabel} text-muted-foreground`}>
             Assinaturas obrigatórias
           </h3>
         </div>
@@ -1439,7 +1439,7 @@ export function NovaInspecaoForm({
                           ),
                         )
                       }
-                      className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-red-600"
+                      className={`${typography.sectionLabel} text-muted-foreground hover:text-red-600`}
                     >
                       Remover
                     </Button>
@@ -1571,7 +1571,7 @@ export function NovaInspecaoForm({
             variant="outline"
             size="sm"
             onClick={clearSignature}
-            className="ml-auto text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+            className={`ml-auto ${typography.sectionLabel} text-muted-foreground hover:text-foreground`}
           >
             <RotateCcw className="size-3" />
             Limpar

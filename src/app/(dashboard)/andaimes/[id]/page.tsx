@@ -29,6 +29,7 @@ import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { typography } from "@/lib/design-system";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
 
@@ -135,7 +136,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
               <ArrowLeft className="w-4 h-4" />
             </Link>
           </Button>
-          <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`min-w-0 ${typography.sectionLabel} text-muted-foreground`}>
             <Link href="/andaimes" className="hover:text-foreground">
               Andaimes
             </Link>
@@ -274,7 +275,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
           )}
           {scaffold.notes && (
             <div className="px-4 py-3 border-t border-border bg-muted/20">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+              <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
               <p className="text-[11px] text-foreground leading-relaxed">
@@ -313,7 +314,7 @@ function TechCard({ title, icon: Icon, extra, children }: TechCardProps) {
       <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
         <div className="flex items-center gap-2">
           <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <p className={`${typography.panelTitle} text-foreground`}>
             {title}
           </p>
         </div>
@@ -333,7 +334,7 @@ function TechRow({ icon: Icon, label, value }: TechRowProps) {
     <div className="flex items-center gap-3 px-4 py-2.5">
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
       <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground shrink-0">
+        <p className={`${typography.sectionLabel} shrink-0 text-muted-foreground`}>
           {label}
         </p>
         <p className="text-[11px] font-semibold text-foreground text-right truncate">

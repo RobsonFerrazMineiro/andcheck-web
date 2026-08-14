@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
+import { typography } from "@/lib/design-system";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 
 interface Props {
@@ -141,7 +142,7 @@ function TechRow({
   return (
     <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0">
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground w-32 shrink-0">
+      <p className={`${typography.sectionLabel} w-32 shrink-0 text-muted-foreground`}>
         {label}
       </p>
       <div className="text-[12px] text-foreground font-medium text-right flex-1">
@@ -211,7 +212,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               <ArrowLeft className="w-4 h-4 text-muted-foreground" />
             </Link>
           </Button>
-          <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className={`min-w-0 ${typography.sectionLabel} text-muted-foreground`}>
             <Link href="/inspecoes" className="hover:text-foreground">
               Inspeções
             </Link>
@@ -370,7 +371,7 @@ export default async function InspectionDetailPage({ params }: Props) {
             <p className={"text-[22px] font-bold font-mono " + s.color}>
               {s.value}
             </p>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className={`${typography.sectionLabel} text-muted-foreground`}>
               {s.label}
             </p>
           </div>
@@ -382,7 +383,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         <div className="bg-card border border-border shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
             <Construction className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p className={`${typography.panelTitle} text-foreground`}>
               Dados do Andaime
             </p>
           </div>
@@ -439,7 +440,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         <div className="bg-card border border-border shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
             <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p className={`${typography.panelTitle} text-foreground`}>
               Dados da Inspeção
             </p>
           </div>
@@ -478,7 +479,7 @@ export default async function InspectionDetailPage({ params }: Props) {
           />
           {inspection.notes && (
             <div className="px-4 py-3 border-t border-border bg-muted/20">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-1">
+              <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
               <p className="text-[11px] text-foreground leading-relaxed">
@@ -491,7 +492,7 @@ export default async function InspectionDetailPage({ params }: Props) {
 
       <div className="bg-card border border-border shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <p className={`${typography.panelTitle} text-foreground`}>
             Assinaturas Obrigatorias
           </p>
         </div>
@@ -534,14 +535,14 @@ export default async function InspectionDetailPage({ params }: Props) {
 
       <div className="bg-card border border-border shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+          <p className={`${typography.panelTitle} text-foreground`}>
             Checklist de Conformidade
           </p>
         </div>
         {Object.entries(grouped).map(([category, items]) => (
           <div key={category}>
             <div className="px-4 py-2 bg-primary/5 border-b border-border">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className={`${typography.sectionLabel} text-muted-foreground`}>
                 {category}
               </p>
             </div>
@@ -608,7 +609,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p className={`${typography.panelTitle} text-foreground`}>
               Não Conformidades Geradas
             </p>
           </div>
@@ -629,7 +630,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               {["Código", "Status", "Classificação", "Prazo"].map((h) => (
                 <p
                   key={h}
-                  className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
+                  className={`${typography.sectionLabel} text-muted-foreground`}
                 >
                   {h}
                 </p>
@@ -642,7 +643,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 className="grid gap-2 px-4 py-3 hover:bg-muted/30 transition-colors sm:grid-cols-4 sm:items-center"
               >
                 <p className="text-[11px] font-bold font-mono text-foreground">
-                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                  <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Código
                   </span>
                   {nc.code}
@@ -651,13 +652,13 @@ export default async function InspectionDetailPage({ params }: Props) {
                   <NonConformityBadge value={nc.status} size="xs" />
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                  <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Classificação
                   </span>
                   {getNonConformityClassificationLabel(nc.classification)}
                 </p>
                 <p className="text-[11px] text-muted-foreground font-mono">
-                  <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
+                  <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Prazo
                   </span>
                   {nc.dueDate ? format(nc.dueDate, "dd/MM/yyyy") : "-"}
