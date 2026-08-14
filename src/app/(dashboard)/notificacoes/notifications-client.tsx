@@ -73,7 +73,9 @@ export function NotificationsClient({
     <div className="space-y-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <Bell className="size-4" />
             AndCheck • Notificações
           </div>

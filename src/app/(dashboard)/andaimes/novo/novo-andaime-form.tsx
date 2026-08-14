@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createScaffold, updateScaffold } from "@/lib/actions/scaffold-actions";
+import { typography } from "@/lib/design-system";
 import { checkServerConnectivity } from "@/lib/offline/connectivity";
 import { localDb } from "@/lib/offline/local-db";
 import {
@@ -436,11 +437,13 @@ export default function NovoAndaimeForm({
           </Link>
         </Button>
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <Construction className="size-4" />
             AndCheck • Andaimes
           </div>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             {isEdit ? `Editar ${scaffold?.code}` : "Cadastro de Andaime"}
           </h1>
         </div>

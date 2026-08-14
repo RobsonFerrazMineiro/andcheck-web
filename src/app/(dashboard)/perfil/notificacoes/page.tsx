@@ -22,7 +22,9 @@ export default async function PerfilNotificacoesPage() {
   return (
     <div className="space-y-5">
       <div className="border-b-2 border-border pb-4">
-        <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <p
+          className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+        >
           <Bell className="size-4" />
           Conta e preferências
         </p>

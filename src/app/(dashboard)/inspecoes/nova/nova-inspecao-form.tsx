@@ -36,6 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
+import { typography } from "@/lib/design-system";
 import {
   calculateInspectionResult,
   calculateScaffoldStatus,
@@ -924,12 +925,11 @@ export function NovaInspecaoForm({
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-10">
       <div className="flex items-center gap-2">
-        <Link
-          href="/inspecoes"
-          className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-        </Link>
+        <Button asChild variant="ghost" size="icon-sm">
+          <Link href="/inspecoes" aria-label="Voltar para inspeções">
+            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+          </Link>
+        </Button>
         <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
           <Link href="/inspecoes" className="hover:text-foreground">
             Inspeções
@@ -940,14 +940,18 @@ export function NovaInspecaoForm({
       </div>
 
       <div className="pb-4 border-b-2 border-border">
-        <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <div
+          className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+        >
           <ClipboardCheck className="size-4" />
           AndCheck • Inspeções
         </div>
-        <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+        <h1 className={`${typography.pageTitle} text-foreground`}>
           Nova Inspeção
         </h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p
+          className={`${typography.sectionDescription} text-muted-foreground mt-0.5`}
+        >
           Checklist de{" "}
           {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens •
           Resultado calculado automaticamente • NR-18 / NR-35 / ABNT NBR 6494

@@ -29,6 +29,7 @@ import {
 } from "@/components/shared/audit-timeline";
 import { NonConformityBadge } from "@/components/shared/non-conformity-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
 import { getDocumentTypeLabel } from "@/lib/document-types";
 import { humanizeCode } from "@/lib/human-readable";
@@ -488,12 +489,11 @@ export default async function AcervoDetalhePage({ params }: Props) {
     <div className="mx-auto flex max-w-5xl flex-col gap-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Link
-            href="/acervo"
-            className="flex size-7 items-center justify-center transition-colors hover:bg-muted"
-          >
-            <ArrowLeft className="size-4" />
-          </Link>
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link href="/acervo" aria-label="Voltar para o acervo">
+              <ArrowLeft className="size-4" />
+            </Link>
+          </Button>
           <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/acervo" className="hover:text-foreground">
               Acervo de Andaimes

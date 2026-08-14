@@ -776,7 +776,9 @@ export function AuditoriaClient({
     <div className="min-w-0 space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <FileClock className="size-4" />
             AndCheck • Auditoria
           </div>

@@ -104,14 +104,18 @@ export default async function MapaPage() {
     <div className="min-w-0 space-y-5 overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div className="min-w-0">
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <MapPin className="size-4" />
             AndCheck • Mapa Operacional
           </div>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Mapa Operacional
           </h1>
-          <p className="mt-0.5 flex min-w-0 flex-wrap gap-x-1 text-[11px] text-muted-foreground">
+          <p
+            className={`mt-0.5 flex min-w-0 flex-wrap gap-x-1 ${typography.sectionDescription} text-muted-foreground`}
+          >
             <span>{total} andaimes cadastrados</span>
             <span>· {comCoords} georreferênciados</span>
             {semCoords > 0 && (

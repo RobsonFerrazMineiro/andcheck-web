@@ -28,7 +28,9 @@ export default async function AdminEmailConfigurationPage() {
       <OnlineOnlyNotice moduleName="Configurações administrativas" />
 
       <div className="border-b-2 border-border pb-4">
-        <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <p
+          className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+        >
           <Mail className="size-4" />
           AndCheck • Administração
         </p>

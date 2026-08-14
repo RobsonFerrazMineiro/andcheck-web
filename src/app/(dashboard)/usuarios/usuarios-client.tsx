@@ -302,14 +302,18 @@ export function UsuariosClient({
       />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <Users className="size-4" />
             AndCheck • Usuários
           </div>
-          <h1 className="text-[18px] font-bold text-foreground tracking-tight uppercase">
+          <h1 className={`${typography.pageTitle} text-foreground`}>
             Usuários
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p
+            className={`${typography.sectionDescription} text-muted-foreground mt-0.5`}
+          >
             {activeCount} ativos · {users.length} total
           </p>
         </div>

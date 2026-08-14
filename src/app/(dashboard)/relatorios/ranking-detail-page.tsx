@@ -38,7 +38,9 @@ export function RankingDetailPage({
     <div className="space-y-4">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <BarChart3 className="size-4" />
             AndCheck • Relatórios Gerenciais
           </div>

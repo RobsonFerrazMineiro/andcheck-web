@@ -61,7 +61,9 @@ export default async function AdminNotificationsPage() {
       <OnlineOnlyNotice moduleName="Monitoramento administrativo de notificações" />
 
       <div className="border-b-2 border-border pb-4">
-        <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+        <p
+          className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+        >
           <Bell className="size-4" />
           AndCheck ⬢ Administracao
         </p>

@@ -47,7 +47,9 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
     <div className="space-y-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><Building2 className="size-4" /> AndCheck • Empresas</p>
+          <p
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          ><Building2 className="size-4" /> AndCheck • Empresas</p>
           <h1 className={`${typography.pageTitle} text-foreground`}>{company.name}</h1>
           <p className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}>{company.code}</p>
         </div>

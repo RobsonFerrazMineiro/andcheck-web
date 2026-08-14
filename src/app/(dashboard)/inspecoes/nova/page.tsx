@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 
+import { Button } from "@/components/ui/button";
 import { getScaffolds } from "@/lib/actions/scaffold-actions";
 import { getActiveNonConformitiesForInspection } from "@/lib/actions/inspection-actions";
 import { getMyProfile } from "@/lib/actions/profile-actions";
@@ -8,6 +9,7 @@ import {
   getInspectionSignerOptions,
 } from "@/lib/actions/signature-policy-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -117,26 +119,34 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
           <div>
-            <h1 className="text-sm font-bold uppercase tracking-wide">
+            <h1 className={`${typography.panelTitle} text-amber-950`}>
               Nova inspeção bloqueada
             </h1>
             <p className="mt-2 text-sm leading-relaxed">
               Não é possível iniciar nova inspeção enquanto houver não
               conformidade ativa para este andaime.
             </p>
-            <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold uppercase tracking-wider">
-              <Link
-                href={`/nao-conformidades/${blockedNonConformity.id}`}
-                className="underline underline-offset-4"
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className={`border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100 ${typography.action}`}
               >
+                <Link href={`/nao-conformidades/${blockedNonConformity.id}`}>
                 Ver Não Conformidade
-              </Link>
-              <Link
-                href={`/andaimes/${selectedScaffoldId}`}
-                className="underline underline-offset-4"
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className={`border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100 ${typography.action}`}
               >
+                <Link href={`/andaimes/${selectedScaffoldId}`}>
                 Voltar ao andaime
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

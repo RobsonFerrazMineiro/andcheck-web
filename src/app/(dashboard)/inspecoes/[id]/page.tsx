@@ -206,12 +206,11 @@ export default async function InspectionDetailPage({ params }: Props) {
       />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Link
-            href="/inspecoes"
-            className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-          </Link>
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link href="/inspecoes" aria-label="Voltar para inspeções">
+              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+            </Link>
+          </Button>
           <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/inspecoes" className="hover:text-foreground">
               Inspeções

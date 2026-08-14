@@ -24,6 +24,7 @@ import {
 import { LinkedRecordsButton } from "@/components/scaffold/linked-records-button";
 import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
@@ -129,12 +130,11 @@ export default async function AndaimeDetailPage({ params }: Props) {
     <div className="space-y-5 max-w-4xl mx-auto">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Link
-            href="/andaimes"
-            className="w-7 h-7 flex items-center justify-center hover:bg-muted transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link href="/andaimes" aria-label="Voltar para andaimes">
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </Button>
           <p className="min-w-0 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
             <Link href="/andaimes" className="hover:text-foreground">
               Andaimes

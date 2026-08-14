@@ -37,6 +37,7 @@ import { NonConformityHistoryButton } from "./non-conformity-history-button";
 import { LazyNonConformityEvidencePreview } from "./lazy-non-conformity-panels";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { sanitizeForLog } from "@/lib/safe-log";
+import { typography } from "@/lib/design-system";
 import {
   humanizeCode,
   humanizeChecklistCategory,
@@ -417,12 +418,14 @@ export default async function NonConformityDetailPage({ params }: Props) {
     <div className="space-y-5 max-w-5xl mx-auto pb-10">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
-          <Link
-            href="/nao-conformidades"
-            className="w-7 h-7 flex items-center justify-center hover:bg-muted/50 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-          </Link>
+          <Button asChild variant="ghost" size="icon-sm">
+            <Link
+              href="/nao-conformidades"
+              aria-label="Voltar para não conformidades"
+            >
+              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+            </Link>
+          </Button>
           <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
             <Link href="/nao-conformidades" className="hover:text-foreground">
               Não Conformidades
@@ -457,7 +460,9 @@ export default async function NonConformityDetailPage({ params }: Props) {
       <div className="bg-sidebar border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 py-4">
           <div>
-            <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-foreground/40">
+            <div
+              className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-primary-foreground/40`}
+            >
               <AlertTriangle className="size-4" />
               AndCheck ⬢ Não Conformidades
             </div>

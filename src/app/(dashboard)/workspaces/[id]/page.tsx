@@ -134,7 +134,9 @@ export default async function WorkspaceDetailPage({
     <div className="space-y-5">
       <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <p
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <MapPin className="size-4" />
             AndCheck • Workspaces
           </p>

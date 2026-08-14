@@ -128,7 +128,9 @@ export function ExecutiveDashboardClient({ data }: Props) {
     <div className="space-y-5">
       <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
         <div>
-          <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div
+            className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
+          >
             <BarChart3 className="size-4" />
             AndCheck • Dashboard Executivo
           </div>
@@ -406,7 +408,9 @@ function Ranking({
   const max = Math.max(1, ...items.map((item) => item.total));
   return (
     <div className="flex flex-col gap-2 rounded-md border p-3">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className={`${typography.sectionLabel} text-muted-foreground`}>
+        {title}
+      </h3>
       {items.length === 0 ? (
         <EmptyState
           icon={BarChart3}

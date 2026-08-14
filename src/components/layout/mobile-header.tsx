@@ -118,7 +118,7 @@ export function MobileHeader({
           variant="ghost"
           size="icon"
           onClick={toggleMenu}
-          className="h-8 w-8 shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
+          className="shrink-0 text-sidebar-foreground hover:bg-sidebar-accent"
           aria-label={open ? "Fechar menu principal" : "Abrir menu principal"}
           aria-expanded={open}
           aria-controls="mobile-main-navigation"
@@ -205,7 +205,7 @@ function MobileUserMenu({
         variant="ghost"
         size="icon"
         onClick={toggleMenu}
-        className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+        className="text-sidebar-foreground hover:bg-sidebar-accent"
         aria-label={open ? "Fechar perfil do usuário" : "Abrir perfil do usuário"}
         aria-expanded={open}
         aria-haspopup="dialog"

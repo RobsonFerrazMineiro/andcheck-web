@@ -417,31 +417,31 @@ export function MapaOperacionalClient({
                   <StatusBadge status={scaffold.effectiveStatus} />
                 </div>
                 <div className="flex shrink-0 gap-1.5">
-                  <Link
-                    href={`/andaimes/${scaffold.id}`}
-                    className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
-                    title="Detalhe"
-                    aria-label={`Visualizar andaime ${scaffold.code}`}
-                  >
-                    <Construction className="size-3.5 text-muted-foreground" />
-                  </Link>
-                  <Link
-                    href={`/qr/${scaffold.id}`}
-                    className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
-                    title="QR Code"
-                    aria-label={`Abrir QR Code do andaime ${scaffold.code}`}
-                  >
-                    <QrCode className="size-3.5 text-muted-foreground" />
-                  </Link>
-                  {canInspect && (
+                  <Button asChild variant="ghost" size="icon-xs" title="Detalhe">
                     <Link
-                      href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
-                      className="flex size-6 items-center justify-center rounded-md hover:bg-muted"
-                      title="Inspecionar"
-                      aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
+                      href={`/andaimes/${scaffold.id}`}
+                      aria-label={`Visualizar andaime ${scaffold.code}`}
                     >
-                      <ClipboardCheck className="size-3.5 text-muted-foreground" />
+                      <Construction className="size-3.5 text-muted-foreground" />
                     </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="icon-xs" title="QR Code">
+                    <Link
+                      href={`/qr/${scaffold.id}`}
+                      aria-label={`Abrir QR Code do andaime ${scaffold.code}`}
+                    >
+                      <QrCode className="size-3.5 text-muted-foreground" />
+                    </Link>
+                  </Button>
+                  {canInspect && (
+                    <Button asChild variant="ghost" size="icon-xs" title="Inspecionar">
+                      <Link
+                        href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
+                        aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
+                      >
+                        <ClipboardCheck className="size-3.5 text-muted-foreground" />
+                      </Link>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -518,23 +518,25 @@ export function MapaOperacionalClient({
                     <StatusBadge status={scaffold.effectiveStatus} />
                   </div>
                   <div className="flex shrink-0 gap-1.5">
-                    <Link
-                      href={`/andaimes/${scaffold.id}`}
-                      onClick={() => setShowAllScaffolds(false)}
-                      className="flex size-7 items-center justify-center rounded-md hover:bg-muted"
-                      aria-label={`Visualizar andaime ${scaffold.code}`}
-                    >
-                      <Construction className="size-3.5 text-muted-foreground" />
-                    </Link>
-                    {canInspect && (
+                    <Button asChild variant="ghost" size="icon-sm">
                       <Link
-                        href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
+                        href={`/andaimes/${scaffold.id}`}
                         onClick={() => setShowAllScaffolds(false)}
-                        className="flex size-7 items-center justify-center rounded-md hover:bg-muted"
-                        aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
+                        aria-label={`Visualizar andaime ${scaffold.code}`}
                       >
-                        <ClipboardCheck className="size-3.5 text-muted-foreground" />
+                        <Construction className="size-3.5 text-muted-foreground" />
                       </Link>
+                    </Button>
+                    {canInspect && (
+                      <Button asChild variant="ghost" size="icon-sm">
+                        <Link
+                          href={`/inspecoes/nova?scaffold_id=${scaffold.id}`}
+                          onClick={() => setShowAllScaffolds(false)}
+                          aria-label={`Criar inspeção para o andaime ${scaffold.code}`}
+                        >
+                          <ClipboardCheck className="size-3.5 text-muted-foreground" />
+                        </Link>
+                      </Button>
                     )}
                   </div>
                 </div>
