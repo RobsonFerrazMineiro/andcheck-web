@@ -30,15 +30,16 @@ import {
 } from "@/components/shared/action-menu";
 import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
-import { StatusBadge } from "@/components/shared/status-badge";
 import {
-  nonConformityStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
+  NonConformityBadge,
+  getNonConformityClassificationLabel,
+} from "@/components/shared/non-conformity-badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
-import { humanizeCode } from "@/lib/human-readable";
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -127,58 +128,6 @@ const ITEM_ROW = {
   nao_conforme: "bg-red-50/60",
   nao_aplicavel: "bg-card",
 };
-
-const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
-};
-
-const NC_CLASSIFICATION_LABELS: Record<string, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-  CRITICAL: "Crítica",
-};
-
-const NC_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
-
-const NC_STATUS_STYLE: Record<string, string> = {
-  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
-  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
-  IN_PROGRESS:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
-  PENDING_VERIFICATION:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
-      .badge,
-  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
-  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
-  CANCELLED:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
-};
-
-function NcBadge({ value }: { value: string }) {
-  return (
-    <span
-      className={
-        "inline-flex items-center rounded-md border px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest " +
-        (NC_STATUS_STYLE[value] ?? "border-slate-300 bg-slate-50 text-slate-700")
-      }
-    >
-      {NC_STATUS_LABELS[value] ?? humanizeCode(value)}
-    </span>
-  );
-}
 
 function TechRow({
   icon: Icon,
@@ -461,7 +410,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               <TechRow
                 icon={Layers}
                 label="Tipo"
-                value={TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
+                value={getScaffoldTypeLabel(scaffold.type)}
               />
               <TechRow
                 icon={Ruler}
@@ -700,14 +649,13 @@ export default async function InspectionDetailPage({ params }: Props) {
                   {nc.code}
                 </p>
                 <div>
-                  <NcBadge value={nc.status} />
+                  <NonConformityBadge value={nc.status} size="xs" />
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
                     Classificação
                   </span>
-                  {NC_CLASSIFICATION_LABELS[nc.classification] ??
-                    humanizeCode(nc.classification)}
+                  {getNonConformityClassificationLabel(nc.classification)}
                 </p>
                 <p className="text-[11px] text-muted-foreground font-mono">
                   <span className="mr-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden">
@@ -733,23 +681,28 @@ export default async function InspectionDetailPage({ params }: Props) {
               validade e histórico de inspeções deste andaime.
             </p>
           </div>
-          <Link
-            href={"/qr/" + inspection.scaffold_id}
-            target="_blank"
-            className="flex items-center gap-1.5 h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors shrink-0"
+          <Button
+            asChild
+            variant="outline"
+            className="shrink-0 text-[10px] font-bold uppercase tracking-widest"
           >
-            Ver Página
-          </Link>
+            <Link href={"/qr/" + inspection.scaffold_id} target="_blank">
+              Ver Página
+            </Link>
+          </Button>
         </div>
       )}
 
       <div className="flex gap-3">
-        <Link
-          href="/inspecoes"
-          className="flex items-center gap-1.5 h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
+        <Button
+          asChild
+          variant="outline"
+          className="text-[10px] font-bold uppercase tracking-widest"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Voltar
-        </Link>
+          <Link href="/inspecoes">
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar
+          </Link>
+        </Button>
       </div>
     </div>
   );

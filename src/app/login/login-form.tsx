@@ -5,6 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { Button } from "@/components/ui/button";
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,16 +91,14 @@ export function LoginForm() {
             {error}
           </p>
         )}
-        <button
+        <Button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-lg bg-orange-700 text-white px-4 py-2.5 text-sm
-                     font-semibold hover:bg-orange-800 disabled:opacity-60 transition flex
-                     items-center justify-center gap-2"
+          className="w-full"
         >
           {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
           {isPending ? "Entrando..." : "Entrar"}
-        </button>
+        </Button>
       </form>
     </div>
   );

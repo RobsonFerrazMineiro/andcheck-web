@@ -12,7 +12,6 @@ import {
   ClipboardCheck,
   Construction,
   Factory,
-  Filter,
   Flag,
   Gauge,
   Hourglass,
@@ -29,8 +28,10 @@ import {
 } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
+import { Button } from "@/components/ui/button";
 import {
   getManagementReportData,
   type KpiTrend,
@@ -195,18 +196,12 @@ export default async function RelatoriosPage({ searchParams }: Props) {
       >
       <form
         action="/relatorios"
-        className="rounded-lg border border-border bg-card p-4 shadow-sm"
       >
-        <div className="mb-3 flex items-center gap-2">
-          <Filter className="size-4 text-muted-foreground" />
-          <p className={`${typography.sectionLabel} text-muted-foreground`}>
-            Filtros Globais
-          </p>
-          <span className={`${typography.panelSubtitle} text-muted-foreground/50`}>
-            · {report.periodLabel}
-          </span>
-        </div>
-        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <FilterShell
+          title="Filtros Globais"
+          meta={`· ${report.periodLabel}`}
+          contentClassName="grid gap-3 md:grid-cols-3 xl:grid-cols-6"
+        >
           <FilterSelect
             label="Empresa"
             name="companyId"
@@ -246,15 +241,12 @@ export default async function RelatoriosPage({ searchParams }: Props) {
           />
           <DateInput label="Início" name="dateFrom" value={filters.dateFrom} />
           <DateInput label="Fim" name="dateTo" value={filters.dateTo} />
-        </div>
-        <div className="mt-3 flex justify-end">
-          <button
-            type="submit"
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
-          >
-            Aplicar Filtros
-          </button>
-        </div>
+          <div className="flex items-end justify-end xl:col-start-6">
+            <Button type="submit" className="w-full">
+              Aplicar Filtros
+            </Button>
+          </div>
+        </FilterShell>
       </form>
       </MobileFilterPanel>
 
@@ -404,14 +396,12 @@ function FilterSelect({
   includeAll?: boolean;
 }) {
   return (
-    <label className="space-y-1.5">
-      <span className={`${typography.sectionLabel} text-muted-foreground`}>
-        {label}
-      </span>
+    <FilterField label={label}>
       <select
+        data-slot="select-trigger"
         name={name}
         defaultValue={value}
-        className="h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground outline-none"
+        className="h-8 w-full rounded-md border border-input px-2 text-[11px] text-foreground outline-none"
       >
         {includeAll && <option value="all">Todos</option>}
         {options.map(([optionValue, optionLabel]) => (
@@ -420,7 +410,7 @@ function FilterSelect({
           </option>
         ))}
       </select>
-    </label>
+    </FilterField>
   );
 }
 
@@ -434,17 +424,15 @@ function DateInput({
   value: string;
 }) {
   return (
-    <label className="space-y-1.5">
-      <span className={`${typography.sectionLabel} text-muted-foreground`}>
-        {label}
-      </span>
+    <FilterField label={label}>
       <input
+        data-slot="input"
         type="date"
         name={name}
         defaultValue={value}
-        className="h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground outline-none"
+        className="h-8 w-full rounded-md border border-input px-2 text-[11px] text-foreground outline-none"
       />
-    </label>
+    </FilterField>
   );
 }
 

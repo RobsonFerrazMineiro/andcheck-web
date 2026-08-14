@@ -158,14 +158,16 @@ function ModalShell({
           >
             {title}
           </p>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
             aria-label={`Fechar ${title}`}
             className="text-primary-foreground/70 hover:text-primary-foreground"
           >
             <XCircle className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="p-4">{children}</div>
       </div>
@@ -376,74 +378,81 @@ export function NonConformityOperations({
 
         <ActionMenu>
           {canAssign && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               disabled={isPending}
               onClick={() => setModal("responsible")}
               className={actionMenuItemClassName}
             >
               <UserRound className="w-3.5 h-3.5" /> Atribuir Responsável
-            </button>
+            </Button>
           )}
           {canComment && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               disabled={isPending}
               onClick={() => setModal("comment")}
               className={actionMenuItemClassName}
             >
               <MessageSquare className="w-3.5 h-3.5" /> Comentário
-            </button>
+            </Button>
           )}
           {canChangeDueDate && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               disabled={isPending}
               onClick={() => setModal("dueDate")}
               className={actionMenuItemClassName}
             >
               <CalendarClock className="w-3.5 h-3.5" /> Prazo
-            </button>
+            </Button>
           )}
           {canRequestVerification && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               disabled={isPending}
               onClick={() => void submitStatus("PENDING_VERIFICATION")}
               className={actionMenuItemClassName}
             >
               <Send className="w-3.5 h-3.5" /> Solicitar Verificação
-            </button>
+            </Button>
           )}
           {canReview && (
             <>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 disabled={isPending}
                 onClick={() => setModal("accept")}
                 className={actionMenuItemClassName}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" /> Aceitar Correção
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
                 disabled={isPending}
                 onClick={() => setModal("reject")}
                 className={actionMenuItemClassName}
               >
                 <XCircle className="w-3.5 h-3.5" /> Rejeitar Correção
-              </button>
+              </Button>
             </>
           )}
           {canCancel && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
               disabled={isPending}
               onClick={() => setModal("cancel")}
               className={actionMenuItemClassName}
             >
               <XCircle className="w-3.5 h-3.5" /> Cancelar
-            </button>
+            </Button>
           )}
         </ActionMenu>
       </div>

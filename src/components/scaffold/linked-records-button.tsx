@@ -15,10 +15,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
+import {
+  NonConformityBadge,
+  getNonConformityClassificationLabel,
+} from "@/components/shared/non-conformity-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import { humanizeCode } from "@/lib/human-readable";
 
 type LinkedInspection = {
   id: string;
@@ -44,45 +47,6 @@ type LinkedRecordsButtonProps = {
   scaffoldId: string;
   scaffoldCode: string;
 };
-
-const NC_CLASSIFICATION_LABELS: Record<string, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-  CRITICAL: "Crítica",
-};
-
-const NC_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
-
-const NC_STATUS_STYLE: Record<string, string> = {
-  OPEN: "border-sky-300 bg-sky-50 text-sky-700",
-  ASSIGNED: "border-amber-300 bg-amber-50 text-amber-700",
-  IN_PROGRESS: "border-amber-300 bg-amber-50 text-amber-700",
-  PENDING_VERIFICATION: "border-amber-300 bg-amber-50 text-amber-700",
-  CLOSED: "border-emerald-300 bg-emerald-50 text-emerald-700",
-  REJECTED: "border-red-300 bg-red-50 text-red-700",
-  CANCELLED: "border-slate-300 bg-slate-50 text-slate-600",
-};
-
-function NcBadge({ value }: { value: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest ${
-        NC_STATUS_STYLE[value] ?? "border-border bg-muted text-muted-foreground"
-      }`}
-    >
-      {NC_STATUS_LABELS[value] ?? humanizeCode(value)}
-    </span>
-  );
-}
 
 function CountBadge({ count }: { count: number }) {
   if (count === 0) return null;
@@ -287,9 +251,9 @@ function NonConformityRow({
 }: {
   nonConformity: LinkedNonConformity;
 }) {
-  const classification =
-    NC_CLASSIFICATION_LABELS[nonConformity.classification] ??
-    humanizeCode(nonConformity.classification);
+  const classification = getNonConformityClassificationLabel(
+    nonConformity.classification,
+  );
 
   return (
     <Link
@@ -303,7 +267,7 @@ function NonConformityRow({
         <span className="rounded-md border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
           {classification}
         </span>
-        <NcBadge value={nonConformity.status} />
+        <NonConformityBadge value={nonConformity.status} size="xs" />
         {nonConformity.dueDate && (
           <span className="text-[10px] text-muted-foreground">
             Prazo: {format(new Date(nonConformity.dueDate), "dd/MM/yyyy")}

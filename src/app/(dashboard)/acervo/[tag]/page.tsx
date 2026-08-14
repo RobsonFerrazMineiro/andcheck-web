@@ -30,14 +30,7 @@ import {
 import { StatusBadge } from "@/components/shared/status-badge";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
 import { humanizeCode } from "@/lib/human-readable";
-
-const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
-};
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 
 const SCAFFOLD_STATUS_LABELS: Record<string, string> = {
   em_montagem: "EM MONTAGEM",
@@ -587,7 +580,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           <ArchiveRow
             icon={Construction}
             label="Tipo do Andaime"
-            value={TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
+            value={getScaffoldTypeLabel(scaffold.type)}
           />
           <ArchiveRow
             icon={Building2}

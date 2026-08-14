@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -1291,17 +1292,19 @@ export function NovaInspecaoForm({
                   alt={`Foto ${i + 1}`}
                   className="w-full h-full object-cover border border-border"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="destructive"
+                  size="icon-xs"
                   onClick={() =>
                     setPhotos((prev) => prev.filter((_, j) => j !== i))
                   }
-                  className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-1 top-1 size-5 bg-red-600 text-white opacity-0 group-hover:opacity-100"
                   aria-label="Remover foto"
                   title="Remover foto"
                 >
                   <Trash2 className="w-3 h-3" />
-                </button>
+                </Button>
               </div>
             ))}
 
@@ -1328,8 +1331,10 @@ export function NovaInspecaoForm({
                       </p>
                     </div>
                     {/* Botão remover */}
-                    <button
+                    <Button
                       type="button"
+                      variant="destructive"
+                      size="icon-xs"
                       aria-label="Remover foto"
                       title="Remover foto"
                       onClick={() => {
@@ -1340,10 +1345,10 @@ export function NovaInspecaoForm({
                         };
                         setChecklistValues(updated);
                       }}
-                      className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute right-1 top-1 size-5 bg-red-600 text-white opacity-0 group-hover:opacity-100"
                     >
                       <Trash2 className="w-3 h-3" />
-                    </button>
+                    </Button>
                   </div>
                 );
               }),
@@ -1351,22 +1356,26 @@ export function NovaInspecaoForm({
           </div>
         )}
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => photoGalleryInputRef.current?.click()}
-          className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+          className="text-[10px] font-bold uppercase tracking-widest"
         >
           <ImagePlus className="w-3.5 h-3.5" />
           Galeria{photos.length > 0 ? ` (${photos.length})` : ""}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => photoCameraInputRef.current?.click()}
-          className="ml-2 inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+          className="ml-2 text-[10px] font-bold uppercase tracking-widest"
         >
           <Camera className="w-3.5 h-3.5" />
           Camera
-        </button>
+        </Button>
       </div>
 
       {/* Assinatura Digital */}
@@ -1424,8 +1433,10 @@ export function NovaInspecaoForm({
                     </div>
                   </div>
                   {collected && (
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       onClick={() =>
                         setCollectedSignatures((current) =>
                           current.filter(
@@ -1437,7 +1448,7 @@ export function NovaInspecaoForm({
                       className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-red-600"
                     >
                       Remover
-                    </button>
+                    </Button>
                   )}
                 </div>
               );
@@ -1561,14 +1572,16 @@ export function NovaInspecaoForm({
         )}
 
         <div className="space-y-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={clearSignature}
-            className="ml-auto inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+            className="ml-auto text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
           >
             <RotateCcw className="size-3" />
             Limpar
-          </button>
+          </Button>
           <div className="relative border border-dashed border-border bg-muted/20">
           <canvas
             ref={canvasRef}
@@ -1628,15 +1641,17 @@ export function NovaInspecaoForm({
           )}
           </div>
         </div>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={handleRegisterSignature}
           disabled={registeringSignature}
-          className="inline-flex items-center gap-2 h-8 px-4 text-[10px] font-bold uppercase tracking-widest border border-border hover:bg-muted/50 transition-colors"
+          className="text-[10px] font-bold uppercase tracking-widest"
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           Registrar assinatura
-        </button>
+        </Button>
           </>
         ) : (
           <div className="border border-dashed border-border bg-muted/20 p-4">
@@ -1657,11 +1672,11 @@ export function NovaInspecaoForm({
         >
           Cancelar
         </Link>
-        <button
+        <Button
           type="button"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          className="inline-flex items-center justify-center gap-2 h-8 px-5 text-[10px] font-bold uppercase tracking-widest bg-accent text-accent-foreground hover:bg-accent/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="text-[10px] font-bold uppercase tracking-widest"
         >
           {savedOffline ? (
             <>
@@ -1683,7 +1698,7 @@ export function NovaInspecaoForm({
                   : "Registrar Inspeção"}
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

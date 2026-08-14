@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 import { updateActiveContext } from "@/lib/actions/context-actions";
@@ -232,10 +233,11 @@ export function MobileContextSwitcher({
 
   return (
     <div ref={containerRef} className="relative w-0 min-w-0 flex-1 px-2">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={toggleMenu}
-        className="flex w-full min-w-0 items-center justify-between gap-2 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5 text-left"
+        className="h-auto w-full min-w-0 justify-between gap-2 border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5 text-left hover:bg-sidebar-accent/70"
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls="mobile-context-panel"
@@ -264,7 +266,7 @@ export function MobileContextSwitcher({
         ) : (
           <ChevronDown className="size-3.5 shrink-0 text-sidebar-foreground/60" />
         )}
-      </button>
+      </Button>
 
       {open && (
         <div

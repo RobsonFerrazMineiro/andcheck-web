@@ -26,20 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { typography } from "@/lib/design-system";
-import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import {
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
-
-const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
-};
 
 export type ScaffoldRow = {
   id: string;
@@ -223,7 +215,7 @@ export function AndaimesClient({
                       <p
                         className={`mt-1 truncate text-muted-foreground ${typography.sectionDescription}`}
                       >
-                        {TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
+                        {getScaffoldTypeLabel(scaffold.type)}
                         {scaffold.height ? ` · ${scaffold.height}m` : ""}
                       </p>
                     </div>

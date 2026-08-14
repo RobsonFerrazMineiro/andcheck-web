@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 
@@ -55,10 +56,11 @@ export function UserMenu({
 
   return (
     <div ref={containerRef} className="relative">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={toggleMenu}
-        className="flex items-center gap-2.5 rounded px-2 py-1 text-left transition-colors hover:bg-muted"
+        className="h-auto items-center gap-2.5 px-2 py-1 text-left"
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-controls="user-menu-panel"
@@ -73,7 +75,7 @@ export function UserMenu({
         <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15">
           <User className="size-4 text-primary" />
         </div>
-      </button>
+      </Button>
 
       {open && (
         <div
@@ -119,14 +121,15 @@ export function UserMenu({
               <User className="size-3.5" />
               Meu Perfil
             </Link>
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="h-auto w-full justify-start gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
             >
               <LogOut className="size-3.5" />
               Sair do sistema
-            </button>
+            </Button>
           </div>
         </div>
       )}

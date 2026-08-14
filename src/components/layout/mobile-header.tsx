@@ -277,14 +277,15 @@ function MobileUserMenu({
               <User className="size-3.5" />
               Meu Perfil
             </Link>
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="h-auto w-full justify-start gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
             >
               <LogOut className="size-3.5" />
               Sair do sistema
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -320,4 +321,3 @@ function MobileProfileRow({
     </div>
   );
 }
-

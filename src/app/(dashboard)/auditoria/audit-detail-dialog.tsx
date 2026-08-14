@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import type { ReactNode } from "react";
 import { useRef } from "react";
 
+import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
@@ -152,13 +153,15 @@ export function AuditDetailDialog({
               {title}
             </h2>
           </div>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
-            className={`h-7 w-fit rounded-md border border-primary-foreground/20 px-3 text-primary-foreground/70 ${typography.action}`}
+            className={`border-primary-foreground/20 bg-transparent text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground ${typography.action}`}
           >
             Fechar
-          </button>
+          </Button>
         </div>
 
         <div className="border-b border-border p-4 sm:p-5">

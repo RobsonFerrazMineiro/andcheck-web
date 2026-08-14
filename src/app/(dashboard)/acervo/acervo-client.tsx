@@ -311,7 +311,7 @@ export function AcervoClient({
             </SelectContent>
           </Select>
           </FilterField>
-          <FilterField label="Inicio">
+          <FilterField label="Início">
           <Input
             type="date"
             aria-label="Periodo inicial"

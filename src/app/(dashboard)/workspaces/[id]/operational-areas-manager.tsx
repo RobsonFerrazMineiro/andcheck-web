@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, MapPin, Pencil, Plus, Power, Save, XCircle } from "lucide-react";
+import { MapPin, Pencil, Plus, Power, Save } from "lucide-react";
 
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FormModal } from "@/components/shared/form-modal";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -117,7 +117,12 @@ export function OperationalAreasManager({
               <p className={`hidden text-right lg:block ${typography.code}`}>
                 {area._count.scaffolds}
               </p>
-              <AreaStatusBadge active={area.isActive} />
+              <ActiveStatusBadge
+                active={area.isActive}
+                activeLabel="Ativa"
+                inactiveLabel="Inativa"
+                compact
+              />
               {canManage && (
                 <div className="flex justify-end gap-1">
                   <Button
@@ -205,23 +210,5 @@ export function OperationalAreasManager({
         )}
       </FormModal>
     </div>
-  );
-}
-
-function AreaStatusBadge({ active }: { active: boolean }) {
-  const Icon = active ? CheckCircle2 : XCircle;
-
-  return (
-    <Badge
-      variant="outline"
-      className={`w-fit rounded-md ${typography.badge} ${
-        active
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-slate-100 text-slate-600"
-      }`}
-    >
-      <Icon className="size-2.5" />
-      {active ? "Ativa" : "Inativa"}
-    </Badge>
   );
 }

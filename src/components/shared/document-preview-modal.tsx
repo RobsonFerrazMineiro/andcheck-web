@@ -5,7 +5,9 @@ import Image from "next/image";
 import { useRef } from "react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
+import { typography } from "@/lib/design-system";
 import {
   downloadDocumentFile,
   getDocumentFileName,
@@ -81,14 +83,15 @@ export function DocumentPreviewModal({
               {modalTitle}
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            className="p-1 transition-colors hover:bg-muted"
             aria-label="Fechar visualizador"
           >
             <X className="h-4 w-4 text-muted-foreground" />
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-4 p-5">
@@ -128,21 +131,24 @@ export function DocumentPreviewModal({
           )}
 
           <div className="flex justify-end gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handleDownload}
-              className="inline-flex h-8 items-center gap-1.5 border border-border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-muted"
+              className={typography.action}
             >
               <Download className="h-3.5 w-3.5" /> Baixar
-            </button>
+            </Button>
             {canOpenInTab && (
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={handleOpenInTab}
-                className="inline-flex h-8 items-center gap-1.5 bg-accent px-3 text-[10px] font-bold uppercase tracking-widest text-accent-foreground transition-colors hover:bg-accent/90"
+                className={typography.action}
               >
                 <ExternalLink className="h-3.5 w-3.5" /> Abrir em nova guia
-              </button>
+              </Button>
             )}
           </div>
         </div>

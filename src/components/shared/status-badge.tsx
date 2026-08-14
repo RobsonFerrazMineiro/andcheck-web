@@ -1,8 +1,10 @@
 import {
   AlertTriangle,
   CheckCircle2,
+  CloudOff,
   Clock,
   HardHat,
+  RefreshCw,
   ShieldOff,
   Wrench,
   XCircle,
@@ -13,6 +15,7 @@ import {
   inspectionResultTone,
   scaffoldStatusTone,
   SEMANTIC_TONE_CLASSES,
+  type SemanticTone,
 } from "@/lib/semantic-tones";
 import { humanizeCode } from "@/lib/human-readable";
 
@@ -29,11 +32,18 @@ type StatusKey =
   | "aprovado_com_ressalvas"
   | "nao_conforme"
   | "conforme"
-  | "na";
+  | "na"
+  | "pending"
+  | "syncing"
+  | "synced"
+  | "failed"
+  | "conflict";
 
 interface StatusConfig {
   label: string;
   icon: React.ElementType;
+  tone?: SemanticTone;
+  iconClassName?: string;
 }
 
 const STATUS_MAP: Record<StatusKey, StatusConfig> = {
@@ -89,6 +99,32 @@ const STATUS_MAP: Record<StatusKey, StatusConfig> = {
     label: "N/A",
     icon: Clock,
   },
+  pending: {
+    label: "PENDENTE",
+    icon: Clock,
+    tone: "disabled",
+  },
+  syncing: {
+    label: "ENVIANDO",
+    icon: RefreshCw,
+    tone: "neutral",
+    iconClassName: "animate-spin",
+  },
+  synced: {
+    label: "SINCRONIZADO",
+    icon: CheckCircle2,
+    tone: "success",
+  },
+  failed: {
+    label: "FALHA",
+    icon: AlertTriangle,
+    tone: "critical",
+  },
+  conflict: {
+    label: "CONFLITO",
+    icon: CloudOff,
+    tone: "disabled",
+  },
 };
 
 interface StatusBadgeProps {
@@ -118,7 +154,9 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
       }`}
     >
       <Icon
-        className={isXl ? "w-4 h-4" : isLg ? "w-3.5 h-3.5" : "w-2.5 h-2.5"}
+        className={`${isXl ? "w-4 h-4" : isLg ? "w-3.5 h-3.5" : "w-2.5 h-2.5"} ${
+          cfg.iconClassName ?? ""
+        }`}
       />
       {cfg.label}
     </span>
@@ -127,6 +165,9 @@ export function StatusBadge({ status, size = "default" }: StatusBadgeProps) {
 
 function statusClass(status: string) {
   if (status in STATUS_MAP) {
+    const cfg = STATUS_MAP[status as StatusKey];
+    if (cfg.tone) return SEMANTIC_TONE_CLASSES[cfg.tone].badge;
+
     const tone =
       status === "aprovado" ||
       status === "aprovado_com_ressalvas" ||

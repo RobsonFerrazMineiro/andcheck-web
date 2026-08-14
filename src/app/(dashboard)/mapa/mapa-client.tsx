@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -307,18 +308,20 @@ export function MapaOperacionalClient({
             {(activeStatus ||
               activeCompanyId !== "all" ||
               dueFilter !== "all") && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setActiveStatus(null);
                   setActiveCompanyId("all");
                   setDueFilter("all");
                 }}
-                className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+                className={`${typography.action} text-muted-foreground hover:text-foreground`}
               >
                 <RotateCcw className="size-3" />
                 Limpar
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -334,12 +337,14 @@ export function MapaOperacionalClient({
             const active = activeStatus === item.status;
 
             return (
-              <button
+              <Button
                 key={item.status}
                 type="button"
+                variant={active ? "secondary" : "outline"}
+                size="sm"
                 onClick={() => setActiveStatus(active ? null : item.status)}
                 className={
-                  "inline-flex h-8 min-w-0 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-wider transition-colors " +
+                  "min-w-0 gap-2 " +
                   (active
                     ? "border-accent bg-accent/10 text-foreground"
                     : "border-border text-muted-foreground hover:bg-muted/60")
@@ -351,7 +356,7 @@ export function MapaOperacionalClient({
                 <span className="font-mono text-[10px] text-muted-foreground/70">
                   {count}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -449,13 +454,15 @@ export function MapaOperacionalClient({
           )}
           {filteredScaffolds.length > visibleScaffolds.length && (
             <div className="px-3 py-3 sm:px-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowAllScaffolds(true)}
-                className="inline-flex h-8 w-full items-center justify-center rounded-md border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground transition-colors hover:bg-muted sm:w-auto sm:px-4"
+                className={`w-full text-muted-foreground hover:text-foreground sm:w-auto ${typography.action}`}
               >
                 Ver todos
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -481,13 +488,15 @@ export function MapaOperacionalClient({
                   {filteredScaffolds.length} registro(s) filtrado(s)
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowAllScaffolds(false)}
-                className="inline-flex h-8 items-center rounded-md border border-border px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted"
+                className={`${typography.action} text-muted-foreground hover:text-foreground`}
               >
                 Fechar
-              </button>
+              </Button>
             </div>
             <div className="max-h-[calc(85vh-4.5rem)] divide-y divide-border overflow-y-auto">
               {filteredScaffolds.map((scaffold) => (

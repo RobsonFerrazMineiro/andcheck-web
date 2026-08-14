@@ -4,6 +4,8 @@ import { useState } from "react";
 import { FileSpreadsheet, Printer } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
+import { typography } from "@/lib/design-system";
 import type { KpiTrend, ManagementReportData } from "@/lib/management-reports";
 
 type Props = {
@@ -309,23 +311,24 @@ export function ReportExportActions({ report }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      <button
+      <Button
         type="button"
         onClick={() => exportExcel(report)}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
+        className={typography.action}
       >
         <FileSpreadsheet className="size-3.5" />
         Exportar Excel
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="outline"
         onClick={exportPdf}
         disabled={pdfLoading}
-        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border/70 px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+        className={typography.action}
       >
         <Printer className="size-3.5" />
         {pdfLoading ? "Abrindo..." : "Exportar PDF"}
-      </button>
+      </Button>
     </div>
   );
 }

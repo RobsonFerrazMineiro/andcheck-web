@@ -16,9 +16,11 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { DocumentStatusBadge } from "@/components/document/document-ui";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { EmptyState } from "@/components/shared/empty-state";
+import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   addScaffoldDocument,
@@ -36,10 +38,7 @@ import {
   getDocumentExtension,
   getDocumentViewUrl,
 } from "@/lib/document-view";
-import {
-  documentStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
+import { SEMANTIC_TONE_CLASSES } from "@/lib/semantic-tones";
 import { typography } from "@/lib/design-system";
 import { uploadFile } from "@/lib/upload-file";
 
@@ -98,23 +97,6 @@ function docTypeLabel(type: string) {
 function statusOf(doc: ScaffoldDocumentMetadata): "anexado" | "vencido" {
   if (doc.expires_at && isPast(new Date(doc.expires_at))) return "vencido";
   return "anexado";
-}
-
-
-// ── Sub-componente: badge de status ──────────────────────────────────────────
-function StatusBadge({
-  status,
-}: {
-  status: "anexado" | "pendente" | "vencido";
-}) {
-  const cfg = SEMANTIC_TONE_CLASSES[documentStatusTone(status)].badge;
-  return (
-    <span
-      className={`inline-flex items-center rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${cfg}`}
-    >
-      {status}
-    </span>
-  );
 }
 
 // ── Modal de adição ───────────────────────────────────────────────────────────
@@ -250,15 +232,16 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               Adicionar Documento Técnico
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
             disabled={saving}
             aria-label="Fechar modal de documento"
-            className="p-1 hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="w-4 h-4 text-muted-foreground" />
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -402,18 +385,19 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
 
           {/* Ações */}
           <div className="flex justify-end gap-3 pt-1">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
               disabled={saving}
-              className="h-9 px-4 border border-border text-[11px] font-bold uppercase tracking-widest hover:bg-muted transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              className={typography.action}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={saving}
-              className="h-9 px-5 bg-accent text-accent-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors disabled:opacity-60 flex items-center gap-1.5"
+              className={typography.action}
             >
               {saving ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -421,7 +405,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
                 <Plus className="w-3.5 h-3.5" />
               )}
               {saving ? "Salvando..." : "Adicionar"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -504,14 +488,15 @@ export function ScaffoldDocumentSection({
             </span>
           </div>
           {canAddDocument && (
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={() => setModalOpen(true)}
-              className="flex items-center gap-1 h-7 px-3 bg-accent text-accent-foreground text-[9px] font-bold uppercase tracking-widest hover:bg-accent/90 transition-colors"
+              className={typography.badge}
             >
               <Plus className="w-3 h-3" />
               Adicionar
-            </button>
+            </Button>
           )}
         </div>
 
@@ -595,44 +580,47 @@ export function ScaffoldDocumentSection({
 
                   {/* Status */}
                   <div className="hidden sm:block">
-                    <StatusBadge status={status} />
+                    <DocumentStatusBadge status={status} />
                   </div>
 
                   {/* Ações */}
                   <div className="flex items-center gap-1.5">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon-sm"
                       onClick={() => handleView(doc)}
                       title="Visualizar"
                       aria-label={`Visualizar documento ${doc.title}`}
-                      className="w-7 h-7 flex items-center justify-center border border-border hover:bg-muted transition-colors"
                     >
                       <Eye className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon-sm"
                       onClick={() => handleDownload(doc)}
                       title="Baixar"
                       aria-label={`Baixar documento ${doc.title}`}
-                      className="w-7 h-7 flex items-center justify-center border border-border hover:bg-muted transition-colors"
                     >
                       <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                    </button>
+                    </Button>
                     {canDeleteDocument && (
-                      <button
+                      <Button
                         type="button"
+                        variant="destructive"
+                        size="icon-sm"
                         onClick={() => setDeleteTarget(doc)}
                         disabled={deleting === doc.id}
                         title="Remover"
                         aria-label={`Remover documento ${doc.title}`}
-                        className="w-7 h-7 flex items-center justify-center border border-border hover:bg-red-50 hover:border-red-300 transition-colors disabled:opacity-40"
                       >
                         {deleting === doc.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
                         ) : (
                           <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-600" />
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>

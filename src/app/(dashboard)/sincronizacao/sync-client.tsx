@@ -2,7 +2,7 @@
 
 import { useOfflineStatus } from "@/components/offline/offline-provider";
 import { PageSkeleton } from "@/components/shared/page-skeleton";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { typography } from "@/lib/design-system";
@@ -348,7 +348,7 @@ export function SyncClient() {
                           {entityLabel(item)}
                         </p>
                       </div>
-                      <StatusBadge item={item} />
+                      <StatusBadge status={item.status} />
                     </div>
                     <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[10px] text-muted-foreground">
                       <p className="min-w-0">
@@ -443,7 +443,7 @@ export function SyncClient() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge item={item} />
+                        <StatusBadge status={item.status} />
                       </td>
                       <td className="px-4 py-3">{item.attempts}</td>
                       <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
@@ -559,45 +559,5 @@ function SyncMetric({
         {value}
       </p>
     </div>
-  );
-}
-
-function StatusBadge({ item }: { item: SyncQueueItem }) {
-  if (item.status === "synced") {
-    return (
-      <Badge className="border-emerald-200 bg-emerald-50 text-emerald-700">
-        <CheckCircle2 className="size-3" /> Sincronizado
-      </Badge>
-    );
-  }
-
-  if (item.status === "failed") {
-    return (
-      <Badge className="border-red-200 bg-red-50 text-red-700">
-        <AlertTriangle className="size-3" /> Falha
-      </Badge>
-    );
-  }
-
-  if (item.status === "conflict") {
-    return (
-      <Badge className="border-slate-200 bg-slate-50 text-slate-700">
-        <CloudOff className="size-3" /> Conflito
-      </Badge>
-    );
-  }
-
-  if (item.status === "syncing") {
-    return (
-      <Badge className="border-blue-200 bg-blue-50 text-blue-700">
-        <RefreshCw className="size-3 animate-spin" /> Enviando
-      </Badge>
-    );
-  }
-
-  return (
-    <Badge variant="outline">
-      <Clock3 className="size-3" /> Pendente
-    </Badge>
   );
 }

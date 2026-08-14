@@ -3,14 +3,15 @@ import {
   ActionMenu,
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { getWorkspaceDetail } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { getCompanyTypeLabel, type CompanyTypeCode } from "@/lib/company-types";
 import { surface, typography } from "@/lib/design-system";
 import {
   ArrowLeft,
   Building2,
-  CheckCircle2,
   ClipboardCheck,
   ClipboardList,
   Construction,
@@ -18,19 +19,11 @@ import {
   MapPin,
   Pencil,
   Users,
-  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OperationalAreasManager } from "./operational-areas-manager";
 import { WorkspaceStatusButton } from "./workspace-status-button";
-
-const TYPE_LABELS = {
-  CLIENT: "Cliente / Contratante",
-  HSE_MANAGER: "Gerenciadora HSE",
-  SCAFFOLD_COMPANY: "Empresa de andaimes",
-  CONTRACTOR: "Contratada",
-};
 
 type WorkspaceDetail = {
   id: string;
@@ -51,7 +44,7 @@ type WorkspaceDetail = {
       id: string;
       name: string;
       code: string;
-      type: keyof typeof TYPE_LABELS;
+      type: CompanyTypeCode;
       active: boolean;
     };
   }>;
@@ -201,7 +194,7 @@ export default async function WorkspaceDetailPage({
                 {workspace.code}
               </p>
             </div>
-            <WorkspaceStatusPill active={workspace.active} />
+            <ActiveStatusBadge active={workspace.active} />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -284,7 +277,7 @@ export default async function WorkspaceDetailPage({
                         {company.code}
                       </p>
                     </div>
-                    <WorkspaceStatusPill active={company.active} compact />
+                    <ActiveStatusBadge active={company.active} compact />
                   </div>
                   <Badge
                     variant="outline"
@@ -292,7 +285,7 @@ export default async function WorkspaceDetailPage({
                   >
                     {role === "OWNER"
                       ? "Proprietária"
-                      : TYPE_LABELS[company.type]}
+                      : getCompanyTypeLabel(company.type)}
                   </Badge>
                 </Link>
               ))}
@@ -377,28 +370,5 @@ function Kpi({
         {value}
       </p>
     </div>
-  );
-}
-
-function WorkspaceStatusPill({
-  active,
-  compact = false,
-}: {
-  active: boolean;
-  compact?: boolean;
-}) {
-  const Icon = active ? CheckCircle2 : XCircle;
-
-  return (
-    <span
-      className={`inline-flex w-fit shrink-0 items-center gap-1 rounded-md border ${
-        active
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-slate-100 text-slate-600"
-      } ${compact ? `${typography.badge} px-1.5 py-0.5` : `${typography.badgeLg} px-2.5 py-1`}`}
-    >
-      <Icon className={compact ? "size-2.5" : "size-3"} />
-      {active ? "Ativo" : "Inativo"}
-    </span>
   );
 }

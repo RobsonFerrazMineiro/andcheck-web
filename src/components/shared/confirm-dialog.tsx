@@ -55,15 +55,17 @@ export function ConfirmDialog({
               {title}
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onCancel}
             disabled={pending}
-            className="inline-flex size-7 items-center justify-center rounded-md text-primary-foreground/70 transition-colors hover:bg-white/10 hover:text-primary-foreground disabled:opacity-50"
+            className="text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
             aria-label="Fechar confirmação"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
         <div className="space-y-3 p-4">
           <p

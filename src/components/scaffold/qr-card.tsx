@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 import { Download, Printer, QrCode } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+import { typography } from "@/lib/design-system";
+
 export interface ScaffoldQRCardProps {
   scaffoldCode: string;
   tag: string;
@@ -88,21 +91,25 @@ export function ScaffoldQRCard({
           </div>
 
           <div className="flex gap-2">
-            <button
+            <Button
+              type="button"
+              variant="outline"
               onClick={handleDownload}
               disabled={!dataUrl}
-              className="inline-flex h-9 flex-1 items-center justify-center gap-2 border border-border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-muted disabled:opacity-40"
+              className={`flex-1 ${typography.action}`}
             >
               <Download className="h-3.5 w-3.5" />
               Download PNG
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => window.print()}
-              className="inline-flex h-9 flex-1 items-center justify-center gap-2 border border-border px-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-muted"
+              className={`flex-1 ${typography.action}`}
             >
               <Printer className="h-3.5 w-3.5" />
               Imprimir
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getScaffoldByTag } from "@/lib/actions/scaffold-actions";
-import { humanizeCode } from "@/lib/human-readable";
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import { format, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -80,14 +80,6 @@ const STATUS_CFG = {
     ring: "ring-amber-500/50",
     icon: Clock,
   },
-};
-
-const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
 };
 
 const RESULT_STYLE: Record<string, { label: string; color: string }> = {
@@ -170,7 +162,7 @@ export default async function QRPage({ params }: Props) {
               </p>
             </div>
             <span className="text-[11px] font-semibold text-white/60 bg-white/8 px-3 py-1 rounded-md">
-              {TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
+              {getScaffoldTypeLabel(scaffold.type)}
             </span>
           </div>
 

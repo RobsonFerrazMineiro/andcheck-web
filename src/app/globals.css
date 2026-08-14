@@ -104,6 +104,24 @@
   --shadow-interactive-strong: 0 12px 28px rgb(15 23 42 / 0.12);
 }
 
+.andcheck-filter-shell .andcheck-filter-field [data-slot="input"],
+.andcheck-filter-shell .andcheck-filter-field [data-slot="textarea"],
+.andcheck-filter-shell .andcheck-filter-field [data-slot="select-trigger"],
+.andcheck-filter-shell .andcheck-filter-field select,
+.andcheck-filter-shell .andcheck-filter-field input,
+.andcheck-filter-shell .andcheck-filter-field textarea {
+  background-color: #eceff3;
+}
+
+.andcheck-filter-shell .andcheck-filter-field [data-slot="input"]:focus,
+.andcheck-filter-shell .andcheck-filter-field [data-slot="textarea"]:focus,
+.andcheck-filter-shell .andcheck-filter-field [data-slot="select-trigger"]:focus,
+.andcheck-filter-shell .andcheck-filter-field select:focus,
+.andcheck-filter-shell .andcheck-filter-field input:focus,
+.andcheck-filter-shell .andcheck-filter-field textarea:focus {
+  background-color: var(--card);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

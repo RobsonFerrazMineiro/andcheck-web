@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -33,7 +34,6 @@ import {
   Plus,
   Power,
   Search,
-  XCircle,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -400,7 +400,7 @@ export function WorkspacesClient({
             ]}
           />
           </FilterField>
-          <FilterField label="Proprietaria">
+          <FilterField label="Proprietária">
           <FilterSelect
             value={ownerCompanyId}
             onValueChange={setOwnerCompanyId}
@@ -452,7 +452,7 @@ export function WorkspacesClient({
                       {workspace.code}
                     </p>
                   </div>
-                  <StatusBadge active={workspace.active} />
+                  <ActiveStatusBadge active={workspace.active} />
                 </div>
 
                 <div className="grid flex-1 gap-3">
@@ -823,20 +823,5 @@ function FilterSelect({
         ))}
       </SelectContent>
     </Select>
-  );
-}
-
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span
-      className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}
-    >
-      {active ? (
-        <CheckCircle2 className="size-3" />
-      ) : (
-        <XCircle className="size-3" />
-      )}
-      {active ? "Ativo" : "Inativo"}
-    </span>
   );
 }

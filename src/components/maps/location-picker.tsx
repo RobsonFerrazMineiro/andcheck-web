@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { typography } from "@/lib/design-system";
+
 // ── Constantes de zoom / fallback ─────────────────────────────────────────────
 const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 13 };
 const SAVED_ZOOM = 17; // zoom ao carregar coords já salvas
@@ -206,21 +209,22 @@ export function LocationPicker({
         </p>
         <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 sm:shrink-0">
           {hasCoords && (
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={handleCenterOnPin}
               title="Centralizar no pin"
-              className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground transition-colors hover:bg-muted"
+              className={`w-full ${typography.action}`}
             >
               <MapPin className="w-3 h-3" />
               Centralizar no pin
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             type="button"
             onClick={handleGeolocate}
             disabled={geoState === "loading"}
-            className="inline-flex h-8 w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 text-[10px] font-bold uppercase tracking-widest text-accent-foreground transition-colors hover:bg-accent/90 disabled:opacity-50"
+            className={`w-full ${typography.action}`}
           >
             {geoState === "loading" ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -228,7 +232,7 @@ export function LocationPicker({
               <Crosshair className="w-3 h-3" />
             )}
             {currentLocationLabel}
-          </button>
+          </Button>
         </div>
       </div>
 

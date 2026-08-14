@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { surface, typography } from "@/lib/design-system";
 
 type RankingDetailPageProps = {
@@ -48,13 +49,12 @@ export function RankingDetailPage({
             {description}
           </p>
         </div>
-        <Link
-          href={backHref}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 text-[10px] font-bold uppercase tracking-widest text-foreground hover:bg-muted"
-        >
-          <ArrowLeft className="size-3.5" />
-          Voltar
-        </Link>
+        <Button asChild variant="outline" className={typography.action}>
+          <Link href={backHref}>
+            <ArrowLeft className="size-3.5" />
+            Voltar
+          </Link>
+        </Button>
       </div>
 
       <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">

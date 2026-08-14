@@ -19,6 +19,7 @@ import {
   type HistoryEventDetail,
   type HistoryEventType,
 } from "@/components/shared/audit-timeline";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -787,22 +788,23 @@ export function AuditoriaClient({
           </p>
         </div>
         <div className="hidden flex-wrap items-center gap-2 md:flex">
-          <button
+          <Button
             type="button"
             onClick={() => exportRowsToExcel(exportRows)}
-            className={`inline-flex h-8 items-center gap-2 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+            className={typography.action}
           >
             <Download className="h-3.5 w-3.5" />
             Excel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
             onClick={() => exportRowsToPdf(exportRows)}
-            className={`inline-flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-muted-foreground hover:bg-muted ${typography.action}`}
+            className={typography.action}
           >
             <Download className="h-3.5 w-3.5" />
             PDF
-          </button>
+          </Button>
           <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span className={`${typography.action} text-muted-foreground`}>
@@ -918,7 +920,7 @@ export function AuditoriaClient({
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[125px]"
         />
         </FilterField>
-        <FilterField label="Inicio" className="sm:w-[154px]">
+        <FilterField label="Início" className="sm:w-[154px]">
         <Input
           type="date"
           name="dateFrom"
@@ -934,7 +936,7 @@ export function AuditoriaClient({
           className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
         />
         </FilterField>
-        <FilterField label="Ordenacao" className="sm:w-[132px]">
+        <FilterField label="Ordenação" className="sm:w-[132px]">
         <Select name="order" defaultValue={filters.order}>
           <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[132px]">
             <SelectValue placeholder="Ordenação" />
@@ -946,12 +948,12 @@ export function AuditoriaClient({
         </Select>
         </FilterField>
         <div className="flex w-full justify-end">
-        <button
+        <Button
           type="submit"
-          className="h-8 min-w-40 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90"
+          className="min-w-40"
         >
           Filtrar
-        </button>
+        </Button>
         </div>
         </FilterShell>
       </form>

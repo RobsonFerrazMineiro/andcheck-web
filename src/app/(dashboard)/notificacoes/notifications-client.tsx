@@ -120,7 +120,7 @@ export function NotificationsClient({
       />
 
       <MobileFilterPanel
-        title="Filtros de notificacao"
+        title="Filtros de notificação"
         description="Filtre o histórico por status ou tipo de evento."
         summary={`${filtered.length}/${notifications.length} · ${
           FILTERS.find((item) => item.value === filter)?.label ?? "Todas"

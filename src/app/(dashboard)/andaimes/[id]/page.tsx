@@ -28,7 +28,7 @@ import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
-import { humanizeCode } from "@/lib/human-readable";
+import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
 
 const NC_RESPONSIBLE_ROLE_CODES = [
@@ -37,14 +37,6 @@ const NC_RESPONSIBLE_ROLE_CODES = [
   "ENCARREGADO",
   "SUPERVISOR_ENCARREGADO",
 ];
-
-const TYPE_LABELS: Record<string, string> = {
-  tubular: "Tubular",
-  fachadeiro: "Fachadeiro",
-  multidirecional: "Multidirecional",
-  suspenso: "Suspenso",
-  torre: "Torre",
-};
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -215,7 +207,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
           <TechRow
             icon={Construction}
             label="Tipo de Andaime"
-            value={TYPE_LABELS[scaffold.type] ?? humanizeCode(scaffold.type)}
+            value={getScaffoldTypeLabel(scaffold.type)}
           />
           <TechRow
             icon={MapPin}

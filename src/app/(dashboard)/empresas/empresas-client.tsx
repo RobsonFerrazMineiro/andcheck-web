@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { FormModal } from "@/components/shared/form-modal";
@@ -23,6 +24,11 @@ import {
   updateCompany,
 } from "@/lib/actions/company-actions";
 import { surface, typography } from "@/lib/design-system";
+import {
+  COMPANY_TYPE_BADGE_STYLES,
+  COMPANY_TYPE_LABELS,
+  type CompanyTypeCode,
+} from "@/lib/company-types";
 import { getUploadedFilePreviewUrl, uploadFile } from "@/lib/upload-file";
 import {
   Building2,
@@ -37,14 +43,13 @@ import {
   Search,
   Upload,
   Users,
-  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-export type CompanyType = "CLIENT" | "HSE_MANAGER" | "SCAFFOLD_COMPANY" | "CONTRACTOR";
+export type CompanyType = CompanyTypeCode;
 export type CompanyRow = {
   id: string;
   name: string;
@@ -58,24 +63,10 @@ export type CompanyRow = {
   scaffolds: number;
 };
 
-const TYPE_LABELS: Record<CompanyType, string> = {
-  CLIENT: "Cliente / Contratante",
-  HSE_MANAGER: "Gerenciadora HSE",
-  SCAFFOLD_COMPANY: "Empresa de andaimes",
-  CONTRACTOR: "Contratada",
-};
-
-const TYPE_BADGE_STYLES: Record<CompanyType, string> = {
-  CLIENT: "border-blue-200 bg-blue-50 text-blue-700",
-  HSE_MANAGER: "border-violet-200 bg-violet-50 text-violet-700",
-  SCAFFOLD_COMPANY: "border-amber-200 bg-amber-50 text-amber-700",
-  CONTRACTOR: "border-slate-200 bg-slate-100 text-slate-600",
-};
-
 const FORM_TYPE_OPTIONS: Array<[string, string]> = [
-  ["CLIENT", TYPE_LABELS.CLIENT],
-  ["HSE_MANAGER", TYPE_LABELS.HSE_MANAGER],
-  ["SCAFFOLD_COMPANY", TYPE_LABELS.SCAFFOLD_COMPANY],
+  ["CLIENT", COMPANY_TYPE_LABELS.CLIENT],
+  ["HSE_MANAGER", COMPANY_TYPE_LABELS.HSE_MANAGER],
+  ["SCAFFOLD_COMPANY", COMPANY_TYPE_LABELS.SCAFFOLD_COMPANY],
 ];
 
 export function EmpresasClient({
@@ -366,7 +357,7 @@ export function EmpresasClient({
 
       <MobileFilterPanel
         description="Busque e refine a lista de empresas."
-        summary={`${filtered.length}/${initialCompanies.length} · ${type === "all" ? "Todos tipos" : TYPE_LABELS[type as CompanyType] ?? type} · ${status === "all" ? "Todos status" : status === "active" ? "Ativas" : "Inativas"}`}
+        summary={`${filtered.length}/${initialCompanies.length} · ${type === "all" ? "Todos tipos" : COMPANY_TYPE_LABELS[type as CompanyType] ?? type} · ${status === "all" ? "Todos status" : status === "active" ? "Ativas" : "Inativas"}`}
       >
         <FilterShell
           title="Filtros"
@@ -376,7 +367,7 @@ export function EmpresasClient({
           <FilterField label="Tipo">
             <div
               className="flex flex-wrap gap-2"
-              aria-label="Filtros rapidos por tipo de empresa"
+              aria-label="Filtros rápidos por tipo de empresa"
             >
               <TypeFilterButton
                 active={type === "all"}
@@ -470,9 +461,9 @@ export function EmpresasClient({
               </div>
               <Badge
                 variant="outline"
-                className={`hidden max-w-full rounded-md lg:inline-flex ${typography.badge} ${TYPE_BADGE_STYLES[company.type]}`}
+                className={`hidden max-w-full rounded-md lg:inline-flex ${typography.badge} ${COMPANY_TYPE_BADGE_STYLES[company.type]}`}
               >
-                {TYPE_LABELS[company.type]}
+                {COMPANY_TYPE_LABELS[company.type]}
               </Badge>
               <p
                 className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}
@@ -485,7 +476,11 @@ export function EmpresasClient({
               <p className={`hidden lg:block ${typography.code}`}>
                 {company.scaffolds}
               </p>
-              <StatusBadge active={company.active} />
+              <ActiveStatusBadge
+                active={company.active}
+                activeLabel="Ativa"
+                inactiveLabel="Inativa"
+              />
               <div className="flex justify-end gap-1">
                 <Button
                   asChild
@@ -884,14 +879,16 @@ function TypeFilterButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant={active ? "default" : "outline"}
+      size="sm"
       onClick={onClick}
       aria-pressed={active}
-      className={`inline-flex items-center gap-2 rounded-md border px-3 py-1.5 transition-colors ${typography.action} ${
+      className={`gap-2 ${typography.action} ${
         active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? ""
+          : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {label}
@@ -900,21 +897,6 @@ function TypeFilterButton({
       >
         {count}
       </span>
-    </button>
-  );
-}
-
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span
-      className={`inline-flex w-fit items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badgeLg} ${active ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-slate-200 bg-slate-100 text-slate-600"}`}
-    >
-      {active ? (
-        <CheckCircle2 className="size-3" />
-      ) : (
-        <XCircle className="size-3" />
-      )}
-      {active ? "Ativa" : "Inativa"}
-    </span>
+    </Button>
   );
 }

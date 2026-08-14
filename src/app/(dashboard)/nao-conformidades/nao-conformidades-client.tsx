@@ -15,6 +15,11 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { FilterField, FilterShell } from "@/components/shared/filter-shell";
+import {
+  NON_CONFORMITY_CLASSIFICATION_LABELS,
+  NON_CONFORMITY_STATUS_LABELS,
+  NonConformityBadge,
+} from "@/components/shared/non-conformity-badge";
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Input } from "@/components/ui/input";
@@ -28,10 +33,6 @@ import {
 import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
-import {
-  nonConformityStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
 
 export type NonConformityRow = {
   id: string;
@@ -69,69 +70,14 @@ export type NonConformityRow = {
   };
 };
 
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-  CRITICAL: "Crítica",
-};
-
-const CLASSIFICATION_STYLE: Record<string, string> = {
-  LOW: SEMANTIC_TONE_CLASSES.disabled.badge,
-  MEDIUM: SEMANTIC_TONE_CLASSES.warning.badge,
-  HIGH: SEMANTIC_TONE_CLASSES.warning.badge,
-  CRITICAL: SEMANTIC_TONE_CLASSES.critical.badge,
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
-  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
-  IN_PROGRESS:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
-  PENDING_VERIFICATION:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
-      .badge,
-  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
-  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
-  CANCELLED:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
-};
+const CLASSIFICATION_LABELS = NON_CONFORMITY_CLASSIFICATION_LABELS;
+const STATUS_LABELS = NON_CONFORMITY_STATUS_LABELS;
 
 function isOverdue(nc: NonConformityRow) {
   if (!nc.dueDate || ["CLOSED", "CANCELLED"].includes(nc.status)) return false;
   return differenceInCalendarDays(parseISO(nc.dueDate), new Date()) < 0;
 }
 
-function Badge({
-  value,
-  labels,
-  styles,
-}: {
-  value: string;
-  labels: Record<string, string>;
-  styles: Record<string, string>;
-}) {
-  return (
-    <span
-      className={
-        `inline-flex items-center rounded-md border px-2 py-0.5 ${typography.badge} ` +
-        (styles[value] ?? "bg-slate-50 text-slate-600 border-slate-300")
-      }
-    >
-      {labels[value] ?? value}
-    </span>
-  );
-}
 
 export function NaoConformidadesClient({
   initialData,
@@ -542,10 +488,9 @@ export function NaoConformidadesClient({
                         {company}
                       </p>
                       <div className="hidden xl:flex xl:col-span-1 items-center">
-                        <Badge
+                        <NonConformityBadge
                           value={nc.classification}
-                          labels={CLASSIFICATION_LABELS}
-                          styles={CLASSIFICATION_STYLE}
+                          kind="classification"
                         />
                       </div>
                       <div className="xl:col-span-2 hidden xl:flex items-center gap-1">
@@ -569,20 +514,12 @@ export function NaoConformidadesClient({
                           : "-"}
                       </p>
                       <div className="hidden xl:flex xl:col-span-1 items-center">
-                        <Badge
-                          value={nc.status}
-                          labels={STATUS_LABELS}
-                          styles={STATUS_STYLE}
-                        />
+                        <NonConformityBadge value={nc.status} />
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 xl:col-span-1 xl:justify-end">
                       <div className="xl:hidden">
-                        <Badge
-                          value={nc.status}
-                          labels={STATUS_LABELS}
-                          styles={STATUS_STYLE}
-                        />
+                        <NonConformityBadge value={nc.status} />
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground/20 group-hover:text-muted-foreground" />
                     </div>

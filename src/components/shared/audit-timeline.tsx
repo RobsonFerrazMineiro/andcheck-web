@@ -926,12 +926,13 @@ function HistoryEventRow({
 
   return (
     <li className="bg-card">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => {
           if (hasDetails) onToggle();
         }}
-        className={`grid w-full items-center gap-2 text-left ${
+        className={`grid h-auto w-full justify-normal rounded-none border-0 bg-transparent shadow-none hover:translate-y-0 hover:shadow-none active:translate-y-0 items-center gap-2 text-left ${
           hasDetails ? "hover:bg-muted/30" : "cursor-default"
         } max-[520px]:grid-cols-[24px_minmax(0,1fr)_26px] max-[520px]:gap-x-2 ${
           isPage
@@ -973,7 +974,7 @@ function HistoryEventRow({
         >
           {expanded ? <Minus className="size-3.5" /> : <Plus className="size-3.5" />}
         </span>
-      </button>
+      </Button>
 
       {expanded && hasDetails && (
         <div

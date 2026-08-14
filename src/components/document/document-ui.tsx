@@ -16,29 +16,42 @@ import {
 } from "@/lib/semantic-tones";
 
 export type CorporateDocumentStatus = "ACTIVE" | "EXPIRED" | "ARCHIVED";
+export type OperationalDocumentStatus = "anexado" | "pendente" | "vencido";
+export type DocumentStatusCode =
+  | CorporateDocumentStatus
+  | OperationalDocumentStatus;
 
-const STATUS_LABELS: Record<CorporateDocumentStatus, string> = {
+const STATUS_LABELS: Record<DocumentStatusCode, string> = {
   ACTIVE: "Ativo",
   EXPIRED: "Vencido",
   ARCHIVED: "Arquivado",
+  anexado: "Anexado",
+  pendente: "Pendente",
+  vencido: "Vencido",
 };
 
-const STATUS_STYLES: Record<CorporateDocumentStatus, string> = {
+const STATUS_STYLES: Record<DocumentStatusCode, string> = {
   ACTIVE: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("ACTIVE")].badge}`,
   EXPIRED: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("EXPIRED")].badge}`,
   ARCHIVED: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("ARCHIVED")].badge}`,
+  anexado: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("anexado")].badge}`,
+  pendente: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("pendente")].badge}`,
+  vencido: `rounded-md ${SEMANTIC_TONE_CLASSES[documentStatusTone("vencido")].badge}`,
 };
 
 const STATUS_ICONS = {
   ACTIVE: CheckCircle2,
   EXPIRED: TriangleAlert,
   ARCHIVED: Archive,
+  anexado: CheckCircle2,
+  pendente: FileText,
+  vencido: TriangleAlert,
 } as const;
 
 export function DocumentStatusBadge({
   status,
 }: {
-  status: CorporateDocumentStatus;
+  status: DocumentStatusCode;
 }) {
   const Icon = STATUS_ICONS[status];
 

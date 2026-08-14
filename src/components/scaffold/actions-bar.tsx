@@ -18,6 +18,7 @@ import {
   ActionMenu,
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
+import { Button } from "@/components/ui/button";
 import {
   completeAssembly,
   dismantleScaffold,
@@ -264,7 +265,9 @@ export function ScaffoldActionsBar({
               </Link>
             )}
             {canCompleteAssembly && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={() => setCompleteOpen(true)}
                 disabled={isPending}
                 className={actionMenuItemClassName}
@@ -275,17 +278,19 @@ export function ScaffoldActionsBar({
                   <CheckCircle2 className="w-4 h-4" />
                 )}
                 {isPending ? "Aguarde..." : "Concluir Montagem"}
-              </button>
+              </Button>
             )}
             {canDismantle && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
                 onClick={handleDismantle}
                 disabled={isPending}
                 className={actionMenuItemClassName}
               >
                 <Wrench className="w-4 h-4" />
                 Registrar Desmontagem
-              </button>
+              </Button>
             )}
           </ActionMenu>
         )}
@@ -382,14 +387,16 @@ function ActionRow({
         </Link>
       )}
       {showDismantle && (
-        <button
+        <Button
+          type="button"
+          variant="ghost"
           onClick={onDismantle}
           disabled={isPending}
           className={actionMenuItemClassName}
         >
           <Wrench className="w-4 h-4" />
           Registrar Desmontagem
-        </button>
+        </Button>
       )}
     </ActionMenu>
   );

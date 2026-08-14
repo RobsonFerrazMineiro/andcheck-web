@@ -1,8 +1,8 @@
 "use client";
 
 import { logInspectionPdfGenerated } from "@/lib/actions/audit-actions";
+import { Button } from "@/components/ui/button";
 import type { InspectionForPDF } from "@/lib/generate-inspection-pdf";
-import { cn } from "@/lib/utils";
 import { Download, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -41,13 +41,12 @@ export function PdfDownloadButton({ inspection, className }: PdfDownloadButtonPr
   }
 
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
       onClick={handleDownload}
       disabled={loading}
-      className={cn(
-        "flex items-center gap-2 disabled:opacity-60",
-        className,
-      )}
+      className={className}
     >
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
@@ -55,6 +54,6 @@ export function PdfDownloadButton({ inspection, className }: PdfDownloadButtonPr
         <Download className="w-4 h-4" />
       )}
       {loading ? "Gerando..." : "Exportar PDF"}
-    </button>
+    </Button>
   );
 }

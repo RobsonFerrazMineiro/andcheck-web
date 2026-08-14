@@ -1,25 +1,19 @@
-import { Badge } from "@/components/ui/badge";
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyDetail } from "@/lib/actions/company-actions";
+import { getCompanyTypeLabel, type CompanyTypeCode } from "@/lib/company-types";
 import { typography } from "@/lib/design-system";
 import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 import { ArrowLeft, Building2, ClipboardCheck, ClipboardList, Construction, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-const TYPE_LABELS = {
-  CLIENT: "Cliente / Contratante",
-  HSE_MANAGER: "Gerenciadora HSE",
-  SCAFFOLD_COMPANY: "Empresa de andaimes",
-  CONTRACTOR: "Contratada",
-};
-
 type CompanyDetail = {
   id: string;
   name: string;
   code: string;
-  type: keyof typeof TYPE_LABELS;
+  type: CompanyTypeCode;
   active: boolean;
   createdAt: Date;
   description: string | null;
@@ -81,15 +75,20 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
               <p className={`mt-0.5 break-all text-muted-foreground ${typography.codeMuted}`}>
                 {company.code}
               </p>
-              <Badge variant="outline" className="mt-2 w-fit rounded-md">
-                {company.active ? "Ativa" : "Inativa"}
-              </Badge>
+              <div className="mt-2">
+                <ActiveStatusBadge
+                  active={company.active}
+                  activeLabel="Ativa"
+                  inactiveLabel="Inativa"
+                  compact
+                />
+              </div>
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Info label="Workspaces vinculados" value={company.workspaceLinks.filter((link) => link.active).map((link) => link.workspace.name).join(", ") || "Sem vinculo operacional"} />
-            <Info label="Tipo" value={TYPE_LABELS[company.type]} />
+            <Info label="Tipo" value={getCompanyTypeLabel(company.type)} />
             <Info label="Status" value={company.active ? "Ativa" : "Inativa"} />
             <Info label="Data de criação" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />
             <div className="sm:col-span-2"><Info label="Descrição" value={company.description ?? "Não informada"} /></div>

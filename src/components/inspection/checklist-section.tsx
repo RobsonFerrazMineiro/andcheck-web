@@ -11,6 +11,7 @@ import {
 import { useRef } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type {
   ChecklistCategory,
@@ -133,11 +134,13 @@ export default function ChecklistSection({
               {/* Status toggle buttons */}
               <div className="flex flex-wrap gap-2">
                 {STATUSES.map((s) => (
-                  <button
+                  <Button
                     key={s.value}
                     type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => handleChange(idx, "status", s.value)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 border cursor-pointer text-[10px] font-semibold uppercase tracking-wider transition-all ${
+                    className={`cursor-pointer border text-[10px] font-semibold uppercase tracking-wider ${
                       val.status === s.value
                         ? s.activeClass
                         : "bg-background text-muted-foreground border-border " +
@@ -146,7 +149,7 @@ export default function ChecklistSection({
                   >
                     {s.icon}
                     {s.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -181,26 +184,30 @@ export default function ChecklistSection({
                     }}
                     onChange={(e) => handlePhotoChange(idx, e)}
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon"
                     title={val.photo ? "Foto adicionada" : "Escolher da galeria"}
                     onClick={() => photoGalleryInputRefs.current[idx]?.click()}
-                    className={`shrink-0 w-8 h-8 flex items-center justify-center border transition-colors ${
+                    className={`shrink-0 ${
                       val.photo
                         ? "border-red-400 bg-red-50 text-red-600"
                         : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                     }`}
                   >
                     <ImagePlus className="w-3.5 h-3.5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon"
                     title="Usar camera"
                     onClick={() => photoCameraInputRefs.current[idx]?.click()}
-                    className="shrink-0 w-8 h-8 flex items-center justify-center border border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground transition-colors"
+                    className="shrink-0 border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                   >
                     <Camera className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

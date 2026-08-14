@@ -7,6 +7,7 @@ import { useId, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
+import { Button } from "@/components/ui/button";
 import {
   deleteNonConformityEvidence,
   deleteNonConformityItemEvidence,
@@ -137,27 +138,30 @@ export function NonConformityEvidencePreview({
 
   const deleteButton =
     canDelete && id ? (
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon-xs"
         onClick={deleteEvidence}
         disabled={isDeleting}
         aria-label={`Remover evidência ${fileName}`}
         title="Remover evidência"
-        className="absolute right-0 top-0 z-10 flex size-4 items-center justify-center bg-transparent text-red-700 transition-colors hover:text-red-900 disabled:cursor-not-allowed disabled:opacity-60"
+        className="absolute right-0 top-0 z-10 size-4 bg-transparent text-red-700 hover:bg-transparent hover:text-red-900"
       >
         <X className="size-3" />
-      </button>
+      </Button>
     ) : null;
 
   if (!isImage) {
     return (
       <div className="inline-flex w-16 flex-col items-start gap-1">
         <span className="relative h-16 w-16">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={openPreview}
             aria-label={`Abrir evidência ${fileName || extension}`}
-            className="flex h-16 w-16 items-center justify-center border border-dashed border-border bg-muted/20 hover:opacity-80 transition-opacity"
+            className="h-16 w-16 border border-dashed border-border bg-muted/20 p-0 hover:bg-muted/20 hover:opacity-80"
           >
             <span className="flex flex-col items-center gap-0.5">
               <FileText className="h-6 w-6 text-muted-foreground" />
@@ -165,15 +169,16 @@ export function NonConformityEvidencePreview({
                 {extension}
               </span>
             </span>
-          </button>
+          </Button>
           {deleteButton}
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => setShowFullName((current) => !current)}
           aria-label={`Exibir nome do arquivo ${fileName}`}
           title={getDocumentFileName(document)}
-          className="w-16 bg-transparent p-0 text-left"
+          className="h-auto w-16 justify-start bg-transparent p-0 text-left hover:bg-transparent"
         >
           <p
             className={`text-[9px] font-medium leading-tight text-muted-foreground ${
@@ -187,7 +192,7 @@ export function NonConformityEvidencePreview({
               {observation}
             </p>
           )}
-        </button>
+        </Button>
 
         {open && (
           <DocumentPreviewModal
@@ -203,11 +208,12 @@ export function NonConformityEvidencePreview({
   return (
     <div className="inline-flex w-16 flex-col items-start gap-1">
       <span className="relative h-16 w-16">
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={openPreview}
           aria-label={`Abrir evidência ${fileName || "imagem anexada"}`}
-          className="block h-16 w-16 bg-transparent p-0 hover:opacity-80 transition-opacity"
+          className="block h-16 w-16 bg-transparent p-0 hover:bg-transparent hover:opacity-80"
         >
           <Image
             src={fileUrl}
@@ -217,15 +223,16 @@ export function NonConformityEvidencePreview({
             unoptimized
             className="h-16 w-16 object-cover"
           />
-        </button>
+        </Button>
         {deleteButton}
       </span>
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setShowFullName((current) => !current)}
         aria-label={`Exibir nome do arquivo ${fileName}`}
         title={getDocumentFileName(document)}
-        className="w-16 bg-transparent p-0 text-left"
+        className="h-auto w-16 justify-start bg-transparent p-0 text-left hover:bg-transparent"
       >
         <p
           className={`text-[9px] font-medium leading-tight text-muted-foreground ${
@@ -239,7 +246,7 @@ export function NonConformityEvidencePreview({
             {observation}
           </p>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div
@@ -258,34 +265,40 @@ export function NonConformityEvidencePreview({
               >
                 Evidência
               </p>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => setOpen(false)}
                 aria-label="Fechar evidência"
                 className="text-primary-foreground/70 hover:text-primary-foreground"
               >
                 <XCircle className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
             <div className="relative p-4">
               {hasGalleryNavigation && (
                 <>
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon-lg"
                     onClick={showPreviousImage}
-                    className="absolute left-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center border border-border bg-card/90 hover:bg-muted"
+                    className="absolute left-4 top-1/2 z-10 -translate-y-1/2 bg-card/90 hover:bg-muted"
                     aria-label="Imagem anterior"
                   >
                     <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="icon-lg"
                     onClick={showNextImage}
-                    className="absolute right-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center border border-border bg-card/90 hover:bg-muted"
+                    className="absolute right-4 top-1/2 z-10 -translate-y-1/2 bg-card/90 hover:bg-muted"
                     aria-label="Próxima imagem"
                   >
                     <ChevronRight className="h-5 w-5" />
-                  </button>
+                  </Button>
                 </>
               )}
               <Image

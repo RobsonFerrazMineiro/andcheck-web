@@ -865,12 +865,14 @@ function SmartSuggestion({
   if (!value) return null;
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="xs"
       onClick={() => onApply(value)}
-      className="mt-1 inline-flex max-w-full items-center border border-border bg-muted/30 px-2 py-1 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground hover:bg-muted/60"
+      className="mt-1 max-w-full justify-start bg-muted/30 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground hover:bg-muted/60"
     >
       Ultimo usado: <span className="ml-1 truncate text-foreground">{value}</span>
-    </button>
+    </Button>
   );
 }

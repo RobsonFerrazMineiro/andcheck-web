@@ -21,6 +21,8 @@ import type {
   HistoryEventType,
 } from "@/components/shared/audit-timeline";
 import { EmptyState } from "@/components/shared/empty-state";
+import { NonConformityBadge } from "@/components/shared/non-conformity-badge";
+import { Button } from "@/components/ui/button";
 import {
   getNonConformityById,
   getNonConformityResponsibleOptions,
@@ -33,10 +35,6 @@ import {
 } from "./non-conformity-operations";
 import { NonConformityHistoryButton } from "./non-conformity-history-button";
 import { LazyNonConformityEvidencePreview } from "./lazy-non-conformity-panels";
-import {
-  nonConformityStatusTone,
-  SEMANTIC_TONE_CLASSES,
-} from "@/lib/semantic-tones";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { sanitizeForLog } from "@/lib/safe-log";
 import {
@@ -126,44 +124,6 @@ type NonConformityDetail = {
     createdAt: Date;
     user: { id: string; name: string; email: string } | null;
   }>;
-};
-
-const CLASSIFICATION_LABELS: Record<string, string> = {
-  LOW: "Baixa",
-  MEDIUM: "Média",
-  HIGH: "Alta",
-  CRITICAL: "Crítica",
-};
-
-const CLASSIFICATION_STYLE: Record<string, string> = {
-  LOW: SEMANTIC_TONE_CLASSES.disabled.badge,
-  MEDIUM: SEMANTIC_TONE_CLASSES.warning.badge,
-  HIGH: SEMANTIC_TONE_CLASSES.warning.badge,
-  CRITICAL: SEMANTIC_TONE_CLASSES.critical.badge,
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  OPEN: "Aberta",
-  ASSIGNED: "Em Correção",
-  IN_PROGRESS: "Em Tratamento",
-  PENDING_VERIFICATION: "Aguardando Verificação",
-  CLOSED: "Encerrada",
-  REJECTED: "Rejeitada",
-  CANCELLED: "Cancelada",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  OPEN: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("OPEN")].badge,
-  ASSIGNED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("ASSIGNED")].badge,
-  IN_PROGRESS:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("IN_PROGRESS")].badge,
-  PENDING_VERIFICATION:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("PENDING_VERIFICATION")]
-      .badge,
-  CLOSED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CLOSED")].badge,
-  REJECTED: SEMANTIC_TONE_CLASSES[nonConformityStatusTone("REJECTED")].badge,
-  CANCELLED:
-    SEMANTIC_TONE_CLASSES[nonConformityStatusTone("CANCELLED")].badge,
 };
 
 const EVIDENCE_LABELS: Record<string, string> = {
@@ -325,27 +285,6 @@ function ncHistoryDetails(
   }
 
   return details.slice(0, 6);
-}
-
-function Badge({
-  value,
-  labels,
-  styles,
-}: {
-  value: string;
-  labels: Record<string, string>;
-  styles: Record<string, string>;
-}) {
-  return (
-    <span
-      className={
-        "inline-flex items-center rounded-md border px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest " +
-        (styles[value] ?? "bg-slate-50 text-slate-600 border-slate-300")
-      }
-    >
-      {labels[value] ?? value}
-    </span>
-  );
 }
 
 function DetailRow({
@@ -530,12 +469,11 @@ export default async function NonConformityDetailPage({ params }: Props) {
             </p>
           </div>
           <div className="flex flex-wrap lg:justify-end gap-2 shrink-0">
-            <Badge
+            <NonConformityBadge
               value={nc.classification}
-              labels={CLASSIFICATION_LABELS}
-              styles={CLASSIFICATION_STYLE}
+              kind="classification"
             />
-            <Badge value={nc.status} labels={STATUS_LABELS} styles={STATUS_STYLE} />
+            <NonConformityBadge value={nc.status} />
           </div>
         </div>
       </div>
@@ -707,12 +645,15 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
 
       <div className="flex gap-3">
-        <Link
-          href="/nao-conformidades"
-          className="flex items-center gap-1.5 h-8 px-4 border border-border text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted transition-colors"
+        <Button
+          asChild
+          variant="outline"
+          className="text-[10px] font-bold uppercase tracking-widest"
         >
-          <ArrowLeft className="w-3.5 h-3.5" /> Voltar
-        </Link>
+          <Link href="/nao-conformidades">
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar
+          </Link>
+        </Button>
       </div>
     </div>
   );

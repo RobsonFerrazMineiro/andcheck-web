@@ -12,17 +12,18 @@ import {
   Trash2,
   UserPlus,
   Users,
-  XCircle,
 } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { EmptyState } from "@/components/shared/empty-state";
 import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { FormModal } from "@/components/shared/form-modal";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -312,18 +313,18 @@ export function UsuariosClient({
             {activeCount} ativos · {users.length} total
           </p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => {
             setEditingUser(null);
             setSelectedRoleId("");
             setShowForm((current) => !current);
           }}
-          className="inline-flex h-8 w-full shrink-0 items-center justify-center gap-1.5 rounded-md bg-accent px-4 text-[10px] font-bold uppercase tracking-widest text-accent-foreground hover:bg-accent/90 sm:w-auto"
+          className={`w-full sm:w-auto ${typography.action}`}
         >
           <UserPlus className="w-3.5 h-3.5" />
           Novo Usuário
-        </button>
+        </Button>
       </div>
 
       <div className="grid min-w-0 grid-cols-2 gap-3 lg:grid-cols-4">
@@ -518,26 +519,27 @@ export function UsuariosClient({
           </div>
 
           <div className="flex justify-end gap-2 border-t border-border pt-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               disabled={isPending}
               onClick={() => {
                 setShowForm(false);
                 setEditingUser(null);
                 setSelectedRoleId("");
               }}
-              className="h-8 rounded-md px-4 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+              className={typography.action}
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={isPending}
-              className="inline-flex items-center gap-2 h-8 rounded-md px-4 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-widest disabled:opacity-50"
+              className={typography.action}
             >
               {isPending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {editingUser ? "Atualizar Usuário" : "Salvar Usuário"}
-            </button>
+            </Button>
           </div>
         </form>
       </FormModal>
@@ -610,18 +612,18 @@ export function UsuariosClient({
               title="Nenhum usuário encontrado"
               description="Ajuste os filtros ou cadastre um usuário para liberar acesso ao ambiente."
               action={
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setEditingUser(null);
                     setSelectedRoleId("");
                     setShowForm(true);
                   }}
-                  className={`inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-accent-foreground hover:bg-accent/90 ${typography.action}`}
+                  className={typography.action}
                 >
                   <UserPlus className="size-3.5" />
                   Novo Usuário
-                </button>
+                </Button>
               }
             />
           </div>
@@ -686,15 +688,17 @@ export function UsuariosClient({
                     {user.department ?? "-"}
                   </p>
                   <div className="hidden lg:flex">
-                    <StatusPill active={user.is_active} />
+                    <ActiveStatusBadge active={user.is_active} compact />
                   </div>
 
                   <div className="flex shrink-0 items-center justify-end gap-1">
                     <div className="lg:hidden">
-                      <StatusPill active={user.is_active} />
+                      <ActiveStatusBadge active={user.is_active} compact />
                     </div>
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon-sm"
                       disabled={isPending}
                       title="Editar usuário"
                       aria-label={`Editar usuário ${user.name}`}
@@ -703,12 +707,13 @@ export function UsuariosClient({
                         setEditingUser(user);
                         setSelectedRoleId(user.roles[0]?.id ?? "");
                       }}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon-sm"
                       disabled={isPending || isCurrentUser}
                       onClick={() => setStatusTarget(user)}
                       aria-label={
@@ -723,22 +728,22 @@ export function UsuariosClient({
                             ? "Desativar usuário"
                             : "Ativar usuário"
                       }
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Power className="h-3.5 w-3.5" />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="destructive"
+                      size="icon-sm"
                       disabled={isPending || !canDeleteThisUser}
                       onClick={() => setDeleteTarget(user)}
                       aria-label={`Excluir usuário ${user.name}`}
                       title={
                         deleteBlockReason ?? "Excluir usuário"
                       }
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-red-200 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -857,25 +862,5 @@ function CompanySelect({
         </SelectContent>
       </Select>
     </div>
-  );
-}
-
-function StatusPill({ active }: { active: boolean }) {
-  return (
-    <span
-      className={
-        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 border text-[10px] font-bold " +
-        (active
-          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-          : "bg-slate-100 text-slate-600 border-slate-200")
-      }
-    >
-      {active ? (
-        <CheckCircle2 className="w-3 h-3" />
-      ) : (
-        <XCircle className="w-3 h-3" />
-      )}
-      {active ? "Ativo" : "Inativo"}
-    </span>
   );
 }
