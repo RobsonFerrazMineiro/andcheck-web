@@ -17,6 +17,7 @@ import { getNotificationBellData } from "@/lib/actions/notification-actions";
 import { getContextSwitcherData } from "@/lib/context-switcher";
 import type { ContextSwitcherData } from "@/lib/context-switcher";
 import { humanizeCode } from "@/lib/human-readable";
+import { typography } from "@/lib/design-system";
 import { prisma } from "@/lib/prisma";
 import { Activity } from "lucide-react";
 import { Toaster } from "sonner";
@@ -189,7 +190,7 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Activity className="w-3.5 h-3.5 text-green-500" />
-              <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">
+              <span className={`${typography.sectionLabel} text-muted-foreground`}>
                 Operacional
               </span>
             </div>
@@ -197,7 +198,7 @@ export default async function DashboardLayout({
               {NORMS.map((n) => (
                 <span
                   key={n}
-                  className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-wider"
+                  className={`${typography.codeMuted} uppercase text-muted-foreground/50`}
                 >
                   {n}
                 </span>

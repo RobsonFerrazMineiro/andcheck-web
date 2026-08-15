@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useOfflineStatus } from "@/components/offline/offline-provider";
+import { typography } from "@/lib/design-system";
 import { canNavigateAfterOfflineWrite } from "@/lib/offline/connectivity";
 import { AlertTriangle, CloudOff, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -101,7 +102,7 @@ export function ConnectivityIndicator() {
       : copy?.tone;
 
   return (
-    <div className="border-b border-border/70 px-4 py-2 text-xs">
+    <div className={`border-b border-border/70 px-4 py-2 ${typography.bodyMuted}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-end gap-2">
         <Link
           href="/sincronizacao"
@@ -110,7 +111,7 @@ export function ConnectivityIndicator() {
               event.preventDefault();
             }
           }}
-          className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-1.5 font-semibold shadow-sm ${tone}`}
+          className={`flex min-w-0 items-center gap-2 rounded-md border px-3 py-1.5 ${typography.bodyStrong} shadow-sm ${tone}`}
         >
           {IndicatorIcon ? (
             <IndicatorIcon

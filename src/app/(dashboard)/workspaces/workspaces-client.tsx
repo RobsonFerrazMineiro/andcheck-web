@@ -51,7 +51,7 @@ const LocationPicker = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-95 items-center justify-center border border-border bg-muted/20 text-xs text-muted-foreground">
+      <div className={`flex h-95 items-center justify-center border border-border bg-muted/20 ${typography.sectionDescription} text-muted-foreground`}>
         <Loader2 className="mr-2 size-4 animate-spin" />
         Carregando mapa...
       </div>
@@ -333,7 +333,7 @@ export function WorkspacesClient({
               <div className="space-y-3 lg:col-span-2">
                 <div>
                   <Label>Localização da planta</Label>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
                     Selecione no mapa a localização aproximada da planta
                     operacional.
                   </p>

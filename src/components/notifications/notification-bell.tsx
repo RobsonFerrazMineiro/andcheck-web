@@ -17,6 +17,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
+import { typography } from "@/lib/design-system";
 
 export type BellNotification = {
   id: string;
@@ -102,7 +103,7 @@ export function NotificationBell({
       >
         <Bell className="size-4" />
         {bellData.unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-4 text-destructive-foreground">
+          <span className={`absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 leading-4 text-destructive-foreground ${typography.bodyMuted} font-bold`}>
             {bellData.unreadCount > 99 ? "99+" : bellData.unreadCount}
           </span>
         )}
@@ -123,10 +124,10 @@ export function NotificationBell({
         >
           <div className="flex items-center justify-between border-b p-3">
             <div>
-              <p id="notification-bell-title" className="text-sm font-semibold">
+              <p id="notification-bell-title" className={`${typography.bodyStrong} text-foreground`}>
                 Notificações
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className={`${typography.sectionDescription} text-muted-foreground`}>
                 {bellData.unreadCount} não lida(s)
               </p>
             </div>
@@ -151,11 +152,11 @@ export function NotificationBell({
                       className={`mt-1 size-2 shrink-0 rounded-full ${severityDot(notification.severity)}`}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="line-clamp-1 text-xs font-semibold">
+                      <p className={`line-clamp-1 ${typography.bodyStrong} text-foreground`}>
                         {notification.title}
                       </p>
                       {notificationSummary(notification) ? (
-                        <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                        <p className={`mt-1 line-clamp-1 ${typography.sectionDescription} text-muted-foreground`}>
                           {notificationSummary(notification)}
                         </p>
                       ) : null}
@@ -204,13 +205,13 @@ export function NotificationBell({
             )}
           </div>
           <div className="grid gap-1 border-t p-2">
-            <Button asChild variant="ghost" size="sm" className="justify-start">
+            <Button asChild variant="ghost" size="sm" className={`justify-start ${typography.action}`}>
               <Link href="/notificacoes" onClick={() => setOpen(false)}>
                 <Bell className="size-3.5" />
                 Ver todas as notificações
               </Link>
             </Button>
-            <Button asChild variant="ghost" size="sm" className="justify-start">
+            <Button asChild variant="ghost" size="sm" className={`justify-start ${typography.action}`}>
               <Link href="/perfil/notificacoes" onClick={() => setOpen(false)}>
                 <Settings className="size-3.5" />
                 Preferências de Notificação

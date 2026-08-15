@@ -6,6 +6,7 @@ import {
   updateNotificationPreferenceGroup,
   updateNotificationPreferenceValue,
 } from "@/lib/actions/notification-actions";
+import { typography } from "@/lib/design-system";
 import { Bell, Mail, ShieldAlert } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -125,10 +126,10 @@ export function NotificationPreferencesClient({
             <Mail className="size-4 text-muted-foreground" />
           </div>
           <div>
-            <p className="text-sm font-semibold">
+            <p className={`${typography.bodyStrong} text-foreground`}>
               Canal de e-mail: {emailStatus.label}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
               {emailStatus.detail}
             </p>
           </div>
@@ -142,8 +143,8 @@ export function NotificationPreferencesClient({
         <section key={group.group} className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
           <div className="flex flex-col gap-3 border-b-2 border-border bg-muted/35 p-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-sm font-semibold">{group.label}</h2>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <h2 className={`${typography.bodyStrong} text-foreground`}>{group.label}</h2>
+              <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
                 {group.items.length} tipo(s) de notificação
               </p>
             </div>
@@ -153,7 +154,7 @@ export function NotificationPreferencesClient({
                 variant="outline"
                 size="sm"
                 disabled={isPending}
-                className="w-full"
+                className={`w-full ${typography.action}`}
                 onClick={() => saveGroup(group.group, "internal", true)}
               >
                 <Bell className="size-4" />
@@ -164,7 +165,7 @@ export function NotificationPreferencesClient({
                 variant="outline"
                 size="sm"
                 disabled={isPending || !emailStatus.available}
-                className="w-full"
+                className={`w-full ${typography.action}`}
                 title={!emailStatus.available ? emailStatus.detail : undefined}
                 onClick={() => saveGroup(group.group, "email", true)}
               >
@@ -182,10 +183,10 @@ export function NotificationPreferencesClient({
               >
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">
+                    <p className={`${typography.bodyStrong} text-foreground`}>
                       {preference.label}
                     </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
                       {preference.groupLabel}
                     </p>
                   </div>
@@ -241,7 +242,7 @@ export function NotificationPreferencesClient({
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
+                <tr className={`border-b text-left ${typography.tableHeader} text-muted-foreground`}>
                   <th className="px-4 py-3">Tipo de notificação</th>
                   <th className="px-4 py-3">Grupo</th>
                   <th className="px-4 py-3">Interna</th>
@@ -252,7 +253,7 @@ export function NotificationPreferencesClient({
               <tbody>
                 {group.items.map((preference) => (
                   <tr key={preference.type} className="border-b last:border-0">
-                    <td className="px-4 py-3 font-medium">
+                    <td className={`px-4 py-3 ${typography.bodyStrong}`}>
                       {preference.label}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">

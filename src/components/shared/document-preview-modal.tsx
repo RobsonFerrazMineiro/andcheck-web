@@ -120,10 +120,10 @@ export function DocumentPreviewModal({
                 <FileText className="h-7 w-7 text-muted-foreground" />
               </span>
               <div className="min-w-0">
-                <p className="text-[12px] font-semibold text-foreground">
+                <p className={`${typography.bodyStrong} text-foreground`}>
                   {getDocumentFileName(document)}
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
                   Este formato deve ser baixado para visualização.
                 </p>
               </div>

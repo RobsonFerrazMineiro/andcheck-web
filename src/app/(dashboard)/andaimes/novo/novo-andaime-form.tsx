@@ -796,7 +796,7 @@ export default function NovoAndaimeForm({
       </div>
 
       {/* Rodapé normativo */}
-      <p className="text-[8px] text-muted-foreground/30 uppercase tracking-widest text-right">
+      <p className={`${typography.metaStrong} text-right text-muted-foreground/30`}>
         Conforme NR-18 · NBR 6494 · AndCheck · Documento Controlado
       </p>
     </div>
@@ -831,7 +831,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <Label className={`${typography.panelTitle} text-muted-foreground`}>
         {label}
       </Label>
       {children}
@@ -872,7 +872,7 @@ function SmartSuggestion({
       variant="outline"
       size="xs"
       onClick={() => onApply(value)}
-      className="mt-1 max-w-full justify-start bg-muted/30 text-[9px] font-semibold uppercase tracking-widest text-muted-foreground hover:bg-muted/60"
+      className={`mt-1 max-w-full justify-start bg-muted/30 ${typography.sectionLabel} text-muted-foreground hover:bg-muted/60`}
     >
       Ultimo usado: <span className="ml-1 truncate text-foreground">{value}</span>
     </Button>

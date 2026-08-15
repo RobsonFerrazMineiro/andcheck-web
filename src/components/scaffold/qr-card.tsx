@@ -70,22 +70,22 @@ export function ScaffoldQRCard({
           <div className="bg-white p-3">
             <canvas ref={canvasRef} className="block" />
           </div>
-          <p className="mt-1.5 text-center font-mono text-[11px] font-bold tracking-widest text-accent">
+          <p className={`mt-1.5 text-center ${typography.badgeLg} text-accent`}>
             {scaffoldCode}
           </p>
         </div>
 
         <div className="w-full flex-1 space-y-4">
           <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+            <p className={`${typography.panelTitle} text-muted-foreground`}>
               URL publica de escaneamento
             </p>
             <div className="rounded-sm border border-border bg-muted/50 px-3 py-2">
-              <p className="break-all font-mono text-[11px] text-foreground/70">
+              <p className={`break-all ${typography.codeMuted} text-foreground/70`}>
                 {url}
               </p>
             </div>
-            <p className="text-[10px] leading-relaxed text-muted-foreground/60">
+            <p className={`${typography.bodyMuted} leading-relaxed text-muted-foreground/60`}>
               {helperText}
             </p>
           </div>

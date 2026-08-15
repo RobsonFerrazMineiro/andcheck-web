@@ -108,7 +108,7 @@ export default async function AdminNotificationsPage() {
                   <div key={log.id} className="rounded-lg border border-border bg-card p-3 shadow-sm">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="break-words text-[12px] font-semibold text-foreground">
+                        <p className={`${typography.bodyStrong} break-words text-foreground`}>
                           {log.notification.title}
                         </p>
                         <Badge className="mt-1" variant="outline">
@@ -126,7 +126,7 @@ export default async function AdminNotificationsPage() {
                         </Button>
                       </form>
                     </div>
-                    <div className="mt-3 grid gap-1 text-[11px] text-muted-foreground">
+                    <div className={`mt-3 grid gap-1 ${typography.sectionDescription} text-muted-foreground`}>
                       <p className="break-all">{log.recipientEmail}</p>
                       <p>
                         {log.notification.company.name}
@@ -134,7 +134,7 @@ export default async function AdminNotificationsPage() {
                           ? ` / ${log.notification.workspace.name}`
                           : ""}
                       </p>
-                      <p className="break-words text-red-700">
+                      <p className="break-words text-destructive">
                         {log.error ?? "Falha sem detalhe"}
                       </p>
                     </div>
@@ -145,7 +145,7 @@ export default async function AdminNotificationsPage() {
               <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[760px] text-sm">
                 <thead>
-                  <tr className="border-b text-left text-xs uppercase tracking-widest text-muted-foreground">
+                  <tr className={`border-b text-left ${typography.tableHeader} text-muted-foreground`}>
                     <th className="py-3 pr-4">Notificacao</th>
                     <th className="py-3 pr-4">Destinatario</th>
                     <th className="py-3 pr-4">Empresa</th>
@@ -157,7 +157,7 @@ export default async function AdminNotificationsPage() {
                   {latestFailures.map((log) => (
                     <tr key={log.id} className="border-b last:border-0">
                       <td className="py-3 pr-4">
-                        <div className="font-medium">
+                        <div className={typography.bodyStrong}>
                           {log.notification.title}
                         </div>
                         <Badge className="mt-1" variant="outline">
@@ -183,7 +183,7 @@ export default async function AdminNotificationsPage() {
                             name="notificationId"
                             value={log.notification.id}
                           />
-                          <Button type="submit" variant="outline" size="sm">
+                          <Button type="submit" variant="outline" size="sm" className={typography.action}>
                             <RefreshCw className="size-4" />
                             Reenviar
                           </Button>

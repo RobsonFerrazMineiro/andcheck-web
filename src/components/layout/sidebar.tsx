@@ -49,10 +49,10 @@ export function Sidebar({
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="text-[13px] font-bold tracking-widest uppercase text-sidebar-foreground leading-none">
+            <p className={`${typography.badgeXl} leading-none text-sidebar-foreground`}>
               AndCheck
             </p>
-            <p className="text-[9px] text-sidebar-foreground/40 tracking-widest uppercase mt-0.5">
+            <p className={`mt-0.5 ${typography.panelSubtitle} text-sidebar-foreground/40`}>
               Gestão do Ciclo de Vida de Andaimes
             </p>
           </div>
@@ -63,7 +63,7 @@ export function Sidebar({
       <div className="px-4 py-2 bg-sidebar-accent/60 border-b border-sidebar-border/50">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          <p className="text-[9px] font-semibold tracking-widest uppercase text-sidebar-foreground/50">
+          <p className={`${typography.sectionLabel} text-sidebar-foreground/50`}>
             Ambiente Produção
           </p>
         </div>
@@ -71,7 +71,7 @@ export function Sidebar({
 
       {/* Section label */}
       <div className="px-3 pt-4 pb-1">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25 px-2 mb-2">
+        <p className={`mb-2 px-2 ${typography.sectionLabel} text-sidebar-foreground/25`}>
           Módulos da Plataforma
         </p>
       </div>
@@ -93,7 +93,7 @@ export function Sidebar({
             <Link
               key={item.path}
               href={item.path}
-              className={`flex items-center gap-2.5 px-2.5 py-2.5 text-sm font-medium transition-all group relative ${
+              className={`flex items-center gap-2.5 px-2.5 py-2.5 ${typography.bodyStrong} transition-all group relative ${
                 active
                   ? "bg-sidebar-primary/90 text-white"
                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -104,11 +104,11 @@ export function Sidebar({
               )}
               <item.icon className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold leading-tight">
+                <p className="leading-tight">
                   {item.label}
                 </p>
                 <p
-                  className={`text-[9px] leading-tight tracking-wide ${
+                  className={`${typography.panelSubtitle} leading-tight ${
                     active ? "text-white/50" : "text-sidebar-foreground/30"
                   }`}
                 >
@@ -125,7 +125,7 @@ export function Sidebar({
 
       {(canViewCompanies || canViewWorkspaces) && (
         <div className="px-2 pb-4">
-          <p className="px-2 pb-2 text-[9px] font-semibold uppercase tracking-widest text-sidebar-foreground/25">
+          <p className={`px-2 pb-2 ${typography.sectionLabel} text-sidebar-foreground/25`}>
             Administração
           </p>
           {adminNavigationItems
@@ -138,7 +138,7 @@ export function Sidebar({
               <Link
                 key={item.path}
                 href={item.path}
-                className={`relative flex items-center gap-2.5 px-2.5 py-2.5 text-sm font-medium transition-all ${
+                className={`relative flex items-center gap-2.5 px-2.5 py-2.5 ${typography.bodyStrong} transition-all ${
                   active
                     ? "bg-sidebar-primary/90 text-white"
                     : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -147,8 +147,8 @@ export function Sidebar({
                 {active && <div className="absolute inset-y-0 left-0 w-0.5 bg-sidebar-primary" />}
                 <item.icon className="size-4 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold leading-tight">{item.label}</p>
-                  <p className={`text-[9px] leading-tight tracking-wide ${active ? "text-white/50" : "text-sidebar-foreground/30"}`}>
+                  <p className="leading-tight">{item.label}</p>
+                  <p className={`${typography.panelSubtitle} leading-tight ${active ? "text-white/50" : "text-sidebar-foreground/30"}`}>
                     {item.desc}
                   </p>
                 </div>
@@ -168,7 +168,7 @@ export function Sidebar({
           {NORMS.map((n) => (
             <span
               key={n}
-              className="text-[8px] px-1.5 py-0.5 bg-sidebar-accent/80 text-sidebar-foreground/45 font-mono border border-sidebar-border/30"
+              className={`border border-sidebar-border/30 bg-sidebar-accent/80 px-1.5 py-0.5 ${typography.rankingIndex} text-sidebar-foreground/45`}
             >
               {n}
             </span>
@@ -178,7 +178,7 @@ export function Sidebar({
 
       {/* Footer */}
       <div className="px-3 pb-4 border-t border-sidebar-border pt-3">
-        <p className="text-[8px] text-sidebar-foreground/20 mt-2 text-center tracking-wider">
+        <p className={`mt-2 text-center ${typography.metaStrong} text-sidebar-foreground/20`}>
           AndCheck v1.0 · Documento Controlado
         </p>
       </div>

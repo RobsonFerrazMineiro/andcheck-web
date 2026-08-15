@@ -254,13 +254,13 @@ export function SyncClient() {
       </div>
 
       {conflictItems.length > 0 && (
-        <div className="border border-border bg-muted/50 p-4 text-sm text-foreground">
+        <div className="border border-border bg-muted/50 p-4 text-foreground">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
             <div className="space-y-1">
-              <p className="font-semibold">Conflito de sincronização</p>
-              <p className="text-xs leading-5 text-muted-foreground">
+              <p className={typography.bodyStrong}>Conflito de sincronização</p>
+              <p className={`${typography.sectionDescription} leading-5 text-muted-foreground`}>
                 O registro foi alterado no servidor antes do envio offline. A
                 versão do servidor foi preservada e nenhuma alteração local foi
                 aplicada automaticamente.
@@ -284,14 +284,14 @@ export function SyncClient() {
 
       <Card>
         <CardHeader className="border-b pb-3">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
+          <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <RotateCcw className="size-4" />
             Fila de sincronização
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="grid gap-2 text-xs text-muted-foreground md:grid-cols-2">
+            <div className={`grid gap-2 ${typography.sectionDescription} text-muted-foreground md:grid-cols-2`}>
               <div>Última sincronização: {formatDate(lastSyncAt)}</div>
               <div>Total na fila local: {summary.total}</div>
             </div>
@@ -328,8 +328,8 @@ export function SyncClient() {
           {items.length === 0 ? (
             <div className="flex min-h-48 flex-col items-center justify-center border bg-muted/20 p-6 text-center">
               <CheckCircle2 className="mb-3 size-8 text-emerald-600" />
-              <p className="text-sm font-semibold">Nenhum item pendente</p>
-              <p className="mt-1 max-w-md text-xs text-muted-foreground">
+              <p className={typography.bodyStrong}>Nenhum item pendente</p>
+              <p className={`mt-1 max-w-md ${typography.sectionDescription} text-muted-foreground`}>
                 Ações feitas offline aparecerão aqui até serem processadas.
               </p>
             </div>
@@ -343,16 +343,16 @@ export function SyncClient() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[12px] font-bold text-foreground">
+                        <p className={`${typography.bodyStrong} text-foreground`}>
                           {actionLabel(item.action)}
                         </p>
-                        <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                        <p className={`mt-0.5 truncate ${typography.bodyMuted} text-muted-foreground`}>
                           {entityLabel(item)}
                         </p>
                       </div>
                       <StatusBadge status={item.status} />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-[10px] text-muted-foreground">
+                    <div className={`mt-3 grid grid-cols-2 gap-x-3 gap-y-2 ${typography.bodyMuted} text-muted-foreground`}>
                       <p className="min-w-0">
                         Criado em:{" "}
                         <span className="font-mono text-foreground">
@@ -414,7 +414,7 @@ export function SyncClient() {
               </div>
 
               <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
-                <table className="w-full min-w-[760px] text-left text-[11px]">
+                <table className={`w-full min-w-[760px] text-left ${typography.sectionDescription}`}>
                 <thead className={`bg-sidebar ${typography.sectionLabel} text-sidebar-foreground/65`}>
                   <tr>
                     <th className="px-4 py-3">Criado em</th>
@@ -430,28 +430,28 @@ export function SyncClient() {
                 <tbody>
                   {items.map((item) => (
                     <tr key={item.id} className="border-t border-border hover:bg-muted/30">
-                      <td className="px-4 py-3 font-mono text-xs">
+                      <td className={`px-4 py-3 ${typography.codeMuted}`}>
                         {formatDate(item.createdAt)}
                       </td>
-                      <td className="px-4 py-3 font-semibold">
+                      <td className={`px-4 py-3 ${typography.bodyStrong}`}>
                         {actionLabel(item.action)}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         <div className="space-y-1">
-                          <p className="font-medium text-foreground">
+                          <p className={`${typography.bodyStrong} text-foreground`}>
                             {entityLabel(item)}
                           </p>
-                          <p className="text-[10px]">{humanizeCode(item.entityType)}</p>
+                          <p className={typography.bodyMuted}>{humanizeCode(item.entityType)}</p>
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={item.status} />
                       </td>
                       <td className="px-4 py-3">{item.attempts}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
+                      <td className={`px-4 py-3 ${typography.codeMuted} text-muted-foreground`}>
                         {item.serverId ?? "-"}
                       </td>
-                      <td className="max-w-80 px-4 py-3 text-xs text-muted-foreground">
+                      <td className={`max-w-80 px-4 py-3 ${typography.sectionDescription} text-muted-foreground`}>
                         <div className="space-y-2">
                           <p>{friendlySyncError(item.lastError)}</p>
                           {(item.status === "failed" ||

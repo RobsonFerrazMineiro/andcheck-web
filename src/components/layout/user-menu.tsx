@@ -68,8 +68,8 @@ export function UserMenu({
         aria-label={open ? "Fechar perfil do usuário" : "Abrir perfil do usuário"}
       >
         <div className="hidden min-w-0 max-w-44 text-right xl:block">
-          <p className="truncate text-xs font-medium leading-none">{name}</p>
-          <p className="mt-1 truncate text-[10px] font-semibold text-muted-foreground">
+          <p className={`truncate leading-none ${typography.bodyStrong}`}>{name}</p>
+          <p className={`mt-1 truncate ${typography.bodyMuted} font-semibold text-muted-foreground`}>
             {roleLabel}
           </p>
         </div>
@@ -94,10 +94,10 @@ export function UserMenu({
                 <User className="size-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <p id="user-menu-title" className="truncate text-sm font-bold">
+                <p id="user-menu-title" className={`truncate ${typography.bodyStrong}`}>
                   {name}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                <p className={`mt-0.5 truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {email}
                 </p>
                 <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
@@ -117,7 +117,7 @@ export function UserMenu({
             <Link
               href="/perfil"
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className={`flex w-full items-center gap-2 px-3 py-2 ${typography.action} text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
             >
               <User className="size-3.5" />
               Meu Perfil
@@ -126,7 +126,7 @@ export function UserMenu({
               type="button"
               variant="ghost"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="h-auto w-full justify-start gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              className={`h-auto w-full justify-start gap-2 px-3 py-2 ${typography.action} text-muted-foreground hover:text-foreground`}
             >
               <LogOut className="size-3.5" />
               Sair do sistema
@@ -153,10 +153,10 @@ function ProfileRow({
     <div className="flex items-start gap-3">
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+        <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
           {label}
         </p>
-        <p className="mt-0.5 truncate text-xs font-semibold">
+        <p className={`mt-0.5 truncate ${typography.bodyStrong}`}>
           {status && (
             <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-500 align-middle" />
           )}

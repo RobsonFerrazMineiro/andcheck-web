@@ -187,7 +187,7 @@ export default async function WorkspaceDetailPage({
         <div className="space-y-4 p-4">
           <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-muted/20 p-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <p className="break-words text-[18px] font-bold leading-tight text-foreground">
+              <p className={`${typography.pageTitle} break-words leading-tight text-foreground`}>
                 {workspace.name}
               </p>
               <p

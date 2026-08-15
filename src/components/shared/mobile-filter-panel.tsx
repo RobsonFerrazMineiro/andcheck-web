@@ -46,7 +46,7 @@ export function MobileFilterPanel({
           >
             <Filter className="size-3.5" />
           </Button>
-          <p className="min-w-0 flex-1 truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className={`min-w-0 flex-1 truncate ${typography.metaStrong} text-muted-foreground`}>
             {summary}
           </p>
         </div>

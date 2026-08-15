@@ -92,7 +92,7 @@ export function MobileHeader({
             <Shield className="w-3.5 h-3.5 text-white" />
           </div>
           <div className="hidden min-[520px]:block">
-            <span className="font-bold text-[12px] tracking-widest uppercase text-sidebar-foreground">
+            <span className={`${typography.badgeXl} text-sidebar-foreground`}>
               AndCheck
             </span>
           </div>
@@ -149,7 +149,7 @@ export function MobileHeader({
               key={item.path}
               href={item.path}
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 px-3 py-2.5 ${typography.bodyStrong} transition-all ${
                 isActive(item.path)
                   ? "bg-sidebar-primary text-white"
                   : "text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -233,11 +233,11 @@ function MobileUserMenu({
               <div className="min-w-0">
                 <p
                   id="mobile-user-menu-title"
-                  className="truncate text-sm font-bold"
+                  className={`truncate ${typography.bodyStrong}`}
                 >
                   {profile.name}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                <p className={`mt-0.5 truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {profile.email}
                 </p>
                 <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
@@ -273,7 +273,7 @@ function MobileUserMenu({
                 setOpen(false);
                 onNavigate();
               }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className={`flex w-full items-center gap-2 px-3 py-2 ${typography.action} text-muted-foreground transition-colors hover:bg-muted hover:text-foreground`}
             >
               <User className="size-3.5" />
               Meu Perfil
@@ -282,7 +282,7 @@ function MobileUserMenu({
               type="button"
               variant="ghost"
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="h-auto w-full justify-start gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              className={`h-auto w-full justify-start gap-2 px-3 py-2 ${typography.action} text-muted-foreground hover:text-foreground`}
             >
               <LogOut className="size-3.5" />
               Sair do sistema
@@ -309,10 +309,10 @@ function MobileProfileRow({
     <div className="flex items-start gap-3">
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+        <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
           {label}
         </p>
-        <p className="mt-0.5 truncate text-xs font-semibold">
+        <p className={`mt-0.5 truncate ${typography.bodyStrong}`}>
           {status && (
             <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-500 align-middle" />
           )}

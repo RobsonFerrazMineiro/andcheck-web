@@ -1,5 +1,6 @@
 "use client";
 
+import { typography } from "@/lib/design-system";
 import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 import { Shield } from "lucide-react";
 import { useState } from "react";
@@ -45,7 +46,7 @@ export function AuthenticatedCompanyBrand({
           onError={() => setFailedLogoUrl(logoUrl)}
         />
       ) : company ? (
-        <div className="flex size-8 shrink-0 items-center justify-center bg-primary text-[10px] font-bold tracking-wide text-primary-foreground">
+        <div className={`flex size-8 shrink-0 items-center justify-center bg-primary ${typography.badgeLg} text-primary-foreground`}>
           {getInitials(company.name) || "AC"}
         </div>
       ) : (
@@ -61,10 +62,10 @@ export function AuthenticatedCompanyBrand({
       )}
 
       <div className="min-w-0 max-w-36">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+        <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
           Empresa do usuário
         </p>
-        <p className="truncate text-[11px] font-bold text-foreground">
+        <p className={`truncate ${typography.bodyStrong} text-foreground`}>
           {company?.name ?? "AndCheck"}
         </p>
       </div>

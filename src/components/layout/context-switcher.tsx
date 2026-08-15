@@ -12,6 +12,7 @@ import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 import { updateActiveContext } from "@/lib/actions/context-actions";
 import type { ContextSwitcherData } from "@/lib/context-switcher";
+import { typography } from "@/lib/design-system";
 import { Building2, ChevronDown, Loader2, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -41,10 +42,10 @@ function ContextField({
     <div className="flex min-w-0 items-center gap-2">
       <Icon className="size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+        <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
           {label}
         </p>
-        <p className="truncate text-xs font-semibold text-foreground">
+        <p className={`truncate ${typography.bodyStrong} text-foreground`}>
           {value}
         </p>
       </div>
@@ -92,7 +93,7 @@ export function DesktopContextSwitcher({
             <SelectTrigger className="h-9 w-48 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
               <Building2 className="size-3.5 text-muted-foreground" />
               <div className="min-w-0 flex-1 text-left">
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
                   Empresa
                 </p>
                 <SelectValue />
@@ -125,7 +126,7 @@ export function DesktopContextSwitcher({
           <SelectTrigger className="h-9 w-64 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
             <MapPin className="size-3.5 text-muted-foreground" />
             <div className="min-w-0 flex-1 text-left">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
                 Workspace
               </p>
               <SelectValue />
@@ -221,7 +222,7 @@ export function MobileContextSwitcher({
     return (
       <div className="w-0 min-w-0 flex-1 px-2">
         <div className="min-w-0 rounded-md border border-sidebar-border/70 bg-sidebar-accent/50 px-2.5 py-1.5">
-          <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
+          <p className={`truncate ${typography.bodyStrong} text-sidebar-foreground`}>
             {selectedWorkspace
               ? shortWorkspaceName(selectedWorkspace.name)
               : "-"}
@@ -249,12 +250,12 @@ export function MobileContextSwitcher({
       >
         <div className="min-w-0">
           {context.canSwitchCompany && (
-            <p className="truncate text-[10px] font-semibold text-sidebar-foreground">
+            <p className={`truncate ${typography.bodyStrong} text-sidebar-foreground`}>
               {selectedCompanyName}
             </p>
           )}
           <p
-            className={`truncate text-sidebar-foreground/80 ${context.canSwitchCompany ? "text-[9px]" : "text-[10px] font-semibold"}`}
+            className={`truncate text-sidebar-foreground/80 ${context.canSwitchCompany ? typography.bodyMuted : typography.bodyStrong}`}
           >
             {selectedWorkspaceName}
           </p>
@@ -281,7 +282,7 @@ export function MobileContextSwitcher({
           <div className="mx-auto grid max-w-md gap-4">
             {context.canSwitchCompany && (
               <div>
-                <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <p className={`mb-1.5 ${typography.sectionLabel} text-muted-foreground`}>
                   Empresa
                 </p>
                 {context.companies.length > 1 ? (
@@ -311,7 +312,7 @@ export function MobileContextSwitcher({
               </div>
             )}
             <div>
-              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className={`mb-1.5 ${typography.sectionLabel} text-muted-foreground`}>
                 Workspace
               </p>
               {context.canSwitchWorkspace && context.workspaces.length > 1 ? (

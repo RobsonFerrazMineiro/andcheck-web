@@ -53,7 +53,7 @@ function CountBadge({ count }: { count: number }) {
   if (count === 0) return null;
 
   return (
-    <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+    <span className={`ml-1 rounded bg-muted px-1.5 py-0.5 ${typography.bodyStrong} text-muted-foreground`}>
       {count}
     </span>
   );
@@ -147,7 +147,7 @@ export function LinkedRecordsButton({
                 <p className={`${typography.panelTitle} text-foreground`}>
                   {title}
                 </p>
-                <p className="mt-0.5 text-[9px] text-muted-foreground">
+                <p className={`mt-0.5 ${typography.bodyMuted} text-muted-foreground`}>
                   {count} registro(s)
                 </p>
               </div>
@@ -225,7 +225,7 @@ function InspectionRow({ inspection }: { inspection: LinkedInspection }) {
       className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
     >
       <div className="min-w-0">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${typography.bodyMuted} text-muted-foreground`}>
           <span className="inline-flex min-w-0 items-center gap-1">
             <User className="size-3" />
             <span className="truncate">{inspection.inspector_name}</span>
@@ -262,7 +262,7 @@ function NonConformityRow({
       className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        <p className="truncate font-mono text-[11px] font-semibold text-foreground">
+        <p className={`truncate ${typography.code} text-foreground`}>
           {nonConformity.code}
         </p>
         <span className={`rounded-md border border-border px-1.5 py-0.5 ${typography.sectionLabel} text-muted-foreground`}>
@@ -270,7 +270,7 @@ function NonConformityRow({
         </span>
         <NonConformityBadge value={nonConformity.status} size="xs" />
         {nonConformity.dueDate && (
-          <span className="text-[10px] text-muted-foreground">
+          <span className={`${typography.bodyMuted} text-muted-foreground`}>
             Prazo: {format(new Date(nonConformity.dueDate), "dd/MM/yyyy")}
           </span>
         )}

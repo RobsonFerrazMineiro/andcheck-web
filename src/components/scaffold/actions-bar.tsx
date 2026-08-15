@@ -221,7 +221,7 @@ export function ScaffoldActionsBar({
     return (
       <div className="flex items-center gap-3 border border-border bg-muted/70 px-4 py-3 text-muted-foreground">
         <HardHat className="w-4 h-4 shrink-0" />
-        <p className="text-[11px] font-semibold uppercase tracking-wide">
+        <p className={typography.emptyState}>
           Andaime encerrado - este andaime foi desmontado e esta fora de
           operação.
         </p>
@@ -241,8 +241,8 @@ export function ScaffoldActionsBar({
           description="O andaime será movido para pendente de inspeção."
           details={
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">{scaffoldCode}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className={`${typography.code} text-foreground`}>{scaffoldCode}</p>
+              <p className={`${typography.sectionDescription} text-muted-foreground`}>
                 Após confirmar, será necessário realizar uma inspeção para liberar o andaime.
               </p>
             </div>
@@ -436,7 +436,7 @@ function DismantleDialog({
             <p className={`${typography.sectionLabel} text-muted-foreground`}>
               Andaime
             </p>
-            <p className="mt-1 font-mono text-sm font-bold text-foreground">
+            <p className={`mt-1 ${typography.code} text-foreground`}>
               {scaffoldCode}
             </p>
           </div>
@@ -473,7 +473,7 @@ function DismantleDialog({
             </div>
           )}
           {error && (
-            <p className="border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] font-semibold text-destructive">
+            <p className={`border border-destructive/30 bg-destructive/10 px-3 py-2 ${typography.bodyStrong} text-destructive`}>
               {error}
             </p>
           )}

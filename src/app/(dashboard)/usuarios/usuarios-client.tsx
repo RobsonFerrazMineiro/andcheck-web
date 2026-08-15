@@ -96,7 +96,7 @@ function initials(name: string) {
 function RoleBadge({ role }: { role?: { code: string; name: string } }) {
   if (!role) {
     return (
-      <Badge variant="outline" className="rounded-md text-[9px] uppercase">
+      <Badge variant="outline" className={`rounded-md ${typography.sectionLabel}`}>
         Sem perfil
       </Badge>
     );
@@ -105,8 +105,7 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
   return (
     <span
       className={
-        "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold " +
-        "uppercase tracking-wide " +
+        `inline-flex items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badge} ` +
         (ROLE_BADGE[role.code] ??
           "bg-muted text-muted-foreground border-border")
       }

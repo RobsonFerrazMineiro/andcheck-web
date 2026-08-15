@@ -296,11 +296,11 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               }}
             >
               {file ? (
-                <p className="text-[11px] text-foreground font-semibold truncate">
+                <p className={`${typography.bodyStrong} truncate text-foreground`}>
                   {file.name}
                 </p>
               ) : (
-                <p className="text-[11px] text-muted-foreground">
+                <p className={`${typography.sectionDescription} text-muted-foreground`}>
                   Clique para selecionar o arquivo
                 </p>
               )}
@@ -467,7 +467,7 @@ export function ScaffoldDocumentSection({
             <p className={`${typography.panelTitle} text-foreground`}>
               Documentação Técnica
             </p>
-            <span className="text-[9px] font-mono text-muted-foreground/50">
+            <span className={`${typography.codeMuted} text-muted-foreground/50`}>
               {docs.length} doc(s)
             </span>
           </div>
@@ -524,15 +524,15 @@ export function ScaffoldDocumentSection({
                         {getDocumentExtension(doc)}
                       </span>
                     </div>
-                    <p className="text-[11px] font-semibold text-foreground truncate">
+                    <p className={`${typography.bodyStrong} truncate text-foreground`}>
                       {doc.title}
                     </p>
-                    <p className="text-[9px] text-muted-foreground truncate">
+                    <p className={`truncate ${typography.bodyMuted} text-muted-foreground`}>
                       {doc.file_name} · {doc.uploaded_by} ·{" "}
                       {format(new Date(doc.created_at), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
                     {doc.observation && (
-                      <p className="text-[9px] text-muted-foreground/70 italic mt-0.5 truncate">
+                      <p className={`mt-0.5 truncate italic ${typography.bodyMuted} text-muted-foreground/70`}>
                         {doc.observation}
                       </p>
                     )}
@@ -542,11 +542,11 @@ export function ScaffoldDocumentSection({
                   <div className="text-right hidden sm:block">
                     {doc.expires_at ? (
                       <>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
+                        <p className={`${typography.metaStrong} text-muted-foreground`}>
                           Válido até
                         </p>
                         <p
-                          className={`text-[11px] font-semibold ${
+                          className={`${typography.bodyStrong} ${
                             status === "vencido"
                               ? SEMANTIC_TONE_CLASSES.critical.text
                               : "text-foreground"
@@ -558,7 +558,7 @@ export function ScaffoldDocumentSection({
                         </p>
                       </>
                     ) : (
-                      <p className="text-[9px] text-muted-foreground/40">—</p>
+                      <p className={`${typography.bodyMuted} text-muted-foreground/40`}>—</p>
                     )}
                   </div>
 
