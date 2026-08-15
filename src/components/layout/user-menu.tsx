@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
+import { typography } from "@/lib/design-system";
 
 interface UserMenuProps {
   name: string;
@@ -99,7 +100,7 @@ export function UserMenu({
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {email}
                 </p>
-                <span className="mt-2 inline-flex rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
                   {roleLabel}
                 </span>
               </div>

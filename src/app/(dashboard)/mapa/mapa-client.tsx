@@ -235,7 +235,7 @@ export function MapaOperacionalClient({
               · {comCoords} andaimes georreferênciados
             </span>
           </div>
-          <p className={`${typography.panelSubtitle} min-w-0 break-words text-slate-400`}>
+          <p className={`${typography.panelSubtitle} min-w-0 break-words text-muted-foreground/60`}>
             Filtro: {filterLabel(activeStatus)}
             {activeCompanyId !== "all" &&
               ` · ${
@@ -372,7 +372,7 @@ export function MapaOperacionalClient({
               · Listagem
             </span>
           </div>
-          <span className={`${typography.panelSubtitle} shrink-0 text-slate-400`}>
+          <span className={`${typography.panelSubtitle} shrink-0 text-muted-foreground/60`}>
             {filteredScaffolds.length} de {cachedScaffolds.length} registros
           </span>
         </div>
@@ -470,7 +470,7 @@ export function MapaOperacionalClient({
           aria-labelledby="map-scaffold-list-title"
           className="fixed inset-0 z-50 flex items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-4"
         >
-          <div className="max-h-[85vh] w-full overflow-hidden border border-border bg-card shadow-xl sm:max-w-3xl">
+          <div className="max-h-[85vh] w-full overflow-hidden border border-border bg-card shadow-lg sm:max-w-3xl">
             <div className="flex items-center justify-between gap-3 border-b-2 border-border bg-muted/40 px-4 py-3">
               <div>
                 <p

@@ -114,9 +114,9 @@ function valueToStatus(
 
 const ITEM_ICONS = {
   conforme: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />,
-  nao_conforme: <XCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />,
+  nao_conforme: <XCircle className="w-3.5 h-3.5 text-destructive shrink-0" />,
   nao_aplicavel: (
-    <MinusCircle className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+    <MinusCircle className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
   ),
 };
 const ITEM_LABELS = {
@@ -126,7 +126,7 @@ const ITEM_LABELS = {
 };
 const ITEM_ROW = {
   conforme: "bg-card",
-  nao_conforme: "bg-red-50/60",
+  nao_conforme: "bg-destructive/5",
   nao_aplicavel: "bg-card",
 };
 
@@ -306,10 +306,10 @@ export default async function InspectionDetailPage({ params }: Props) {
       </div>
 
       {scaffold?.status === "interditado" && hasCriticalFailure && (
-        <div className="flex items-start gap-3 border border-red-300 bg-red-50 px-4 py-3 text-red-900">
+        <div className="flex items-start gap-3 border border-destructive/30 bg-destructive/5 px-4 py-3 text-destructive">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider">
+            <p className={typography.metaStrong}>
               Inspeção reprovada com item crítico
             </p>
             <p className="mt-1 text-[11px] leading-relaxed">
@@ -333,16 +333,16 @@ export default async function InspectionDetailPage({ params }: Props) {
           {
             label: "Não Conformes",
             value: naoConformes,
-            color: "text-red-600",
-            bg: "bg-red-50 border-red-200",
-            bar: "border-l-red-600",
+            color: "text-destructive",
+            bg: "border-destructive/30 bg-destructive/5",
+            bar: "border-l-destructive",
           },
           {
             label: "N/A",
             value: naAplicavel,
-            color: "text-slate-500",
+            color: "text-muted-foreground",
             bg: "bg-muted/40 border-border",
-            bar: "border-l-slate-400",
+            bar: "border-l-muted-foreground",
           },
           {
             label: "Conformidade",
@@ -352,7 +352,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 ? "text-emerald-600"
                 : pct >= 50
                   ? "text-amber-600"
-                  : "text-red-600",
+                  : "text-destructive",
             bg: "bg-card border-border",
             bar:
               pct >= 80
@@ -563,7 +563,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                         className={
                           "text-[12px] font-medium " +
                           (st === "nao_conforme"
-                            ? "text-red-700"
+                            ? "text-destructive"
                             : "text-foreground")
                         }
                       >
@@ -580,12 +580,12 @@ export default async function InspectionDetailPage({ params }: Props) {
                         )}
                         <span
                           className={
-                            "text-[9px] font-bold uppercase " +
+                            `${typography.sectionLabel} ` +
                             (st === "conforme"
                               ? "text-emerald-600"
                               : st === "nao_conforme"
-                                ? "text-red-600"
-                                : "text-slate-400")
+                                ? "text-destructive"
+                                : "text-muted-foreground/60")
                           }
                         >
                           {ITEM_LABELS[st]}
@@ -684,7 +684,7 @@ export default async function InspectionDetailPage({ params }: Props) {
           <Button
             asChild
             variant="outline"
-            className="shrink-0 text-[10px] font-bold uppercase tracking-widest"
+            className={`shrink-0 ${typography.panelTitle}`}
           >
             <Link href={"/qr/" + inspection.scaffold_id} target="_blank">
               Ver Página
@@ -697,7 +697,7 @@ export default async function InspectionDetailPage({ params }: Props) {
         <Button
           asChild
           variant="outline"
-          className="text-[10px] font-bold uppercase tracking-widest"
+          className={typography.panelTitle}
         >
           <Link href="/inspecoes">
             <ArrowLeft className="w-3.5 h-3.5" /> Voltar

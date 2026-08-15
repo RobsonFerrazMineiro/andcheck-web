@@ -57,7 +57,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className="break-words text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{indicator.label}</p><p className="mt-1 font-mono text-xl font-bold">{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className={`break-words ${typography.sectionLabel} text-muted-foreground`}>{indicator.label}</p><p className="mt-1 font-mono text-xl font-bold">{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
       </div>
 
       <Card className="rounded-lg">
@@ -102,7 +102,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0"><p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p><p className="mt-1 break-words text-sm font-medium">{value}</p></div>;
+  return <div className="min-w-0"><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className="mt-1 break-words text-sm font-medium">{value}</p></div>;
 }
 
 function getInitials(name: string) {

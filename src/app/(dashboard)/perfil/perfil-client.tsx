@@ -90,7 +90,7 @@ export function PerfilClient({
                   <User className="size-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-primary-foreground/55">
+                  <p className={`${typography.panelTitle} text-primary-foreground/55`}>
                     Usuário autenticado
                   </p>
                   <h2 className="mt-1 break-words text-[18px] font-bold leading-tight">
@@ -185,7 +185,7 @@ function SummaryTile({
     <div className="min-w-0 bg-card p-4">
       <div className="mb-2 flex items-center gap-2">
         <Icon className="size-3.5 shrink-0 text-muted-foreground" />
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className={`${typography.sectionLabel} text-muted-foreground`}>
           {label}
         </p>
       </div>
@@ -209,7 +209,7 @@ function Info({
     <div className="flex min-w-0 items-start gap-3 border bg-muted/20 p-3">
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
-        <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <p className={`${typography.sectionLabel} text-muted-foreground`}>
           {label}
         </p>
         <p className="mt-1 break-words text-sm font-semibold">{value}</p>

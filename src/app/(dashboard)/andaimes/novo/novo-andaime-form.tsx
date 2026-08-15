@@ -814,7 +814,7 @@ function FormSection({
 }) {
   return (
     <div className="space-y-3">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground border-b border-border pb-1.5">
+      <p className={`${typography.sectionLabel} border-b border-border pb-1.5 text-muted-foreground`}>
         {title}
       </p>
       {children}

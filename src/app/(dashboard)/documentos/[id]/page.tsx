@@ -45,7 +45,7 @@ function Info({
 }) {
   return (
     <div>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
       <p className={`mt-1 text-sm font-medium ${mono ? "font-mono" : ""}`}>

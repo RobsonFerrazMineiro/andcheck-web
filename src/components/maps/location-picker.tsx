@@ -242,25 +242,25 @@ export function LocationPicker({
         style={{ height }}
       >
         {mapGeoState === "detecting" && (
-          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
+          <div className={`absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-blue-600 px-3 py-1.5 ${typography.action} text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto`}>
             <Loader2 className="w-3 h-3 animate-spin" />
             Obtendo localização...
           </div>
         )}
         {mapGeoState === "detected" && (
-          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
+          <div className={`absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 ${typography.action} text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto`}>
             <CheckCircle2 className="w-3 h-3" />
             Localização detectada
           </div>
         )}
         {mapGeoState === "failed" && (
-          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
+          <div className={`absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 ${typography.action} text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto`}>
             <Navigation2 className="w-3 h-3" />
             Ajuste o pin manualmente
           </div>
         )}
         {mapGeoState === "manual" && (
-          <div className="absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-orange-500 px-3 py-1.5 text-[10px] font-bold text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto">
+          <div className={`absolute bottom-2 left-2 right-2 z-1000 flex items-center justify-center gap-1.5 rounded-md bg-orange-500 px-3 py-1.5 ${typography.action} text-white shadow-lg pointer-events-none sm:left-auto sm:right-2 sm:w-auto`}>
             <CheckCircle2 className="w-3 h-3" />
             Localização ajustada
           </div>
@@ -276,7 +276,7 @@ export function LocationPicker({
       {showCoordinates && hasCoords ? (
         <div className="flex gap-3">
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+            <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Latitude
             </p>
             <p className="text-[12px] font-mono text-foreground">
@@ -284,7 +284,7 @@ export function LocationPicker({
             </p>
           </div>
           <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">
+            <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Longitude
             </p>
             <p className="text-[12px] font-mono text-foreground">

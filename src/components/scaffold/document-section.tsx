@@ -21,6 +21,8 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { DocumentPreviewModal } from "@/components/shared/document-preview-modal";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import {
   addScaffoldDocument,
@@ -205,14 +207,14 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
       aria-labelledby="add-document-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      <div className="bg-card border border-border rounded-xl shadow-xl w-full max-w-lg">
+      <div className="w-full max-w-lg rounded-lg border border-border bg-card shadow-lg">
         {/* Header do modal */}
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p
               id="add-document-title"
-              className="text-[10px] font-bold uppercase tracking-widest text-foreground"
+              className={`${typography.panelTitle} text-foreground`}
             >
               Adicionar Documento Técnico
             </p>
@@ -234,7 +236,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-type"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Tipo de Documento *
             </label>
@@ -242,7 +244,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               id="document-type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
+              className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {DOCUMENT_TYPE_OPTIONS.map((d) => (
                 <option key={d.value} value={d.value}>
@@ -256,17 +258,16 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-title"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Título / Nome (opcional)
             </label>
-            <input
+            <Input
               id="document-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={`Ex: ${docTypeLabel(type)} - Andaime Área 5`}
-              className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -274,7 +275,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-file"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Arquivo *{" "}
               <span className="normal-case font-normal text-muted-foreground/60">
@@ -319,18 +320,17 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-uploaded-by"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Responsável pelo Upload *
             </label>
-            <input
+            <Input
               id="document-uploaded-by"
               type="text"
               value={uploadedBy}
               onChange={(e) => setUploadedBy(e.target.value)}
               placeholder="Nome do responsável"
               required
-              className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -338,16 +338,15 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-expires-at"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Validade / Revisão (opcional)
             </label>
-            <input
+            <Input
               id="document-expires-at"
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
-              className="w-full h-9 px-3 border border-border bg-background text-[12px] focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -355,16 +354,16 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
           <div className="space-y-1.5">
             <label
               htmlFor="document-observation"
-              className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+              className={`${typography.panelTitle} text-muted-foreground`}
             >
               Observação (opcional)
             </label>
-            <textarea
+            <Textarea
               id="document-observation"
               value={observation}
               onChange={(e) => setObservation(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2 border border-border bg-background text-[12px] resize-none focus:outline-none focus:ring-1 focus:ring-accent"
+              className="resize-none"
             />
           </div>
 
@@ -465,7 +464,7 @@ export function ScaffoldDocumentSection({
         <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+            <p className={`${typography.panelTitle} text-foreground`}>
               Documentação Técnica
             </p>
             <span className="text-[9px] font-mono text-muted-foreground/50">
@@ -500,7 +499,7 @@ export function ScaffoldDocumentSection({
               {["Documento", "Data / Validade", "Status", "Ações"].map((h) => (
                 <p
                   key={h}
-                  className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
+                  className={`${typography.sectionLabel} text-muted-foreground`}
                 >
                   {h}
                 </p>
@@ -518,10 +517,10 @@ export function ScaffoldDocumentSection({
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <FileText className="w-3.5 h-3.5 text-muted-foreground/50" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-accent">
+                      <span className={`${typography.sectionLabel} text-accent`}>
                         {docTypeLabel(doc.type)}
                       </span>
-                      <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                      <span className={`${typography.metaStrong} text-muted-foreground/60`}>
                         {getDocumentExtension(doc)}
                       </span>
                     </div>
@@ -603,7 +602,7 @@ export function ScaffoldDocumentSection({
                         {deleting === doc.id ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
                         ) : (
-                          <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-red-600" />
+                          <Trash2 className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
                         )}
                       </Button>
                     )}

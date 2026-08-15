@@ -8,6 +8,7 @@ import {
   isVisibleOnDevice,
   mainNavigationItems,
 } from "@/components/layout/navigation";
+import { typography } from "@/lib/design-system";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
 
@@ -160,7 +161,7 @@ export function Sidebar({
 
       {/* Normas referênciadas */}
       <div className="mx-3 mb-3 border border-sidebar-border/40 bg-sidebar-accent/30 p-3">
-        <p className="text-[8px] font-bold uppercase tracking-widest text-sidebar-foreground/25 mb-2">
+        <p className={`${typography.metaStrong} mb-2 text-sidebar-foreground/25`}>
           Referências Normativas
         </p>
         <div className="flex flex-wrap gap-1">
@@ -184,4 +185,3 @@ export function Sidebar({
     </aside>
   );
 }
-

@@ -19,6 +19,7 @@ import {
   getDocumentViewUrl,
   isImageDocument,
 } from "@/lib/document-view";
+import { typography } from "@/lib/design-system";
 
 type EvidencePreviewItem = {
   id: string;
@@ -146,7 +147,7 @@ export function NonConformityEvidencePreview({
         disabled={isDeleting}
         aria-label={`Remover evidência ${fileName}`}
         title="Remover evidência"
-        className="absolute right-0 top-0 z-10 size-4 bg-transparent text-red-700 hover:bg-transparent hover:text-red-900"
+        className="absolute right-0 top-0 z-10 size-4 bg-transparent text-destructive hover:bg-transparent hover:text-destructive/80"
       >
         <X className="size-3" />
       </Button>
@@ -165,7 +166,7 @@ export function NonConformityEvidencePreview({
           >
             <span className="flex flex-col items-center gap-0.5">
               <FileText className="h-6 w-6 text-muted-foreground" />
-              <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+              <span className={`${typography.metaStrong} text-muted-foreground`}>
                 {extension}
               </span>
             </span>
@@ -257,11 +258,11 @@ export function NonConformityEvidencePreview({
           aria-labelledby={previewTitleId}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
-          <div className="w-full max-w-5xl bg-card border border-border shadow-xl">
+          <div className="w-full max-w-5xl border border-border bg-card shadow-lg">
             <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
               <p
                 id={previewTitleId}
-                className="text-[10px] font-bold uppercase tracking-widest"
+                className={typography.panelTitle}
               >
                 Evidência
               </p>

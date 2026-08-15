@@ -17,6 +17,7 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
+import { typography } from "@/lib/design-system";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { toast } from "sonner";
 
@@ -45,15 +46,15 @@ const STATUSES: {
     value: "nao_conforme",
     label: "Não Conforme",
     icon: <XCircle className="w-3.5 h-3.5" />,
-    activeClass: "bg-red-100 text-red-700 border-red-300",
-    hoverClass: "hover:border-red-300",
+    activeClass: "border-destructive/30 bg-destructive/10 text-destructive",
+    hoverClass: "hover:border-destructive/30",
   },
   {
     value: "nao_aplicavel",
     label: "N/A",
     icon: <MinusCircle className="w-3.5 h-3.5" />,
-    activeClass: "bg-slate-200 text-slate-700 border-slate-300",
-    hoverClass: "hover:border-slate-300",
+    activeClass: "border-border bg-muted text-muted-foreground",
+    hoverClass: "hover:border-muted-foreground/40",
   },
 ];
 
@@ -104,7 +105,7 @@ export default function ChecklistSection({
   return (
     <div className="bg-card border border-border shadow-sm overflow-hidden">
       <div className="bg-primary/5 px-5 py-3 border-b border-border">
-        <h3 className="font-bold text-[11px] text-foreground uppercase tracking-widest">
+        <h3 className={`${typography.panelTitle} text-foreground`}>
           {category}
         </h3>
       </div>
@@ -114,7 +115,7 @@ export default function ChecklistSection({
           return (
             <div
               key={idx}
-              className={`p-4 md:p-5 space-y-3 ${val.status === "nao_conforme" ? "bg-red-50/50" : ""}`}
+              className={`p-4 md:p-5 space-y-3 ${val.status === "nao_conforme" ? "bg-destructive/5" : ""}`}
             >
               <div className="flex items-start gap-2">
                 <span className="text-[12px] flex-1 leading-relaxed text-foreground">
@@ -123,7 +124,7 @@ export default function ChecklistSection({
                 {item.critical && (
                   <Badge
                     variant="outline"
-                    className="bg-red-50 text-red-600 border-red-200 text-[9px] shrink-0 uppercase tracking-wider"
+                    className={`shrink-0 border-destructive/30 bg-destructive/10 text-destructive ${typography.metaStrong}`}
                   >
                     <AlertTriangle className="w-3 h-3 mr-1" />
                     Crítico
@@ -140,7 +141,7 @@ export default function ChecklistSection({
                     variant="ghost"
                     size="sm"
                     onClick={() => handleChange(idx, "status", s.value)}
-                    className={`cursor-pointer border text-[10px] font-semibold uppercase tracking-wider ${
+                    className={`cursor-pointer border ${typography.action} ${
                       val.status === s.value
                         ? s.activeClass
                         : "bg-background text-muted-foreground border-border " +
@@ -192,7 +193,7 @@ export default function ChecklistSection({
                     onClick={() => photoGalleryInputRefs.current[idx]?.click()}
                     className={`shrink-0 ${
                       val.photo
-                        ? "border-red-400 bg-red-50 text-red-600"
+                        ? "border-destructive/40 bg-destructive/10 text-destructive"
                         : "border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground"
                     }`}
                   >

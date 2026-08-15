@@ -22,6 +22,7 @@ import {
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
+import { typography } from "@/lib/design-system";
 
 type LinkedInspection = {
   id: string;
@@ -138,12 +139,12 @@ export function LinkedRecordsButton({
           role="dialog"
           aria-modal="false"
           aria-label={title}
-          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-xl max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
+          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-lg max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
         >
           <div className="flex max-h-[68vh] flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+                <p className={`${typography.panelTitle} text-foreground`}>
                   {title}
                 </p>
                 <p className="mt-0.5 text-[9px] text-muted-foreground">
@@ -264,7 +265,7 @@ function NonConformityRow({
         <p className="truncate font-mono text-[11px] font-semibold text-foreground">
           {nonConformity.code}
         </p>
-        <span className="rounded-md border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className={`rounded-md border border-border px-1.5 py-0.5 ${typography.sectionLabel} text-muted-foreground`}>
           {classification}
         </span>
         <NonConformityBadge value={nonConformity.status} size="xs" />

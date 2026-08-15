@@ -145,7 +145,7 @@ export function DashboardMapPreview({
           { label: "Pend. Lib.", dot: "bg-amber-400" },
           { label: "Reprovado", dot: "bg-red-500" },
           { label: "Interditado", dot: "bg-red-900" },
-          { label: "Vencido", dot: "bg-gray-600" },
+          { label: "Vencido", dot: "bg-muted-foreground" },
         ].map((v) => (
           <div key={v.label} className="flex items-center gap-1.5">
             <div className={"w-2 h-2 rounded-full " + v.dot} />

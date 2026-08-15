@@ -43,7 +43,7 @@ export function FormModal({
     >
       <div
         className={cn(
-          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-border bg-card shadow-xl",
+          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg",
           maxWidth,
         )}
       >

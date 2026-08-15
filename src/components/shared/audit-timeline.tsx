@@ -29,6 +29,7 @@ import {
   type SemanticTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
+import { typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 
 export type HistoryEventType =
@@ -722,7 +723,7 @@ export function HistoryTimelineCompact({
           <History className="size-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <p
-              className={`font-bold uppercase tracking-widest text-foreground ${
+              className={`${typography.panelTitle} text-foreground ${
                 isPage ? "text-[11px]" : "text-[10px]"
               }`}
             >
@@ -821,14 +822,14 @@ export function HistoryDrawerButton({
           role="dialog"
           aria-modal="false"
           aria-labelledby="history-dropdown-title"
-          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-xl max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
+          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-lg max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
         >
           <div className="flex max-h-[68vh] flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
               <div className="min-w-0">
                 <p
                   id="history-dropdown-title"
-                  className="text-[10px] font-bold uppercase tracking-widest text-foreground"
+                  className={`${typography.panelTitle} text-foreground`}
                 >
                   {dropdownTitle}
                 </p>
@@ -1004,7 +1005,7 @@ function DetailRow({ detail }: { detail: HistoryEventDetail }) {
 
   return (
     <div className="min-w-[118px] max-w-full">
-      <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className={`${typography.metaStrong} text-muted-foreground`}>
         {detail.label}
       </p>
       {hasChange ? (

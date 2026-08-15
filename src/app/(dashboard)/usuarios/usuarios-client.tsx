@@ -79,8 +79,8 @@ const ROLE_BADGE: Record<string, string> = {
   SUPERVISOR: "bg-sky-100 text-sky-700 border-sky-200",
   ENCARREGADO: "bg-cyan-100 text-cyan-700 border-cyan-200",
   SUPERVISOR_ENCARREGADO: "bg-sky-100 text-sky-700 border-sky-200",
-  MONTADOR_LIDER: "bg-slate-100 text-slate-700 border-slate-200",
-  AUDITOR: "bg-zinc-100 text-zinc-700 border-zinc-200",
+  MONTADOR_LIDER: "border-border bg-muted text-muted-foreground",
+  AUDITOR: "border-border bg-muted text-muted-foreground",
 };
 
 function initials(name: string) {
@@ -338,9 +338,9 @@ export function UsuariosClient({
               label: "Total",
               value: users.length,
               icon: Users,
-              iconClass: "text-slate-500",
-              border: "border-l-4 border-l-slate-500",
-              valueClass: "text-slate-700",
+              iconClass: "text-muted-foreground",
+              border: "border-l-4 border-l-muted-foreground",
+              valueClass: "text-foreground",
             },
             {
               label: "Ativos",
@@ -427,7 +427,7 @@ export function UsuariosClient({
           )}
           <div className="flex items-center gap-2 border-b border-border pb-2">
             <Plus className="w-3.5 h-3.5 text-muted-foreground/60" />
-            <p className="text-[10px] font-bold uppercase tracking-widest">
+            <p className={typography.panelTitle}>
               {editingUser ? "Edição de Usuário" : "Cadastro de Usuário"}
             </p>
           </div>
@@ -469,7 +469,7 @@ export function UsuariosClient({
               defaultValue={editingUser?.position ?? undefined}
             />
             <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-wider font-bold">
+              <Label className={typography.panelTitle}>
                 Perfil *
               </Label>
               <Select
@@ -498,7 +498,7 @@ export function UsuariosClient({
               </div>
             )}
             <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase tracking-wider font-bold">
+              <Label className={typography.panelTitle}>
                 Status
               </Label>
               {editingUser?.id === currentUserId && (
@@ -602,7 +602,7 @@ export function UsuariosClient({
           ].map((header) => (
             <p
               key={header}
-              className="text-[9px] font-bold uppercase tracking-widest text-primary-foreground/60"
+              className={`${typography.sectionLabel} text-primary-foreground/60`}
             >
               {header}
             </p>
@@ -780,7 +780,7 @@ function Field({
     <div className="space-y-1.5">
       <Label
         htmlFor={name}
-        className="text-[10px] uppercase tracking-wider font-bold"
+        className={typography.panelTitle}
       >
         {label}
       </Label>
@@ -842,7 +842,7 @@ function CompanySelect({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-[10px] uppercase tracking-wider font-bold">
+      <Label className={typography.panelTitle}>
         Empresa *
       </Label>
       {!canSelectAnyCompany && selectedCompanyId && (

@@ -20,7 +20,7 @@ const STATUS_COPY = {
   },
   "sync-error": {
     label: "Erro de sincronização",
-    tone: "border-red-200 bg-red-50 text-red-900",
+    tone: "border-destructive/30 bg-destructive/5 text-destructive",
     icon: AlertTriangle,
   },
 };

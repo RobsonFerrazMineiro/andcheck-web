@@ -255,9 +255,9 @@ export function NaoConformidadesClient({
               label: "Vencidas",
               value: vencidas,
               icon: Calendar,
-              iconClass: "text-slate-500",
-              border: "border-l-4 border-l-slate-500",
-              valueClass: "text-slate-700",
+              iconClass: "text-muted-foreground",
+              border: "border-l-4 border-l-muted-foreground",
+              valueClass: "text-foreground",
             },
           ] as Array<{
             label: string;

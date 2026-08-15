@@ -19,6 +19,7 @@ import {
   actionMenuItemClassName,
 } from "@/components/shared/action-menu";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   completeAssembly,
   dismantleScaffold,
@@ -28,6 +29,7 @@ import {
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
 } from "@/lib/offline/connectivity";
+import { typography } from "@/lib/design-system";
 import { localDb } from "@/lib/offline/local-db";
 import { createOfflineId } from "@/lib/offline/types";
 
@@ -217,7 +219,7 @@ export function ScaffoldActionsBar({
 
   if (status === "desmontado") {
     return (
-      <div className="flex items-center gap-3 px-4 py-3 bg-slate-100 border border-slate-300 text-slate-600">
+      <div className="flex items-center gap-3 border border-border bg-muted/70 px-4 py-3 text-muted-foreground">
         <HardHat className="w-4 h-4 shrink-0" />
         <p className="text-[11px] font-semibold uppercase tracking-wide">
           Andaime encerrado - este andaime foi desmontado e esta fora de
@@ -431,7 +433,7 @@ function DismantleDialog({
       details={
         <div className="space-y-4">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className={`${typography.sectionLabel} text-muted-foreground`}>
               Andaime
             </p>
             <p className="mt-1 font-mono text-sm font-bold text-foreground">
@@ -439,13 +441,13 @@ function DismantleDialog({
             </p>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <label className={`${typography.panelTitle} text-muted-foreground`}>
               Motivo da desmontagem *
             </label>
             <select
               value={reason}
               onChange={(event) => onReasonChange(event.target.value)}
-              className="h-9 w-full border border-border bg-background px-3 text-[11px] text-foreground outline-none"
+              className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <option value="">Selecionar motivo</option>
               {DISMANTLE_REASONS.map((item) => (
@@ -457,21 +459,21 @@ function DismantleDialog({
           </div>
           {reason === "Outros" && (
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              <label className={`${typography.panelTitle} text-muted-foreground`}>
                 Descrição do motivo *
               </label>
-              <textarea
+              <Textarea
                 value={reasonDescription}
                 onChange={(event) =>
                   onReasonDescriptionChange(event.target.value)
                 }
-                className="min-h-20 w-full resize-none border border-border bg-background px-3 py-2 text-[11px] text-foreground outline-none"
+                className="min-h-20 resize-none"
                 placeholder="Descreva o motivo da desmontagem"
               />
             </div>
           )}
           {error && (
-            <p className="border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700">
+            <p className="border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] font-semibold text-destructive">
               {error}
             </p>
           )}

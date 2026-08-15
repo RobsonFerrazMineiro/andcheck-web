@@ -653,7 +653,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         <Button
           asChild
           variant="outline"
-          className="text-[10px] font-bold uppercase tracking-widest"
+          className={typography.panelTitle}
         >
           <Link href="/nao-conformidades">
             <ArrowLeft className="w-3.5 h-3.5" /> Voltar

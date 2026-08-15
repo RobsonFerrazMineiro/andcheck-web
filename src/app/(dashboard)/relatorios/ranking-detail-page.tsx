@@ -74,7 +74,7 @@ export function RankingDetailPage({
               <div key={index} className="grid gap-3 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       {columns[1] ?? "Item"}
                     </p>
                     <div className="mt-1 break-words text-[13px] font-semibold text-foreground">
@@ -82,7 +82,7 @@ export function RankingDetailPage({
                     </div>
                   </div>
                   <div className="shrink-0 rounded-md border border-border bg-muted/20 px-2 py-1 text-right">
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <p className={`${typography.metaStrong} text-muted-foreground`}>
                       {columns[0] ?? "Posição"}
                     </p>
                     <div className="font-mono text-[12px] font-bold text-foreground">
@@ -96,7 +96,7 @@ export function RankingDetailPage({
                       key={`${index}-${cellIndex + 2}`}
                       className="min-w-0 rounded-md border border-border/70 bg-muted/15 p-2"
                     >
-                      <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+                      <p className={`${typography.metaStrong} text-muted-foreground`}>
                         {columns[cellIndex + 2]}
                       </p>
                       <div className="mt-1 break-words text-[11px] font-semibold text-foreground">
@@ -116,7 +116,7 @@ export function RankingDetailPage({
                 {columns.map((column) => (
                   <th
                     key={column}
-                    className="px-4 py-3 text-[9px] font-bold uppercase tracking-widest text-sidebar-foreground/65"
+                    className={`px-4 py-3 ${typography.sectionLabel} text-sidebar-foreground/65`}
                   >
                     {column}
                   </th>

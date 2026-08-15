@@ -95,7 +95,7 @@ function comparisonRows(row: AuditRow) {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
       <p className="text-[12px] font-semibold text-foreground mt-1 break-words">
@@ -108,7 +108,7 @@ function Detail({ label, value }: { label: string; value: string }) {
 function JsonBlock({ title, value }: { title: string; value: unknown }) {
   return (
     <div>
-      <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+      <p className={`${typography.sectionLabel} mb-2 text-muted-foreground`}>
         {title}
       </p>
       <pre className="bg-muted/40 rounded-lg border border-border p-3 text-[11px] font-mono whitespace-pre-wrap break-words max-h-72 overflow-auto">
@@ -140,7 +140,7 @@ export function AuditDetailDialog({
       aria-labelledby="audit-detail-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
     >
-      <div className="max-h-[90vh] w-full max-w-5xl overflow-auto rounded-xl border border-border bg-card shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-5xl overflow-auto rounded-lg border border-border bg-card shadow-lg">
         <div className="flex flex-col gap-3 border-b border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground sm:flex-row sm:items-start sm:justify-between sm:px-5">
           <div className="min-w-0">
             <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
@@ -203,7 +203,7 @@ export function AuditDetailDialog({
             {comparisonRows(row).map((item) => (
               <div key={item.field} className="grid gap-3 p-3">
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <p className={`${typography.sectionLabel} text-muted-foreground`}>
                     Campo
                   </p>
                   <p className="mt-1 break-words text-[12px] font-semibold text-foreground">
@@ -212,7 +212,7 @@ export function AuditDetailDialog({
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       Antes
                     </p>
                     <p className="mt-1 break-words text-[11px] text-muted-foreground">
@@ -220,7 +220,7 @@ export function AuditDetailDialog({
                     </p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
+                    <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       Depois
                     </p>
                     <p className="mt-1 break-words text-[11px] text-foreground">
@@ -236,7 +236,7 @@ export function AuditDetailDialog({
               {["Campo", "Antes", "Depois"].map((header) => (
                 <p
                   key={header}
-                  className="px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-muted-foreground"
+                  className={`px-3 py-2 ${typography.sectionLabel} text-muted-foreground`}
                 >
                   {header}
                 </p>
@@ -261,7 +261,7 @@ export function AuditDetailDialog({
         </div>
 
         <details className="p-4 sm:p-5">
-          <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+          <summary className={`cursor-pointer ${typography.panelTitle} text-muted-foreground`}>
             Ver dados técnicos
           </summary>
           <div className="grid md:grid-cols-2 gap-4 mt-4">

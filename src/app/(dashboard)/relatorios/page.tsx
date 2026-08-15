@@ -32,6 +32,7 @@ import { FilterField, FilterShell } from "@/components/shared/filter-shell";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   getManagementReportData,
   type KpiTrend,
@@ -403,7 +404,7 @@ function FilterSelect({
         data-slot="select-trigger"
         name={name}
         defaultValue={value}
-        className="h-8 w-full rounded-md border border-input px-2 text-[11px] text-foreground outline-none"
+        className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-[11px] text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         {includeAll && <option value="all">Todos</option>}
         {options.map(([optionValue, optionLabel]) => (
@@ -427,12 +428,11 @@ function DateInput({
 }) {
   return (
     <FilterField label={label}>
-      <input
-        data-slot="input"
+      <Input
         type="date"
         name={name}
         defaultValue={value}
-        className="h-8 w-full rounded-md border border-input px-2 text-[11px] text-foreground outline-none"
+        className="text-[11px]"
       />
     </FilterField>
   );
@@ -507,7 +507,7 @@ function InspectionPerformanceChart({
             <p className="font-mono text-[22px] font-black leading-none text-foreground">
               {approvalRate}%
             </p>
-            <p className="mt-1 max-w-24 text-[8px] font-bold uppercase leading-tight tracking-wider text-muted-foreground">
+            <p className={`mt-1 max-w-24 leading-tight ${typography.metaStrong} text-muted-foreground`}>
               Taxa de aprovação
             </p>
           </div>
@@ -518,7 +518,7 @@ function InspectionPerformanceChart({
               key={item.label}
               className="grid max-w-[300px] grid-cols-[minmax(0,1fr)_32px] items-center gap-2"
             >
-              <span className="flex min-w-0 items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <span className={`flex min-w-0 items-center gap-2 ${typography.metaStrong} text-muted-foreground`}>
                 <span
                   className="size-2 shrink-0 rounded-sm"
                   style={{ backgroundColor: item.color }}
@@ -585,7 +585,7 @@ function NonConformityTrendChart({
               </span>
             ))}
           </div>
-          <div className="relative h-28 min-w-0 border-b border-l border-border bg-slate-50/50">
+          <div className="relative h-28 min-w-0 border-b border-l border-border bg-muted/30">
             <div className="absolute inset-0 flex items-end justify-between gap-1 px-2">
               {rows.map((item) => (
                 <div
@@ -640,7 +640,7 @@ function LegendItem({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-1.5">
       <span className={`size-2 rounded-sm ${color}`} />
-      <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+      <span className={`${typography.metaStrong} text-muted-foreground`}>
         {label}
       </span>
     </div>
@@ -688,7 +688,7 @@ function RankingPanel({
       {rows.length > 5 && (
         <Link
           href={href}
-          className="andcheck-motion block border-t border-border px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-primary hover:bg-muted/40"
+          className={`andcheck-motion block border-t border-border px-4 py-3 ${typography.action} text-primary hover:bg-muted/40`}
         >
           Ver ranking completo →
         </Link>
@@ -724,7 +724,7 @@ function RankingRow({
                 key={item.label}
                 className="grid grid-cols-[minmax(0,72px)_24px] items-center gap-1.5"
               >
-                <span className="flex min-w-0 items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className={`flex min-w-0 items-center gap-1 ${typography.metaStrong} text-muted-foreground`}>
                   <span
                     className="size-1.5 shrink-0 rounded-sm"
                     style={{ backgroundColor: item.color }}
@@ -770,7 +770,7 @@ function TopNonConformitiesPanel({
         />
       ) : (
         <div className="divide-y divide-border">
-          <div className="grid grid-cols-[minmax(0,1fr)_82px] gap-3 bg-muted/40 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:grid-cols-[minmax(0,1fr)_110px]">
+          <div className={`grid grid-cols-[minmax(0,1fr)_82px] gap-3 bg-muted/40 px-4 py-2 ${typography.panelTitle} text-muted-foreground sm:grid-cols-[minmax(0,1fr)_110px]`}>
             <span>Não Conformidade</span>
             <span className="text-right">Ocorrências</span>
           </div>

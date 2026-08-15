@@ -308,7 +308,7 @@ function ReadonlyInfo({
 }) {
   return (
     <div className={className}>
-      <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground">
+      <p className={`${typography.metaStrong} text-muted-foreground`}>
         {label}
       </p>
       <p
@@ -970,7 +970,7 @@ export function NovaInspecaoForm({
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Andaime *
             </Label>
             <Select
@@ -1007,7 +1007,7 @@ export function NovaInspecaoForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Nome do Inspetor *
             </Label>
             <Input
@@ -1151,7 +1151,7 @@ export function NovaInspecaoForm({
           </>
         )}
         <div className="space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-wider font-bold">
+          <Label className={typography.panelTitle}>
             Validade da liberação
           </Label>
           <Select value={validityDays} onValueChange={setValidityDays}>
@@ -1183,10 +1183,10 @@ export function NovaInspecaoForm({
       ))}
 
       {criticalIssues.length > 0 && (
-        <div className="bg-red-50 border border-red-200 p-4 space-y-2">
+        <div className="space-y-2 border border-destructive/30 bg-destructive/5 p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-            <p className="text-[11px] font-bold text-red-700 uppercase tracking-wider">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-destructive" />
+            <p className={`${typography.metaStrong} text-destructive`}>
               Liberação bloqueada — {criticalIssues.length} item(ns) crítico(s)
               não conforme(s)
             </p>
@@ -1195,7 +1195,7 @@ export function NovaInspecaoForm({
             {criticalIssues.map((issue, i) => (
               <li
                 key={i}
-                className="flex items-start gap-1.5 text-[11px] text-red-600"
+                className="flex items-start gap-1.5 text-[11px] text-destructive"
               >
                 <XCircle className="w-3 h-3 mt-0.5 shrink-0" />
                 {issue}
@@ -1212,7 +1212,7 @@ export function NovaInspecaoForm({
             (autoResult === "aprovado"
               ? "bg-emerald-50 border-emerald-200"
               : autoResult === "reprovado"
-                ? "bg-red-50 border-red-200"
+                ? "border-destructive/30 bg-destructive/5"
                 : "bg-amber-50 border-amber-200")
           }
         >
@@ -1220,7 +1220,7 @@ export function NovaInspecaoForm({
             <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
           )}
           {autoResult === "reprovado" && (
-            <XCircle className="w-6 h-6 text-red-600 shrink-0" />
+            <XCircle className="w-6 h-6 shrink-0 text-destructive" />
           )}
           {autoResult === "aprovado_com_ressalvas" && (
             <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
@@ -1355,7 +1355,7 @@ export function NovaInspecaoForm({
           variant="outline"
           size="sm"
           onClick={() => photoGalleryInputRef.current?.click()}
-          className="text-[10px] font-bold uppercase tracking-widest"
+          className={typography.panelTitle}
         >
           <ImagePlus className="w-3.5 h-3.5" />
           Galeria{photos.length > 0 ? ` (${photos.length})` : ""}
@@ -1365,7 +1365,7 @@ export function NovaInspecaoForm({
           variant="outline"
           size="sm"
           onClick={() => photoCameraInputRef.current?.click()}
-          className="ml-2 text-[10px] font-bold uppercase tracking-widest"
+          className={`ml-2 ${typography.panelTitle}`}
         >
           <Camera className="w-3.5 h-3.5" />
           Camera
@@ -1413,7 +1413,7 @@ export function NovaInspecaoForm({
                     {collected ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 shrink-0" />
+                      <XCircle className="w-4 h-4 shrink-0 text-destructive" />
                     )}
                     <div className="min-w-0">
                       <p className="text-[11px] font-bold text-foreground truncate">
@@ -1439,7 +1439,7 @@ export function NovaInspecaoForm({
                           ),
                         )
                       }
-                      className={`${typography.sectionLabel} text-muted-foreground hover:text-red-600`}
+                      className={`${typography.sectionLabel} text-muted-foreground hover:text-destructive`}
                     >
                       Remover
                     </Button>
@@ -1449,7 +1449,7 @@ export function NovaInspecaoForm({
             })}
           </div>
           {!signaturesReady && (
-            <p className="text-[10px] text-red-600 font-semibold">
+            <p className="text-[10px] font-semibold text-destructive">
               Assinaturas pendentes:{" "}
               {pendingSignatures
                 .map((item) => signatureRequirementLabel(item))
@@ -1462,7 +1462,7 @@ export function NovaInspecaoForm({
           <>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Perfil da assinatura
             </Label>
             <Select
@@ -1490,7 +1490,7 @@ export function NovaInspecaoForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Empresa
             </Label>
             <Select
@@ -1519,7 +1519,7 @@ export function NovaInspecaoForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Nome do assinante
             </Label>
             <Select
@@ -1548,7 +1548,7 @@ export function NovaInspecaoForm({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] uppercase tracking-wider font-bold">
+            <Label className={typography.panelTitle}>
               Cargo / função
             </Label>
             <Input
@@ -1641,7 +1641,7 @@ export function NovaInspecaoForm({
           size="sm"
           onClick={handleRegisterSignature}
           disabled={registeringSignature}
-          className="text-[10px] font-bold uppercase tracking-widest"
+          className={typography.panelTitle}
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           Registrar assinatura
@@ -1662,7 +1662,7 @@ export function NovaInspecaoForm({
           type="button"
           variant="outline"
           size="sm"
-          className={`text-[10px] font-bold uppercase tracking-widest ${
+          className={`${typography.panelTitle} ${
             submitting ? "pointer-events-none opacity-50" : ""
           }`}
         >
@@ -1674,7 +1674,7 @@ export function NovaInspecaoForm({
           type="button"
           disabled={!canSubmit}
           onClick={handleSubmit}
-          className="text-[10px] font-bold uppercase tracking-widest"
+          className={typography.panelTitle}
         >
           {savedOffline ? (
             <>

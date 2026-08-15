@@ -22,7 +22,7 @@ export function ActiveStatusBadge({
       className={`inline-flex w-fit shrink-0 items-center gap-1 rounded-md border ${
         active
           ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-slate-100 text-slate-600"
+          : "border-border bg-muted text-muted-foreground"
       } ${compact ? `${typography.badge} px-1.5 py-0.5` : `${typography.badgeLg} px-2.5 py-1`}`}
     >
       <Icon className={compact ? "size-2.5" : "size-3"} />

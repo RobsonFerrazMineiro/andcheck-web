@@ -56,7 +56,7 @@ export function ScaffoldQRCard({
     <div className="overflow-hidden border border-border bg-card shadow-sm">
       <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
         <QrCode className="h-3.5 w-3.5 text-muted-foreground/60" />
-        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">
+        <p className={`${typography.panelTitle} text-foreground`}>
           {title}
         </p>
       </div>

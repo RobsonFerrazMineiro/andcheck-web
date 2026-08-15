@@ -30,6 +30,7 @@ import {
   isVisibleOnDevice,
   mainNavigationItems,
 } from "@/components/layout/navigation";
+import { typography } from "@/lib/design-system";
 
 type MobileUserProfile = {
   name: string;
@@ -239,7 +240,7 @@ function MobileUserMenu({
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
                   {profile.email}
                 </p>
-                <span className="mt-2 inline-flex rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
                   {profile.roleLabel}
                 </span>
               </div>

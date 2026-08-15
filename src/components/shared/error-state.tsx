@@ -20,11 +20,11 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "rounded-lg border border-red-200 bg-red-50 px-6 py-10 text-center text-red-950 shadow-sm",
+        "rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-10 text-center text-destructive shadow-sm",
         className,
       )}
     >
-      <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-md border border-red-200 bg-white text-red-700">
+      <div className="mx-auto mb-3 flex size-11 items-center justify-center rounded-md border border-destructive/30 bg-background text-destructive">
         <AlertTriangle className="size-5" aria-hidden="true" />
       </div>
       <p className={typography.emptyState}>{title}</p>

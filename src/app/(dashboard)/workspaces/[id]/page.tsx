@@ -124,9 +124,9 @@ export default async function WorkspaceDetailPage({
       label: "Documentos",
       value: workspace._count.scaffoldDocuments,
       icon: FileText,
-      iconClass: "text-slate-600",
-      borderClass: "border-l-4 border-l-slate-500",
-      valueClass: "text-slate-700",
+      iconClass: "text-muted-foreground",
+      borderClass: "border-l-4 border-l-muted-foreground",
+      valueClass: "text-foreground",
     },
   ];
 

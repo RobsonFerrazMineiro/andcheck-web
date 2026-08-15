@@ -171,9 +171,9 @@ export default async function MapaPage() {
             label: "Vencidos",
             value: vencidos,
             icon: AlertTriangle,
-            iconClass: "text-slate-500",
-            border: "border-l-4 border-l-slate-500",
-            valueClass: "text-slate-700",
+            iconClass: "text-muted-foreground",
+            border: "border-l-4 border-l-muted-foreground",
+            valueClass: "text-foreground",
           },
         ].map((k) => {
           const Icon = k.icon;

@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import type { ScaffoldActionsBarProps } from "@/components/scaffold/actions-bar";
 import type { ScaffoldDocumentSectionProps } from "@/components/scaffold/document-section";
 import type { ScaffoldQRCardProps } from "@/components/scaffold/qr-card";
+import { typography } from "@/lib/design-system";
 
 export const LazyScaffoldActionsBar = dynamic(
   () =>
@@ -17,7 +18,7 @@ export const LazyScaffoldActionsBar = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-8 items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <div className={`flex h-8 items-center gap-2 ${typography.panelTitle} text-muted-foreground`}>
         <Wrench className="size-3.5" />
         Carregando ações
       </div>

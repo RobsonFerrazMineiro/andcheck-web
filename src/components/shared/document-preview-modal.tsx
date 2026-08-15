@@ -72,13 +72,13 @@ export function DocumentPreviewModal({
       aria-labelledby="document-preview-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      <div className="w-full max-w-5xl rounded-xl bg-card border border-border shadow-xl">
+      <div className="w-full max-w-5xl rounded-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
           <div className="flex min-w-0 items-center gap-2">
             <FileText className="h-4 w-4 shrink-0 text-muted-foreground/70" />
             <p
               id="document-preview-title"
-              className="truncate text-[10px] font-bold uppercase tracking-widest text-foreground"
+              className={`truncate ${typography.panelTitle} text-foreground`}
             >
               {modalTitle}
             </p>

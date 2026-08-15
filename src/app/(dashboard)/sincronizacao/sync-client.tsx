@@ -254,13 +254,13 @@ export function SyncClient() {
       </div>
 
       {conflictItems.length > 0 && (
-        <div className="border border-slate-300 bg-slate-50 p-4 text-sm text-slate-800">
+        <div className="border border-border bg-muted/50 p-4 text-sm text-foreground">
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
             <div className="space-y-1">
               <p className="font-semibold">Conflito de sincronização</p>
-              <p className="text-xs leading-5 text-slate-600">
+              <p className="text-xs leading-5 text-muted-foreground">
                 O registro foi alterado no servidor antes do envio offline. A
                 versão do servidor foi preservada e nenhuma alteração local foi
                 aplicada automaticamente.
@@ -366,14 +366,14 @@ export function SyncClient() {
                         </span>
                       </p>
                       {item.lastError && (
-                        <p className="col-span-2 break-words text-red-700">
+                        <p className="col-span-2 break-words text-destructive">
                           {friendlySyncError(item.lastError)}
                         </p>
                       )}
                     </div>
                     {(item.status === "failed" || item.status === "conflict") && (
                       <details className="mt-3 rounded-md border border-border bg-muted/30 p-2">
-                        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        <summary className={`cursor-pointer ${typography.panelTitle} text-muted-foreground`}>
                           Ver dados locais
                         </summary>
                         <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-foreground">
@@ -415,7 +415,7 @@ export function SyncClient() {
 
               <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
                 <table className="w-full min-w-[760px] text-left text-[11px]">
-                <thead className="bg-sidebar text-[9px] font-bold uppercase tracking-widest text-sidebar-foreground/65">
+                <thead className={`bg-sidebar ${typography.sectionLabel} text-sidebar-foreground/65`}>
                   <tr>
                     <th className="px-4 py-3">Criado em</th>
                     <th className="px-4 py-3">Ação</th>
@@ -457,7 +457,7 @@ export function SyncClient() {
                           {(item.status === "failed" ||
                             item.status === "conflict") && (
                             <details className="rounded-md border border-border bg-muted/30 p-2">
-                              <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                              <summary className={`cursor-pointer ${typography.panelTitle} text-muted-foreground`}>
                                 Ver dados locais
                               </summary>
                               <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-foreground">
@@ -535,13 +535,13 @@ function SyncMetric({
     },
     red: {
       border: "border-l-4 border-l-red-600",
-      icon: "text-red-600",
-      value: "text-red-700",
+      icon: "text-destructive",
+      value: "text-destructive",
     },
     slate: {
-      border: "border-l-4 border-l-slate-500",
-      icon: "text-slate-500",
-      value: "text-slate-700",
+      border: "border-l-4 border-l-muted-foreground",
+      icon: "text-muted-foreground",
+      value: "text-foreground",
     },
   }[tone];
 

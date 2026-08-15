@@ -39,6 +39,7 @@ import {
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
 } from "@/lib/offline/connectivity";
+import { typography } from "@/lib/design-system";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { createOfflineId } from "@/lib/offline/types";
@@ -150,11 +151,11 @@ function ModalShell({
       aria-labelledby={titleId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     >
-      <div className="w-full max-w-lg bg-card border border-border shadow-xl">
+      <div className="w-full max-w-lg border border-border bg-card shadow-lg">
         <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
           <p
             id={titleId}
-            className="text-[10px] font-bold uppercase tracking-widest"
+            className={typography.panelTitle}
           >
             {title}
           </p>
@@ -371,7 +372,7 @@ export function NonConformityOperations({
     <>
       <div className="relative flex flex-col items-end gap-2">
         {error && (
-          <p className="absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-red-200 bg-card px-3 py-2 text-right text-[12px] font-medium leading-snug text-red-700 shadow-sm">
+          <p className="absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-destructive/30 bg-card px-3 py-2 text-right text-[12px] font-medium leading-snug text-destructive shadow-sm">
             {error}
           </p>
         )}
@@ -809,7 +810,7 @@ export function NonConformityItemEvidenceButton({
         <ModalShell title="Anexar Evidência" onClose={() => setOpen(false)}>
           <form action={submitEvidence} className="space-y-3">
             {error && (
-              <p className="text-[11px] font-medium text-red-700">{error}</p>
+              <p className="text-[11px] font-medium text-destructive">{error}</p>
             )}
             <div className="space-y-1.5">
               <Label htmlFor="nc-evidence-file">Arquivo *</Label>

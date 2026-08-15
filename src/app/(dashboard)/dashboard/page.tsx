@@ -213,7 +213,7 @@ export default async function DashboardPage() {
       {/* Indicadores históricos */}
       <section className="space-y-3">
         <div>
-          <p className="text-[13px] font-bold uppercase tracking-widest text-foreground">
+          <p className={`${typography.badgeXl} text-foreground`}>
             Indicadores Históricos
           </p>
           <p

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
+import { typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 type ActionMenuProps = {
@@ -78,4 +79,4 @@ export function ActionMenu({
 }
 
 export const actionMenuItemClassName =
-  "flex min-h-8 w-full items-center justify-start gap-2 rounded-sm border-0 bg-transparent px-3 py-2 text-left text-[10px] font-bold uppercase tracking-widest text-muted-foreground shadow-none transition-colors hover:translate-y-0 hover:bg-muted hover:text-foreground hover:shadow-none active:translate-y-0 disabled:pointer-events-none disabled:opacity-50";
+  `flex min-h-8 w-full items-center justify-start gap-2 rounded-sm border-0 bg-transparent px-3 py-2 text-left ${typography.action} text-muted-foreground shadow-none transition-colors hover:translate-y-0 hover:bg-muted hover:text-foreground hover:shadow-none active:translate-y-0 disabled:pointer-events-none disabled:opacity-50`;

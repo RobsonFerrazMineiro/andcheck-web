@@ -218,9 +218,9 @@ export function AcervoClient({
           icon={Archive}
           label="Total de Andaimes"
           value={total}
-          className="border-slate-200 border-l-slate-500"
-          iconClass="text-slate-500"
-          valueClass="text-slate-700"
+          className="border-border border-l-muted-foreground"
+          iconClass="text-muted-foreground"
+          valueClass="text-foreground"
         />
         <Kpi
           icon={CheckCircle2}
@@ -234,17 +234,17 @@ export function AcervoClient({
           icon={AlertTriangle}
           label="Com Tratativas"
           value={withNc}
-          className="border-red-200 border-l-red-500 bg-red-50/40"
-          iconClass="text-red-500"
-          valueClass="text-red-700"
+          className="border-destructive/30 border-l-destructive bg-destructive/5"
+          iconClass="text-destructive"
+          valueClass="text-destructive"
         />
         <Kpi
           icon={FileText}
           label="Com Documentação"
           value={withDocuments}
-          className="border-slate-200 border-l-slate-500 bg-slate-50/40"
-          iconClass="text-slate-500"
-          valueClass="text-slate-700"
+          className="border-border border-l-muted-foreground bg-muted/40"
+          iconClass="text-muted-foreground"
+          valueClass="text-foreground"
         />
       </div>
 
@@ -439,7 +439,7 @@ export function AcervoClient({
                         icon={FileText}
                         value={row.documentsCount}
                         label="DOCS"
-                        className="border-slate-300 bg-slate-50 text-slate-700"
+                        className="border-border bg-muted text-muted-foreground"
                       />
                     </div>
                     <div className="hidden xl:flex xl:items-center">
