@@ -244,7 +244,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               id="document-type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-sm text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              className={`h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 ${typography.sectionDescription}`}
             >
               {DOCUMENT_TYPE_OPTIONS.map((d) => (
                 <option key={d.value} value={d.value}>

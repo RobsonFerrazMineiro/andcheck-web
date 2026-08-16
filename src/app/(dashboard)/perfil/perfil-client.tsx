@@ -93,10 +93,10 @@ export function PerfilClient({
                   <p className={`${typography.panelTitle} text-primary-foreground/55`}>
                     Usuário autenticado
                   </p>
-                  <h2 className="mt-1 break-words text-[18px] font-bold leading-tight">
+                  <h2 className={`${typography.pageTitle} mt-1 break-words leading-tight`}>
                     {profile.name}
                   </h2>
-                  <p className="mt-1 break-all text-[11px] text-primary-foreground/70">
+                  <p className={`mt-1 break-all ${typography.sectionDescription} text-primary-foreground/70`}>
                     {profile.email}
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export function PerfilClient({
 
         <Card className="rounded-lg">
           <CardHeader className="border-b pb-3">
-            <CardTitle className="flex items-center gap-2 text-[14px]">
+            <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
               <KeyRound className="size-4" /> Segurança da conta
             </CardTitle>
           </CardHeader>
@@ -157,7 +157,7 @@ export function PerfilClient({
             </div>
             {isOfflineFallback ? (
               <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4">
-                <p className="text-[11px] text-muted-foreground">
+                <p className={`${typography.sectionDescription} text-muted-foreground`}>
                   Alteração de senha indisponível offline. Conecte-se para usar
                   esta ação.
                 </p>
@@ -189,7 +189,7 @@ function SummaryTile({
           {label}
         </p>
       </div>
-      <p className="break-words text-[13px] font-semibold text-foreground">
+      <p className={`${typography.bodyStrong} break-words text-foreground`}>
         {value}
       </p>
     </div>
@@ -212,7 +212,7 @@ function Info({
         <p className={`${typography.sectionLabel} text-muted-foreground`}>
           {label}
         </p>
-        <p className="mt-1 break-words text-sm font-semibold">{value}</p>
+        <p className={`mt-1 break-words ${typography.bodyStrong}`}>{value}</p>
       </div>
     </div>
   );

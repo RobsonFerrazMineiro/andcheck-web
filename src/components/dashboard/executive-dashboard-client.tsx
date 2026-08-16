@@ -292,9 +292,9 @@ export function ExecutiveDashboardClient({ data }: Props) {
                         className="size-2.5 shrink-0 rounded-sm"
                         style={{ background: getScaffoldStatusColor(item.status) }}
                       />
-                      <span className="truncate text-sm font-medium">{item.label}</span>
+                      <span className={`truncate ${typography.bodyStrong}`}>{item.label}</span>
                     </div>
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className={`${typography.codeMuted} text-muted-foreground`}>
                       {item.total} · {item.percentage}%
                     </span>
                   </div>
@@ -357,20 +357,20 @@ function KpiCard({ kpi }: { kpi: ExecutiveDashboardData["kpis"][number] }) {
     <Card className={cn("min-h-36", toneRing(kpi.tone))}>
       <CardHeader className="gap-2">
         <div className="flex items-start justify-between gap-3">
-          <CardTitle className="text-sm">{kpi.label}</CardTitle>
+          <CardTitle className={typography.bodyStrong}>{kpi.label}</CardTitle>
           <Info className="size-4 shrink-0 text-muted-foreground" aria-label={kpi.tooltip} />
         </div>
         <CardDescription>{kpi.tooltip}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-end justify-between gap-3">
-          <div className="text-2xl font-bold tracking-normal">{kpi.value}</div>
+          <div className={typography.kpiValue}>{kpi.value}</div>
           <Badge variant={positive ? "secondary" : "destructive"} className="gap-1">
             {positive ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
             {kpi.trend === null ? "n/a" : `${kpi.trend}%`}
           </Badge>
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">{kpi.comparison}</p>
+        <p className={`mt-2 ${typography.sectionDescription} text-muted-foreground`}>{kpi.comparison}</p>
       </CardContent>
     </Card>
   );
@@ -422,17 +422,17 @@ function Ranking({
         items.slice(0, 5).map((item, index) => (
           <div key={`${title}-${item.name}`} className="flex flex-col gap-1">
             <div className="flex items-center justify-between gap-3">
-              <span className="min-w-0 truncate text-sm font-medium">
+              <span className={`min-w-0 truncate ${typography.bodyStrong}`}>
                 {index + 1}. {item.name}
               </span>
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className={`${typography.codeMuted} text-muted-foreground`}>
                 {item.total}{suffix}
               </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-muted">
               <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(6, (item.total / max) * 100)}%` }} />
             </div>
-            {item.detail && <span className="text-xs text-muted-foreground">{item.detail}</span>}
+            {item.detail && <span className={`${typography.sectionDescription} text-muted-foreground`}>{item.detail}</span>}
           </div>
         ))
       )}
@@ -470,8 +470,8 @@ function ProductivityPanel({ data }: Props) {
 function Metric({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
   return (
     <div className="rounded-md border bg-muted/30 p-3">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-xl font-bold tracking-normal">
+      <p className={`${typography.bodyStrong} text-muted-foreground`}>{label}</p>
+      <p className={`mt-1 ${typography.kpiValue}`}>
         {formatNumber(value)}
         {suffix}
       </p>
@@ -505,12 +505,12 @@ function ManagementMap({ data }: Props) {
           )}
         </div>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <MapPinned className="size-4" />
             {pins.length} ponto(s) georreferenciado(s)
           </div>
           <Ranking title="Áreas" items={data.map.byArea} />
-          <div className="grid grid-cols-2 gap-2 rounded-md border p-3 text-xs text-muted-foreground">
+          <div className={`grid grid-cols-2 gap-2 rounded-md border p-3 ${typography.sectionDescription} text-muted-foreground`}>
             {[
               ["Liberado", "liberado"],
               ["Montagem", "em_montagem"],
@@ -547,8 +547,8 @@ function InsightsPanel({ data }: Props) {
             <div className="flex items-start gap-3">
               <Sparkles className="mt-0.5 size-4 shrink-0" />
               <div>
-                <p className="text-sm font-semibold">{insight.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{insight.detail}</p>
+                <p className={typography.bodyStrong}>{insight.title}</p>
+                <p className={`mt-1 text-muted-foreground ${typography.sectionDescription}`}>{insight.detail}</p>
               </div>
             </div>
           </div>

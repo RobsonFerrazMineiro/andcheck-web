@@ -4,6 +4,7 @@ import { CloudOff } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 import { useOfflineStatus } from "@/components/offline/offline-provider";
+import { typography } from "@/lib/design-system";
 import { SEMANTIC_TONE_CLASSES } from "@/lib/semantic-tones";
 
 function subscribeToHydration() {
@@ -31,7 +32,7 @@ export function OnlineOnlyNotice({ moduleName }: { moduleName: string }) {
 
   return (
     <div
-      className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs font-medium ${SEMANTIC_TONE_CLASSES.warning.badge}`}
+      className={`flex items-start gap-2 rounded-lg border px-3 py-2 ${typography.bodyStrong} ${SEMANTIC_TONE_CLASSES.warning.badge}`}
     >
       <CloudOff className="mt-0.5 size-3.5 shrink-0" />
       <span>

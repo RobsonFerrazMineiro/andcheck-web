@@ -313,7 +313,7 @@ function ReadonlyInfo({
       </p>
       <p
         className={
-          "mt-0.5 text-[11px] font-semibold text-foreground " +
+          `mt-0.5 ${typography.bodyStrong} text-foreground ` +
           (compact ? "line-clamp-2 leading-snug" : "truncate")
         }
       >
@@ -930,12 +930,12 @@ export function NovaInspecaoForm({
             <ArrowLeft className="w-4 h-4 text-muted-foreground" />
           </Link>
         </Button>
-        <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+        <div className={`${typography.sectionLabel} text-muted-foreground`}>
           <Link href="/inspecoes" className="hover:text-foreground">
             Inspeções
           </Link>
           <span className="mx-1.5">/</span>
-          <span className="text-foreground font-semibold">Nova Inspeção</span>
+          <span className={`${typography.bodyStrong} text-foreground`}>Nova Inspeção</span>
         </div>
       </div>
 
@@ -977,7 +977,7 @@ export function NovaInspecaoForm({
               value={selectedScaffoldId}
               onValueChange={handleScaffoldChange}
             >
-              <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                 <SelectValue placeholder="Selecionar andaime..." />
               </SelectTrigger>
               <SelectContent
@@ -989,7 +989,7 @@ export function NovaInspecaoForm({
                     value={scaffoldSearch}
                     onChange={(event) => setScaffoldSearch(event.target.value)}
                     placeholder="Pesquisar TAG, local, área ou empresa..."
-                    className="h-8 text-[11px]"
+                    className={`h-8 ${typography.sectionDescription}`}
                     onKeyDown={(event) => event.stopPropagation()}
                   />
                 </div>
@@ -999,7 +999,7 @@ export function NovaInspecaoForm({
                   </SelectItem>
                 ))}
                 {filteredScaffolds.length === 0 && (
-                  <div className="px-3 py-2 text-[11px] text-muted-foreground">
+                  <div className={`px-3 py-2 ${typography.sectionDescription} text-muted-foreground`}>
                     Nenhum andaime encontrado.
                   </div>
                 )}
@@ -1014,9 +1014,9 @@ export function NovaInspecaoForm({
               placeholder="Nome completo"
               value={inspectorName}
               readOnly
-              className="h-8 rounded-md bg-muted/40 text-[11px]"
+              className={`h-8 rounded-md bg-muted/40 ${typography.sectionDescription}`}
             />
-            <p className="text-[9px] text-muted-foreground">
+            <p className={`${typography.bodyMuted} text-muted-foreground`}>
               Preenchido pela sessao ativa.
             </p>
           </div>
@@ -1155,7 +1155,7 @@ export function NovaInspecaoForm({
             Validade da liberação
           </Label>
           <Select value={validityDays} onValueChange={setValidityDays}>
-            <SelectTrigger className="w-40 h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 w-40 rounded-md ${typography.sectionDescription}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -1195,7 +1195,7 @@ export function NovaInspecaoForm({
             {criticalIssues.map((issue, i) => (
               <li
                 key={i}
-                className="flex items-start gap-1.5 text-[11px] text-destructive"
+                className={`flex items-start gap-1.5 ${typography.sectionDescription} text-destructive`}
               >
                 <XCircle className="w-3 h-3 mt-0.5 shrink-0" />
                 {issue}
@@ -1233,10 +1233,10 @@ export function NovaInspecaoForm({
           </div>
           {autoResult !== "reprovado" && (
             <div className="ml-auto text-right">
-              <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+              <p className={`${typography.sectionLabel} text-muted-foreground`}>
                 Válido até
               </p>
-              <p className="text-[13px] font-bold font-mono text-foreground">
+              <p className={`${typography.code} text-foreground`}>
                 {format(
                   addDays(new Date(), Number(validityDays)),
                   "dd/MM/yyyy",
@@ -1320,7 +1320,7 @@ export function NovaInspecaoForm({
                     />
                     {/* Label do item */}
                     <div className="absolute bottom-0 left-0 right-0 bg-red-600/80 px-1 py-0.5">
-                      <p className="text-[8px] text-white font-bold leading-tight truncate">
+                      <p className={`truncate leading-tight text-white ${typography.badge}`}>
                         {item.item}
                       </p>
                     </div>
@@ -1381,7 +1381,7 @@ export function NovaInspecaoForm({
           placeholder="Registre observações gerais sobre a inspeção..."
           value={observations}
           onChange={(e) => setObservations(e.target.value)}
-          className="text-[11px] rounded-md min-h-20"
+          className={`min-h-20 rounded-md ${typography.sectionDescription}`}
         />
       </div>
 
@@ -1393,9 +1393,9 @@ export function NovaInspecaoForm({
         </div>
 
         <div className="space-y-2">
-          <p className="text-[11px] text-muted-foreground">
+          <p className={`${typography.sectionDescription} text-muted-foreground`}>
             Política:{" "}
-            <span className="font-semibold text-foreground">
+            <span className={`${typography.bodyStrong} text-foreground`}>
               {signaturePolicyDisplayName(selectedPolicy)}
             </span>
           </p>
@@ -1416,10 +1416,10 @@ export function NovaInspecaoForm({
                       <XCircle className="w-4 h-4 shrink-0 text-destructive" />
                     )}
                     <div className="min-w-0">
-                      <p className="text-[11px] font-bold text-foreground truncate">
+                      <p className={`${typography.bodyStrong} truncate text-foreground`}>
                         {signatureRequirementLabel(requirement)}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate">
+                      <p className={`truncate ${typography.bodyMuted} text-muted-foreground`}>
                         {collected
                           ? "Assinado por " + collected.signer_name
                           : "Pendente"}
@@ -1449,7 +1449,7 @@ export function NovaInspecaoForm({
             })}
           </div>
           {!signaturesReady && (
-            <p className="text-[10px] font-semibold text-destructive">
+            <p className={`${typography.bodyStrong} text-destructive`}>
               Assinaturas pendentes:{" "}
               {pendingSignatures
                 .map((item) => signatureRequirementLabel(item))
@@ -1474,7 +1474,7 @@ export function NovaInspecaoForm({
                 setSignerPosition("");
               }}
             >
-              <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                 <SelectValue placeholder="Selecionar perfil..." />
               </SelectTrigger>
               <SelectContent>
@@ -1506,7 +1506,7 @@ export function NovaInspecaoForm({
                 (isSupervisorRequirement && !canSwitchOperationalSignerCompany)
               }
             >
-              <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                 <SelectValue placeholder="Selecionar empresa..." />
               </SelectTrigger>
               <SelectContent>
@@ -1535,7 +1535,7 @@ export function NovaInspecaoForm({
               }}
               disabled={!effectiveSignerCompanyId || filteredSignerOptions.length === 0}
             >
-              <SelectTrigger className="h-8 text-[11px] rounded-md">
+              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                 <SelectValue placeholder="Selecionar assinante..." />
               </SelectTrigger>
               <SelectContent>
@@ -1555,12 +1555,12 @@ export function NovaInspecaoForm({
               value={signerPosition || defaultSignerPosition}
               readOnly
               placeholder="Cargo"
-              className="h-8 rounded-md bg-muted/40 text-[11px]"
+              className={`h-8 rounded-md bg-muted/40 ${typography.sectionDescription}`}
             />
           </div>
         </div>
         {activeSignatureRoleCode && filteredSignerOptions.length === 0 && (
-          <p className="text-[10px] font-semibold text-amber-700">
+          <p className={`${typography.bodyStrong} text-amber-700`}>
             {emptySignerMessage(activeSignatureRoleCode)}
           </p>
         )}
@@ -1629,7 +1629,7 @@ export function NovaInspecaoForm({
             }}
           />
           {!hasSig && (
-            <p className="absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground pointer-events-none">
+            <p className={`pointer-events-none absolute inset-0 flex items-center justify-center ${typography.bodyMuted} text-muted-foreground`}>
               Assine com o dedo ou mouse acima
             </p>
           )}
@@ -1649,7 +1649,7 @@ export function NovaInspecaoForm({
           </>
         ) : (
           <div className="border border-dashed border-border bg-muted/20 p-4">
-            <p className="text-[11px] text-muted-foreground">
+            <p className={`${typography.sectionDescription} text-muted-foreground`}>
               Selecione um andaime com política ativa para coletar assinaturas.
             </p>
           </div>

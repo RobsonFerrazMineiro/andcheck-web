@@ -477,7 +477,7 @@ export function UsuariosClient({
                 defaultValue={editingUser?.roles[0]?.id}
                 onValueChange={setSelectedRoleId}
               >
-                <SelectTrigger className="h-8 text-[11px] rounded-md">
+                <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                   <SelectValue placeholder="Selecionar perfil" />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,7 +490,7 @@ export function UsuariosClient({
               </Select>
             </div>
             {selectedFormRole?.code === "HSE_GERENCIADORA" && (
-              <div className="border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-semibold text-amber-800 md:col-span-3">
+              <div className={`border border-amber-200 bg-amber-50 px-3 py-2 ${typography.bodyStrong} text-amber-800 md:col-span-3`}>
                 Este perfil possui acesso operacional amplo aos dados do
                 workspace autorizado. Use apenas para empresas gerenciadoras
                 de HSE, como TUV Rheinland ou Arcadis.
@@ -510,7 +510,7 @@ export function UsuariosClient({
                   editingUser?.is_active === false ? "inactive" : "active"
                 }
               >
-                <SelectTrigger className="h-8 text-[11px] rounded-md">
+                <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -563,13 +563,13 @@ export function UsuariosClient({
               placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="pl-9 h-8 text-[11px] rounded-md border-border"
+              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
             />
           </div>
           </FilterField>
           <FilterField label="Status / perfil" className="sm:w-56">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-56 h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 w-full rounded-md sm:w-56 ${typography.sectionDescription}`}>
               <SelectValue placeholder="Filtro" />
             </SelectTrigger>
             <SelectContent>
@@ -668,26 +668,26 @@ export function UsuariosClient({
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5 lg:hidden">
                       <RoleBadge role={primaryRole} />
-                      <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                      <span className={`rounded-md border border-border px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground`}>
                         {user.company ?? "Sem empresa"}
                       </span>
                       {user.department && (
-                        <span className="rounded-md border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                        <span className={`rounded-md border border-border px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground`}>
                           {user.department}
                         </span>
                       )}
                     </div>
                   </div>
-                  <p className="hidden truncate text-[11px] text-muted-foreground lg:block">
+                  <p className={`hidden truncate ${typography.sectionDescription} text-muted-foreground lg:block`}>
                     {user.company ?? "-"}
                   </p>
-                  <p className="hidden text-[11px] font-mono text-muted-foreground lg:block">
+                  <p className={`hidden ${typography.codeMuted} text-muted-foreground lg:block`}>
                     {user.registration ?? "-"}
                   </p>
                   <div className="hidden min-w-0 lg:block">
                     <RoleBadge role={primaryRole} />
                   </div>
-                  <p className="hidden truncate text-[11px] text-muted-foreground lg:block">
+                  <p className={`hidden truncate ${typography.sectionDescription} text-muted-foreground lg:block`}>
                     {user.department ?? "-"}
                   </p>
                   <div className="hidden lg:flex">
@@ -755,7 +755,7 @@ export function UsuariosClient({
         )}
 
         <div className="px-4 py-2 bg-muted/30 border-t border-border">
-          <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest">
+          <p className={`${typography.metaStrong} text-muted-foreground/40`}>
             {filtered.length} registro(s) · Módulo de usuários · AndCheck
           </p>
         </div>
@@ -789,7 +789,7 @@ function Field({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={label.includes("*")}
-        className="h-8 text-[11px] rounded-md"
+        className={`h-8 rounded-md ${typography.sectionDescription}`}
       />
     </div>
   );
@@ -853,7 +853,7 @@ function CompanySelect({
         disabled={!canSelectAnyCompany}
         defaultValue={selectedCompanyId}
       >
-        <SelectTrigger className="h-8 text-[11px] rounded-md">
+        <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
           <SelectValue placeholder="Selecionar empresa" />
         </SelectTrigger>
         <SelectContent>

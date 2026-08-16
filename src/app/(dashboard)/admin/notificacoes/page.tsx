@@ -143,7 +143,7 @@ export default async function AdminNotificationsPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="w-full min-w-[760px] text-sm">
+                <table className="w-full min-w-[760px]">
                 <thead>
                   <tr className={`border-b text-left ${typography.tableHeader} text-muted-foreground`}>
                     <th className="py-3 pr-4">Notificacao</th>
@@ -164,16 +164,16 @@ export default async function AdminNotificationsPage() {
                           {notificationTypeLabel(log.notification.type)}
                         </Badge>
                       </td>
-                      <td className="py-3 pr-4 text-muted-foreground">
+                      <td className={`py-3 pr-4 text-muted-foreground ${typography.sectionDescription}`}>
                         {log.recipientEmail}
                       </td>
-                      <td className="py-3 pr-4 text-muted-foreground">
+                      <td className={`py-3 pr-4 text-muted-foreground ${typography.sectionDescription}`}>
                         {log.notification.company.name}
                         {log.notification.workspace?.name
                           ? ` / ${log.notification.workspace.name}`
                           : ""}
                       </td>
-                      <td className="max-w-80 truncate py-3 pr-4 text-muted-foreground">
+                      <td className={`max-w-80 truncate py-3 pr-4 text-muted-foreground ${typography.sectionDescription}`}>
                         {log.error ?? "Falha sem detalhe"}
                       </td>
                       <td className="py-3 text-right">

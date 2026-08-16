@@ -372,7 +372,7 @@ export function NonConformityOperations({
     <>
       <div className="relative flex flex-col items-end gap-2">
         {error && (
-          <p className="absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-destructive/30 bg-card px-3 py-2 text-right text-[12px] font-medium leading-snug text-destructive shadow-sm">
+          <p className={`absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-destructive/30 bg-card px-3 py-2 text-right ${typography.bodyStrong} leading-snug text-destructive shadow-sm`}>
             {error}
           </p>
         )}
@@ -523,7 +523,7 @@ export function NonConformityOperations({
                 id="nc-due-date-reason"
                 name="reason"
                 placeholder="Motivo da alteração"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
                 required
               />
             </div>
@@ -556,7 +556,7 @@ export function NonConformityOperations({
                 id="nc-comment"
                 name="comment"
                 placeholder="Comentário operacional"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
                 required
               />
             </div>
@@ -591,7 +591,7 @@ export function NonConformityOperations({
                 id="nc-accept-comment"
                 name="comment"
                 placeholder="Comentário de encerramento"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
                 required
               />
             </div>
@@ -624,7 +624,7 @@ export function NonConformityOperations({
                 id="nc-reject-comment"
                 name="comment"
                 placeholder="Motivo da rejeição"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
                 required
               />
             </div>
@@ -661,7 +661,7 @@ export function NonConformityOperations({
                 id="nc-cancel-comment"
                 name="comment"
                 placeholder="Motivo do cancelamento"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
                 required
               />
             </div>
@@ -810,7 +810,7 @@ export function NonConformityItemEvidenceButton({
         <ModalShell title="Anexar Evidência" onClose={() => setOpen(false)}>
           <form action={submitEvidence} className="space-y-3">
             {error && (
-              <p className="text-[11px] font-medium text-destructive">{error}</p>
+              <p className={`${typography.bodyStrong} text-destructive`}>{error}</p>
             )}
             <div className="space-y-1.5">
               <Label htmlFor="nc-evidence-file">Arquivo *</Label>
@@ -831,7 +831,7 @@ export function NonConformityItemEvidenceButton({
                 id="nc-evidence-observation"
                 name="observation"
                 placeholder="Comentário opcional"
-                className="rounded-md text-[12px]"
+                className={`rounded-md ${typography.bodyStrong}`}
               />
             </div>
             <div className="flex justify-end gap-2">

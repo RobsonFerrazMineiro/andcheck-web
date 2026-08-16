@@ -69,7 +69,7 @@ export function UserMenu({
       >
         <div className="hidden min-w-0 max-w-44 text-right xl:block">
           <p className={`truncate leading-none ${typography.bodyStrong}`}>{name}</p>
-          <p className={`mt-1 truncate ${typography.bodyMuted} font-semibold text-muted-foreground`}>
+          <p className={`mt-1 truncate ${typography.bodyStrong} text-muted-foreground`}>
             {roleLabel}
           </p>
         </div>

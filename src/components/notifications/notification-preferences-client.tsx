@@ -199,7 +199,7 @@ export function NotificationPreferencesClient({
                   </Badge>
                 </div>
                 <div className="grid gap-2">
-                  <label className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-xs text-muted-foreground">
+                  <label className={`flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-muted-foreground ${typography.sectionDescription}`}>
                     <span>{preference.critical ? "Interna fixa" : "Interna"}</span>
                     <input
                       type="checkbox"
@@ -216,7 +216,7 @@ export function NotificationPreferencesClient({
                     />
                   </label>
                   <label
-                    className="flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-xs text-muted-foreground"
+                    className={`flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-muted-foreground ${typography.sectionDescription}`}
                     title={!emailStatus.available ? emailStatus.detail : undefined}
                   >
                     <span>E-mail opcional</span>
@@ -240,7 +240,7 @@ export function NotificationPreferencesClient({
           </div>
 
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[760px] text-sm">
+            <table className="w-full min-w-[760px]">
               <thead>
                 <tr className={`border-b text-left ${typography.tableHeader} text-muted-foreground`}>
                   <th className="px-4 py-3">Tipo de notificação</th>
@@ -260,7 +260,7 @@ export function NotificationPreferencesClient({
                       {preference.groupLabel}
                     </td>
                     <td className="px-4 py-3">
-                      <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                      <label className={`inline-flex items-center gap-2 text-muted-foreground ${typography.sectionDescription}`}>
                         <input
                           type="checkbox"
                           checked={preference.internal}
@@ -279,7 +279,7 @@ export function NotificationPreferencesClient({
                     </td>
                     <td className="px-4 py-3">
                       <label
-                        className="inline-flex items-center gap-2 text-xs text-muted-foreground"
+                        className={`inline-flex items-center gap-2 text-muted-foreground ${typography.sectionDescription}`}
                         title={!emailStatus.available ? emailStatus.detail : undefined}
                       >
                         <input

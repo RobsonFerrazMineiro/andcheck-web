@@ -404,7 +404,7 @@ function FilterSelect({
         data-slot="select-trigger"
         name={name}
         defaultValue={value}
-        className="h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-[11px] text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+        className={`h-8 w-full rounded-md border border-input bg-transparent px-2.5 ${typography.sectionDescription} text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50`}
       >
         {includeAll && <option value="all">Todos</option>}
         {options.map(([optionValue, optionLabel]) => (
@@ -432,7 +432,7 @@ function DateInput({
         type="date"
         name={name}
         defaultValue={value}
-        className="text-[11px]"
+        className={typography.sectionDescription}
       />
     </FilterField>
   );
@@ -504,7 +504,7 @@ function InspectionPerformanceChart({
             gap={1.4}
           />
           <div className="absolute text-center">
-            <p className="font-mono text-[22px] font-black leading-none text-foreground">
+            <p className={`${typography.operationalValue} font-mono leading-none text-foreground`}>
               {approvalRate}%
             </p>
             <p className={`mt-1 max-w-24 leading-tight ${typography.metaStrong} text-muted-foreground`}>
@@ -525,7 +525,7 @@ function InspectionPerformanceChart({
                 />
                 <span className="truncate">{item.label}</span>
               </span>
-              <span className="text-right font-mono text-[12px] font-bold text-foreground">
+              <span className={`text-right ${typography.code} text-foreground`}>
                 {item.value}
               </span>
             </div>
@@ -578,7 +578,7 @@ function NonConformityTrendChart({
             {ticks.map((tick) => (
               <span
                 key={tick}
-                className="absolute right-0 -translate-y-1/2 font-mono text-[9px] font-semibold text-muted-foreground"
+                className={`absolute right-0 -translate-y-1/2 ${typography.codeMuted} text-muted-foreground`}
                 style={{ top: `${100 - (tick / max) * 100}%` }}
               >
                 {tick}
@@ -612,7 +612,7 @@ function NonConformityTrendChart({
             {rows.map((item, index) => (
               <span
                 key={item.label}
-                className="relative min-w-0 flex-1 font-mono text-[10px] font-bold text-muted-foreground"
+                className={`relative min-w-0 flex-1 ${typography.codeMuted} text-muted-foreground`}
                 title={item.label}
               >
                 {(index % labelInterval === 0 || index === rows.length - 1) && (
@@ -710,7 +710,7 @@ function RankingRow({
   return (
     <div className="px-3 py-2.5">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-        <span className="font-mono text-[10px] font-bold text-muted-foreground">
+        <span className={`${typography.codeMuted} text-muted-foreground`}>
           {index + 1}.
       </span>
       <p className={`${typography.bodyStrong} min-w-0 flex-1 break-words sm:truncate`}>
@@ -731,7 +731,7 @@ function RankingRow({
                   />
                   <span className="truncate">{item.label}</span>
                 </span>
-                <span className="text-right font-mono text-[10px] font-bold text-foreground">
+                <span className={`text-right ${typography.codeMuted} text-foreground`}>
                   {item.value}
                 </span>
               </div>
@@ -780,14 +780,14 @@ function TopNonConformitiesPanel({
               className="grid grid-cols-[minmax(0,1fr)_82px] items-center gap-3 px-4 py-2.5 hover:bg-primary/5 sm:grid-cols-[minmax(0,1fr)_110px]"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="font-mono text-[10px] font-bold text-muted-foreground">
+                <span className={`${typography.codeMuted} text-muted-foreground`}>
                   {index + 1}.
                 </span>
-                <span className="break-words text-[12px] font-semibold text-foreground sm:truncate">
+                <span className={`${typography.bodyStrong} break-words text-foreground sm:truncate`}>
                   {item.title}
                 </span>
               </div>
-              <span className="text-right font-mono text-[13px] font-bold text-foreground">
+              <span className={`text-right ${typography.code} text-foreground`}>
                 {item.occurrences}
               </span>
             </div>
@@ -907,12 +907,12 @@ function InsightsPanel({ items }: { items: TrendItem[] }) {
               <ItemIcon className="size-3.5 shrink-0 text-muted-foreground" />
               {item.label}
             </p>
-            <p className="mt-1 break-words text-[13px] font-semibold text-foreground">
+            <p className={`mt-1 break-words ${typography.bodyStrong} text-foreground`}>
               {item.value}
             </p>
             {item.trend && (
               <p
-                className={`mt-1 text-[10px] font-semibold ${
+                className={`mt-1 ${typography.bodyStrong} ${
                   item.trend.tone === "good"
                     ? "text-emerald-600"
                     : item.trend.tone === "bad"

@@ -40,7 +40,7 @@ const OperationalMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex h-full w-full items-center justify-center bg-muted/30">
-        <p className="animate-pulse text-[11px] uppercase tracking-widest text-muted-foreground">
+        <p className={`${typography.emptyState} animate-pulse text-muted-foreground`}>
           Carregando mapa...
         </p>
       </div>
@@ -65,10 +65,10 @@ export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
   if (pins.length === 0) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20">
-        <p className="text-[13px] font-semibold text-muted-foreground">
+        <p className={`${typography.bodyStrong} text-muted-foreground`}>
           Nenhum andaime georreferênciado
         </p>
-        <p className="max-w-xs text-center text-[11px] text-muted-foreground/60">
+        <p className={`max-w-xs text-center ${typography.sectionDescription} text-muted-foreground/60`}>
           Cadastre ou edite andaimes informando a localização GPS para
           visualiza-los no mapa.
         </p>
@@ -274,7 +274,7 @@ export function MapaOperacionalClient({
                 value={activeCompanyId}
                 onValueChange={setActiveCompanyId}
               >
-                <SelectTrigger className="h-8 w-full min-w-0 rounded-md text-[10px] sm:w-52">
+                <SelectTrigger className={`h-8 w-full min-w-0 rounded-md sm:w-52 ${typography.bodyMuted}`}>
                   <SelectValue placeholder="Todas as empresas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -288,7 +288,7 @@ export function MapaOperacionalClient({
               </Select>
             )}
             <Select value={dueFilter} onValueChange={setDueFilter}>
-              <SelectTrigger className="h-8 w-full min-w-0 rounded-md text-[10px] sm:w-52">
+              <SelectTrigger className={`h-8 w-full min-w-0 rounded-md sm:w-52 ${typography.bodyMuted}`}>
                 <SelectValue placeholder="Vencimento" />
               </SelectTrigger>
               <SelectContent>
@@ -349,7 +349,7 @@ export function MapaOperacionalClient({
               >
                 <span className={"size-3 rounded-full " + item.dot} />
                 <span className="truncate">{item.label}</span>
-                <span className="font-mono text-[10px] text-muted-foreground/70">
+                <span className={`${typography.codeMuted} text-muted-foreground/70`}>
                   {count}
                 </span>
               </Button>
@@ -398,10 +398,10 @@ export function MapaOperacionalClient({
                 />
                 <MapPin className="size-3.5 shrink-0 text-muted-foreground/30" />
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[12px] font-bold text-foreground">
+                  <p className={`${typography.code} text-foreground`}>
                     {scaffold.code}
                   </p>
-                  <p className="truncate text-[10px] text-muted-foreground">
+                  <p className={`truncate ${typography.bodyMuted} text-muted-foreground`}>
                     {canFilterCompany ? `${scaffold.companyName} - ` : ""}
                     {scaffold.location} - {scaffold.area}
                     {!scaffold.latitude && (
@@ -479,7 +479,7 @@ export function MapaOperacionalClient({
                 >
                   Todos os andaimes
                 </p>
-                <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+                <p className={`mt-0.5 ${typography.codeMuted} text-muted-foreground`}>
                   {filteredScaffolds.length} registro(s) filtrado(s)
                 </p>
               </div>
@@ -506,10 +506,10 @@ export function MapaOperacionalClient({
                     }
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="font-mono text-[12px] font-bold text-foreground">
+                    <p className={`${typography.code} text-foreground`}>
                       {scaffold.code}
                     </p>
-                    <p className="truncate text-[10px] text-muted-foreground">
+                    <p className={`truncate ${typography.bodyMuted} text-muted-foreground`}>
                       {canFilterCompany ? `${scaffold.companyName} - ` : ""}
                       {scaffold.location} - {scaffold.area}
                     </p>

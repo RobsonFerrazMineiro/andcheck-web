@@ -217,7 +217,7 @@ export default async function DashboardPage() {
             Indicadores Históricos
           </p>
           <p
-            className="mt-1 text-[12px] leading-relaxed text-muted-foreground"
+            className={`mt-1 ${typography.sectionDescription} leading-relaxed text-muted-foreground`}
           >
             Visão gerencial baseada em andaimes desmontados, inspeções e
             tratativas.

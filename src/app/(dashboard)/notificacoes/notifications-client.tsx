@@ -186,19 +186,19 @@ export function NotificationsClient({
                     <Badge variant="secondary">
                       {groupLabel(notification.type)}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
+                    <span className={`${typography.bodyMuted} text-muted-foreground`}>
                       {formatDate(notification.createdAt)}
                     </span>
                   </div>
-                  <h2 className="mt-3 text-sm font-semibold">
+                  <h2 className={`mt-3 ${typography.bodyStrong}`}>
                     {notification.title}
                   </h2>
                   {notificationSummary(notification) ? (
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
                       {notificationSummary(notification)}
                     </p>
                   ) : null}
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className={`mt-2 ${typography.sectionDescription} text-muted-foreground`}>
                     {notification.company.name}
                     {notification.workspace?.name
                       ? ` / ${notification.workspace.name}`

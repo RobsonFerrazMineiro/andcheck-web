@@ -175,7 +175,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
         <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-            <p className="text-[11px] font-semibold leading-relaxed">
+            <p className={`${typography.bodyStrong} leading-relaxed`}>
               {canActOnNonConformity
                 ? "Existe não conformidade ativa vinculada a este andaime. Conclua a tratativa para permitir uma nova inspeção."
                 : "Existe não conformidade ativa vinculada a este andaime. Uma nova inspeção poderá ser iniciada após a conclusão da tratativa pelo responsável."}
@@ -187,13 +187,13 @@ export default async function AndaimeDetailPage({ params }: Props) {
       <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40 mb-1">
+            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               Ficha Técnica do Ativo
             </p>
-            <h1 className="text-[22px] font-bold text-primary-foreground font-mono tracking-tight">
+            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
               {scaffold.code}
             </h1>
-            <p className="text-[11px] text-primary-foreground/60 mt-0.5">
+            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
               {scaffold.location}
             </p>
           </div>
@@ -278,7 +278,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
               <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
-              <p className="text-[11px] text-foreground leading-relaxed">
+              <p className={`${typography.sectionDescription} leading-relaxed text-foreground`}>
                 {scaffold.notes}
               </p>
             </div>
@@ -337,7 +337,7 @@ function TechRow({ icon: Icon, label, value }: TechRowProps) {
         <p className={`${typography.sectionLabel} shrink-0 text-muted-foreground`}>
           {label}
         </p>
-        <p className="text-[11px] font-semibold text-foreground text-right truncate">
+        <p className={`${typography.bodyStrong} truncate text-right text-foreground`}>
           {value}
         </p>
       </div>

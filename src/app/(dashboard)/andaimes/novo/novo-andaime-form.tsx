@@ -473,7 +473,7 @@ export default function NovoAndaimeForm({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Código / TAG">
                 <div className="flex items-center h-9 px-3 border border-border bg-muted/40">
-                  <span className="text-[11px] text-muted-foreground italic">
+                  <span className={`${typography.sectionDescription} italic text-muted-foreground`}>
                     {isEdit
                       ? scaffold?.code
                       : "Gerado automaticamente ao salvar"}
@@ -485,7 +485,7 @@ export default function NovoAndaimeForm({
                   value={form.type}
                   onValueChange={(v) => setForm({ ...form, type: v })}
                 >
-                  <SelectTrigger className="rounded-md h-9 text-[12px]">
+                  <SelectTrigger className={`h-9 rounded-md ${typography.bodyStrong}`}>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -510,7 +510,7 @@ export default function NovoAndaimeForm({
                   onChange={set("location")}
                   list={`${datalistId}-locations`}
                   required
-                  className="rounded-md h-9 text-[12px]"
+                  className={`h-9 rounded-md ${typography.bodyStrong}`}
                 />
                 <SmartSuggestion
                   value={suggestions.location}
@@ -534,7 +534,7 @@ export default function NovoAndaimeForm({
                       }));
                     }}
                   >
-                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                    <SelectTrigger className={`h-9 rounded-md ${typography.bodyStrong}`}>
                       <SelectValue placeholder="Selecione a área operacional" />
                     </SelectTrigger>
                     <SelectContent>
@@ -553,7 +553,7 @@ export default function NovoAndaimeForm({
                       onChange={set("area")}
                       list={`${datalistId}-areas`}
                       required
-                      className="rounded-md h-9 text-[12px]"
+                      className={`h-9 rounded-md ${typography.bodyStrong}`}
                     />
                     <SmartSuggestion
                       value={suggestions.area}
@@ -589,7 +589,7 @@ export default function NovoAndaimeForm({
                   value={form.height}
                   onChange={set("height")}
                   required
-                  className="rounded-md h-9 text-[12px]"
+                  className={`h-9 rounded-md ${typography.bodyStrong}`}
                 />
               </Field>
               <Field label="Largura (m)">
@@ -600,7 +600,7 @@ export default function NovoAndaimeForm({
                   placeholder="1.5"
                   value={form.width}
                   onChange={set("width")}
-                  className="rounded-md h-9 text-[12px]"
+                  className={`h-9 rounded-md ${typography.bodyStrong}`}
                 />
               </Field>
               <Field label="Comprimento (m)">
@@ -611,7 +611,7 @@ export default function NovoAndaimeForm({
                   placeholder="4.0"
                   value={form.length}
                   onChange={set("length")}
-                  className="rounded-md h-9 text-[12px]"
+                  className={`h-9 rounded-md ${typography.bodyStrong}`}
                 />
               </Field>
               <Field label="Carga Máx. (kg)">
@@ -621,7 +621,7 @@ export default function NovoAndaimeForm({
                   placeholder="500"
                   value={form.max_load}
                   onChange={set("max_load")}
-                  className="rounded-md h-9 text-[12px]"
+                  className={`h-9 rounded-md ${typography.bodyStrong}`}
                 />
               </Field>
             </div>
@@ -645,7 +645,7 @@ export default function NovoAndaimeForm({
                       }));
                     }}
                   >
-                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                    <SelectTrigger className={`h-9 rounded-md ${typography.bodyStrong}`}>
                       <SelectValue placeholder="Selecione o responsável técnico" />
                     </SelectTrigger>
                     <SelectContent>
@@ -664,7 +664,7 @@ export default function NovoAndaimeForm({
                       onChange={set("responsible")}
                       list={`${datalistId}-responsibles`}
                       required
-                      className="rounded-md h-9 text-[12px]"
+                      className={`h-9 rounded-md ${typography.bodyStrong}`}
                     />
                     <SmartSuggestion
                       value={suggestions.responsible}
@@ -693,7 +693,7 @@ export default function NovoAndaimeForm({
                       }));
                     }}
                   >
-                    <SelectTrigger className="h-9 rounded-md text-[12px]">
+                    <SelectTrigger className={`h-9 rounded-md ${typography.bodyStrong}`}>
                       <SelectValue placeholder="Selecione a empresa montadora" />
                     </SelectTrigger>
                     <SelectContent>
@@ -711,7 +711,7 @@ export default function NovoAndaimeForm({
                       value={form.company}
                       onChange={set("company")}
                       list={`${datalistId}-companies`}
-                      className="rounded-md h-9 text-[12px]"
+                      className={`h-9 rounded-md ${typography.bodyStrong}`}
                     />
                     <SmartSuggestion
                       value={suggestions.company}
@@ -733,18 +733,18 @@ export default function NovoAndaimeForm({
                 value={form.notes}
                 onChange={set("notes")}
                 rows={3}
-                className="rounded-md text-[12px] resize-none"
+                className={`resize-none rounded-md ${typography.bodyStrong}`}
               />
             </Field>
           </FormSection>
 
           {/* Status info */}
           <div className="bg-muted/30 border border-border px-4 py-3">
-            <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+            <p className={`${typography.sectionLabel} text-muted-foreground`}>
               {isEdit ? (
                 <>
                   Edicao operacional:{" "}
-                  <span className="font-bold text-blue-700">
+                  <span className={`${typography.bodyStrong} text-blue-700`}>
                     DADOS TECNICOS
                   </span>{" "}
                   - status e ciclo de vida permanecem nas acoes do andaime.
@@ -752,7 +752,7 @@ export default function NovoAndaimeForm({
               ) : (
                 <>
                   Status inicial:{" "}
-                  <span className="font-bold text-blue-700">EM MONTAGEM</span>{" "}
+                  <span className={`${typography.bodyStrong} text-blue-700`}>EM MONTAGEM</span>{" "}
                   - o andaime ficara em montagem ate ser liberado apos
                   inspeção.
                 </>
@@ -765,7 +765,7 @@ export default function NovoAndaimeForm({
             <Button
               type="button"
               variant="outline"
-              className="rounded-md text-[11px] uppercase tracking-widest h-9"
+              className={`h-9 rounded-md ${typography.action}`}
               disabled={saving || savedOffline}
               onClick={() =>
                 router.push(isEdit && scaffold ? `/andaimes/${scaffold.id}` : "/andaimes")
@@ -776,7 +776,7 @@ export default function NovoAndaimeForm({
             <Button
               type="submit"
               disabled={saving || savedOffline}
-              className="h-9 rounded-md text-[11px] uppercase tracking-widest"
+              className={`h-9 rounded-md ${typography.action}`}
             >
               {saving || savedOffline ? (
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />

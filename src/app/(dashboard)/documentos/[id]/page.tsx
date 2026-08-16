@@ -48,7 +48,7 @@ function Info({
       <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
-      <p className={`mt-1 text-sm font-medium ${mono ? "font-mono" : ""}`}>
+      <p className={`mt-1 ${typography.bodyStrong} ${mono ? "font-mono" : ""}`}>
         {value}
       </p>
     </div>
@@ -161,8 +161,8 @@ export default async function DocumentoDetalhePage({ params }: Props) {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="break-words text-sm font-bold">{document.fileName}</p>
-                <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                <p className={`${typography.bodyStrong} break-words`}>{document.fileName}</p>
+                <p className={`mt-1 ${typography.codeMuted} text-muted-foreground`}>
                   {formatDocumentFileSize(document.fileSize)}
                 </p>
                 <div className="mt-2">
@@ -171,7 +171,7 @@ export default async function DocumentoDetalhePage({ params }: Props) {
               </div>
             </div>
 
-            <div className="grid gap-3 text-sm">
+            <div className={`grid gap-3 ${typography.sectionDescription}`}>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="size-4" />
                 <span>{document.company?.name ?? "Empresa não informada"}</span>

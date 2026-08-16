@@ -57,12 +57,12 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className={`break-words ${typography.sectionLabel} text-muted-foreground`}>{indicator.label}</p><p className="mt-1 font-mono text-xl font-bold">{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className={`break-words ${typography.sectionLabel} text-muted-foreground`}>{indicator.label}</p><p className={`mt-1 ${typography.kpiValue}`}>{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
       </div>
 
       <Card className="rounded-lg">
         <CardHeader className="border-b pb-3">
-          <CardTitle className="flex items-center gap-2 text-[14px]">
+          <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <Building2 className="size-4" />
             Dados Gerais da Empresa
           </CardTitle>
@@ -71,7 +71,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
           <div className="flex min-w-0 items-start gap-3 rounded-lg border border-border bg-muted/20 p-3">
             <CompanyLogo name={company.name} logoUrl={company.logoUrl} />
             <div className="min-w-0">
-              <p className="break-words text-[18px] font-bold leading-tight text-foreground">
+              <p className={`${typography.pageTitle} break-words leading-tight text-foreground`}>
                 {company.name}
               </p>
               <p className={`mt-0.5 break-all text-muted-foreground ${typography.codeMuted}`}>
@@ -102,7 +102,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0"><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className="mt-1 break-words text-sm font-medium">{value}</p></div>;
+  return <div className="min-w-0"><p className={`${typography.sectionLabel} text-muted-foreground`}>{label}</p><p className={`mt-1 break-words ${typography.bodyStrong}`}>{value}</p></div>;
 }
 
 function getInitials(name: string) {
@@ -135,7 +135,7 @@ function CompanyLogo({
   }
 
   return (
-    <div className="flex size-14 shrink-0 items-center justify-center bg-primary text-xs font-bold tracking-wide text-primary-foreground">
+    <div className={`flex size-14 shrink-0 items-center justify-center bg-primary ${typography.badgeLg} text-primary-foreground`}>
       {getInitials(name) || "AC"}
     </div>
   );

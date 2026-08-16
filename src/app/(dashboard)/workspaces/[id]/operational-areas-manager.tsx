@@ -50,17 +50,17 @@ export function OperationalAreasManager({
             name="name"
             placeholder="Nome da área"
             required
-            className="h-8 rounded-md text-xs"
+            className={`h-8 rounded-md ${typography.sectionDescription}`}
           />
           <Input
             name="code"
             placeholder="Código"
-            className="h-8 rounded-md text-xs"
+            className={`h-8 rounded-md ${typography.sectionDescription}`}
           />
           <Input
             name="description"
             placeholder="Descrição"
-            className="h-8 rounded-md text-xs"
+            className={`h-8 rounded-md ${typography.sectionDescription}`}
           />
           <Button type="submit" size="sm" className="h-8">
             <Plus className="size-3.5" /> Adicionar
@@ -180,19 +180,19 @@ export function OperationalAreasManager({
               name="name"
               defaultValue={editingArea.name}
               required
-              className="h-9 rounded-md text-sm"
+              className={`h-9 rounded-md ${typography.sectionDescription}`}
             />
             <Input
               name="code"
               defaultValue={editingArea.code ?? ""}
               placeholder="Código"
-              className="h-9 rounded-md text-sm"
+              className={`h-9 rounded-md ${typography.sectionDescription}`}
             />
             <Input
               name="description"
               defaultValue={editingArea.description ?? ""}
               placeholder="Descrição"
-              className="h-9 rounded-md text-sm"
+              className={`h-9 rounded-md ${typography.sectionDescription}`}
             />
             <div className="flex justify-end gap-2 pt-2">
               <Button

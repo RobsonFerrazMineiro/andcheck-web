@@ -264,13 +264,13 @@ export function AcervoClient({
               placeholder="Buscar por TAG, área, empresa ou workspace..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="h-8 rounded-md border-border pl-9 text-[11px]"
+              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
             />
           </div>
           </FilterField>
           <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className="h-8 rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
@@ -285,7 +285,7 @@ export function AcervoClient({
           </FilterField>
           <FilterField label="Workspace">
           <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
-            <SelectTrigger className="h-8 rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Workspace" />
             </SelectTrigger>
             <SelectContent>
@@ -300,7 +300,7 @@ export function AcervoClient({
           </FilterField>
             <FilterField label="Área">
           <Select value={areaFilter} onValueChange={setÁreaFilter}>
-            <SelectTrigger className="h-8 rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Área" />
             </SelectTrigger>
             <SelectContent>
@@ -319,7 +319,7 @@ export function AcervoClient({
             aria-label="Periodo inicial"
             value={periodStart}
             onChange={(event) => setPeriodStart(event.target.value)}
-            className="h-8 rounded-md border-border text-[11px]"
+            className={`h-8 rounded-md border-border ${typography.sectionDescription}`}
           />
           </FilterField>
           <FilterField label="Fim">
@@ -328,12 +328,12 @@ export function AcervoClient({
             aria-label="Periodo final"
             value={periodEnd}
             onChange={(event) => setPeriodEnd(event.target.value)}
-            className="h-8 rounded-md border-border text-[11px]"
+            className={`h-8 rounded-md border-border ${typography.sectionDescription}`}
           />
           </FilterField>
           <FilterField label="NCs">
           <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
-            <SelectTrigger className="h-8 rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Possui NC" />
             </SelectTrigger>
             <SelectContent>
@@ -345,7 +345,7 @@ export function AcervoClient({
           </FilterField>
           <FilterField label="Documentos">
           <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
-            <SelectTrigger className="h-8 rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Possui documentos" />
             </SelectTrigger>
             <SelectContent>

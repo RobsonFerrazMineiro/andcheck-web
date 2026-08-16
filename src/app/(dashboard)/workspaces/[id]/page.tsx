@@ -333,7 +333,7 @@ function Info({
         {label}
       </p>
       <p
-        className={`mt-1 break-words text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}
+        className={`mt-1 break-words text-foreground ${mono ? typography.code : typography.bodyStrong}`}
       >
         {value}
       </p>

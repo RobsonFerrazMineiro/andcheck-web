@@ -532,7 +532,7 @@ export function EmpresasClient({
             </div>
           ))
         )}
-        <div className="border-t bg-muted/30 px-4 py-2 text-[9px] uppercase tracking-widest text-muted-foreground/50">
+        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.metaStrong}`}>
           {filtered.length} registro(s) · Módulo administrativo
         </div>
       </div>

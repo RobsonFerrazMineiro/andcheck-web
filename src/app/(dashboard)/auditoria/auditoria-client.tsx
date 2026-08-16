@@ -849,13 +849,13 @@ export function AuditoriaClient({
             name="search"
             defaultValue={filters.search}
             placeholder="Buscar descrição, usuário ou entidade..."
-            className="pl-9 h-8 text-[11px] rounded-md border-border"
+            className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
           />
           </div>
           </FilterField>
         <FilterField label="Ação" className="sm:w-[150px]">
         <Select name="action" defaultValue={filters.action || "all"}>
-          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[150px]">
+          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[150px] ${typography.sectionDescription}`}>
             <SelectValue placeholder="Ação" />
           </SelectTrigger>
           <SelectContent>
@@ -870,7 +870,7 @@ export function AuditoriaClient({
         </FilterField>
         <FilterField label="Entidade" className="sm:w-[108px]">
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
-          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[108px]">
+          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[108px] ${typography.sectionDescription}`}>
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
@@ -887,7 +887,7 @@ export function AuditoriaClient({
           name="user"
           defaultValue={filters.user}
           placeholder="Usuário"
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Empresa" className="sm:w-[150px]">
@@ -895,7 +895,7 @@ export function AuditoriaClient({
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Workspace" className="sm:w-[150px]">
@@ -903,7 +903,7 @@ export function AuditoriaClient({
           name="workspace"
           defaultValue={filters.workspace}
           placeholder="Workspace"
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[150px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Status" className="sm:w-[135px]">
@@ -911,7 +911,7 @@ export function AuditoriaClient({
           name="status"
           defaultValue={filters.status}
           placeholder="Status"
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[135px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[135px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="TAG" className="sm:w-[125px]">
@@ -919,7 +919,7 @@ export function AuditoriaClient({
           name="scaffoldTag"
           defaultValue={filters.scaffoldTag}
           placeholder="TAG"
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[125px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[125px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Início" className="sm:w-[154px]">
@@ -927,7 +927,7 @@ export function AuditoriaClient({
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[154px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Fim" className="sm:w-[154px]">
@@ -935,12 +935,12 @@ export function AuditoriaClient({
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
-          className="h-8 w-full rounded-md border-border text-[11px] sm:w-[154px]"
+          className={`h-8 w-full rounded-md border-border sm:w-[154px] ${typography.sectionDescription}`}
         />
         </FilterField>
         <FilterField label="Ordenação" className="sm:w-[132px]">
         <Select name="order" defaultValue={filters.order}>
-          <SelectTrigger className="h-8 w-full rounded-md text-[11px] sm:w-[132px]">
+          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[132px] ${typography.sectionDescription}`}>
             <SelectValue placeholder="Ordenação" />
           </SelectTrigger>
           <SelectContent>

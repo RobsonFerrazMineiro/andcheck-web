@@ -118,7 +118,7 @@ export default function ChecklistSection({
               className={`p-4 md:p-5 space-y-3 ${val.status === "nao_conforme" ? "bg-destructive/5" : ""}`}
             >
               <div className="flex items-start gap-2">
-                <span className="text-[12px] flex-1 leading-relaxed text-foreground">
+                <span className={`flex-1 leading-relaxed ${typography.bodyStrong} text-foreground`}>
                   {item.item}
                 </span>
                 {item.critical && (
@@ -163,7 +163,7 @@ export default function ChecklistSection({
                     onChange={(e) =>
                       handleChange(idx, "observation", e.target.value)
                     }
-                    className="text-[11px] h-8 rounded-md border-border flex-1"
+                    className={`h-8 flex-1 rounded-md border-border ${typography.sectionDescription}`}
                   />
                   {/* Input de arquivo oculto */}
                   <input

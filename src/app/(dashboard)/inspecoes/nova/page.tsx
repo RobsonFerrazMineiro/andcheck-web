@@ -122,7 +122,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
             <h1 className={`${typography.panelTitle} text-amber-950`}>
               Nova inspeção bloqueada
             </h1>
-            <p className="mt-2 text-sm leading-relaxed">
+            <p className={`mt-2 leading-relaxed ${typography.sectionDescription}`}>
               Não é possível iniciar nova inspeção enquanto houver não
               conformidade ativa para este andaime.
             </p>

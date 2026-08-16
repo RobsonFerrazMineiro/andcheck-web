@@ -303,7 +303,7 @@ function DetailRow({
       <p className={`${typography.sectionLabel} w-36 shrink-0 text-muted-foreground`}>
         {label}
       </p>
-      <div className="text-[12px] text-foreground font-medium text-right flex-1 min-w-0 break-words">
+      <div className={`min-w-0 flex-1 break-words text-right ${typography.bodyStrong} text-foreground`}>
         {value}
       </div>
     </div>
@@ -426,7 +426,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
               <ArrowLeft className="w-4 h-4 text-muted-foreground" />
             </Link>
           </Button>
-          <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
+          <div className={`${typography.sectionLabel} text-muted-foreground`}>
             <Link href="/nao-conformidades" className="hover:text-foreground">
               Não Conformidades
             </Link>
@@ -466,10 +466,10 @@ export default async function NonConformityDetailPage({ params }: Props) {
               <AlertTriangle className="size-4" />
               AndCheck ⬢ Não Conformidades
             </div>
-            <h1 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
+            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
               {nc.code}
             </h1>
-            <p className="text-[12px] text-primary-foreground/70 mt-1 max-w-2xl">
+            <p className={`mt-1 max-w-2xl ${typography.sectionDescription} text-primary-foreground/70`}>
               {nc.title}
             </p>
           </div>
@@ -486,7 +486,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
       {nc.status === "CLOSED" && nc.scaffold.status === "pendente_liberacao" && (
         <div className="flex items-center gap-2 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
           <AlertTriangle className="h-4 w-4 shrink-0" />
-          <p className="text-[11px] font-semibold">
+          <p className={typography.bodyStrong}>
             {canStartInspection
               ? "A tratativa foi concluída. Inicie uma nova inspeção para liberar o andaime."
               : "A tratativa foi concluída. O andaime aguarda nova inspeção por um perfil habilitado."}
@@ -547,7 +547,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
       <Section title="Descrição" icon={FileText}>
         <div className="px-4 py-4">
-          <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-wrap">
+          <p className={`${typography.sectionDescription} whitespace-pre-wrap leading-relaxed text-foreground`}>
             {nc.description}
           </p>
         </div>
@@ -567,16 +567,16 @@ export default async function NonConformityDetailPage({ params }: Props) {
               <div key={item.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1 pt-1">
-                    <p className="text-[12px] font-semibold text-foreground">
+                    <p className={`${typography.bodyStrong} text-foreground`}>
                       {item.checklistEntry.item_label}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                    <p className={`mt-0.5 ${typography.sectionLabel} text-muted-foreground`}>
                       {humanizeChecklistCategory(item.checklistEntry.category)}{" "}
                       - {humanizeChecklistValue(item.checklistEntry.value)}
                       {item.checklistEntry.critical ? " - Crítico" : ""}
                     </p>
                     {item.checklistEntry.observation && (
-                      <p className="text-[11px] text-muted-foreground mt-2">
+                      <p className={`mt-2 ${typography.sectionDescription} text-muted-foreground`}>
                         {item.checklistEntry.observation}
                       </p>
                     )}
@@ -626,7 +626,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
                 className="flex items-start justify-between gap-4 px-4 py-3"
               >
                 <div className="min-w-0 space-y-2">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                  <p className={`mt-0.5 ${typography.sectionLabel} text-muted-foreground`}>
                     {EVIDENCE_LABELS[evidence.type] ?? humanizeCode(evidence.type)} - {evidence.fileName}
                   </p>
                   <LazyNonConformityEvidencePreview
@@ -639,7 +639,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
                     evidenceKind="general"
                   />
                 </div>
-                <p className="text-[10px] text-muted-foreground font-mono shrink-0">
+                <p className={`${typography.codeMuted} shrink-0 text-muted-foreground`}>
                   {format(evidence.createdAt, "dd/MM/yyyy HH:mm")}
                 </p>
               </div>

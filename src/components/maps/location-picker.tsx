@@ -204,7 +204,7 @@ export function LocationPicker({
     <div className="space-y-3">
       {/* Instrução + ações */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
+        <p className={`${typography.sectionDescription} leading-relaxed text-muted-foreground`}>
           {instruction}
         </p>
         <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 sm:shrink-0">
@@ -279,7 +279,7 @@ export function LocationPicker({
             <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Latitude
             </p>
-            <p className="text-[12px] font-mono text-foreground">
+            <p className={`${typography.code} text-foreground`}>
               {latitude!.toFixed(6)}
             </p>
           </div>
@@ -287,13 +287,13 @@ export function LocationPicker({
             <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Longitude
             </p>
-            <p className="text-[12px] font-mono text-foreground">
+            <p className={`${typography.code} text-foreground`}>
               {longitude!.toFixed(6)}
             </p>
           </div>
         </div>
       ) : showCoordinates && (geoState === "error" || geoState === "denied") ? (
-        <div className="flex items-start gap-2 text-[11px] px-3 py-2 rounded-md bg-amber-50 text-amber-700 border border-amber-200">
+        <div className={`flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 ${typography.sectionDescription} text-amber-700`}>
           <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
             Não foi possível obter sua localização. Ajuste o pin manualmente no

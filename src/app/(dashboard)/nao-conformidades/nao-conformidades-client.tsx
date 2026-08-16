@@ -311,13 +311,13 @@ export function NaoConformidadesClient({
               placeholder="Buscar por código, andaime, empresa ou responsável..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-8 text-[11px] rounded-md border-border"
+              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
             />
           </div>
           </FilterField>
           <FilterField label="Status">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -332,7 +332,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
@@ -350,7 +350,7 @@ export function NaoConformidadesClient({
             value={classificationFilter}
             onValueChange={setClassificationFilter}
           >
-            <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Classificação" />
             </SelectTrigger>
             <SelectContent>
@@ -365,7 +365,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Responsável">
           <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
-            <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Responsável" />
             </SelectTrigger>
             <SelectContent>
@@ -380,7 +380,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Prazo">
           <Select value={dueFilter} onValueChange={setDueFilter}>
-            <SelectTrigger className="h-8 text-[11px] rounded-md">
+            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Vencimento" />
             </SelectTrigger>
             <SelectContent>

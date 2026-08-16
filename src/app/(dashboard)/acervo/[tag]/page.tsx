@@ -511,19 +511,19 @@ export default async function AcervoDetalhePage({ params }: Props) {
       <div className="border-l-4 border-l-sidebar-primary bg-sidebar px-5 py-4 shadow-sm">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="mb-1 text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40">
+            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               ACERVO HISTÓRICO DO ANDAIME
             </p>
-            <h1 className="font-mono text-[22px] font-bold tracking-tight text-primary-foreground">
+            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
               {scaffold.code}
             </h1>
-            <p className="mt-0.5 text-[11px] text-primary-foreground/60">
+            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
               {scaffold.location}
             </p>
           </div>
           <div className="shrink-0 space-y-1 text-left sm:text-right">
             <StatusBadge status={scaffold.status} size="xl" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-primary-foreground/45">
+            <p className={`${typography.sectionLabel} text-primary-foreground/45`}>
               {scaffold.dismantled_at
                 ? `Arquivado em ${formatDate(scaffold.dismantled_at)}`
                 : "Registro arquivado"}
@@ -674,16 +674,16 @@ export default async function AcervoDetalhePage({ params }: Props) {
                 href={`/inspecoes/${inspection.id}`}
                 className="grid gap-2 px-4 py-3 transition-colors hover:bg-muted/30 md:grid-cols-4 md:items-center"
               >
-                <p className="text-[11px] font-semibold text-foreground">
+                <p className={`${typography.bodyStrong} text-foreground`}>
                   {inspection.inspector_name}
                 </p>
-                <p className="font-mono text-[11px] text-muted-foreground">
+                <p className={`${typography.codeMuted} text-muted-foreground`}>
                   {formatDate(inspection.date)}
                 </p>
                 <div>
                   <StatusBadge status={inspection.result} />
                 </div>
-                <p className="truncate text-[11px] text-muted-foreground">
+                <p className={`truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {inspection.notes ?? "-"}
                 </p>
               </Link>
@@ -707,17 +707,17 @@ export default async function AcervoDetalhePage({ params }: Props) {
                 href={`/nao-conformidades/${nc.id}`}
                 className="grid gap-2 px-4 py-3 transition-colors hover:bg-muted/30 md:grid-cols-5 md:items-center"
               >
-                <p className="font-mono text-[11px] font-bold text-foreground">
+                <p className={`${typography.code} text-foreground`}>
                   {nc.code}
                 </p>
-                <p className="truncate text-[11px] text-foreground">
+                <p className={`truncate ${typography.sectionDescription} text-foreground`}>
                   {nc.title}
                 </p>
                 <NonConformityBadge value={nc.status} size="xs" />
-                <p className="font-mono text-[11px] text-muted-foreground">
+                <p className={`${typography.codeMuted} text-muted-foreground`}>
                   {formatDate(nc.dueDate)}
                 </p>
-                <p className="truncate text-[11px] text-muted-foreground">
+                <p className={`truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {nc.responsibleUser?.name ?? "-"}
                 </p>
               </Link>
@@ -740,19 +740,19 @@ export default async function AcervoDetalhePage({ params }: Props) {
                 key={document.id}
                 className="grid gap-2 px-4 py-3 md:grid-cols-5 md:items-center"
               >
-                <p className="truncate text-[11px] font-semibold text-foreground">
+                <p className={`${typography.bodyStrong} truncate text-foreground`}>
                   {document.title}
                 </p>
-                <p className="text-[11px] text-muted-foreground">
+                <p className={`${typography.sectionDescription} text-muted-foreground`}>
                   {getDocumentTypeLabel(document.type)}
                 </p>
-                <p className="truncate text-[11px] text-muted-foreground">
+                <p className={`truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {document.file_name}
                 </p>
-                <p className="font-mono text-[11px] text-muted-foreground">
+                <p className={`${typography.codeMuted} text-muted-foreground`}>
                   {formatBytes(document.file_size)}
                 </p>
-                <p className="font-mono text-[11px] text-muted-foreground">
+                <p className={`${typography.codeMuted} text-muted-foreground`}>
                   {formatDate(document.expires_at)}
                 </p>
               </div>
@@ -793,7 +793,7 @@ function ArchiveCard({
           </h2>
         </div>
         {extra && (
-          <span className="font-mono text-[9px] text-muted-foreground">
+          <span className={`${typography.codeMuted} text-muted-foreground`}>
             {extra}
           </span>
         )}
@@ -819,7 +819,7 @@ function ArchiveRow({
         <p className={`shrink-0 ${typography.sectionLabel} text-muted-foreground`}>
           {label}
         </p>
-        <p className="truncate text-right text-[11px] font-semibold text-foreground">
+        <p className={`${typography.bodyStrong} truncate text-right text-foreground`}>
           {value}
         </p>
       </div>
@@ -878,7 +878,7 @@ function LifecycleStrip({
               <p className={`${typography.sectionLabel} text-muted-foreground`}>
                 {item.label}
               </p>
-              <p className="mt-1 font-mono text-[11px] font-semibold text-foreground">
+              <p className={`mt-1 ${typography.code} text-foreground`}>
                 {item.value}
               </p>
             </div>

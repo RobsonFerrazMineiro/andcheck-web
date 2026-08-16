@@ -723,13 +723,11 @@ export function HistoryTimelineCompact({
           <History className="size-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
             <p
-              className={`${typography.panelTitle} text-foreground ${
-                isPage ? "text-[11px]" : "text-[10px]"
-              }`}
+              className={`${typography.panelTitle} text-foreground`}
             >
               {title}
             </p>
-            <p className="mt-0.5 text-[9px] text-muted-foreground">
+            <p className={`mt-0.5 text-muted-foreground ${typography.panelSubtitle}`}>
               {isPage
                 ? `${normalizedEvents.length} evento(s) nesta página`
                 : `${Math.min(initialLimit, normalizedEvents.length)} de ${
@@ -752,7 +750,7 @@ export function HistoryTimelineCompact({
           <HistoryEventList events={visibleEvents} variant={variant} />
           {hasMoreEvents && (
             <div className="border-t border-border px-3 py-2">
-              <p className="text-[10px] text-muted-foreground">
+              <p className={`${typography.bodyMuted} text-muted-foreground`}>
                 Use a página de auditoria para consultar o histórico completo.
               </p>
             </div>
@@ -833,7 +831,7 @@ export function HistoryDrawerButton({
                 >
                   {dropdownTitle}
                 </p>
-                <p className="mt-0.5 text-[9px] text-muted-foreground">
+                <p className={`mt-0.5 text-muted-foreground ${typography.panelSubtitle}`}>
                   {normalizedEvents.length} evento(s)
                 </p>
               </div>
@@ -947,24 +945,22 @@ function HistoryEventRow({
             <HistoryEventIcon type={event.type} />
           </span>
           <div className="min-w-0">
-            <p className="truncate text-[11px] font-semibold text-foreground">
+            <p className={`truncate text-foreground ${typography.bodyStrong}`}>
               {event.actorName}
             </p>
           </div>
         </div>
         <p
-          className={`min-w-0 truncate font-medium leading-snug text-foreground max-[520px]:col-start-2 ${
-            isPage ? "text-[12px]" : "text-[11px]"
-          }`}
+          className={`min-w-0 truncate leading-snug text-foreground max-[520px]:col-start-2 ${typography.bodyStrong}`}
         >
           {event.summary}
         </p>
         {isPage && (
-          <p className="hidden min-w-0 truncate text-[10px] text-muted-foreground md:block">
+          <p className={`hidden min-w-0 truncate text-muted-foreground md:block ${typography.bodyMuted}`}>
             {entity ?? "-"}
           </p>
         )}
-        <p className="truncate text-[10px] text-muted-foreground max-[520px]:col-start-2 max-[520px]:row-start-2">
+        <p className={`truncate text-muted-foreground max-[520px]:col-start-2 max-[520px]:row-start-2 ${typography.bodyMuted}`}>
           {formatDateTime(event.createdAt)}
         </p>
         <span
@@ -984,7 +980,7 @@ function HistoryEventRow({
           }`}
         >
           {details.length === 0 ? (
-            <p className="text-[10px] text-muted-foreground">
+            <p className={`${typography.bodyMuted} text-muted-foreground`}>
               Nenhum detalhe adicional relevante para este evento.
             </p>
           ) : (
@@ -1009,12 +1005,12 @@ function DetailRow({ detail }: { detail: HistoryEventDetail }) {
         {detail.label}
       </p>
       {hasChange ? (
-        <p className="mt-0.5 break-words text-[10px] leading-relaxed text-foreground">
+        <p className={`mt-0.5 break-words leading-relaxed text-foreground ${typography.sectionDescription}`}>
           {detail.before ?? "-"} <span className="text-muted-foreground">→</span>{" "}
           {detail.after ?? "-"}
         </p>
       ) : (
-        <p className="mt-0.5 break-words text-[10px] text-foreground">
+        <p className={`mt-0.5 break-words text-foreground ${typography.sectionDescription}`}>
           {detail.value ?? "-"}
         </p>
       )}

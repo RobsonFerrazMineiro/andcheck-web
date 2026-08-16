@@ -74,7 +74,7 @@ export default async function AdminEmailConfigurationPage() {
                   key={variable.name}
                   className="flex min-w-0 items-center justify-between gap-3 border p-3"
                 >
-                  <span className="min-w-0 break-all font-mono text-xs">{variable.name}</span>
+                  <span className={`min-w-0 break-all ${typography.codeMuted}`}>{variable.name}</span>
                   <Badge
                     variant={variable.configured ? "outline" : "destructive"}
                   >
@@ -101,7 +101,7 @@ export default async function AdminEmailConfigurationPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {config.plannedProviders.map((provider) => (
-              <div key={provider} className="border p-3 text-sm font-medium">
+              <div key={provider} className={`border p-3 ${typography.bodyStrong}`}>
                 {provider}
               </div>
             ))}
@@ -115,10 +115,10 @@ export default async function AdminEmailConfigurationPage() {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="border p-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+      <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
-      <p className="mt-2 break-words text-sm font-semibold">{value}</p>
+      <p className={`mt-2 break-words ${typography.bodyStrong}`}>{value}</p>
     </div>
   );
 }

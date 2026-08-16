@@ -150,13 +150,13 @@ export function InspecoesClient({
               placeholder="Buscar por andaime (TAG) ou inspetor..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-8 text-[11px] rounded-md border-border"
+              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
             />
           </div>
           </FilterField>
           <FilterField label="Resultado">
           <Select value={resultFilter} onValueChange={setResultFilter}>
-            <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 w-full rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Resultado" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +171,7 @@ export function InspecoesClient({
           </FilterField>
           <FilterField label="Vencimento">
           <Select value={expirationFilter} onValueChange={setExpirationFilter}>
-            <SelectTrigger className="h-8 w-full rounded-md text-[11px]">
+            <SelectTrigger className={`h-8 w-full rounded-md ${typography.sectionDescription}`}>
               <SelectValue placeholder="Vencimento" />
             </SelectTrigger>
             <SelectContent>

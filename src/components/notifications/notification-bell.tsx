@@ -103,7 +103,7 @@ export function NotificationBell({
       >
         <Bell className="size-4" />
         {bellData.unreadCount > 0 && (
-          <span className={`absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 leading-4 text-destructive-foreground ${typography.bodyMuted} font-bold`}>
+          <span className={`absolute -right-1 -top-1 flex min-w-4 items-center justify-center rounded-full bg-destructive px-1 leading-4 text-destructive-foreground ${typography.code}`}>
             {bellData.unreadCount > 99 ? "99+" : bellData.unreadCount}
           </span>
         )}

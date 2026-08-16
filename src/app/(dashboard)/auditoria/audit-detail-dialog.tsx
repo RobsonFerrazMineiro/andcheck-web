@@ -98,7 +98,7 @@ function Detail({ label, value }: { label: string; value: string }) {
       <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
-      <p className="text-[12px] font-semibold text-foreground mt-1 break-words">
+      <p className={`mt-1 break-words ${typography.bodyStrong} text-foreground`}>
         {value}
       </p>
     </div>
@@ -111,7 +111,7 @@ function JsonBlock({ title, value }: { title: string; value: unknown }) {
       <p className={`${typography.sectionLabel} mb-2 text-muted-foreground`}>
         {title}
       </p>
-      <pre className="bg-muted/40 rounded-lg border border-border p-3 text-[11px] font-mono whitespace-pre-wrap break-words max-h-72 overflow-auto">
+      <pre className={`max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-muted/40 p-3 ${typography.codeMuted}`}>
         {formatJson(value)}
       </pre>
     </div>
@@ -148,7 +148,7 @@ export function AuditDetailDialog({
             </p>
             <h2
               id="audit-detail-title"
-              className="mt-1 break-words text-[15px] font-bold text-primary-foreground"
+              className={`mt-1 break-words ${typography.bodyStrong} text-primary-foreground`}
             >
               {title}
             </h2>
@@ -206,7 +206,7 @@ export function AuditDetailDialog({
                   <p className={`${typography.sectionLabel} text-muted-foreground`}>
                     Campo
                   </p>
-                  <p className="mt-1 break-words text-[12px] font-semibold text-foreground">
+                  <p className={`mt-1 break-words ${typography.bodyStrong} text-foreground`}>
                     {item.field}
                   </p>
                 </div>
@@ -215,7 +215,7 @@ export function AuditDetailDialog({
                     <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       Antes
                     </p>
-                    <p className="mt-1 break-words text-[11px] text-muted-foreground">
+                    <p className={`mt-1 break-words ${typography.sectionDescription} text-muted-foreground`}>
                       {item.before}
                     </p>
                   </div>
@@ -223,7 +223,7 @@ export function AuditDetailDialog({
                     <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       Depois
                     </p>
-                    <p className="mt-1 break-words text-[11px] text-foreground">
+                    <p className={`mt-1 break-words ${typography.sectionDescription} text-foreground`}>
                       {item.after}
                     </p>
                   </div>
@@ -245,13 +245,13 @@ export function AuditDetailDialog({
             <div className="min-w-[680px] divide-y divide-border">
               {comparisonRows(row).map((item) => (
                 <div key={item.field} className="grid grid-cols-[190px_1fr_1fr]">
-                  <p className="px-3 py-2 text-[11px] font-semibold text-foreground">
+                  <p className={`px-3 py-2 ${typography.bodyStrong} text-foreground`}>
                     {item.field}
                   </p>
-                  <p className="px-3 py-2 text-[11px] text-muted-foreground break-words">
+                  <p className={`break-words px-3 py-2 ${typography.sectionDescription} text-muted-foreground`}>
                     {item.before}
                   </p>
-                  <p className="px-3 py-2 text-[11px] text-foreground break-words">
+                  <p className={`break-words px-3 py-2 ${typography.sectionDescription} text-foreground`}>
                     {item.after}
                   </p>
                 </div>

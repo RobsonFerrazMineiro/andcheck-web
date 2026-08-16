@@ -182,14 +182,14 @@ export function NonConformityEvidencePreview({
           className="h-auto w-16 justify-start bg-transparent p-0 text-left hover:bg-transparent"
         >
           <p
-            className={`text-[9px] font-medium leading-tight text-muted-foreground ${
+            className={`${typography.bodyMuted} leading-tight text-muted-foreground ${
               showFullName ? "break-words" : "truncate"
             }`}
           >
             {getDocumentFileName(document)}
           </p>
           {observation && (
-            <p className="text-[10px] text-muted-foreground mt-1 line-clamp-3">
+            <p className={`mt-1 line-clamp-3 ${typography.bodyMuted} text-muted-foreground`}>
               {observation}
             </p>
           )}
@@ -236,14 +236,14 @@ export function NonConformityEvidencePreview({
         className="h-auto w-16 justify-start bg-transparent p-0 text-left hover:bg-transparent"
       >
         <p
-          className={`text-[9px] font-medium leading-tight text-muted-foreground ${
+          className={`${typography.bodyMuted} leading-tight text-muted-foreground ${
             showFullName ? "break-words" : "truncate"
           }`}
         >
           {getDocumentFileName(document)}
         </p>
         {observation && (
-          <p className="mt-0.5 line-clamp-2 text-[9px] text-muted-foreground">
+          <p className={`mt-0.5 line-clamp-2 ${typography.bodyMuted} text-muted-foreground`}>
             {observation}
           </p>
         )}
@@ -312,14 +312,14 @@ export function NonConformityEvidencePreview({
               />
               <div className="mt-3 flex items-start justify-between gap-3">
                 {activeImage.observation ? (
-                  <p className="text-[12px] text-muted-foreground">
+                  <p className={`${typography.sectionDescription} text-muted-foreground`}>
                     {activeImage.observation}
                   </p>
                 ) : (
                   <span />
                 )}
                 {hasGalleryNavigation && (
-                  <p className="shrink-0 text-[10px] font-mono text-muted-foreground">
+                  <p className={`${typography.codeMuted} shrink-0 text-muted-foreground`}>
                     {activeImageIndex + 1}/{galleryImages.length}
                   </p>
                 )}

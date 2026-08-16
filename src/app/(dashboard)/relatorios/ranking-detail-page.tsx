@@ -66,7 +66,7 @@ export function RankingDetailPage({
         </div>
         <div className="divide-y divide-border md:hidden">
           {rows.length === 0 ? (
-            <p className="px-4 py-6 text-center text-[11px] text-muted-foreground">
+            <p className={`px-4 py-6 text-center ${typography.sectionDescription} text-muted-foreground`}>
               Sem dados no período.
             </p>
           ) : (
@@ -77,7 +77,7 @@ export function RankingDetailPage({
                     <p className={`${typography.sectionLabel} text-muted-foreground`}>
                       {columns[1] ?? "Item"}
                     </p>
-                    <div className="mt-1 break-words text-[13px] font-semibold text-foreground">
+                    <div className={`mt-1 break-words ${typography.bodyStrong} text-foreground`}>
                       {row[1] ?? "-"}
                     </div>
                   </div>
@@ -85,7 +85,7 @@ export function RankingDetailPage({
                     <p className={`${typography.metaStrong} text-muted-foreground`}>
                       {columns[0] ?? "Posição"}
                     </p>
-                    <div className="font-mono text-[12px] font-bold text-foreground">
+                    <div className={`${typography.code} text-foreground`}>
                       {row[0] ?? index + 1}
                     </div>
                   </div>
@@ -99,7 +99,7 @@ export function RankingDetailPage({
                       <p className={`${typography.metaStrong} text-muted-foreground`}>
                         {columns[cellIndex + 2]}
                       </p>
-                      <div className="mt-1 break-words text-[11px] font-semibold text-foreground">
+                      <div className={`mt-1 break-words ${typography.bodyStrong} text-foreground`}>
                         {cell}
                       </div>
                     </div>
@@ -128,7 +128,7 @@ export function RankingDetailPage({
                 <tr>
                   <td
                     colSpan={columns.length}
-                    className="px-4 py-6 text-center text-[11px] text-muted-foreground"
+                    className={`px-4 py-6 text-center ${typography.sectionDescription} text-muted-foreground`}
                   >
                     Sem dados no período.
                   </td>
@@ -139,7 +139,7 @@ export function RankingDetailPage({
                     {row.map((cell, cellIndex) => (
                       <td
                         key={`${index}-${cellIndex}`}
-                        className="px-4 py-3 text-[11px] text-foreground"
+                        className={`px-4 py-3 ${typography.sectionDescription} text-foreground`}
                       >
                         {cell}
                       </td>

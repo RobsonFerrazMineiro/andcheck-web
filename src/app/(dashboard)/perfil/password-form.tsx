@@ -10,6 +10,7 @@ import {
   changeMyPassword,
   type PasswordChangeState,
 } from "@/lib/actions/profile-actions";
+import { typography } from "@/lib/design-system";
 import { toast } from "sonner";
 
 const INITIAL_STATE: PasswordChangeState = {
@@ -54,10 +55,10 @@ export function PasswordForm() {
         />
       </div>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] text-muted-foreground">
+        <p className={`${typography.bodyMuted} text-muted-foreground`}>
           Mínimo de 8 caracteres. A senha atual nunca é exibida ou registrada.
         </p>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending} className={typography.action}>
           {pending ? <Loader2 className="animate-spin" /> : <KeyRound />}
           Alterar senha
         </Button>

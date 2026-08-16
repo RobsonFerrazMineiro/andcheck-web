@@ -145,7 +145,7 @@ function TechRow({
       <p className={`${typography.sectionLabel} w-32 shrink-0 text-muted-foreground`}>
         {label}
       </p>
-      <div className="text-[12px] text-foreground font-medium text-right flex-1">
+      <div className={`flex-1 text-right ${typography.bodyStrong} text-foreground`}>
         {value}
       </div>
     </div>
@@ -281,20 +281,20 @@ export default async function InspectionDetailPage({ params }: Props) {
       <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-widest text-primary-foreground/40 mb-1">
+            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               AndCheck • Inspeções
             </p>
-            <h2 className="text-[22px] font-bold text-primary-foreground tracking-tight font-mono">
+            <h2 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
               {inspection.scaffold_code}
             </h2>
-            <p className="text-[11px] text-primary-foreground/60 mt-0.5">
+            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
               {scaffold?.location ?? "Registro de inspeção"}
             </p>
           </div>
           <div className="flex flex-col items-start gap-2 shrink-0 sm:items-end">
             <StatusBadge status={inspection.result} size="xl" />
             {validadeDate && (
-              <p className="text-[10px] text-primary-foreground/60">
+              <p className={`${typography.bodyMuted} text-primary-foreground/60`}>
                 Válido até{" "}
                 <span className="font-bold font-mono text-primary-foreground">
                   {validadeDate}
@@ -312,7 +312,7 @@ export default async function InspectionDetailPage({ params }: Props) {
             <p className={typography.metaStrong}>
               Inspeção reprovada com item crítico
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed">
+            <p className={`mt-1 ${typography.sectionDescription} leading-relaxed`}>
               O resultado deste relatório é Reprovado. Como houve falha em item
               crítico, o status operacional atual do andaime é Interditado e o
               uso permanece proibido até correção e nova inspeção.
@@ -368,7 +368,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               "border border-l-4 p-3 text-center " + s.bg + " " + s.bar
             }
           >
-            <p className={"text-[22px] font-bold font-mono " + s.color}>
+            <p className={`${typography.operationalValue} font-mono ${s.color}`}>
               {s.value}
             </p>
             <p className={`${typography.sectionLabel} text-muted-foreground`}>
@@ -482,7 +482,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
-              <p className="text-[11px] text-foreground leading-relaxed">
+              <p className={`${typography.sectionDescription} leading-relaxed text-foreground`}>
                 {inspection.notes}
               </p>
             </div>
@@ -513,10 +513,10 @@ export default async function InspectionDetailPage({ params }: Props) {
                 <div className="flex items-center gap-3 min-w-0">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-[12px] font-bold text-foreground truncate">
+                    <p className={`${typography.bodyStrong} truncate text-foreground`}>
                       {signature.role.name}
                     </p>
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className={`truncate ${typography.sectionDescription} text-muted-foreground`}>
                       Assinado por {signature.signer_name}
                       {signature.signer_company
                         ? " · " + signature.signer_company
@@ -524,7 +524,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                     </p>
                   </div>
                 </div>
-                <p className="text-[10px] text-muted-foreground font-mono shrink-0">
+                <p className={`${typography.codeMuted} shrink-0 text-muted-foreground`}>
                   {format(signature.signed_at, "dd/MM/yyyy HH:mm")}
                 </p>
               </div>
@@ -561,7 +561,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                     <div className="flex items-center justify-between gap-2">
                       <p
                         className={
-                          "text-[12px] font-medium " +
+                          `${typography.bodyStrong} ` +
                           (st === "nao_conforme"
                             ? "text-destructive"
                             : "text-foreground")
@@ -573,7 +573,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                         {item.critical && (
                           <Badge
                             variant="destructive"
-                            className="text-[8px] px-1.5 py-0 h-4"
+                            className={`h-4 px-1.5 py-0 ${typography.badge}`}
                           >
                             Crítico
                           </Badge>
@@ -593,7 +593,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                       </div>
                     </div>
                     {item.observation && (
-                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className={`mt-0.5 ${typography.sectionDescription} leading-relaxed text-muted-foreground`}>
                         {item.observation}
                       </p>
                     )}
@@ -613,7 +613,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               Não Conformidades Geradas
             </p>
           </div>
-          <span className="text-[9px] text-muted-foreground font-mono">
+          <span className={`${typography.codeMuted} text-muted-foreground`}>
             {inspection.nonConformities.length} registro(s)
           </span>
         </div>
@@ -642,7 +642,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 href={"/nao-conformidades/" + nc.id}
                 className="grid gap-2 px-4 py-3 hover:bg-muted/30 transition-colors sm:grid-cols-4 sm:items-center"
               >
-                <p className="text-[11px] font-bold font-mono text-foreground">
+                <p className={`${typography.code} text-foreground`}>
                   <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Código
                   </span>
@@ -651,13 +651,13 @@ export default async function InspectionDetailPage({ params }: Props) {
                 <div>
                   <NonConformityBadge value={nc.status} size="xs" />
                 </div>
-                <p className="text-[11px] text-muted-foreground">
+                <p className={`${typography.sectionDescription} text-muted-foreground`}>
                   <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Classificação
                   </span>
                   {getNonConformityClassificationLabel(nc.classification)}
                 </p>
-                <p className="text-[11px] text-muted-foreground font-mono">
+                <p className={`${typography.codeMuted} text-muted-foreground`}>
                   <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
                     Prazo
                   </span>
@@ -673,10 +673,10 @@ export default async function InspectionDetailPage({ params }: Props) {
         <div className="bg-muted/40 border border-border flex items-center gap-4 px-5 py-4">
           <QrCode className="w-9 h-9 text-muted-foreground/40 shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-foreground">
+            <p className={`${typography.bodyStrong} text-foreground`}>
               Consulta Online via QR Code
             </p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className={`mt-0.5 ${typography.sectionDescription} text-muted-foreground`}>
               Escaneie o QR Code no documento PDF para acessar o status atual,
               validade e histórico de inspeções deste andaime.
             </p>

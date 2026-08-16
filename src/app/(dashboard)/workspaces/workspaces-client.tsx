@@ -637,7 +637,7 @@ function WorkspaceLocationFields({
               value={latitudeInput}
               onChange={(event) => updateLatitude(event.target.value)}
               placeholder="-1.5205"
-              className="font-mono"
+              className={typography.code}
             />
           </div>
           <div className="space-y-1.5">
@@ -649,7 +649,7 @@ function WorkspaceLocationFields({
               value={longitudeInput}
               onChange={(event) => updateLongitude(event.target.value)}
               placeholder="-48.6278"
-              className="font-mono"
+              className={typography.code}
             />
           </div>
         </div>
