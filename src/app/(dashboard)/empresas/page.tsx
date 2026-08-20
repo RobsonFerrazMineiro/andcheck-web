@@ -1,6 +1,7 @@
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getCompanyManagementData } from "@/lib/actions/company-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { surface } from "@/lib/design-system";
 import { redirect } from "next/navigation";
 import {
   EmpresasClient,
@@ -28,7 +29,7 @@ export default async function EmpresasPage() {
   const typedWorkspaces = workspaces as WorkspaceOption[];
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Empresas" />
       <EmpresasClient
         canManage={canManage}

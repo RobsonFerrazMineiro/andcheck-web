@@ -141,9 +141,9 @@ export function AuditDetailDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
     >
       <div className={`max-h-[90vh] w-full max-w-5xl overflow-auto ${surface.dialog}`}>
-        <div className="flex flex-col gap-3 border-b border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground sm:flex-row sm:items-start sm:justify-between sm:px-5">
+        <div className={`flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between ${surface.modalHeaderDarkWide}`}>
           <div className="min-w-0">
-            <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
+            <p className={`${typography.pageEyebrow} ${surface.onDarkSubtleText}`}>
               Evento de Auditoria
             </p>
             <h2

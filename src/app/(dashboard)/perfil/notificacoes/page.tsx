@@ -1,10 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { NotificationPreferencesClient } from "@/components/notifications/notification-preferences-client";
 import {
   getEmailChannelStatus,
@@ -36,20 +29,20 @@ export default async function PerfilNotificacoesPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Canais por tipo de alerta</CardTitle>
-          <CardDescription>
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={typography.bodyStrong}>Canais por tipo de alerta</h2>
+          <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
             Alterações nos checkboxes são salvas automaticamente.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-4">
           <NotificationPreferencesClient
             preferences={preferences}
             emailStatus={emailStatus}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

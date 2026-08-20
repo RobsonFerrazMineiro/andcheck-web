@@ -272,7 +272,7 @@ export function NonConformityEvidencePreview({
                 size="icon-sm"
                 onClick={() => setOpen(false)}
                 aria-label="Fechar evidência"
-                className="text-primary-foreground/70 hover:text-primary-foreground"
+                className={`${surface.onDarkMutedText} hover:text-primary-foreground`}
               >
                 <XCircle className="w-4 h-4" />
               </Button>

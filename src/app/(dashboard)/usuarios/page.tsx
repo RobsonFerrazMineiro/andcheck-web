@@ -1,6 +1,7 @@
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getUserManagementData } from "@/lib/actions/user-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
+import { surface } from "@/lib/design-system";
 import { redirect } from "next/navigation";
 import {
   UsuariosClient,
@@ -58,7 +59,7 @@ export default async function UsuariosPage() {
   }));
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Usuários administrativos" />
       <UsuariosClient
         initialData={rows}

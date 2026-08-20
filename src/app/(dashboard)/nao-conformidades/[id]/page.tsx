@@ -415,7 +415,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto pb-10">
+    <div className={`max-w-5xl pb-10 ${surface.pageStackContained}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Button asChild variant="ghost" size="icon-sm">
@@ -461,7 +461,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 py-4">
           <div>
             <div
-              className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-primary-foreground/40`}
+              className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} ${surface.onDarkSubtleText}`}
             >
               <AlertTriangle className="size-4" />
               AndCheck ⬢ Não Conformidades
@@ -469,7 +469,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>
               {nc.code}
             </h1>
-            <p className={`mt-1 max-w-2xl ${typography.sectionDescription} text-primary-foreground/70`}>
+            <p className={`mt-1 max-w-2xl ${typography.sectionDescription} ${surface.onDarkMutedText}`}>
               {nc.title}
             </p>
           </div>

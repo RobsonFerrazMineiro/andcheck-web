@@ -1,6 +1,5 @@
 import { ActiveStatusBadge } from "@/components/shared/active-status-badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyDetail } from "@/lib/actions/company-actions";
 import { getCompanyTypeLabel, type CompanyTypeCode } from "@/lib/company-types";
 import { surface, typography } from "@/lib/design-system";
@@ -57,17 +56,17 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {indicators.map((indicator) => <Card key={indicator.label} className="min-w-0 rounded-lg py-0"><CardContent className="flex min-w-0 items-center justify-between gap-2 p-2.5 sm:p-3"><div className="min-w-0"><p className={`break-words ${typography.sectionLabel} text-muted-foreground`}>{indicator.label}</p><p className={`mt-1 ${typography.kpiValue}`}>{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></CardContent></Card>)}
+        {indicators.map((indicator) => <div key={indicator.label} className={`flex min-w-0 items-center justify-between gap-2 ${surface.kpiCard}`}><div className="min-w-0"><p className={`break-words ${typography.sectionLabel} text-muted-foreground`}>{indicator.label}</p><p className={`mt-1 ${typography.kpiValue}`}>{indicator.value}</p></div><indicator.icon className="size-4 shrink-0 text-primary" /></div>)}
       </div>
 
-      <Card className="rounded-lg">
-        <CardHeader className="border-b pb-3">
-          <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <Building2 className="size-4" />
             Dados Gerais da Empresa
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 p-4">
+          </h2>
+        </div>
+        <div className="space-y-4 p-4 sm:p-5">
           <div className={`flex min-w-0 items-start gap-3 p-3 ${surface.subtleBox}`}>
             <CompanyLogo name={company.name} logoUrl={company.logoUrl} />
             <div className="min-w-0">
@@ -95,8 +94,8 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
             <Info label="Data de criação" value={new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(company.createdAt)} />
             <div className="sm:col-span-2"><Info label="Descrição" value={company.description ?? "Não informada"} /></div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

@@ -116,7 +116,7 @@ export default async function DashboardPage() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className={surface.pageStack}>
       <div className={surface.pageHeaderResponsive}>
         <div>
           <div

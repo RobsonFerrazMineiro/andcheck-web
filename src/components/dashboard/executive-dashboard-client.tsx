@@ -36,15 +36,15 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  Download,
   FileSpreadsheet,
   Filter,
   Info,
   MapPinned,
+  Printer,
   Sparkles,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 
 type Props = {
   data: ExecutiveDashboardData;
@@ -144,21 +144,21 @@ export function ExecutiveDashboardClient({ data }: Props) {
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <Badge variant="secondary">{data.range.label}</Badge>
           <Button
-            size="sm"
-            className={`${control.buttonSm} gap-1.5 px-3`}
+            type="button"
+            className={typography.action}
             onClick={() => exportExcel(data)}
           >
             <FileSpreadsheet className="size-3.5" />
-            Excel
+            Exportar Excel
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
-            className={control.outlineButtonSm}
+            type="button"
+            variant="outline"
+            className={typography.action}
             onClick={() => exportPdf(data)}
           >
-            <Download className="size-3.5" />
-            PDF
+            <Printer className="size-3.5" />
+            Exportar PDF
           </Button>
         </div>
       </header>
@@ -256,30 +256,25 @@ export function ExecutiveDashboardClient({ data }: Props) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Indicadores operacionais</CardTitle>
-            <CardDescription>
-              Evolução consolidada por {PERIODS.find((item) => item.value === data.filters.period)?.label.toLowerCase()}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              {chartTotals === 0 ? (
-                <EmptyChart />
-              ) : (
-                <OperationalSeriesChart data={data.series} />
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <ExecutivePanel
+          title="Indicadores operacionais"
+          description={
+            `Evolução consolidada por ${PERIODS.find((item) => item.value === data.filters.period)?.label.toLowerCase()}.`
+          }
+        >
+          <div className="h-80">
+            {chartTotals === 0 ? (
+              <EmptyChart />
+            ) : (
+              <OperationalSeriesChart data={data.series} />
+            )}
+          </div>
+        </ExecutivePanel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Dashboard por status</CardTitle>
-            <CardDescription>Distribuição dos andaimes por situação operacional.</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <ExecutivePanel
+          title="Dashboard por status"
+          description="Distribuição dos andaimes por situação operacional."
+        >
             <div className="grid gap-4 lg:grid-cols-[160px_1fr] xl:grid-cols-1">
               <div className="h-44">
                 <StatusDistributionChart data={data.statusDistribution} />
@@ -301,8 +296,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
                 ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </ExecutivePanel>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[1fr_1fr]">
@@ -376,14 +370,39 @@ function KpiCard({ kpi }: { kpi: ExecutiveDashboardData["kpis"][number] }) {
   );
 }
 
+function ExecutivePanel({
+  title,
+  description,
+  children,
+  contentClassName,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+  contentClassName?: string;
+}) {
+  return (
+    <section className={surface.panel}>
+      <div className={surface.panelHeaderSubtle}>
+        <h2 className={typography.bodyStrong}>{title}</h2>
+        {description ? (
+          <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
+            {description}
+          </p>
+        ) : null}
+      </div>
+      <div className={cn("p-4", contentClassName)}>{children}</div>
+    </section>
+  );
+}
+
 function RankingsGrid({ data }: Props) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Rankings executivos</CardTitle>
-        <CardDescription>Empresas, áreas, inspetores, NCs e workspaces em destaque.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 md:grid-cols-2">
+    <ExecutivePanel
+      title="Rankings executivos"
+      description="Empresas, áreas, inspetores, NCs e workspaces em destaque."
+      contentClassName="grid gap-4 md:grid-cols-2"
+    >
         <Ranking title="Top Empresas" items={data.rankings.companies} />
         <Ranking title="Top Áreas" items={data.rankings.areas} />
         <Ranking title="Top Inspetores" items={data.rankings.inspectors} />
@@ -391,8 +410,7 @@ function RankingsGrid({ data }: Props) {
         <Ranking title="Top Workspaces" items={data.rankings.workspaces} />
         <Ranking title="Maior taxa de aprovação" items={data.rankings.approvalCompanies} suffix="%" />
         <Ranking title="Mais interdições" items={data.rankings.interdictionCompanies} />
-      </CardContent>
-    </Card>
+    </ExecutivePanel>
   );
 }
 
@@ -407,7 +425,7 @@ function Ranking({
 }) {
   const max = Math.max(1, ...items.map((item) => item.total));
   return (
-    <div className="flex flex-col gap-2 rounded-md border p-3">
+    <div className={`flex flex-col gap-2 ${surface.outlinedBox}`}>
       <h3 className={`${typography.sectionLabel} text-muted-foreground`}>
         {title}
       </h3>
@@ -443,12 +461,11 @@ function Ranking({
 function ProductivityPanel({ data }: Props) {
   const bars = data.productivity.byInspector.slice(0, 8);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Produtividade</CardTitle>
-        <CardDescription>Produção por inspetor, empresa, área e tempos médios operacionais.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <ExecutivePanel
+      title="Produtividade"
+      description="Produção por inspetor, empresa, área e tempos médios operacionais."
+      contentClassName="flex flex-col gap-4"
+    >
         <div className="grid gap-3 sm:grid-cols-2">
           <Metric label="Inspeções/dia" value={data.productivity.daily} />
           <Metric label="Inspeções/mês" value={data.productivity.monthly} />
@@ -462,8 +479,7 @@ function ProductivityPanel({ data }: Props) {
             <InspectorProductivityChart data={bars} />
           )}
         </div>
-      </CardContent>
-    </Card>
+    </ExecutivePanel>
   );
 }
 
@@ -483,14 +499,11 @@ function ManagementMap({ data }: Props) {
   const pins = data.map.pins;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Mapa gerencial</CardTitle>
-        <CardDescription>
-          Mapa real com andaimes georreferenciados, status por cor e concentração por área.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-[1fr_260px]">
+    <ExecutivePanel
+      title="Mapa gerencial"
+      description="Mapa real com andaimes georreferenciados, status por cor e concentração por área."
+      contentClassName="grid gap-4 lg:grid-cols-[1fr_260px]"
+    >
         <div className="relative min-h-96 overflow-hidden rounded-lg border">
           {pins.length > 0 ? (
             <OperationalMap
@@ -510,7 +523,7 @@ function ManagementMap({ data }: Props) {
             {pins.length} ponto(s) georreferenciado(s)
           </div>
           <Ranking title="Áreas" items={data.map.byArea} />
-          <div className={`grid grid-cols-2 gap-2 rounded-md border p-3 ${typography.sectionDescription} text-muted-foreground`}>
+          <div className={`grid grid-cols-2 gap-2 ${surface.outlinedBox} ${typography.sectionDescription} text-muted-foreground`}>
             {[
               ["Liberado", "liberado"],
               ["Montagem", "em_montagem"],
@@ -529,21 +542,19 @@ function ManagementMap({ data }: Props) {
             ))}
           </div>
         </div>
-      </CardContent>
-    </Card>
+    </ExecutivePanel>
   );
 }
 
 function InsightsPanel({ data }: Props) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Insights operacionais</CardTitle>
-        <CardDescription>Tendências automáticas calculadas com os dados filtrados.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <ExecutivePanel
+      title="Insights operacionais"
+      description="Tendências automáticas calculadas com os dados filtrados."
+      contentClassName="flex flex-col gap-3"
+    >
         {data.insights.map((insight) => (
-          <div key={insight.title} className={cn("rounded-md border p-3", toneBackground(insight.tone))}>
+          <div key={insight.title} className={cn(surface.outlinedBox, toneBackground(insight.tone))}>
             <div className="flex items-start gap-3">
               <Sparkles className="mt-0.5 size-4 shrink-0" />
               <div>
@@ -553,8 +564,7 @@ function InsightsPanel({ data }: Props) {
             </div>
           </div>
         ))}
-      </CardContent>
-    </Card>
+    </ExecutivePanel>
   );
 }
 
@@ -570,7 +580,7 @@ function EmptyChart({ label = "Sem dados para o período filtrado." }: { label?:
 }
 
 function toneRing(tone: string) {
-  return SEMANTIC_TONE_CLASSES[toSemanticTone(tone)].border;
+  return SEMANTIC_TONE_CLASSES[toSemanticTone(tone)].borderLeft;
 }
 
 function toneBackground(tone: string) {

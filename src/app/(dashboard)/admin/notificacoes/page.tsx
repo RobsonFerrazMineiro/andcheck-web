@@ -2,13 +2,6 @@ import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   getAdminNotificationData,
   resendNotificationEmail,
 } from "@/lib/actions/notification-actions";
@@ -77,23 +70,25 @@ export default async function AdminNotificationsPage() {
 
       <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
         {metrics.map((metric) => (
-          <Card key={metric.label} size="sm">
-            <CardHeader>
-              <CardDescription>{metric.label}</CardDescription>
-              <CardTitle className="text-2xl">{metric.value}</CardTitle>
-            </CardHeader>
-          </Card>
+          <div key={metric.label} className={surface.kpiCard}>
+            <p className={`${typography.sectionLabel} text-muted-foreground`}>
+              {metric.label}
+            </p>
+            <p className={`${typography.kpiValue} mt-2 text-foreground`}>
+              {metric.value}
+            </p>
+          </div>
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Últimas falhas</CardTitle>
-          <CardDescription>
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={typography.bodyStrong}>Últimas falhas</h2>
+          <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
             Registros de e-mail com erro no escopo atual.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div className="p-4">
           {latestFailures.length === 0 ? (
             <EmptyState
               icon={BellOff}
@@ -196,8 +191,8 @@ export default async function AdminNotificationsPage() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

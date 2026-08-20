@@ -115,7 +115,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
 
   if (blockedNonConformity && selectedScaffoldId) {
     return (
-      <div className={`mx-auto max-w-2xl p-6 ${surface.warningAlert}`}>
+      <div className={`mx-auto max-w-2xl p-4 sm:p-5 ${surface.warningAlert}`}>
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
           <div>

@@ -82,6 +82,9 @@ export const surface = {
   mutedInsetStrong: "rounded-md border border-border bg-muted/50",
   readonlyInset: "border border-border bg-muted/40",
   softInset: "rounded-md border border-border/70 bg-muted/15",
+  outlinedBox: "rounded-md border border-border p-3",
+  gridCell: "min-w-0 bg-card p-3",
+  gridCellLg: "min-w-0 bg-card p-4",
   expandedRow: "border-t border-border bg-muted/15",
   outlinedChip: "rounded-md border border-border/70",
   badgeChip: "inline-flex items-center gap-1 rounded-md border px-2 py-0.5",
@@ -110,6 +113,8 @@ export const surface = {
   panelHeader: "bg-sidebar px-4 py-3 text-sidebar-foreground",
   modalHeaderDark:
     "border-b border-sidebar-border bg-sidebar px-4 py-3 text-sidebar-foreground",
+  modalHeaderDarkWide:
+    "border-b border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground sm:px-5",
   panelHeaderMuted: "border-b-2 border-border bg-muted/40 px-4 py-2.5",
   panelHeaderWide: "border-b-2 border-border bg-muted/40 px-5 py-3",
   panelHeaderSubtle: "border-b-2 border-border bg-muted/30 px-4 py-3",
@@ -145,6 +150,7 @@ export const surface = {
   tableHeaderCellMuted: "text-primary-foreground/60",
   onDarkMutedText: "text-primary-foreground/60",
   onDarkSubtleText: "text-primary-foreground/40",
+  onDarkIcon: "text-primary-foreground/80",
   tableFooter: `border-t border-border bg-muted/30 px-4 py-2 text-muted-foreground/50`,
   panelEmptyState: "border-0 border-b border-dashed",
   panelEmptyStatePadded: "border-0 border-b border-dashed py-8",

@@ -511,7 +511,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
       <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
+            <p className={`${typography.pageEyebrow} mb-1 ${surface.onDarkSubtleText}`}>
               ACERVO HISTÓRICO DO ANDAIME
             </p>
             <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>
@@ -523,7 +523,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
           </div>
           <div className="shrink-0 space-y-1 text-left sm:text-right">
             <StatusBadge status={scaffold.status} size="xl" />
-            <p className={`${typography.sectionLabel} text-primary-foreground/45`}>
+            <p className={`${typography.sectionLabel} ${surface.onDarkSubtleText}`}>
               {scaffold.dismantled_at
                 ? `Arquivado em ${formatDate(scaffold.dismantled_at)}`
                 : "Registro arquivado"}

@@ -2,7 +2,6 @@
 
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { surface, typography } from "@/lib/design-system";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
@@ -82,21 +81,21 @@ export function PerfilClient({
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <Card className="overflow-hidden rounded-lg">
-          <CardContent className="p-0">
-            <div className="border-b bg-sidebar px-5 py-5 text-sidebar-foreground">
+        <section className={surface.panel}>
+          <div className="p-0">
+            <div className={surface.modalHeaderDarkWide}>
               <div className="flex items-start gap-4">
                 <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent/60 ring-1 ring-sidebar-border/60">
                   <User className="size-6" />
                 </div>
                 <div className="min-w-0">
-                  <p className={`${typography.panelTitle} text-primary-foreground/55`}>
+                  <p className={`${typography.panelTitle} ${surface.onDarkSubtleText}`}>
                     Usuário autenticado
                   </p>
                   <h2 className={`${typography.pageTitle} mt-1 break-words leading-tight`}>
                     {profile.name}
                   </h2>
-                  <p className={`mt-1 break-all ${typography.sectionDescription} text-primary-foreground/70`}>
+                  <p className={`mt-1 break-all ${typography.sectionDescription} ${surface.onDarkMutedText}`}>
                     {profile.email}
                   </p>
                 </div>
@@ -133,16 +132,16 @@ export function PerfilClient({
                 }
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="rounded-lg">
-          <CardHeader className="border-b pb-3">
-            <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
+        <section className={surface.panel}>
+          <div className={surface.panelHeaderSubtle}>
+            <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
               <KeyRound className="size-4" /> Segurança da conta
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 p-4">
+            </h2>
+          </div>
+          <div className="grid gap-4 p-4">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <Info
                 icon={CalendarClock}
@@ -165,8 +164,8 @@ export function PerfilClient({
             ) : (
               <PasswordForm />
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -182,7 +181,7 @@ function SummaryTile({
   value: string;
 }) {
   return (
-    <div className="min-w-0 bg-card p-4">
+    <div className={surface.gridCellLg}>
       <div className="mb-2 flex items-center gap-2">
         <Icon className="size-3.5 shrink-0 text-muted-foreground" />
         <p className={`${typography.sectionLabel} text-muted-foreground`}>

@@ -128,7 +128,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
   const origin = `${proto}://${host}`;
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto">
+    <div className={`max-w-4xl ${surface.pageStackContained}`}>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <Button asChild variant="ghost" size="icon-sm">
@@ -187,7 +187,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
       <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
+            <p className={`${typography.pageEyebrow} mb-1 ${surface.onDarkSubtleText}`}>
               Ficha Técnica do Ativo
             </p>
             <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>

@@ -13,12 +13,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { FilterField, FilterShell } from "@/components/shared/filter-shell";
-import {
-  HistoryTimelineCompact,
-  type HistoryEvent,
-  type HistoryEventDetail,
-  type HistoryEventType,
-} from "@/components/shared/audit-timeline";
+import type { HistoryEvent, HistoryEventDetail, HistoryEventType } from "@/components/shared/audit-timeline";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -961,12 +956,83 @@ export function AuditoriaClient({
       </form>
 
       <div className={`min-w-0 ${surface.panel}`}>
-        <HistoryTimelineCompact
-          events={historyEvents}
-          initialLimit={Math.max(rows.length, 1)}
-          showFullHistoryAction={false}
-          variant="page"
-        />
+        <div
+          className={`hidden grid-cols-[132px_minmax(132px,1fr)_minmax(128px,0.9fr)_minmax(128px,0.9fr)_minmax(260px,1.8fr)_minmax(126px,0.8fr)] gap-4 lg:grid ${surface.tableHeader}`}
+        >
+          <span>Data</span>
+          <span>Usuário</span>
+          <span>Ação</span>
+          <span>Entidade</span>
+          <span>Descrição</span>
+          <span>Contexto</span>
+        </div>
+
+        {rows.length === 0 ? (
+          <div className="p-4">
+            <p className={`py-8 text-center ${typography.emptyState} text-muted-foreground`}>
+              Nenhum evento encontrado
+            </p>
+          </div>
+        ) : (
+          <div className={surface.listDivider}>
+            {rows.map((row, index) => {
+              const event = historyEvents[index];
+              return (
+                <div
+                  key={row.id}
+                  className={
+                    `grid grid-cols-[1fr_auto] items-start gap-3 px-4 py-3 lg:grid-cols-[132px_minmax(132px,1fr)_minmax(128px,0.9fr)_minmax(128px,0.9fr)_minmax(260px,1.8fr)_minmax(126px,0.8fr)] lg:gap-4 ` +
+                    surface.rowInteractive +
+                    " " +
+                    (index % 2 ? surface.rowStripedOdd : surface.rowStripedEven)
+                  }
+                >
+                  <div>
+                    <p className={`${typography.code} text-foreground`}>
+                      {format(new Date(row.createdAt), "dd/MM/yyyy")}
+                    </p>
+                    <p className={`${typography.codeMuted} text-muted-foreground`}>
+                      {format(new Date(row.createdAt), "HH:mm:ss")}
+                    </p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`truncate text-foreground ${typography.bodyStrong}`}>
+                      {row.userName ?? "Sistema"}
+                    </p>
+                    <p className={`truncate text-muted-foreground ${typography.codeMuted}`}>
+                      {row.userRole ?? "-"}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-1.5 lg:hidden">
+                      <span className={`${surface.outlinedChip} px-2 py-0.5 ${typography.badge} text-muted-foreground`}>
+                        {labelAction(row)}
+                      </span>
+                      <span className={`${surface.outlinedChip} px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground`}>
+                        {entityDisplay(row)}
+                      </span>
+                    </div>
+                  </div>
+                  <p className={`hidden truncate text-foreground lg:block ${typography.bodyStrong}`}>
+                    {labelAction(row)}
+                  </p>
+                  <p className={`hidden truncate text-muted-foreground lg:block ${typography.sectionDescription}`}>
+                    {entityDisplay(row)}
+                  </p>
+                  <p className={`col-span-2 min-w-0 text-muted-foreground lg:col-span-1 ${typography.sectionDescription}`}>
+                    <span className="line-clamp-2">{event?.summary || friendlyDescription(row)}</span>
+                  </p>
+                  <div className="hidden min-w-0 lg:block">
+                    <p className={`truncate text-muted-foreground ${typography.codeMuted}`}>
+                      {row.browserName ?? "Navegador não informado"}
+                    </p>
+                    <p className={`truncate text-muted-foreground ${typography.codeMuted}`}>
+                      {row.deviceType ?? row.osName ?? "-"}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className={`flex items-center justify-between ${surface.panelFooter}`}>
           <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>

@@ -78,7 +78,7 @@ export function OperationalAreasManager({
       ) : (
         <div className={`max-w-full ${surface.panel}`}>
           <div
-            className={`hidden gap-2 lg:grid ${tableGrid} ${surface.tableHeader}`}
+            className={`hidden gap-4 lg:grid ${tableGrid} ${surface.tableHeader}`}
           >
             <span>Área</span>
             <span>Código</span>
@@ -90,7 +90,7 @@ export function OperationalAreasManager({
           {areas.map((area, index) => (
             <div
               key={area.id}
-              className={`flex items-start gap-3 px-4 py-3 lg:grid ${tableGrid} lg:items-center lg:gap-2 lg:px-3 ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
+              className={`grid grid-cols-[1fr_auto] items-start gap-3 px-4 py-3 lg:grid ${tableGrid} lg:items-center lg:gap-4 ${surface.rowInteractive} ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
             >
               <div className="min-w-0 flex-1">
                 <p

@@ -170,7 +170,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Relatórios Gerenciais" />
       <div className={`${surface.pageHeaderResponsive} lg:flex-row lg:items-start lg:justify-between`}>
         <div>
@@ -457,7 +457,7 @@ function KpiPanel({
       </div>
       <div className="grid gap-px bg-border min-[380px]:grid-cols-2 md:grid-cols-4">
         {items.map(([label, value, ItemIcon]) => (
-          <div key={label} className="min-w-0 bg-card p-3">
+          <div key={label} className={surface.gridCell}>
             <p
               className={`${typography.sectionLabel} flex min-w-0 items-center gap-1.5 text-muted-foreground`}
             >
@@ -900,7 +900,7 @@ function InsightsPanel({ items }: { items: TrendItem[] }) {
         {items.map((item) => {
           const ItemIcon = item.icon;
           return (
-          <div key={item.label} className="min-w-0 bg-card p-3">
+          <div key={item.label} className={surface.gridCell}>
             <p
               className={`${typography.sectionLabel} flex items-center gap-1.5 text-muted-foreground`}
             >

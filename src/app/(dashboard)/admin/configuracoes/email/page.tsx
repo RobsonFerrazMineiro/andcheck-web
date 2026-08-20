@@ -1,12 +1,5 @@
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getEmailTechnicalConfiguration } from "@/lib/actions/notification-actions";
 import { surface, typography } from "@/lib/design-system";
 import { CheckCircle2, Mail, XCircle } from "lucide-react";
@@ -43,36 +36,38 @@ export default async function AdminEmailConfigurationPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <Mail className="size-4" />
             Canal de e-mail
-          </CardTitle>
-          <CardDescription>{config.status.detail}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
+          </h2>
+          <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
+            {config.status.detail}
+          </p>
+        </div>
+        <div className="grid gap-4 p-4 md:grid-cols-3">
           <Metric label="Status" value={config.status.label} />
           <Metric label="Provider" value={config.provider} />
           <Metric label="Remetente" value={config.from} />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Variaveis de ambiente</CardTitle>
-            <CardDescription>
+        <section className={surface.panel}>
+          <div className={surface.panelHeaderSubtle}>
+            <h2 className={typography.bodyStrong}>Variaveis de ambiente</h2>
+            <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
               Apenas o estado de configuração é exibido; segredos não são
               renderizados.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </p>
+          </div>
+          <div className="p-4">
             <div className="grid gap-2 sm:grid-cols-2">
               {config.variables.map((variable) => (
                 <div
                   key={variable.name}
-                  className="flex min-w-0 items-center justify-between gap-3 border p-3"
+                  className={`flex min-w-0 items-center justify-between gap-3 p-3 ${surface.mutedInset}`}
                 >
                   <span className={`min-w-0 break-all ${typography.codeMuted}`}>{variable.name}</span>
                   <Badge
@@ -88,25 +83,25 @@ export default async function AdminEmailConfigurationPage() {
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Provedores planejados</CardTitle>
-            <CardDescription>
+        <section className={surface.panel}>
+          <div className={surface.panelHeaderSubtle}>
+            <h2 className={typography.bodyStrong}>Provedores planejados</h2>
+            <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
               A camada atual usa adapter abstrato para troca futura de
               provider.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
+            </p>
+          </div>
+          <div className="space-y-2 p-4">
             {config.plannedProviders.map((provider) => (
-              <div key={provider} className={`border p-3 ${typography.bodyStrong}`}>
+              <div key={provider} className={`p-3 ${surface.mutedInset} ${typography.bodyStrong}`}>
                 {provider}
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -114,7 +109,7 @@ export default async function AdminEmailConfigurationPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border p-4">
+    <div className={`p-4 ${surface.mutedInset}`}>
       <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>

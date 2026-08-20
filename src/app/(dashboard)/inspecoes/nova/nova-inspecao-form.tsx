@@ -60,7 +60,7 @@ const ChecklistSection = dynamic(
   () => import("@/components/inspection/checklist-section"),
   {
     loading: () => (
-      <div className={`p-5 ${surface.card}`}>
+      <div className={`p-4 sm:p-5 ${surface.card}`}>
         <p className={`${typography.panelTitle} text-muted-foreground`}>
           Carregando checklist...
         </p>
@@ -923,8 +923,8 @@ export function NovaInspecaoForm({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-10">
-      <div className="flex items-center gap-2">
+    <div className={`max-w-3xl pb-10 ${surface.pageStackContained}`}>
+      <div className="hidden">
         <Button asChild variant="ghost" size="icon-sm">
           <Link href="/inspecoes" aria-label="Voltar para inspeções">
             <ArrowLeft className="w-4 h-4 text-muted-foreground" />
@@ -939,7 +939,13 @@ export function NovaInspecaoForm({
         </div>
       </div>
 
-      <div className={surface.pageHeader}>
+      <div className={`flex items-center gap-3 ${surface.pageHeader}`}>
+        <Button variant="ghost" size="icon" className="w-7 h-7" asChild>
+          <Link href="/inspecoes" aria-label="Voltar para inspeÃ§Ãµes">
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+        </Button>
+        <div>
         <div
           className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
         >
@@ -949,13 +955,12 @@ export function NovaInspecaoForm({
         <h1 className={`${typography.pageTitle} text-foreground`}>
           Nova Inspeção
         </h1>
-        <p
-          className={`${typography.sectionDescription} text-muted-foreground mt-0.5`}
-        >
+        <p className="hidden">
           Checklist de{" "}
           {checklistTemplate.reduce((a, c) => a + c.items.length, 0)} itens •
           Resultado calculado automaticamente • NR-18 / NR-35 / ABNT NBR 6494
         </p>
+        </div>
       </div>
 
       <OfflineDataNotice
@@ -964,7 +969,7 @@ export function NovaInspecaoForm({
         lastCachedAt={lastAuxiliaryCachedAt}
       />
 
-      <div className={`space-y-4 p-5 ${surface.card}`}>
+      <div className={`space-y-4 p-4 sm:p-5 ${surface.card}`}>
         <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Informações Gerais
         </h3>
@@ -977,8 +982,11 @@ export function NovaInspecaoForm({
               value={selectedScaffoldId}
               onValueChange={handleScaffoldChange}
             >
-              <SelectTrigger className={control.selectSm}>
-                <SelectValue placeholder="Selecionar andaime..." />
+              <SelectTrigger className={`w-full min-w-0 overflow-hidden ${control.selectSm}`}>
+                <SelectValue
+                  placeholder="Selecionar andaime..."
+                  className="min-w-0 flex-1 truncate"
+                />
               </SelectTrigger>
               <SelectContent
                 className="-ml-1.5 !max-h-[min(17rem,50vh)] !w-[calc(100vw-2.25rem)] !min-w-0 max-w-[27rem] overflow-hidden sm:ml-0 sm:!w-[var(--radix-select-trigger-width)] sm:max-w-none sm:!max-h-80"
@@ -994,7 +1002,11 @@ export function NovaInspecaoForm({
                   />
                 </div>
                 {filteredScaffolds.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
+                  <SelectItem
+                    key={s.id}
+                    value={s.id}
+                    className="min-w-0 [&>span:last-child]:min-w-0 [&>span:last-child]:truncate"
+                  >
                     {s.code} — {s.location}
                   </SelectItem>
                 ))}
@@ -1247,7 +1259,7 @@ export function NovaInspecaoForm({
         </div>
       )}
 
-      <div className={`space-y-3 p-5 ${surface.card}`}>
+      <div className={`space-y-3 p-4 sm:p-5 ${surface.card}`}>
         <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Registro Fotográfico
         </h3>
@@ -1373,7 +1385,7 @@ export function NovaInspecaoForm({
       </div>
 
       {/* Assinatura Digital */}
-      <div className={`space-y-3 p-5 ${surface.card}`}>
+      <div className={`space-y-3 p-4 sm:p-5 ${surface.card}`}>
         <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Observações Gerais
         </h3>
@@ -1385,7 +1397,7 @@ export function NovaInspecaoForm({
         />
       </div>
 
-      <div className={`space-y-4 px-5 pb-3 pt-3 ${surface.card}`}>
+      <div className={`space-y-4 px-4 pb-3 pt-3 sm:px-5 ${surface.card}`}>
         <div className={`flex items-center justify-between ${surface.sectionDivider}`}>
           <h3 className={`${typography.sectionLabel} text-muted-foreground`}>
             Assinaturas obrigatórias

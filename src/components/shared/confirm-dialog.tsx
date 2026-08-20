@@ -50,7 +50,7 @@ export function ConfirmDialog({
       <div className={`w-full max-w-md overflow-hidden ${surface.dialog}`}>
         <div className={`flex items-center justify-between ${surface.modalHeaderDark}`}>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-primary-foreground/80" />
+            <AlertTriangle className={`size-4 ${surface.onDarkIcon}`} />
             <p id="confirm-dialog-title" className={typography.panelTitle}>
               {title}
             </p>

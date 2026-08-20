@@ -11,6 +11,19 @@ import {
 import { typography } from "@/lib/design-system";
 
 const NORMS = ["NR-18", "NR-35", "NBR 6494", "ISO 45001", "ISO 9001"];
+const SIDEBAR_SUBTITLE_ACRONYMS = new Set(["BI", "HSE", "KPIS"]);
+
+function formatSidebarSubtitle(value?: string) {
+  return (value ?? "")
+    .toLocaleLowerCase("pt-BR")
+    .split(" ")
+    .map((word) => {
+      const uppercaseWord = word.toLocaleUpperCase("pt-BR");
+      if (SIDEBAR_SUBTITLE_ACRONYMS.has(uppercaseWord)) return uppercaseWord;
+      return word.charAt(0).toLocaleUpperCase("pt-BR") + word.slice(1);
+    })
+    .join(" ");
+}
 
 export function Sidebar({
   canManageUsers = false,
@@ -104,15 +117,15 @@ export function Sidebar({
               )}
               <item.icon className="w-4 h-4 shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="leading-tight">
+                <p className="leading-tight uppercase">
                   {item.label}
                 </p>
                 <p
-                  className={`${typography.panelSubtitle} leading-tight ${
+                  className={`text-[9px] leading-tight tracking-normal ${
                     active ? "text-white/50" : "text-sidebar-foreground/30"
                   }`}
                 >
-                  {item.desc}
+                  {formatSidebarSubtitle(item.desc)}
                 </p>
               </div>
               {active && (
@@ -147,9 +160,9 @@ export function Sidebar({
                 {active && <div className="absolute inset-y-0 left-0 w-0.5 bg-sidebar-primary" />}
                 <item.icon className="size-4 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="leading-tight">{item.label}</p>
-                  <p className={`${typography.panelSubtitle} leading-tight ${active ? "text-white/50" : "text-sidebar-foreground/30"}`}>
-                    {item.desc}
+                  <p className="leading-tight uppercase">{item.label}</p>
+                  <p className={`text-[9px] leading-tight tracking-normal ${active ? "text-white/50" : "text-sidebar-foreground/30"}`}>
+                    {formatSidebarSubtitle(item.desc)}
                   </p>
                 </div>
                 {active && <ChevronRight className="size-3 shrink-0 text-white/40" />}

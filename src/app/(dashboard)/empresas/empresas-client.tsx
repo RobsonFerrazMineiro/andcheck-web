@@ -417,7 +417,7 @@ export function EmpresasClient({
 
       <div className={`max-w-full ${surface.panel}`}>
         <div
-          className={`hidden grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] gap-2 lg:grid ${surface.tableHeader}`}
+          className={`hidden grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] gap-4 lg:grid ${surface.tableHeader}`}
         >
           <span>Nome</span>
           <span>Tipo</span>
@@ -438,7 +438,7 @@ export function EmpresasClient({
           filtered.map((company, index) => (
             <div
               key={company.id}
-              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] lg:gap-2 lg:px-3 ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
+              className={`grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 lg:grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] lg:gap-4 ${surface.rowInteractive} ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-center gap-2">
@@ -895,7 +895,7 @@ function TypeFilterButton({
     >
       {label}
       <span
-        className={`${typography.codeMuted} ${active ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}
+        className={`${typography.codeMuted} ${active ? surface.onDarkMutedText : "text-muted-foreground/60"}`}
       >
         {count}
       </span>

@@ -8,13 +8,6 @@ import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   archiveAllNotifications,
   markAllNotificationsAsRead,
   type NotificationFilter,
@@ -151,14 +144,14 @@ export function NotificationsClient({
       </FilterShell>
       </MobileFilterPanel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Histórico</CardTitle>
-          <CardDescription>
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={typography.bodyStrong}>Histórico</h2>
+          <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
             Últimas notificações no seu escopo de acesso.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          </p>
+        </div>
+        <div className="space-y-3 p-4">
           {filtered.length === 0 ? (
             <EmptyState
               icon={Bell}
@@ -170,7 +163,7 @@ export function NotificationsClient({
             filtered.map((notification) => (
               <div
                 key={notification.id}
-                className="grid gap-3 border p-4 md:grid-cols-[1fr_auto]"
+                className={`grid gap-3 p-4 md:grid-cols-[1fr_auto] ${surface.mutedInset}`}
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -216,8 +209,8 @@ export function NotificationsClient({
               </div>
             ))
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

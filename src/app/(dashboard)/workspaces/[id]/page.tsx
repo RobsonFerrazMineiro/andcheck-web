@@ -184,7 +184,7 @@ export default async function WorkspaceDetailPage({
             <h2 className={surface.panelHeaderTitle}>Dados gerais</h2>
           </div>
         </div>
-        <div className="space-y-4 p-4">
+        <div className="space-y-4 p-4 sm:p-5">
           <div className={`flex min-w-0 flex-col gap-3 p-3 sm:flex-row sm:items-start sm:justify-between ${surface.subtleBox}`}>
             <div className="min-w-0">
               <p className={`${typography.pageTitle} break-words leading-tight text-foreground`}>

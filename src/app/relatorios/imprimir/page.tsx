@@ -60,11 +60,11 @@ function formatTrendRate(trend: KpiTrend) {
 
 function trendClass(trend?: KpiTrend) {
   if (!trend || trend.status === "no-history" || trend.status === "new-record") {
-    return "text-slate-500";
+    return "text-muted-foreground";
   }
   if (trend.status === "positive") return "text-emerald-700";
   if (trend.status === "negative") return "text-rose-700";
-  return "text-slate-500";
+  return "text-muted-foreground";
 }
 
 function trendLabel(trend?: KpiTrend, withComparison = false) {
@@ -98,34 +98,34 @@ function PrintHeader({
   labels: ReturnType<typeof resolveManagementReportFilterLabels>;
 }) {
   return (
-    <header className="rounded-lg bg-slate-800 px-7 py-5 text-white">
-      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-300">
+    <header className="rounded-lg bg-sidebar px-7 py-5 text-sidebar-foreground">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-sidebar-foreground/65">
         AndCheck • Relatórios Gerenciais
       </p>
       <h1 className="mt-1 text-[26px] font-extrabold uppercase tracking-normal">
         Relatórios Gerenciais
       </h1>
-      <div className="mt-5 grid grid-cols-3 gap-x-8 gap-y-2 text-[11px] text-slate-200">
+      <div className="mt-5 grid grid-cols-3 gap-x-8 gap-y-2 text-[11px] text-sidebar-foreground/75">
         <p>
-          <span className="font-semibold text-white">Empresa:</span> {labels.company}
+          <span className="font-semibold text-sidebar-foreground">Empresa:</span> {labels.company}
         </p>
         <p>
-          <span className="font-semibold text-white">Workspace:</span>{" "}
+          <span className="font-semibold text-sidebar-foreground">Workspace:</span>{" "}
           {labels.workspace}
         </p>
         <p>
-          <span className="font-semibold text-white">Área:</span> {labels.area}
+          <span className="font-semibold text-sidebar-foreground">Área:</span> {labels.area}
         </p>
         <p>
-          <span className="font-semibold text-white">Período:</span>{" "}
+          <span className="font-semibold text-sidebar-foreground">Período:</span>{" "}
           {report.periodLabel}
         </p>
         <p>
-          <span className="font-semibold text-white">Emitido em:</span>{" "}
+          <span className="font-semibold text-sidebar-foreground">Emitido em:</span>{" "}
           {format(new Date(), "dd/MM/yyyy HH:mm")}
         </p>
         <p>
-          <span className="font-semibold text-white">Emitido por:</span>{" "}
+          <span className="font-semibold text-sidebar-foreground">Emitido por:</span>{" "}
           {report.exportedBy || "AndCheck"}
         </p>
       </div>
@@ -135,8 +135,8 @@ function PrintHeader({
 
 function SectionTitle({ title, icon: Icon }: { title: string; icon: ElementType }) {
   return (
-    <div className="flex items-center gap-2 rounded-t-lg bg-slate-800 px-4 py-2.5 text-white">
-      <Icon className="size-4 text-slate-300" />
+    <div className="flex items-center gap-2 rounded-t-lg bg-sidebar px-4 py-2.5 text-sidebar-foreground">
+      <Icon className="size-4 text-sidebar-foreground/65" />
       <p className="text-[12px] font-extrabold uppercase tracking-widest">{title}</p>
     </div>
   );
@@ -144,11 +144,11 @@ function SectionTitle({ title, icon: Icon }: { title: string; icon: ElementType 
 
 function PrintEmptyState({ message }: { message: string }) {
   return (
-    <div className="rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 px-4 py-8 text-center">
-      <p className="text-[11px] font-extrabold uppercase tracking-widest text-slate-500">
+    <div className="rounded-b-lg border border-t-0 border-border bg-muted/30 px-4 py-8 text-center">
+      <p className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
         Sem dados
       </p>
-      <p className="mt-1 text-[12px] font-semibold text-slate-600">{message}</p>
+      <p className="mt-1 text-[12px] font-semibold text-muted-foreground">{message}</p>
     </div>
   );
 }
@@ -156,15 +156,15 @@ function PrintEmptyState({ message }: { message: string }) {
 function KpiCard({ item }: { item: KpiItem }) {
   const Icon = item.icon;
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
       <div className={`border-l-4 ${item.accent} pl-3`}>
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[9px] font-extrabold uppercase tracking-widest text-slate-500">
+          <p className="text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground">
             {item.label}
           </p>
-          <Icon className="size-4 shrink-0 text-slate-500" />
+          <Icon className="size-4 shrink-0 text-muted-foreground" />
         </div>
-        <p className="mt-2 text-[22px] font-extrabold leading-none text-slate-950">
+        <p className="mt-2 text-[22px] font-extrabold leading-none text-foreground">
           {item.value}
         </p>
         {item.trend && (
@@ -181,7 +181,7 @@ function KpiGrid({ items }: { items: KpiItem[] }) {
   return (
     <section>
       <SectionTitle title="KPIs principais" icon={BarChart3} />
-      <div className="grid grid-cols-4 gap-3 rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 p-3">
+      <div className="grid grid-cols-4 gap-3 rounded-b-lg border border-t-0 border-border bg-muted/30 p-3">
         {items.map((item) => (
           <KpiCard key={item.label} item={item} />
         ))}
@@ -283,7 +283,7 @@ function DonutCard({
 }) {
   const total = items.reduce((sum, item) => sum + item.value, 0);
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
       <SectionTitle title={title} icon={icon} />
       {total === 0 ? (
         <PrintEmptyState message="Nenhum registro encontrado para os filtros aplicados." />
@@ -305,23 +305,23 @@ function DonutCard({
                   : "grid-cols-[1fr_34px_42px] gap-2.5"
               }`}
             >
-              <span className="flex min-w-0 items-center gap-2 font-bold text-slate-600">
+              <span className="flex min-w-0 items-center gap-2 font-bold text-muted-foreground">
                 <span
                   className="size-2.5 rounded-sm"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="truncate">{item.label}</span>
               </span>
-              <span className="text-right font-mono font-extrabold text-slate-950">
+              <span className="text-right font-mono font-extrabold text-foreground">
                 {item.value}
               </span>
-              <span className="text-right font-mono font-bold text-slate-500">
+              <span className="text-right font-mono font-bold text-muted-foreground">
                 {percent(item.value, total)}
               </span>
             </div>
           ))}
           {footer && (
-            <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10.5px] font-bold text-slate-600">
+            <div className="mt-2 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-[10.5px] font-bold text-muted-foreground">
               {footer}
             </div>
           )}
@@ -364,7 +364,7 @@ function NcEvolutionCard({
   );
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="rounded-lg border border-border bg-card shadow-sm">
       <SectionTitle title="Evolução das NCs" icon={AlertTriangle} />
       {!hasData ? (
         <PrintEmptyState message="Nenhuma evolução de NC registrada no período selecionado." />
@@ -379,18 +379,18 @@ function NcEvolutionCard({
             {ticks.map((tick) => (
               <span
                 key={tick}
-                className="absolute right-0 translate-y-1/2 font-mono text-[10px] font-bold text-slate-500"
+                className="absolute right-0 translate-y-1/2 font-mono text-[10px] font-bold text-muted-foreground"
                 style={{ bottom: `${(tick / max) * 100}%` }}
               >
                 {tick}
               </span>
             ))}
           </div>
-          <div className="relative h-[180px] border-b border-l border-slate-300">
+          <div className="relative h-[180px] border-b border-l border-border">
             {ticks.map((tick) => (
               <span
                 key={tick}
-                className="absolute left-0 right-8 border-t border-slate-200"
+                className="absolute left-0 right-8 border-t border-border"
                 style={{ bottom: `${(tick / max) * 100}%` }}
               />
             ))}
@@ -402,7 +402,7 @@ function NcEvolutionCard({
                     <Bar value={item.encerradas} max={max} color="#0f766e" />
                   </div>
                   {(index % visibleInterval === 0 || index === rows.length - 1) && (
-                    <span className="absolute top-full mt-1 origin-top-left rotate-90 whitespace-nowrap font-mono text-[9px] font-bold text-slate-600">
+                    <span className="absolute top-full mt-1 origin-top-left rotate-90 whitespace-nowrap font-mono text-[9px] font-bold text-muted-foreground">
                       {item.label}
                     </span>
                   )}
@@ -421,7 +421,7 @@ function Bar({ value, max, color }: { value: number; max: number; color: string 
   return (
     <div className="flex h-full w-2 flex-col justify-end">
       {value > 0 ? (
-        <span className="mb-0.5 text-center font-mono text-[8px] font-black text-slate-900">
+        <span className="mb-0.5 text-center font-mono text-[8px] font-black text-foreground">
           {value}
         </span>
       ) : (
@@ -441,7 +441,7 @@ function Bar({ value, max, color }: { value: number; max: number; color: string 
 
 function Legend({ color, label }: { color: string; label: string }) {
   return (
-    <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-600">
+    <span className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
       <span className="size-2.5 rounded-sm" style={{ backgroundColor: color }} />
       {label}
     </span>
@@ -460,18 +460,18 @@ function RankingTable({
   rows: Array<Array<string | number>>;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
       <SectionTitle title={title} icon={icon} />
       {rows.length === 0 ? (
         <PrintEmptyState message="Nenhum registro encontrado para este ranking." />
       ) : (
       <table className="w-full border-collapse text-[10px]">
         <thead>
-          <tr className="bg-slate-50 text-left uppercase tracking-widest text-slate-500">
+          <tr className="bg-muted/30 text-left uppercase tracking-widest text-muted-foreground">
             {columns.map((column, index) => (
               <th
                 key={column}
-                className={`border-b border-slate-200 px-3 py-2 font-extrabold ${
+                className={`border-b border-border px-3 py-2 font-extrabold ${
                   index > 1 ? "text-right" : ""
                 }`}
               >
@@ -482,13 +482,13 @@ function RankingTable({
         </thead>
         <tbody>
           {rows.slice(0, 5).map((row, rowIndex) => (
-            <tr key={`${title}-${rowIndex}`} className={rowIndex % 2 ? "bg-slate-50/70" : ""}>
+            <tr key={`${title}-${rowIndex}`} className={rowIndex % 2 ? "bg-muted/20" : ""}>
               {row.map((cell, cellIndex) => (
                 <td
                   key={`${title}-${rowIndex}-${cellIndex}`}
-                  className={`border-b border-slate-200 px-3 py-2 ${
+                  className={`border-b border-border px-3 py-2 ${
                     cellIndex > 1 ? "text-right font-mono font-bold" : ""
-                  } ${cellIndex === 0 ? "font-mono font-bold text-slate-500" : ""}`}
+                  } ${cellIndex === 0 ? "font-mono font-bold text-muted-foreground" : ""}`}
                 >
                   {cell}
                 </td>
@@ -508,32 +508,32 @@ function TopNonConformitiesTable({
   rows: Array<{ title: string; occurrences: number }>;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
       <SectionTitle title="Top Não Conformidades" icon={AlertTriangle} />
       {rows.length === 0 ? (
         <PrintEmptyState message="Nenhuma não conformidade registrada no período." />
       ) : (
         <table className="w-full border-collapse text-[11px]">
           <thead>
-            <tr className="bg-slate-50 text-left uppercase tracking-widest text-slate-500">
-              <th className="border-b border-slate-200 px-4 py-2 font-extrabold">
+            <tr className="bg-muted/30 text-left uppercase tracking-widest text-muted-foreground">
+              <th className="border-b border-border px-4 py-2 font-extrabold">
                 Não Conformidade
               </th>
-              <th className="border-b border-slate-200 px-4 py-2 text-right font-extrabold">
+              <th className="border-b border-border px-4 py-2 text-right font-extrabold">
                 Ocorrências
               </th>
             </tr>
           </thead>
           <tbody>
             {rows.slice(0, 5).map((item, index) => (
-              <tr key={item.title} className={index % 2 ? "bg-slate-50/70" : ""}>
-                <td className="border-b border-slate-200 px-4 py-2.5 font-semibold text-slate-900">
-                  <span className="mr-3 font-mono text-[10px] font-bold text-slate-500">
+              <tr key={item.title} className={index % 2 ? "bg-muted/20" : ""}>
+                <td className="border-b border-border px-4 py-2.5 font-semibold text-foreground">
+                  <span className="mr-3 font-mono text-[10px] font-bold text-muted-foreground">
                     {index + 1}.
                   </span>
                   {item.title}
                 </td>
-                <td className="border-b border-slate-200 px-4 py-2.5 text-right font-mono text-[12px] font-extrabold">
+                <td className="border-b border-border px-4 py-2.5 text-right font-mono text-[12px] font-extrabold">
                   {item.occurrences}
                 </td>
               </tr>
@@ -547,18 +547,18 @@ function TopNonConformitiesTable({
 
 function InsightsGrid({ items }: { items: KpiItem[] }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
       <SectionTitle title="Insights Operacionais" icon={Gauge} />
-      <div className="grid grid-cols-4 gap-px bg-slate-200">
+      <div className="grid grid-cols-4 gap-px bg-muted">
         {items.map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="bg-white p-3">
-              <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-widest text-slate-500">
+            <div key={item.label} className="bg-card p-3">
+              <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-widest text-muted-foreground">
                 <Icon className="size-3.5" />
                 {item.label}
               </p>
-              <p className="mt-2 truncate text-[18px] font-extrabold text-slate-950">
+              <p className="mt-2 truncate text-[18px] font-extrabold text-foreground">
                 {item.value}
               </p>
               {item.trend && (
@@ -611,7 +611,7 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
       label: "Inspeções Realizadas",
       value: report.kpis.inspections.total,
       icon: ClipboardCheck,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
     },
     {
       label: "NCs Abertas",
@@ -643,7 +643,7 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
       label: "NCs em Dia",
       value: formatRate(report.kpis.quality.onTimeClosureRate),
       icon: ShieldCheck,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
       trend: report.trends.onTimeClosureRate,
     },
     {
@@ -666,25 +666,25 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
       label: "Empresa mais ativa",
       value: report.rankings.companies[0]?.name ?? "Sem dados",
       icon: Building2,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
     },
     {
       label: "Área com maior volume",
       value: report.rankings.areas[0]?.name ?? "Sem dados",
       icon: Factory,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
     },
     {
       label: "Inspetor mais ativo",
       value: report.rankings.inspectors[0]?.name ?? "Sem dados",
       icon: UserCheck,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
     },
     {
       label: "Tempo médio de correção",
       value: formatAverage(report.kpis.averages.correctionDays),
       icon: Wrench,
-      accent: "border-slate-500",
+      accent: "border-muted-foreground",
       trend: report.trends.correctionDays,
     },
   ];
@@ -692,7 +692,7 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
   return (
     <>
       <PrintActions backHref={buildBackHref(report.filters)} />
-      <main className="min-h-screen bg-slate-200 py-6 print:bg-white print:py-0">
+      <main className="min-h-screen bg-muted py-6 print:bg-card print:py-0">
         <style>{`
           @page { size: A4 landscape; margin: 8mm; }
           @media print {
@@ -707,7 +707,7 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
             .print-page:last-child { page-break-after: auto; }
           }
         `}</style>
-        <section className="print-page mx-auto mb-6 w-[1120px] space-y-4 rounded-lg bg-white p-6 shadow-xl">
+        <section className="print-page mx-auto mb-6 w-[1120px] space-y-4 rounded-lg bg-card p-6 shadow-xl">
           <PrintHeader report={report} labels={labels} />
           <KpiGrid items={kpis} />
           <div className="grid grid-cols-2 gap-4">
@@ -723,7 +723,7 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
           </div>
         </section>
 
-        <section className="print-page mx-auto mb-6 w-[1120px] space-y-4 rounded-lg bg-white p-6 shadow-xl">
+        <section className="print-page mx-auto mb-6 w-[1120px] space-y-4 rounded-lg bg-card p-6 shadow-xl">
           <PrintHeader report={report} labels={labels} />
           <div className="grid grid-cols-[0.82fr_1.18fr] gap-4">
             <PerformanceCard items={performanceItems} />
@@ -767,17 +767,17 @@ export default async function PrintManagementReportPage({ searchParams }: Props)
               ])}
             />
           </div>
-          <p className="text-[10px] font-medium text-slate-500">
+          <p className="text-[10px] font-medium text-muted-foreground">
             Documento gerado automaticamente pelo AndCheck. Dados respeitam escopo,
             RBAC e filtros aplicados.
           </p>
         </section>
 
-        <section className="print-page mx-auto w-[1120px] space-y-4 rounded-lg bg-white p-6 shadow-xl">
+        <section className="print-page mx-auto w-[1120px] space-y-4 rounded-lg bg-card p-6 shadow-xl">
           <PrintHeader report={report} labels={labels} />
           <TopNonConformitiesTable rows={report.rankings.nonConformities} />
           <InsightsGrid items={insights} />
-          <p className="text-[10px] font-medium text-slate-500">
+          <p className="text-[10px] font-medium text-muted-foreground">
             Documento gerado automaticamente pelo AndCheck. Dados respeitam escopo,
             RBAC e filtros aplicados.
           </p>

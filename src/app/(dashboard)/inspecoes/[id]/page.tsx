@@ -200,7 +200,7 @@ export default async function InspectionDetailPage({ params }: Props) {
   });
 
   return (
-    <div className="space-y-5 max-w-4xl mx-auto pb-10">
+    <div className={`max-w-4xl pb-10 ${surface.pageStackContained}`}>
       <ReleaseFlowProbe
         inspectionId={inspection.id}
         scaffoldStatus={scaffold?.status}
@@ -281,7 +281,7 @@ export default async function InspectionDetailPage({ params }: Props) {
       <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
+            <p className={`${typography.pageEyebrow} mb-1 ${surface.onDarkSubtleText}`}>
               AndCheck • Inspeções
             </p>
             <h2 className={`${typography.pageCodeTitle} text-primary-foreground`}>

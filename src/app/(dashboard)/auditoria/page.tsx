@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getAuditLogs } from "@/lib/audit";
 import { canCurrentUser } from "@/lib/authz";
+import { surface } from "@/lib/design-system";
 import { AuditoriaClient } from "./auditoria-client";
 
 type Props = {
@@ -92,7 +93,7 @@ export default async function AuditoriaPage({ searchParams }: Props) {
   const exportRows = exportResult.items.map(mapAuditRow);
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Auditoria" />
       <AuditoriaClient
         rows={rows}

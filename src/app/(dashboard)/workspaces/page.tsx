@@ -1,6 +1,7 @@
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
 import { getWorkspaceManagementData } from "@/lib/actions/workspace-actions";
 import { canCurrentUser } from "@/lib/authz";
+import { surface } from "@/lib/design-system";
 import { redirect } from "next/navigation";
 import { WorkspacesClient, type WorkspaceRow } from "./workspaces-client";
 
@@ -37,7 +38,7 @@ export default async function WorkspacesPage({ searchParams }: Props) {
   const typedOwnerCompanies = ownerCompanies as OwnerCompanyOption[];
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Workspaces" />
       <WorkspacesClient
         canManage={canManage}

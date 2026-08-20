@@ -4,7 +4,6 @@ import { useOfflineStatus } from "@/components/offline/offline-provider";
 import { PageSkeleton } from "@/components/shared/page-skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { localDb } from "@/lib/offline/local-db";
@@ -282,14 +281,14 @@ export function SyncClient() {
         </div>
       )}
 
-      <Card>
-        <CardHeader className="border-b pb-3">
-          <CardTitle className={`flex items-center gap-2 ${typography.bodyStrong}`}>
+      <section className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
+          <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
             <RotateCcw className="size-4" />
             Fila de sincronização
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </h2>
+        </div>
+        <div className="p-4">
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className={`grid gap-2 ${typography.sectionDescription} text-muted-foreground md:grid-cols-2`}>
               <div>Última sincronização: {formatDate(lastSyncAt)}</div>
@@ -326,7 +325,7 @@ export function SyncClient() {
           </div>
 
           {items.length === 0 ? (
-            <div className={`flex min-h-48 flex-col items-center justify-center border p-6 text-center ${surface.mutedFill}`}>
+            <div className={`flex min-h-48 flex-col items-center justify-center p-6 text-center ${surface.mutedInset}`}>
               <CheckCircle2 className="mb-3 size-8 text-emerald-600" />
               <p className={typography.bodyStrong}>Nenhum item pendente</p>
               <p className={`mt-1 max-w-md ${typography.sectionDescription} text-muted-foreground`}>
@@ -500,8 +499,8 @@ export function SyncClient() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   );
 }

@@ -91,6 +91,8 @@ const RESULT_STYLE: Record<string, { label: string; color: string }> = {
   reprovado: { label: "Reprovado", color: "text-red-500 font-bold" },
 };
 
+const QR_MESSAGE_SURFACE = "hsl(220,10%,13%)";
+
 export default async function QRPage({ params }: Props) {
   const { tag } = await params;
   const [session, scaffold] = await Promise.all([auth(), getScaffoldByTag(tag)]);
@@ -115,7 +117,7 @@ export default async function QRPage({ params }: Props) {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4 gap-0"
-      style={{ background: "hsl(215,46%,9%)" }}
+      style={{ background: QR_MESSAGE_SURFACE }}
     >
       <div className="w-full max-w-sm flex flex-col gap-3">
         <div className="flex items-center justify-center gap-2.5 py-2">
@@ -146,7 +148,10 @@ export default async function QRPage({ params }: Props) {
             </div>
           </div>
 
-          <div className="px-6 py-3 bg-black/30 border-b border-white/8">
+          <div
+            className="px-6 py-3 border-b border-white/8"
+            style={{ background: QR_MESSAGE_SURFACE }}
+          >
             <p className="text-[11px] font-semibold text-white/80 leading-snug">
               {cfg.msg}
             </p>
@@ -185,7 +190,7 @@ export default async function QRPage({ params }: Props) {
           {lastInspection && (
             <div
               className="mx-4 mb-4 mt-2 rounded-xl p-4"
-              style={{ background: "hsl(215,46%,9%)" }}
+              style={{ background: QR_MESSAGE_SURFACE }}
             >
               <div className="flex items-center gap-2 mb-3">
                 <ClipboardCheck className="w-3.5 h-3.5 text-white/40" />

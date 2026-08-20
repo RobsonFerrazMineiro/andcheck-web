@@ -428,7 +428,7 @@ export default function NovoAndaimeForm({
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto pb-10">
+    <div className={`max-w-3xl pb-10 ${surface.pageStackContained}`}>
       {/* ── Header ── */}
       <div className={`flex items-center gap-3 ${surface.pageHeader}`}>
         <Button variant="ghost" size="icon" className="w-7 h-7" asChild>
@@ -450,7 +450,7 @@ export default function NovoAndaimeForm({
       </div>
 
       {/* ── Formulário ── */}
-      <div className={`p-6 ${surface.card}`}>
+      <div className={`p-4 sm:p-5 ${surface.card}`}>
         <form onSubmit={handleSubmit} className="space-y-5">
           <SmartDatalist
             id={`${datalistId}-locations`}

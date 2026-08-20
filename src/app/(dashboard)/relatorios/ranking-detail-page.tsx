@@ -35,7 +35,7 @@ export function RankingDetailPage({
   rows,
 }: RankingDetailPageProps) {
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <div className={`${surface.pageHeaderResponsive} lg:flex-row lg:items-start lg:justify-between`}>
         <div>
           <div

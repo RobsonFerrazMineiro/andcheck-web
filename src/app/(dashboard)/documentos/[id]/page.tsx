@@ -18,7 +18,6 @@ import {
 } from "@/components/document/document-ui";
 import { AuditTimelineButton } from "@/components/shared/audit-timeline";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDocumentDetail } from "@/lib/actions/document-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { surface, typography } from "@/lib/design-system";
@@ -104,14 +103,14 @@ export default async function DocumentoDetalhePage({ params }: Props) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <section className={surface.panel}>
+          <div className={surface.panelHeaderSubtle}>
+            <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
               <FileText className="size-4" />
               Dados do documento
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+            </h2>
+          </div>
+          <div className="grid gap-4 p-4 sm:grid-cols-2">
             <Info label="Título" value={document.title} />
             <Info label="Categoria" value={document.categoryLabel} />
             <Info label="Empresa" value={document.company?.name ?? "Não informada"} />
@@ -141,19 +140,19 @@ export default async function DocumentoDetalhePage({ params }: Props) {
                 value={document.description ?? "Não informada"}
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
 
-        <Card className="rounded-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <section className={surface.panel}>
+          <div className={surface.panelHeaderSubtle}>
+            <h2 className={`flex items-center gap-2 ${typography.bodyStrong}`}>
               <FolderArchive className="size-4" />
               Arquivo
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+          </div>
+          <div className="space-y-4 p-4 sm:p-5">
             <div className={`flex items-start gap-3 p-3 ${surface.subtleBox}`}>
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-md border bg-background">
+              <div className={`flex size-12 shrink-0 items-center justify-center ${surface.fileIconBox}`}>
                 <DocumentFileIcon
                   fileName={document.fileName}
                   mimeType={document.mimeType}
@@ -189,8 +188,8 @@ export default async function DocumentoDetalhePage({ params }: Props) {
                 </span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
       </div>
 
     </div>

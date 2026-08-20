@@ -165,7 +165,7 @@ function ModalShell({
             size="icon-sm"
             onClick={onClose}
             aria-label={`Fechar ${title}`}
-            className="text-primary-foreground/70 hover:text-primary-foreground"
+            className={`${surface.onDarkMutedText} hover:text-primary-foreground`}
           >
             <XCircle className="w-4 h-4" />
           </Button>

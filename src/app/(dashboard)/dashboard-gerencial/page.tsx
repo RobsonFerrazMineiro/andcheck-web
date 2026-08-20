@@ -1,5 +1,6 @@
 import { ExecutiveDashboardClient } from "@/components/dashboard/executive-dashboard-client";
 import { OnlineOnlyNotice } from "@/components/offline/online-only-notice";
+import { surface } from "@/lib/design-system";
 import {
   getExecutiveDashboard,
   type ExecutiveDashboardFilters,
@@ -36,7 +37,7 @@ export default async function ExecutiveDashboardPage({
   const data = await getExecutiveDashboard(filters);
 
   return (
-    <div className="space-y-4">
+    <div className={surface.pageStack}>
       <OnlineOnlyNotice moduleName="Dashboard Gerencial" />
       <ExecutiveDashboardClient data={data} />
     </div>
