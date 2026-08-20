@@ -29,7 +29,7 @@ import {
   type SemanticTone,
   SEMANTIC_TONE_CLASSES,
 } from "@/lib/semantic-tones";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 
 export type HistoryEventType =
@@ -713,11 +713,11 @@ export function HistoryTimelineCompact({
   const isPage = variant === "page";
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div
-        className={`flex items-center justify-between gap-3 border-b border-border bg-card ${
+        className={`flex items-center justify-between gap-3 ${
           isPage ? "px-4 py-3" : "px-3 py-2"
-        }`}
+        } ${surface.panelHeaderBare}`}
       >
         <div className="flex min-w-0 items-center gap-2">
           <History className="size-4 shrink-0 text-muted-foreground" />
@@ -749,7 +749,7 @@ export function HistoryTimelineCompact({
         <>
           <HistoryEventList events={visibleEvents} variant={variant} />
           {hasMoreEvents && (
-            <div className="border-t border-border px-3 py-2">
+            <div className={surface.noteFooter}>
               <p className={`${typography.bodyMuted} text-muted-foreground`}>
                 Use a página de auditoria para consultar o histórico completo.
               </p>
@@ -820,10 +820,10 @@ export function HistoryDrawerButton({
           role="dialog"
           aria-modal="false"
           aria-labelledby="history-dropdown-title"
-          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-lg max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
+          className={`absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto ${surface.popover}`}
         >
           <div className="flex max-h-[68vh] flex-col overflow-hidden">
-            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
+            <div className={`flex shrink-0 items-center justify-between gap-2 ${surface.popoverHeader}`}>
               <div className="min-w-0">
                 <p
                   id="history-dropdown-title"
@@ -858,7 +858,7 @@ export function HistoryDrawerButton({
                 <>
                   <HistoryEventList events={visibleEvents} />
                   {hasMore && (
-                    <div className="border-t border-border px-2.5 py-1.5">
+                    <div className={surface.popoverFooter}>
                       <Button
                         type="button"
                         variant="outline"
@@ -890,7 +890,7 @@ function HistoryEventList({
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
-    <ol className="divide-y divide-border">
+    <ol className={surface.listDivider}>
       {events.map((event) => (
         <HistoryEventRow
           key={event.id}
@@ -932,7 +932,7 @@ function HistoryEventRow({
           if (hasDetails) onToggle();
         }}
         className={`grid h-auto w-full justify-normal rounded-none border-0 bg-transparent shadow-none hover:translate-y-0 hover:shadow-none active:translate-y-0 items-center gap-2 text-left ${
-          hasDetails ? "hover:bg-muted/30" : "cursor-default"
+          hasDetails ? surface.rowInteractive : "cursor-default"
         } max-[520px]:grid-cols-[24px_minmax(0,1fr)_26px] max-[520px]:gap-x-2 ${
           isPage
             ? "grid-cols-[minmax(150px,0.9fr)_minmax(180px,1.35fr)_minmax(130px,0.8fr)_96px_28px] px-4 py-2.5"
@@ -964,7 +964,7 @@ function HistoryEventRow({
           {formatDateTime(event.createdAt)}
         </p>
         <span
-          className={`ml-auto flex size-6 items-center justify-center rounded-md border border-border bg-card text-muted-foreground max-[520px]:col-start-3 max-[520px]:row-span-2 max-[520px]:row-start-1 ${
+          className={`ml-auto flex size-6 items-center justify-center bg-card text-muted-foreground max-[520px]:col-start-3 max-[520px]:row-span-2 max-[520px]:row-start-1 ${surface.outlinedChip} ${
             hasDetails ? "" : "invisible"
           }`}
           aria-hidden="true"
@@ -975,9 +975,9 @@ function HistoryEventRow({
 
       {expanded && hasDetails && (
         <div
-          className={`border-t border-border bg-muted/15 py-1.5 max-[520px]:pl-8 ${
+          className={`py-1.5 max-[520px]:pl-8 ${
             isPage ? "px-4 pl-11" : "px-2.5 pl-9"
-          }`}
+          } ${surface.expandedRow}`}
         >
           {details.length === 0 ? (
             <p className={`${typography.bodyMuted} text-muted-foreground`}>

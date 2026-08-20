@@ -21,7 +21,7 @@ import {
   setWorkspaceActive,
   updateWorkspace,
 } from "@/lib/actions/workspace-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import {
   Building2,
   CheckCircle2,
@@ -51,7 +51,7 @@ const LocationPicker = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className={`flex h-95 items-center justify-center border border-border bg-muted/20 ${typography.sectionDescription} text-muted-foreground`}>
+      <div className={`flex h-95 items-center justify-center border border-border ${surface.mutedFill} ${typography.sectionDescription} text-muted-foreground`}>
         <Loader2 className="mr-2 size-4 animate-spin" />
         Carregando mapa...
       </div>
@@ -172,7 +172,7 @@ export function WorkspacesClient({
   }
 
   return (
-    <div className="space-y-5">
+    <div className={surface.pageStack}>
       <ConfirmDialog
         open={Boolean(statusTarget)}
         title={statusTarget?.active ? "Desativar workspace" : "Ativar workspace"}
@@ -201,7 +201,7 @@ export function WorkspacesClient({
           if (statusTarget) toggleStatus(statusTarget);
         }}
       />
-      <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
+      <div className={surface.pageHeaderResponsiveCompact}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -439,9 +439,9 @@ export function WorkspacesClient({
             {filtered.map((workspace) => (
               <div
                 key={workspace.id}
-                className="andcheck-lift flex min-h-56 flex-col rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4"
+                className={`flex min-h-56 flex-col p-3 sm:p-4 ${surface.liftCard}`}
               >
-                <div className="mb-4 flex items-start justify-between gap-3">
+                <div className={`mb-4 ${surface.kpiCardHeader}`}>
                   <div className="min-w-0">
                     <p
                       className={`break-words text-foreground sm:truncate ${typography.bodyStrong}`}
@@ -488,7 +488,7 @@ export function WorkspacesClient({
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end gap-1 border-t border-border pt-3">
+                <div className={`mt-4 flex items-center justify-end gap-1 ${surface.topDivider}`}>
                   <Button
                     asChild
                     variant="outline"
@@ -623,7 +623,7 @@ function WorkspaceLocationFields({
         selectedZoom={17}
         showCoordinates={false}
       />
-      <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-3">
+      <div className={`space-y-2 p-3 ${surface.subtleBox}`}>
         <p className={`${typography.sectionLabel} text-muted-foreground`}>
           Coordenadas
         </p>
@@ -688,7 +688,7 @@ function WorkspaceMeta({
 
 function WorkspaceMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
+    <div className={`p-2.5 ${surface.mutedInset}`}>
       <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
         {label}
       </p>
@@ -714,9 +714,9 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm sm:p-4 ${borderClass}`}
+      className={`${surface.kpiCard} ${borderClass}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className={surface.kpiCardHeader}>
         <p
           className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
         >

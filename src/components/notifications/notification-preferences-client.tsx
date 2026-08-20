@@ -6,7 +6,7 @@ import {
   updateNotificationPreferenceGroup,
   updateNotificationPreferenceValue,
 } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { Bell, Mail, ShieldAlert } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -120,7 +120,7 @@ export function NotificationPreferencesClient({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4 md:flex-row md:items-center md:justify-between">
+      <div className={`flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between ${surface.subtleBox}`}>
         <div className="flex items-start gap-3">
           <div className="flex size-9 items-center justify-center rounded-md bg-muted">
             <Mail className="size-4 text-muted-foreground" />
@@ -140,8 +140,8 @@ export function NotificationPreferencesClient({
       </div>
 
       {groups.map((group) => (
-        <section key={group.group} className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-          <div className="flex flex-col gap-3 border-b-2 border-border bg-muted/35 p-4 md:flex-row md:items-center md:justify-between">
+        <section key={group.group} className={surface.panel}>
+          <div className={`flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between ${surface.panelHeaderSubtle}`}>
             <div>
               <h2 className={`${typography.bodyStrong} text-foreground`}>{group.label}</h2>
               <p className={`mt-1 ${typography.sectionDescription} text-muted-foreground`}>
@@ -179,9 +179,9 @@ export function NotificationPreferencesClient({
             {group.items.map((preference) => (
               <div
                 key={preference.type}
-                className="rounded-md border border-border bg-background p-3"
+                className={`bg-background p-3 ${surface.mutedInset}`}
               >
-                <div className="mb-3 flex items-start justify-between gap-3">
+                <div className={surface.kpiCardHeader}>
                   <div className="min-w-0">
                     <p className={`${typography.bodyStrong} text-foreground`}>
                       {preference.label}
@@ -199,7 +199,7 @@ export function NotificationPreferencesClient({
                   </Badge>
                 </div>
                 <div className="grid gap-2">
-                  <label className={`flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-muted-foreground ${typography.sectionDescription}`}>
+                  <label className={`flex items-center justify-between gap-3 px-3 py-2 text-muted-foreground ${typography.sectionDescription} ${surface.outlinedChip}`}>
                     <span>{preference.critical ? "Interna fixa" : "Interna"}</span>
                     <input
                       type="checkbox"
@@ -216,7 +216,7 @@ export function NotificationPreferencesClient({
                     />
                   </label>
                   <label
-                    className={`flex items-center justify-between gap-3 rounded-md border border-border/70 px-3 py-2 text-muted-foreground ${typography.sectionDescription}`}
+                    className={`flex items-center justify-between gap-3 px-3 py-2 text-muted-foreground ${typography.sectionDescription} ${surface.outlinedChip}`}
                     title={!emailStatus.available ? emailStatus.detail : undefined}
                   >
                     <span>E-mail opcional</span>

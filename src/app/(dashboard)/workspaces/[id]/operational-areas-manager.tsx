@@ -13,7 +13,7 @@ import {
   setOperationalAreaActive,
   updateOperationalArea,
 } from "@/lib/actions/workspace-actions";
-import { surface, typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 
 type OperationalArea = {
   id: string;
@@ -43,24 +43,24 @@ export function OperationalAreasManager({
       {canManage && (
         <form
           action={createOperationalArea}
-          className="grid gap-2 rounded-lg border border-border bg-muted/20 p-3 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto]"
+          className={`grid gap-2 p-3 md:grid-cols-[minmax(180px,1fr)_120px_minmax(220px,1.4fr)_auto] ${surface.subtleBox}`}
         >
           <input type="hidden" name="workspaceId" value={workspaceId} />
           <Input
             name="name"
             placeholder="Nome da área"
             required
-            className={`h-8 rounded-md ${typography.sectionDescription}`}
+            className={control.inputSm}
           />
           <Input
             name="code"
             placeholder="Código"
-            className={`h-8 rounded-md ${typography.sectionDescription}`}
+            className={control.inputSm}
           />
           <Input
             name="description"
             placeholder="Descrição"
-            className={`h-8 rounded-md ${typography.sectionDescription}`}
+            className={control.inputSm}
           />
           <Button type="submit" size="sm" className="h-8">
             <Plus className="size-3.5" /> Adicionar
@@ -76,9 +76,9 @@ export function OperationalAreasManager({
           className="border-dashed"
         />
       ) : (
-        <div className="max-w-full overflow-hidden rounded-lg border border-border bg-card">
+        <div className={`max-w-full ${surface.panel}`}>
           <div
-            className={`hidden gap-2 border-b lg:grid ${tableGrid} ${surface.tableHeader}`}
+            className={`hidden gap-2 lg:grid ${tableGrid} ${surface.tableHeader}`}
           >
             <span>Área</span>
             <span>Código</span>
@@ -90,7 +90,7 @@ export function OperationalAreasManager({
           {areas.map((area, index) => (
             <div
               key={area.id}
-              className={`flex items-start gap-3 px-4 py-3 lg:grid ${tableGrid} lg:items-center lg:gap-2 lg:px-3 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
+              className={`flex items-start gap-3 px-4 py-3 lg:grid ${tableGrid} lg:items-center lg:gap-2 lg:px-3 ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
             >
               <div className="min-w-0 flex-1">
                 <p
@@ -160,7 +160,7 @@ export function OperationalAreasManager({
               )}
             </div>
           ))}
-          <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}>
+          <div className={`${surface.tableFooter} ${typography.panelSubtitle}`}>
             {areas.length} registro(s) • Áreas operacionais
           </div>
         </div>
@@ -180,19 +180,19 @@ export function OperationalAreasManager({
               name="name"
               defaultValue={editingArea.name}
               required
-              className={`h-9 rounded-md ${typography.sectionDescription}`}
+              className={control.inputMdMuted}
             />
             <Input
               name="code"
               defaultValue={editingArea.code ?? ""}
               placeholder="Código"
-              className={`h-9 rounded-md ${typography.sectionDescription}`}
+              className={control.inputMdMuted}
             />
             <Input
               name="description"
               defaultValue={editingArea.description ?? ""}
               placeholder="Descrição"
-              className={`h-9 rounded-md ${typography.sectionDescription}`}
+              className={control.inputMdMuted}
             />
             <div className="flex justify-end gap-2 pt-2">
               <Button

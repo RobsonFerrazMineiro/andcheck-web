@@ -132,7 +132,7 @@ export default async function WorkspaceDetailPage({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <p
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -144,7 +144,7 @@ export default async function WorkspaceDetailPage({
             {workspace.name}
           </h1>
           <p
-            className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}
+            className={`mt-0.5 ${typography.codeMuted} text-muted-foreground`}
           >
             {workspace.code}
           </p>
@@ -177,7 +177,7 @@ export default async function WorkspaceDetailPage({
         ))}
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <section className={surface.panel}>
         <div className={surface.panelHeader}>
           <div className="flex items-center gap-2">
             <MapPin className={surface.panelHeaderIcon} />
@@ -185,7 +185,7 @@ export default async function WorkspaceDetailPage({
           </div>
         </div>
         <div className="space-y-4 p-4">
-          <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-muted/20 p-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className={`flex min-w-0 flex-col gap-3 p-3 sm:flex-row sm:items-start sm:justify-between ${surface.subtleBox}`}>
             <div className="min-w-0">
               <p className={`${typography.pageTitle} break-words leading-tight text-foreground`}>
                 {workspace.name}
@@ -240,7 +240,7 @@ export default async function WorkspaceDetailPage({
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <section className={surface.panel}>
         <div className={surface.panelHeader}>
           <div className="flex items-center gap-2">
             <Building2 className={surface.panelHeaderIcon} />
@@ -264,7 +264,7 @@ export default async function WorkspaceDetailPage({
                 <Link
                   key={company.id}
                   href={`/empresas/${company.id}`}
-                  className="andcheck-lift flex min-h-24 min-w-0 flex-col justify-between rounded-lg border border-border bg-card p-3 shadow-sm hover:bg-primary/5"
+                  className={`flex min-h-24 min-w-0 flex-col justify-between p-3 ${surface.rowPrimaryInteractive} ${surface.liftCard}`}
                 >
                   <div className="mb-3 flex min-w-0 items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -296,7 +296,7 @@ export default async function WorkspaceDetailPage({
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <section className={surface.panel}>
         <div className={surface.panelHeader}>
           <div className="flex items-center gap-2">
             <MapPin className={surface.panelHeaderIcon} />
@@ -358,9 +358,9 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 ${borderClass}`}
+      className={`min-w-0 p-3 sm:p-4 ${surface.liftCard} ${borderClass}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className={surface.kpiCardHeader}>
         <p
           className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
         >

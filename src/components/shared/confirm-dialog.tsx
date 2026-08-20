@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function ConfirmDialog({
@@ -47,8 +47,8 @@ export function ConfirmDialog({
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-description"
     >
-      <div className="w-full max-w-md overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-        <div className="flex items-center justify-between border-b border-sidebar-border bg-sidebar px-4 py-3 text-sidebar-foreground">
+      <div className={`w-full max-w-md overflow-hidden ${surface.dialog}`}>
+        <div className={`flex items-center justify-between ${surface.modalHeaderDark}`}>
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-primary-foreground/80" />
             <p id="confirm-dialog-title" className={typography.panelTitle}>
@@ -61,7 +61,7 @@ export function ConfirmDialog({
             size="icon-sm"
             onClick={onCancel}
             disabled={pending}
-            className="text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
+            className={surface.darkHeaderButton}
             aria-label="Fechar confirmação"
           >
             <X className="size-3.5" />
@@ -75,12 +75,12 @@ export function ConfirmDialog({
             {description}
           </p>
           {details ? (
-            <div className="rounded-md border border-border bg-muted/30 p-3 text-muted-foreground">
+            <div className={`p-3 text-muted-foreground ${surface.mutedInset}`}>
               {details}
             </div>
           ) : null}
         </div>
-        <div className="flex justify-end gap-2 border-t border-border bg-muted/20 px-4 py-3">
+        <div className={`flex justify-end gap-2 ${surface.actionFooter}`}>
           <Button
             type="button"
             variant="outline"

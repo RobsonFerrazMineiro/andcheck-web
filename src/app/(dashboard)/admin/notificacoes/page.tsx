@@ -12,7 +12,7 @@ import {
   getAdminNotificationData,
   resendNotificationEmail,
 } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { NOTIFICATION_TYPE_LABELS } from "@/lib/notifications/catalog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -60,7 +60,7 @@ export default async function AdminNotificationsPage() {
     <div className="space-y-5">
       <OnlineOnlyNotice moduleName="Monitoramento administrativo de notificações" />
 
-      <div className="border-b-2 border-border pb-4">
+      <div className={surface.pageHeader}>
         <p
           className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
         >
@@ -105,7 +105,7 @@ export default async function AdminNotificationsPage() {
             <>
               <div className="grid gap-3 md:hidden">
                 {latestFailures.map((log) => (
-                  <div key={log.id} className="rounded-lg border border-border bg-card p-3 shadow-sm">
+                  <div key={log.id} className={`p-3 ${surface.card}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className={`${typography.bodyStrong} break-words text-foreground`}>

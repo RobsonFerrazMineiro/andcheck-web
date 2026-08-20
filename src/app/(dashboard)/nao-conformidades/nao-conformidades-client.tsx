@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { surface, typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { getExpirationFilterLabel } from "@/lib/filter-labels";
 import { humanizeCode } from "@/lib/human-readable";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
@@ -198,8 +198,8 @@ export function NaoConformidadesClient({
     dueFilter === "all" ? "Todos prazos" : getExpirationFilterLabel(dueFilter);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+    <div className={surface.pageStack}>
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -272,12 +272,9 @@ export function NaoConformidadesClient({
           return (
             <div
               key={card.label}
-              className={
-                "andcheck-lift bg-card border border-border rounded-lg p-4 shadow-sm " +
-                card.border
-              }
+              className={`${surface.kpiCard} ${card.border}`}
             >
-              <div className="mb-3 flex items-start justify-between gap-3">
+              <div className={surface.kpiCardHeader}>
                 <p
                   className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
                 >
@@ -311,13 +308,13 @@ export function NaoConformidadesClient({
               placeholder="Buscar por código, andaime, empresa ou responsável..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
+              className={control.inputSmWithIcon}
             />
           </div>
           </FilterField>
           <FilterField label="Status">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -332,7 +329,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
@@ -350,7 +347,7 @@ export function NaoConformidadesClient({
             value={classificationFilter}
             onValueChange={setClassificationFilter}
           >
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Classificação" />
             </SelectTrigger>
             <SelectContent>
@@ -365,7 +362,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Responsável">
           <Select value={responsibleFilter} onValueChange={setResponsibleFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Responsável" />
             </SelectTrigger>
             <SelectContent>
@@ -380,7 +377,7 @@ export function NaoConformidadesClient({
           </FilterField>
           <FilterField label="Prazo">
           <Select value={dueFilter} onValueChange={setDueFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Vencimento" />
             </SelectTrigger>
             <SelectContent>
@@ -413,9 +410,9 @@ export function NaoConformidadesClient({
           description="As NCs geradas por inspeções reprovadas aparecerão nesta listagem para acompanhamento."
         />
       ) : (
-        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <div className={surface.panel}>
           <div
-            className={`hidden grid-cols-12 gap-4 border-b border-border xl:grid ${surface.tableHeader}`}
+            className={`hidden grid-cols-12 gap-4 xl:grid ${surface.tableHeader}`}
           >
             {[
               "Código",
@@ -431,7 +428,7 @@ export function NaoConformidadesClient({
               <p
                 key={i}
                 className={
-                  "text-primary-foreground/60 " +
+                  surface.tableHeaderCellMuted + " " +
                   (i === 0
                     ? "col-span-1"
                     : i === 1
@@ -455,7 +452,7 @@ export function NaoConformidadesClient({
               </p>
             ))}
           </div>
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {filtered.map((nc, index) => {
               const company = nc.companyId ?? nc.scaffold.company ?? "-";
               const responsible = nc.responsibleUser?.name ?? "-";
@@ -466,8 +463,8 @@ export function NaoConformidadesClient({
                   key={nc.id}
                   href={"/nao-conformidades/" + nc.id}
                   className={
-                    "group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 hover:bg-primary/5 xl:grid xl:grid-cols-12 xl:gap-4 " +
-                    (index % 2 === 1 ? "bg-muted/20" : "bg-card")
+                    `group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 xl:grid xl:grid-cols-12 xl:gap-4 ${surface.rowPrimaryInteractive} ` +
+                    (index % 2 === 1 ? surface.rowStripedOdd : surface.rowStripedEven)
                   }
                 >
                   <div className="flex items-center gap-3 flex-1 xl:contents">
@@ -546,7 +543,7 @@ export function NaoConformidadesClient({
               );
             })}
           </div>
-          <div className="px-4 py-2 bg-muted/30 border-t border-border">
+          <div className={surface.panelFooter}>
             <p
               className={`${typography.panelSubtitle} text-muted-foreground/40`}
             >

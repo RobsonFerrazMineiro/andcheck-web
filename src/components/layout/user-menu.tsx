@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 interface UserMenuProps {
   name: string;
@@ -86,9 +86,9 @@ export function UserMenu({
           role="dialog"
           aria-modal="false"
           aria-labelledby="user-menu-title"
-          className="absolute right-0 top-12 z-50 w-80 border bg-popover text-popover-foreground shadow-lg"
+          className={`absolute right-0 top-12 z-50 w-80 text-popover-foreground ${surface.popover}`}
         >
-          <div className="border-b bg-muted/25 p-4">
+          <div className={surface.accountHeader}>
             <div className="flex items-start gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
                 <User className="size-5 text-primary" />
@@ -100,7 +100,7 @@ export function UserMenu({
                 <p className={`mt-0.5 truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {email}
                 </p>
-                <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
+                <span className={`mt-2 inline-flex px-2 py-0.5 ${typography.metaStrong} text-muted-foreground ${surface.outlinedChip}`}>
                   {roleLabel}
                 </span>
               </div>

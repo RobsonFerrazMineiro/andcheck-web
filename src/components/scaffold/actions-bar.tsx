@@ -29,7 +29,7 @@ import {
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
 } from "@/lib/offline/connectivity";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { localDb } from "@/lib/offline/local-db";
 import { createOfflineId } from "@/lib/offline/types";
 
@@ -219,7 +219,7 @@ export function ScaffoldActionsBar({
 
   if (status === "desmontado") {
     return (
-      <div className="flex items-center gap-3 border border-border bg-muted/70 px-4 py-3 text-muted-foreground">
+      <div className={`flex items-center gap-3 px-4 py-3 text-muted-foreground ${surface.mutedInsetStrong}`}>
         <HardHat className="w-4 h-4 shrink-0" />
         <p className={typography.emptyState}>
           Andaime encerrado - este andaime foi desmontado e esta fora de
@@ -447,7 +447,7 @@ function DismantleDialog({
             <select
               value={reason}
               onChange={(event) => onReasonChange(event.target.value)}
-              className={`h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 ${typography.sectionDescription}`}
+              className={control.nativeSelectSm}
             >
               <option value="">Selecionar motivo</option>
               {DISMANTLE_REASONS.map((item) => (
@@ -473,7 +473,7 @@ function DismantleDialog({
             </div>
           )}
           {error && (
-            <p className={`border border-destructive/30 bg-destructive/10 px-3 py-2 ${typography.bodyStrong} text-destructive`}>
+            <p className={`px-3 py-2 ${typography.bodyStrong} ${surface.dangerAlertStrong}`}>
               {error}
             </p>
           )}

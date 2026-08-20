@@ -36,7 +36,7 @@ export function RankingDetailPage({
 }: RankingDetailPageProps) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className={`${surface.pageHeaderResponsive} lg:flex-row lg:items-start lg:justify-between`}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -59,12 +59,12 @@ export function RankingDetailPage({
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <section className={surface.panel}>
         <div className={surface.panelHeader}>
           <p className={surface.panelHeaderTitle}>Ranking completo</p>
           <p className={surface.panelHeaderSubtitle}>{periodLabel}</p>
         </div>
-        <div className="divide-y divide-border md:hidden">
+        <div className={`md:hidden ${surface.listDivider}`}>
           {rows.length === 0 ? (
             <p className={`px-4 py-6 text-center ${typography.sectionDescription} text-muted-foreground`}>
               Sem dados no período.
@@ -81,7 +81,7 @@ export function RankingDetailPage({
                       {row[1] ?? "-"}
                     </div>
                   </div>
-                  <div className="shrink-0 rounded-md border border-border bg-muted/20 px-2 py-1 text-right">
+                  <div className={`shrink-0 px-2 py-1 text-right ${surface.subtleBox}`}>
                     <p className={`${typography.metaStrong} text-muted-foreground`}>
                       {columns[0] ?? "Posição"}
                     </p>
@@ -94,7 +94,7 @@ export function RankingDetailPage({
                   {row.slice(2).map((cell, cellIndex) => (
                     <div
                       key={`${index}-${cellIndex + 2}`}
-                      className="min-w-0 rounded-md border border-border/70 bg-muted/15 p-2"
+                      className={`min-w-0 p-2 ${surface.softInset}`}
                     >
                       <p className={`${typography.metaStrong} text-muted-foreground`}>
                         {columns[cellIndex + 2]}
@@ -123,7 +123,7 @@ export function RankingDetailPage({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className={surface.listDivider}>
               {rows.length === 0 ? (
                 <tr>
                   <td
@@ -135,7 +135,7 @@ export function RankingDetailPage({
                 </tr>
               ) : (
                 rows.map((row, index) => (
-                  <tr key={index} className="hover:bg-muted/30">
+                  <tr key={index} className={surface.rowInteractive}>
                     {row.map((cell, cellIndex) => (
                       <td
                         key={`${index}-${cellIndex}`}

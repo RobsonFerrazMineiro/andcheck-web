@@ -3,7 +3,7 @@
 import { OfflineDataNotice } from "@/components/offline/offline-data-notice";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
   Building2,
@@ -50,8 +50,8 @@ export function PerfilClient({
   const profile = profiles[0] ?? initialProfile;
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className={surface.pageStack}>
+      <div className={surface.pageHeaderResponsiveCompact}>
         <div>
           <p
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -156,7 +156,7 @@ export function PerfilClient({
               />
             </div>
             {isOfflineFallback ? (
-              <div className="rounded-lg border border-dashed border-border bg-muted/20 p-4">
+              <div className={`p-4 ${surface.dashedBox}`}>
                 <p className={`${typography.sectionDescription} text-muted-foreground`}>
                   Alteração de senha indisponível offline. Conecte-se para usar
                   esta ação.
@@ -206,7 +206,7 @@ function Info({
   value: string;
 }) {
   return (
-    <div className="flex min-w-0 items-start gap-3 border bg-muted/20 p-3">
+    <div className={`flex min-w-0 items-start gap-3 p-3 ${surface.subtleBox}`}>
       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0">
         <p className={`${typography.sectionLabel} text-muted-foreground`}>

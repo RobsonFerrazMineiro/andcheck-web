@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { surface } from "@/lib/design-system";
 
 export function PageSkeleton({
   cards = 4,
@@ -8,8 +9,8 @@ export function PageSkeleton({
   rows?: number;
 }) {
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className={surface.pageStack}>
+      <div className={surface.pageHeaderResponsiveCompact}>
         <div className="space-y-2">
           <Skeleton className="h-3 w-44" />
           <Skeleton className="h-6 w-64" />

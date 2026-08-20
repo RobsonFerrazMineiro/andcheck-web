@@ -29,7 +29,7 @@ import { getScaffoldDocuments } from "@/lib/actions/document-actions";
 import { getScaffoldById } from "@/lib/actions/scaffold-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 import { isActiveNonConformityStatus } from "@/lib/non-conformity-status";
 
@@ -172,7 +172,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
       </div>
 
       {activeNonConformity && (
-        <div className="border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950">
+        <div className={`${surface.warningAlert} px-4 py-3`}>
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
             <p className={`${typography.bodyStrong} leading-relaxed`}>
@@ -184,16 +184,16 @@ export default async function AndaimeDetailPage({ params }: Props) {
         </div>
       )}
 
-      <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
+      <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               Ficha Técnica do Ativo
             </p>
-            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
+            <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>
               {scaffold.code}
             </h1>
-            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
+            <p className={`mt-0.5 ${typography.sectionDescription} ${surface.onDarkMutedText}`}>
               {scaffold.location}
             </p>
           </div>
@@ -274,7 +274,7 @@ export default async function AndaimeDetailPage({ params }: Props) {
             </>
           )}
           {scaffold.notes && (
-            <div className="px-4 py-3 border-t border-border bg-muted/20">
+            <div className={surface.actionFooter}>
               <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
@@ -310,8 +310,8 @@ interface TechCardProps {
 }
 function TechCard({ title, icon: Icon, extra, children }: TechCardProps) {
   return (
-    <div className="bg-card border border-border shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+    <div className={surface.panel}>
+      <div className={`flex items-center justify-between ${surface.panelHeaderMuted}`}>
         <div className="flex items-center gap-2">
           <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
           <p className={`${typography.panelTitle} text-foreground`}>
@@ -320,7 +320,7 @@ function TechCard({ title, icon: Icon, extra, children }: TechCardProps) {
         </div>
         {extra}
       </div>
-      <div className="divide-y divide-border">{children}</div>
+      <div className={surface.listDivider}>{children}</div>
     </div>
   );
 }

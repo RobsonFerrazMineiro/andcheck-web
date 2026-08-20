@@ -5,7 +5,7 @@ import { useRef, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function FormModal({
@@ -43,7 +43,7 @@ export function FormModal({
     >
       <div
         className={cn(
-          "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg",
+          `flex max-h-[90vh] w-full flex-col overflow-hidden ${surface.dialog}`,
           maxWidth,
         )}
       >
@@ -55,7 +55,7 @@ export function FormModal({
             {description ? (
               <p
                 id="form-modal-description"
-                className={`mt-1 text-primary-foreground/60 ${typography.sectionDescription}`}
+                className={`mt-1 ${surface.onDarkMutedText} ${typography.sectionDescription}`}
               >
                 {description}
               </p>
@@ -66,7 +66,7 @@ export function FormModal({
             variant="ghost"
             size="icon-sm"
             onClick={onClose}
-            className="shrink-0 text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
+            className={`shrink-0 ${surface.darkHeaderButton}`}
             aria-label="Fechar modal"
           >
             <X />

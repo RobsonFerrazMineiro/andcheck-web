@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { getScaffoldMapData } from "@/lib/actions/scaffold-actions";
 import { canCurrentUser, getCurrentUserAccess } from "@/lib/authz";
 import { getContextCapabilities } from "@/lib/data-scope";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { MapaOperacionalClient } from "./mapa-client";
 
 type ScaffoldMapRecord = {
@@ -102,7 +102,7 @@ export default async function MapaPage() {
 
   return (
     <div className="min-w-0 space-y-5 overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+      <div className={surface.pageHeaderResponsive}>
         <div className="min-w-0">
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -181,9 +181,9 @@ export default async function MapaPage() {
           return (
             <div
               key={k.label}
-              className={`andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 ${k.border}`}
+              className={`min-w-0 p-3 sm:p-4 ${surface.liftCard} ${k.border}`}
             >
-              <div className="mb-3 flex items-start justify-between gap-3">
+              <div className={surface.kpiCardHeader}>
                 <p
                   className={`${typography.sectionLabel} min-w-0 break-words leading-tight text-muted-foreground`}
                 >

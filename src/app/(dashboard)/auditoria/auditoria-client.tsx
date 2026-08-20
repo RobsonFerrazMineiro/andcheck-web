@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import type { SemanticTone } from "@/lib/semantic-tones";
 
@@ -774,7 +774,7 @@ export function AuditoriaClient({
 
   return (
     <div className="min-w-0 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -807,7 +807,7 @@ export function AuditoriaClient({
             <Download className="h-3.5 w-3.5" />
             PDF
           </Button>
-          <div className="flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3">
+          <div className={`flex h-8 items-center gap-2 px-3 ${surface.outlinedChip}`}>
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             <span className={`${typography.action} text-muted-foreground`}>
               Log Imutável
@@ -816,7 +816,7 @@ export function AuditoriaClient({
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm md:hidden">
+      <div className={`p-4 md:hidden ${surface.card}`}>
         <div className="flex items-start gap-3">
           <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
             <FileClock className="size-4 text-muted-foreground" />
@@ -849,13 +849,13 @@ export function AuditoriaClient({
             name="search"
             defaultValue={filters.search}
             placeholder="Buscar descrição, usuário ou entidade..."
-            className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
+            className={control.inputSmWithIcon}
           />
           </div>
           </FilterField>
         <FilterField label="Ação" className="sm:w-[150px]">
         <Select name="action" defaultValue={filters.action || "all"}>
-          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[150px] ${typography.sectionDescription}`}>
+          <SelectTrigger className={`w-full sm:w-[150px] ${control.selectSm}`}>
             <SelectValue placeholder="Ação" />
           </SelectTrigger>
           <SelectContent>
@@ -870,7 +870,7 @@ export function AuditoriaClient({
         </FilterField>
         <FilterField label="Entidade" className="sm:w-[108px]">
         <Select name="entityType" defaultValue={filters.entityType || "all"}>
-          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[108px] ${typography.sectionDescription}`}>
+          <SelectTrigger className={`w-full sm:w-[108px] ${control.selectSm}`}>
             <SelectValue placeholder="Entidade" />
           </SelectTrigger>
           <SelectContent>
@@ -887,7 +887,7 @@ export function AuditoriaClient({
           name="user"
           defaultValue={filters.user}
           placeholder="Usuário"
-          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[150px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Empresa" className="sm:w-[150px]">
@@ -895,7 +895,7 @@ export function AuditoriaClient({
           name="company"
           defaultValue={filters.company}
           placeholder="Empresa"
-          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[150px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Workspace" className="sm:w-[150px]">
@@ -903,7 +903,7 @@ export function AuditoriaClient({
           name="workspace"
           defaultValue={filters.workspace}
           placeholder="Workspace"
-          className={`h-8 w-full rounded-md border-border sm:w-[150px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[150px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Status" className="sm:w-[135px]">
@@ -911,7 +911,7 @@ export function AuditoriaClient({
           name="status"
           defaultValue={filters.status}
           placeholder="Status"
-          className={`h-8 w-full rounded-md border-border sm:w-[135px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[135px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="TAG" className="sm:w-[125px]">
@@ -919,7 +919,7 @@ export function AuditoriaClient({
           name="scaffoldTag"
           defaultValue={filters.scaffoldTag}
           placeholder="TAG"
-          className={`h-8 w-full rounded-md border-border sm:w-[125px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[125px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Início" className="sm:w-[154px]">
@@ -927,7 +927,7 @@ export function AuditoriaClient({
           type="date"
           name="dateFrom"
           defaultValue={filters.dateFrom}
-          className={`h-8 w-full rounded-md border-border sm:w-[154px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[154px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Fim" className="sm:w-[154px]">
@@ -935,12 +935,12 @@ export function AuditoriaClient({
           type="date"
           name="dateTo"
           defaultValue={filters.dateTo}
-          className={`h-8 w-full rounded-md border-border sm:w-[154px] ${typography.sectionDescription}`}
+          className={`w-full sm:w-[154px] ${control.inputSm}`}
         />
         </FilterField>
         <FilterField label="Ordenação" className="sm:w-[132px]">
         <Select name="order" defaultValue={filters.order}>
-          <SelectTrigger className={`h-8 w-full rounded-md sm:w-[132px] ${typography.sectionDescription}`}>
+          <SelectTrigger className={`w-full sm:w-[132px] ${control.selectSm}`}>
             <SelectValue placeholder="Ordenação" />
           </SelectTrigger>
           <SelectContent>
@@ -960,7 +960,7 @@ export function AuditoriaClient({
         </FilterShell>
       </form>
 
-      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
+      <div className={`min-w-0 ${surface.panel}`}>
         <HistoryTimelineCompact
           events={historyEvents}
           initialLimit={Math.max(rows.length, 1)}
@@ -968,7 +968,7 @@ export function AuditoriaClient({
           variant="page"
         />
 
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/30 border-t border-border">
+        <div className={`flex items-center justify-between ${surface.panelFooter}`}>
           <p className={`${typography.panelSubtitle} text-muted-foreground/50`}>
             Pagina {page} de {totalPages}
           </p>

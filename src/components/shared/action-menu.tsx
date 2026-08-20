@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 type ActionMenuProps = {
@@ -66,7 +66,7 @@ export function ActionMenu({
         <div
           role="menu"
           className={cn(
-            "absolute top-9 z-50 grid min-w-56 gap-1 border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+            `absolute top-9 z-50 grid min-w-56 gap-1 p-1 text-popover-foreground ${surface.popover}`,
             align === "right" ? "right-0" : "left-0",
           )}
           onClick={() => setOpen(false)}

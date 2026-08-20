@@ -17,7 +17,7 @@ import type {
   ChecklistCategory,
   ChecklistValue,
 } from "@/lib/checklist-template";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { toast } from "sonner";
 
@@ -103,13 +103,13 @@ export default function ChecklistSection({
   };
 
   return (
-    <div className="bg-card border border-border shadow-sm overflow-hidden">
-      <div className="bg-primary/5 px-5 py-3 border-b border-border">
+    <div className={surface.panel}>
+      <div className={`${surface.panelHeaderAccent} px-5 py-3`}>
         <h3 className={`${typography.panelTitle} text-foreground`}>
           {category}
         </h3>
       </div>
-      <div className="divide-y divide-border">
+      <div className={surface.listDivider}>
         {items.map((item, idx) => {
           const val = values[idx] ?? { status: "", observation: "" };
           return (
@@ -163,7 +163,7 @@ export default function ChecklistSection({
                     onChange={(e) =>
                       handleChange(idx, "observation", e.target.value)
                     }
-                    className={`h-8 flex-1 rounded-md border-border ${typography.sectionDescription}`}
+                    className={`flex-1 ${control.inputSm}`}
                   />
                   {/* Input de arquivo oculto */}
                   <input

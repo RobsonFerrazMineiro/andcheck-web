@@ -5,7 +5,7 @@ import { useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function MobileFilterPanel({
@@ -66,8 +66,8 @@ export function MobileFilterPanel({
           }
           className="fixed inset-0 z-50 flex items-end bg-black/40 p-3 sm:items-center sm:justify-center"
         >
-          <div className="flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-card shadow-lg">
-            <div className="flex items-start justify-between gap-4 border-b border-sidebar-border bg-sidebar px-4 py-3 text-sidebar-foreground">
+          <div className={`flex max-h-[88vh] w-full max-w-lg flex-col overflow-hidden ${surface.dialog}`}>
+            <div className={`flex items-start justify-between gap-4 ${surface.modalHeaderDark}`}>
               <div className="min-w-0">
                 <h2 id="mobile-filter-title" className={typography.panelTitle}>
                   {title}
@@ -75,7 +75,7 @@ export function MobileFilterPanel({
                 {description ? (
                   <p
                     id="mobile-filter-description"
-                    className={`mt-1 text-primary-foreground/60 ${typography.sectionDescription}`}
+                    className={`mt-1 ${surface.onDarkMutedText} ${typography.sectionDescription}`}
                   >
                     {description}
                   </p>
@@ -86,7 +86,7 @@ export function MobileFilterPanel({
                 variant="ghost"
                 size="icon-sm"
                 onClick={() => setOpen(false)}
-                className="shrink-0 text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground"
+                className={`shrink-0 ${surface.darkHeaderButton}`}
                 aria-label="Fechar filtros"
               >
                 <X />

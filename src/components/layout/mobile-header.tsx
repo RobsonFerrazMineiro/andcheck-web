@@ -30,7 +30,7 @@ import {
   isVisibleOnDevice,
   mainNavigationItems,
 } from "@/components/layout/navigation";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 type MobileUserProfile = {
   name: string;
@@ -223,9 +223,9 @@ function MobileUserMenu({
           role="dialog"
           aria-modal="false"
           aria-labelledby="mobile-user-menu-title"
-          className="fixed right-2 top-14 z-50 w-[min(20rem,calc(100vw-1rem))] border border-border bg-popover text-popover-foreground shadow-lg"
+          className={`fixed right-2 top-14 z-50 w-[min(20rem,calc(100vw-1rem))] text-popover-foreground ${surface.popover}`}
         >
-          <div className="border-b bg-muted/25 p-4">
+          <div className={surface.accountHeader}>
             <div className="flex items-start gap-3">
               <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15">
                 <User className="size-5 text-primary" />
@@ -240,7 +240,7 @@ function MobileUserMenu({
                 <p className={`mt-0.5 truncate ${typography.sectionDescription} text-muted-foreground`}>
                   {profile.email}
                 </p>
-                <span className={`mt-2 inline-flex rounded-md border px-2 py-0.5 ${typography.metaStrong} text-muted-foreground`}>
+                <span className={`mt-2 inline-flex px-2 py-0.5 ${typography.metaStrong} text-muted-foreground ${surface.outlinedChip}`}>
                   {profile.roleLabel}
                 </span>
               </div>

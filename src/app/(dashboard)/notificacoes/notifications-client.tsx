@@ -19,7 +19,7 @@ import {
   markAllNotificationsAsRead,
   type NotificationFilter,
 } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { NOTIFICATION_ENTITY_GROUPS } from "@/lib/notifications/catalog";
 import { useOfflineEntityCache } from "@/lib/offline/use-offline-entity-cache";
 import { Archive, Bell, Check } from "lucide-react";
@@ -71,7 +71,7 @@ export function NotificationsClient({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -94,7 +94,7 @@ export function NotificationsClient({
               type="submit"
               size="sm"
               disabled={isOfflineFallback}
-              className={`h-8 w-full gap-1.5 rounded-md px-3 ${typography.action}`}
+              className={`${control.buttonSm} w-full gap-1.5 px-3`}
             >
               <Check className="size-3.5" />
               Marcar como lidas
@@ -106,7 +106,7 @@ export function NotificationsClient({
               size="sm"
               variant="outline"
               disabled={isOfflineFallback}
-              className={`h-8 w-full gap-1.5 rounded-md px-3 ${typography.action}`}
+              className={`${control.buttonSm} w-full gap-1.5 px-3`}
             >
               <Archive className="size-3.5" />
               Arquivar todas
@@ -139,8 +139,8 @@ export function NotificationsClient({
             asChild
             variant={filter === item.value ? "default" : "ghost"}
             size="sm"
-            className={`h-8 rounded-md px-3 ${typography.action} ${
-              filter === item.value ? "" : "border border-border/70"
+            className={`${control.buttonSm} px-3 ${
+              filter === item.value ? "" : surface.outlinedChip
             }`}
           >
             <Link href={`/notificacoes?filter=${item.value}`}>

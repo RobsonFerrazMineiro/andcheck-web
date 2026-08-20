@@ -15,7 +15,7 @@ const OperationalMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-full flex items-center justify-center bg-muted/20">
+      <div className={`flex h-full w-full items-center justify-center ${surface.mutedFill}`}>
         <p
           className={`${typography.action} animate-pulse text-muted-foreground`}
         >
@@ -93,7 +93,7 @@ export function DashboardMapPreview({
   const hasMap = pins.length > 0;
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+    <div className={`flex h-full flex-col ${surface.panel}`}>
       {/* Header */}
       <div
         className={`flex items-center justify-between ${surface.panelHeader}`}
@@ -132,13 +132,13 @@ export function DashboardMapPreview({
             icon={MapPin}
             title="Nenhum andaime georreferenciado"
             description="Cadastre andaimes com localização GPS para visualizá-los aqui."
-            className="h-full min-h-[220px] justify-center rounded-none border-0 bg-muted/20 shadow-none"
+            className={`h-full min-h-[220px] justify-center rounded-none border-0 shadow-none ${surface.mutedFill}`}
           />
         )}
       </div>
 
       {/* Legenda */}
-      <div className="px-4 py-2 border-t border-border flex flex-wrap gap-3">
+      <div className={`flex flex-wrap gap-3 ${surface.panelFooter}`}>
         {[
           { label: "Liberado", dot: "bg-emerald-500" },
           { label: "Em Montagem", dot: "bg-blue-500" },

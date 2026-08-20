@@ -22,7 +22,7 @@ import {
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 type LinkedInspection = {
   id: string;
@@ -139,10 +139,10 @@ export function LinkedRecordsButton({
           role="dialog"
           aria-modal="false"
           aria-label={title}
-          className="absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden rounded-md border border-border bg-card shadow-lg max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto"
+          className={`absolute right-0 top-9 z-50 w-[min(88vw,460px)] overflow-hidden max-[520px]:fixed max-[520px]:inset-x-3 max-[520px]:top-[150px] max-[520px]:w-auto ${surface.popover}`}
         >
           <div className="flex max-h-[68vh] flex-col overflow-hidden">
-            <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-2.5 py-1.5">
+            <div className={`flex shrink-0 items-center justify-between gap-2 ${surface.popoverHeader}`}>
               <div className="min-w-0">
                 <p className={`${typography.panelTitle} text-foreground`}>
                   {title}
@@ -176,7 +176,7 @@ export function LinkedRecordsButton({
                   className="border-0 py-6"
                 />
               ) : (
-                <div className="divide-y divide-border">
+                <div className={surface.listDivider}>
                   {isInspections
                     ? (visibleRecords as LinkedInspection[]).map((inspection) => (
                         <InspectionRow key={inspection.id} inspection={inspection} />
@@ -189,7 +189,7 @@ export function LinkedRecordsButton({
             </div>
 
             {count > 0 && (
-              <div className="flex shrink-0 items-center gap-2 border-t border-border px-2.5 py-1.5">
+              <div className={`flex shrink-0 items-center gap-2 ${surface.popoverFooter}`}>
                 {hasMore ? (
                   <Button
                     type="button"
@@ -222,7 +222,7 @@ function InspectionRow({ inspection }: { inspection: LinkedInspection }) {
   return (
     <Link
       href={`/inspecoes/${inspection.id}`}
-      className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
+      className={`grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 ${surface.rowInteractive}`}
     >
       <div className="min-w-0">
         <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${typography.bodyMuted} text-muted-foreground`}>
@@ -259,13 +259,13 @@ function NonConformityRow({
   return (
     <Link
       href={`/nao-conformidades/${nonConformity.id}`}
-      className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 transition-colors hover:bg-muted/30"
+      className={`grid grid-cols-[minmax(0,1fr)_auto] gap-2 px-2.5 py-2 ${surface.rowInteractive}`}
     >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <p className={`truncate ${typography.code} text-foreground`}>
           {nonConformity.code}
         </p>
-        <span className={`rounded-md border border-border px-1.5 py-0.5 ${typography.sectionLabel} text-muted-foreground`}>
+        <span className={`px-1.5 py-0.5 ${typography.sectionLabel} text-muted-foreground ${surface.outlinedChip}`}>
           {classification}
         </span>
         <NonConformityBadge value={nonConformity.status} size="xs" />

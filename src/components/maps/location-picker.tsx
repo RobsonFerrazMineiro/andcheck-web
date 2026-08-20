@@ -13,7 +13,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 // ── Constantes de zoom / fallback ─────────────────────────────────────────────
 const DEFAULT_PLANT = { lat: -1.536, lng: -48.752, zoom: 13 };
@@ -238,7 +238,7 @@ export function LocationPicker({
 
       {/* Mapa */}
       <div
-        className="border border-border rounded-md overflow-hidden relative"
+        className={`relative ${surface.mediaFrame}`}
         style={{ height }}
       >
         {mapGeoState === "detecting" && (
@@ -275,7 +275,7 @@ export function LocationPicker({
       {/* Coordenadas em tempo real */}
       {showCoordinates && hasCoords ? (
         <div className="flex gap-3">
-          <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
+          <div className={`flex-1 px-3 py-2 ${surface.mutedInsetStrong}`}>
             <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Latitude
             </p>
@@ -283,7 +283,7 @@ export function LocationPicker({
               {latitude!.toFixed(6)}
             </p>
           </div>
-          <div className="flex-1 bg-muted/50 border border-border rounded-md px-3 py-2">
+          <div className={`flex-1 px-3 py-2 ${surface.mutedInsetStrong}`}>
             <p className={`${typography.sectionLabel} mb-0.5 text-muted-foreground`}>
               Longitude
             </p>
@@ -293,7 +293,7 @@ export function LocationPicker({
           </div>
         </div>
       ) : showCoordinates && (geoState === "error" || geoState === "denied") ? (
-        <div className={`flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 ${typography.sectionDescription} text-amber-700`}>
+        <div className={`flex items-start gap-2 rounded-md px-3 py-2 ${typography.sectionDescription} ${surface.warningAlertMuted}`}>
           <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <span>
             Não foi possível obter sua localização. Ajuste o pin manualmente no

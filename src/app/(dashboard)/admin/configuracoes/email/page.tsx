@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getEmailTechnicalConfiguration } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { CheckCircle2, Mail, XCircle } from "lucide-react";
 
 type EmailTechnicalConfiguration = {
@@ -27,7 +27,7 @@ export default async function AdminEmailConfigurationPage() {
     <div className="space-y-5">
       <OnlineOnlyNotice moduleName="Configurações administrativas" />
 
-      <div className="border-b-2 border-border pb-4">
+      <div className={surface.pageHeader}>
         <p
           className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
         >

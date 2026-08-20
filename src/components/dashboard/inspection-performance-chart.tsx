@@ -62,7 +62,7 @@ export function InspectionPerformanceChart({
   );
 
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+    <div className={`flex h-full flex-col ${surface.panel}`}>
       {/* Header */}
       <div
         className={`flex items-center justify-between ${surface.panelHeader}`}

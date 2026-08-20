@@ -17,7 +17,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 export type BellNotification = {
   id: string;
@@ -118,7 +118,7 @@ export function NotificationBell({
           aria-modal="false"
           aria-labelledby="notification-bell-title"
           className={cn(
-            "fixed right-2 top-14 z-50 w-[min(24rem,calc(100vw-1rem))] border bg-popover text-popover-foreground shadow-lg sm:absolute sm:right-0 sm:top-10 sm:w-96",
+            `fixed right-2 top-14 z-50 w-[min(24rem,calc(100vw-1rem))] text-popover-foreground sm:absolute sm:right-0 sm:top-10 sm:w-96 ${surface.popover}`,
             panelClassName,
           )}
         >

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDocumentDetail } from "@/lib/actions/document-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -48,7 +48,7 @@ function Info({
       <p className={`${typography.sectionLabel} text-muted-foreground`}>
         {label}
       </p>
-      <p className={`mt-1 ${typography.bodyStrong} ${mono ? "font-mono" : ""}`}>
+      <p className={`mt-1 ${mono ? typography.code : typography.bodyStrong}`}>
         {value}
       </p>
     </div>
@@ -68,7 +68,7 @@ export default async function DocumentoDetalhePage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <p
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -152,7 +152,7 @@ export default async function DocumentoDetalhePage({ params }: Props) {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-start gap-3 rounded-lg border bg-muted/20 p-3">
+            <div className={`flex items-start gap-3 p-3 ${surface.subtleBox}`}>
               <div className="flex size-12 shrink-0 items-center justify-center rounded-md border bg-background">
                 <DocumentFileIcon
                   fileName={document.fileName}

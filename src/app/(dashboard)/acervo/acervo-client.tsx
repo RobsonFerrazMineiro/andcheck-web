@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { surface, typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 
 export type ArchiveScaffoldRow = {
@@ -63,9 +63,9 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift border border-l-4 bg-card rounded-lg p-4 shadow-sm ${className}`}
+      className={`${surface.kpiCard} ${className}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className={surface.kpiCardHeader}>
         <p
           className={`${typography.sectionLabel} text-muted-foreground leading-tight`}
         >
@@ -188,7 +188,7 @@ export function AcervoClient({
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -242,7 +242,7 @@ export function AcervoClient({
           icon={FileText}
           label="Com Documentação"
           value={withDocuments}
-          className="border-border border-l-muted-foreground bg-muted/40"
+          className={`border-border border-l-muted-foreground ${surface.mutedFillStrong}`}
           iconClass="text-muted-foreground"
           valueClass="text-foreground"
         />
@@ -264,13 +264,13 @@ export function AcervoClient({
               placeholder="Buscar por TAG, área, empresa ou workspace..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
+              className={control.inputSmWithIcon}
             />
           </div>
           </FilterField>
           <FilterField label="Empresa">
           <Select value={companyFilter} onValueChange={setCompanyFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Empresa" />
             </SelectTrigger>
             <SelectContent>
@@ -285,7 +285,7 @@ export function AcervoClient({
           </FilterField>
           <FilterField label="Workspace">
           <Select value={workspaceFilter} onValueChange={setWorkspaceFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Workspace" />
             </SelectTrigger>
             <SelectContent>
@@ -300,7 +300,7 @@ export function AcervoClient({
           </FilterField>
             <FilterField label="Área">
           <Select value={areaFilter} onValueChange={setÁreaFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Área" />
             </SelectTrigger>
             <SelectContent>
@@ -319,7 +319,7 @@ export function AcervoClient({
             aria-label="Periodo inicial"
             value={periodStart}
             onChange={(event) => setPeriodStart(event.target.value)}
-            className={`h-8 rounded-md border-border ${typography.sectionDescription}`}
+            className={control.inputSm}
           />
           </FilterField>
           <FilterField label="Fim">
@@ -328,12 +328,12 @@ export function AcervoClient({
             aria-label="Periodo final"
             value={periodEnd}
             onChange={(event) => setPeriodEnd(event.target.value)}
-            className={`h-8 rounded-md border-border ${typography.sectionDescription}`}
+            className={control.inputSm}
           />
           </FilterField>
           <FilterField label="NCs">
           <Select value={hasNcFilter} onValueChange={setHasNcFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Possui NC" />
             </SelectTrigger>
             <SelectContent>
@@ -345,7 +345,7 @@ export function AcervoClient({
           </FilterField>
           <FilterField label="Documentos">
           <Select value={hasDocsFilter} onValueChange={setHasDocsFilter}>
-            <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={control.selectSm}>
               <SelectValue placeholder="Possui documentos" />
             </SelectTrigger>
             <SelectContent>
@@ -358,9 +358,9 @@ export function AcervoClient({
         </FilterShell>
       </MobileFilterPanel>
 
-      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className={`min-w-0 ${surface.panel}`}>
         <div
-          className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 border-b border-border xl:grid ${surface.tableHeader}`}
+          className={`hidden grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] gap-4 xl:grid ${surface.tableHeader}`}
         >
           {[
             "TAG",
@@ -375,7 +375,7 @@ export function AcervoClient({
           ].map((header, index) => (
             <p
               key={header || `actions-${index}`}
-              className="text-primary-foreground/60"
+              className={surface.tableHeaderCellMuted}
             >
               {header}
             </p>
@@ -386,7 +386,7 @@ export function AcervoClient({
             icon={Archive}
             title="Nenhum andaime desmontado encontrado"
             description="Os andaimes desmontados serao armazenados automaticamente neste acervo para consulta historica."
-            className="border-0 border-b border-dashed"
+            className={surface.panelEmptyState}
             action={
               <Button asChild variant="outline" className="rounded-md">
                 <Link href="/andaimes">Voltar para Andaimes</Link>
@@ -394,13 +394,13 @@ export function AcervoClient({
             }
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {filtered.map((row, index) => (
               <Link
                 key={row.id}
                 href={`/acervo/${encodeURIComponent(row.code)}`}
-                className={`group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 hover:bg-primary/5 xl:grid xl:grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] xl:gap-4 ${
-                  index % 2 ? "bg-muted/20" : "bg-card"
+                className={`group andcheck-motion andcheck-icon-nudge flex items-center px-4 py-3 xl:grid xl:grid-cols-[minmax(140px,1.1fr)_minmax(80px,0.7fr)_minmax(120px,1fr)_minmax(170px,1.2fr)_minmax(125px,0.9fr)_minmax(105px,0.8fr)_minmax(72px,0.55fr)_minmax(64px,0.5fr)_24px] xl:gap-4 ${surface.rowPrimaryInteractive} ${
+                  index % 2 ? surface.rowStripedOdd : surface.rowStripedEven
                 }`}
               >
                 <div className="flex flex-1 items-center gap-3 xl:contents">
@@ -463,7 +463,7 @@ export function AcervoClient({
           </div>
         )}
         <div
-          className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.panelSubtitle}`}
+          className={`${surface.tableFooter} ${typography.panelSubtitle}`}
         >
           {filtered.length} registro(s) - Acervo de andaimes
         </div>

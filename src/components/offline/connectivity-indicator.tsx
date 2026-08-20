@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useOfflineStatus } from "@/components/offline/offline-provider";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { canNavigateAfterOfflineWrite } from "@/lib/offline/connectivity";
 import { AlertTriangle, CloudOff, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -11,17 +11,17 @@ import { useEffect, useRef, useState } from "react";
 const STATUS_COPY = {
   offline: {
     label: "Modo offline",
-    tone: "border-amber-200 bg-amber-50 text-amber-900",
+    tone: surface.warningAlertMuted,
     icon: CloudOff,
   },
   syncing: {
     label: "Sincronizando",
-    tone: "border-blue-200 bg-blue-50 text-blue-900",
+    tone: surface.infoAlert,
     icon: RefreshCw,
   },
   "sync-error": {
     label: "Erro de sincronização",
-    tone: "border-destructive/30 bg-destructive/5 text-destructive",
+    tone: surface.dangerAlert,
     icon: AlertTriangle,
   },
 };
@@ -96,13 +96,13 @@ export function ConnectivityIndicator() {
         : copy?.label;
   const IndicatorIcon = showReconnectFeedback ? RefreshCw : Icon;
   const tone = showReconnectFeedback
-    ? "border-blue-200 bg-blue-50 text-blue-900"
+    ? surface.infoAlert
     : shouldShowPending
-      ? "border-amber-200 bg-amber-50 text-amber-900"
+      ? surface.warningAlertMuted
       : copy?.tone;
 
   return (
-    <div className={`border-b border-border/70 px-4 py-2 ${typography.bodyMuted}`}>
+    <div className={`px-4 py-2 ${typography.bodyMuted} ${surface.subtleDividerBar}`}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-end gap-2">
         <Link
           href="/sincronizacao"

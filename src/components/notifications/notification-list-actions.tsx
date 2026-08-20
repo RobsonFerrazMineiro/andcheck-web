@@ -12,7 +12,7 @@ import {
   archiveNotification,
   markNotificationAsRead,
 } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { control, typography } from "@/lib/design-system";
 
 export function NotificationListActions({
   id,
@@ -83,7 +83,7 @@ export function NotificationListActions({
         <Button
           asChild
           size="sm"
-          className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+          className={`${control.buttonSm} gap-1.5 px-3`}
         >
           <Link href={href}>
             <ExternalLink className="size-3.5" />
@@ -97,7 +97,7 @@ export function NotificationListActions({
             size="sm"
             disabled={isPending || disabled}
             onClick={markRead}
-            className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+            className={control.outlineButtonSm}
           >
             <Check className="size-3.5" />
             Lida
@@ -109,7 +109,7 @@ export function NotificationListActions({
           size="sm"
           disabled={isPending || disabled}
           onClick={() => setArchiveOpen(true)}
-          className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+          className={control.outlineButtonSm}
         >
           <Archive className="size-3.5" />
           Arquivar

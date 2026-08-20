@@ -19,7 +19,7 @@ import {
   getDocumentViewUrl,
   isImageDocument,
 } from "@/lib/document-view";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 type EvidencePreviewItem = {
   id: string;
@@ -162,7 +162,7 @@ export function NonConformityEvidencePreview({
             variant="ghost"
             onClick={openPreview}
             aria-label={`Abrir evidência ${fileName || extension}`}
-            className="h-16 w-16 border border-dashed border-border bg-muted/20 p-0 hover:bg-muted/20 hover:opacity-80"
+            className={`h-16 w-16 p-0 hover:opacity-80 ${surface.dashedThumbButton}`}
           >
             <span className="flex flex-col items-center gap-0.5">
               <FileText className="h-6 w-6 text-muted-foreground" />
@@ -258,7 +258,7 @@ export function NonConformityEvidencePreview({
           aria-labelledby={previewTitleId}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
         >
-          <div className="w-full max-w-5xl border border-border bg-card shadow-lg">
+          <div className={`w-full max-w-5xl ${surface.dialog}`}>
             <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
               <p
                 id={previewTitleId}

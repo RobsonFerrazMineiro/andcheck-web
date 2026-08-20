@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyDetail } from "@/lib/actions/company-actions";
 import { getCompanyTypeLabel, type CompanyTypeCode } from "@/lib/company-types";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { getUploadedFilePreviewUrl } from "@/lib/upload-file";
 import { ArrowLeft, Building2, ClipboardCheck, ClipboardList, Construction, Users } from "lucide-react";
 import Link from "next/link";
@@ -45,13 +45,13 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <p
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
           ><Building2 className="size-4" /> AndCheck • Empresas</p>
           <h1 className={`${typography.pageTitle} text-foreground`}>{company.name}</h1>
-          <p className={`mt-0.5 font-mono ${typography.sectionDescription} text-muted-foreground`}>{company.code}</p>
+          <p className={`mt-0.5 ${typography.codeMuted} text-muted-foreground`}>{company.code}</p>
         </div>
         <Button asChild variant="outline" className="w-full sm:w-auto"><Link href="/empresas"><ArrowLeft /> Voltar</Link></Button>
       </div>
@@ -68,7 +68,7 @@ export default async function EmpresaDetalhePage({ params }: PageProps<"/empresa
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 p-4">
-          <div className="flex min-w-0 items-start gap-3 rounded-lg border border-border bg-muted/20 p-3">
+          <div className={`flex min-w-0 items-start gap-3 p-3 ${surface.subtleBox}`}>
             <CompanyLogo name={company.name} logoUrl={company.logoUrl} />
             <div className="min-w-0">
               <p className={`${typography.pageTitle} break-words leading-tight text-foreground`}>

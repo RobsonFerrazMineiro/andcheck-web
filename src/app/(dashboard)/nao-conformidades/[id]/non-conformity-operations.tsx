@@ -39,7 +39,7 @@ import {
   canNavigateAfterOfflineWrite,
   checkServerConnectivity,
 } from "@/lib/offline/connectivity";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { localDb } from "@/lib/offline/local-db";
 import { fileToDataUrl } from "@/lib/offline/offline-file-client";
 import { createOfflineId } from "@/lib/offline/types";
@@ -151,7 +151,7 @@ function ModalShell({
       aria-labelledby={titleId}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     >
-      <div className="w-full max-w-lg border border-border bg-card shadow-lg">
+      <div className={`w-full max-w-lg ${surface.dialog}`}>
         <div className="flex items-center justify-between px-4 py-3 bg-sidebar text-sidebar-foreground">
           <p
             id={titleId}
@@ -372,7 +372,7 @@ export function NonConformityOperations({
     <>
       <div className="relative flex flex-col items-end gap-2">
         {error && (
-          <p className={`absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md border border-destructive/30 bg-card px-3 py-2 text-right ${typography.bodyStrong} leading-snug text-destructive shadow-sm`}>
+          <p className={`absolute right-0 top-full z-20 mt-2 w-[520px] max-w-[calc(100vw-2rem)] rounded-md px-3 py-2 text-right ${typography.bodyStrong} leading-snug shadow-sm ${surface.dangerAlert}`}>
             {error}
           </p>
         )}
@@ -801,7 +801,7 @@ export function NonConformityItemEvidenceButton({
         onClick={() => setOpen(true)}
         aria-label="Anexar evidência"
         title="Anexar evidência"
-        className="h-16 w-16 border-dashed bg-transparent p-0 hover:bg-muted/20"
+        className={`h-16 w-16 p-0 ${surface.dashedIconButton}`}
       >
         <Plus className="w-5 h-5" />
       </Button>

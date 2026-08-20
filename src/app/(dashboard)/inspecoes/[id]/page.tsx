@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getInspectionById } from "@/lib/actions/inspection-actions";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { getScaffoldTypeLabel } from "@/lib/scaffold-types";
 
 interface Props {
@@ -140,7 +140,7 @@ function TechRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0">
+    <div className={`flex items-center gap-3 ${surface.detailRow}`}>
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
       <p className={`${typography.sectionLabel} w-32 shrink-0 text-muted-foreground`}>
         {label}
@@ -217,7 +217,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               Inspeções
             </Link>
             <span className="mx-1.5">/</span>
-            <span className="text-foreground font-mono">
+            <span className={`${typography.code} text-foreground`}>
               {inspection.scaffold_code}
             </span>
           </p>
@@ -278,25 +278,25 @@ export default async function InspectionDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="bg-sidebar border-l-4 border-l-sidebar-primary px-5 py-4 shadow-sm">
+      <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               AndCheck • Inspeções
             </p>
-            <h2 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
+            <h2 className={`${typography.pageCodeTitle} text-primary-foreground`}>
               {inspection.scaffold_code}
             </h2>
-            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
+            <p className={`mt-0.5 ${typography.sectionDescription} ${surface.onDarkMutedText}`}>
               {scaffold?.location ?? "Registro de inspeção"}
             </p>
           </div>
           <div className="flex flex-col items-start gap-2 shrink-0 sm:items-end">
             <StatusBadge status={inspection.result} size="xl" />
             {validadeDate && (
-              <p className={`${typography.bodyMuted} text-primary-foreground/60`}>
+              <p className={`${typography.bodyMuted} ${surface.onDarkMutedText}`}>
                 Válido até{" "}
-                <span className="font-bold font-mono text-primary-foreground">
+                <span className={`${typography.code} text-primary-foreground`}>
                   {validadeDate}
                 </span>
               </p>
@@ -306,7 +306,7 @@ export default async function InspectionDetailPage({ params }: Props) {
       </div>
 
       {scaffold?.status === "interditado" && hasCriticalFailure && (
-        <div className="flex items-start gap-3 border border-destructive/30 bg-destructive/5 px-4 py-3 text-destructive">
+        <div className={`flex items-start gap-3 px-4 py-3 ${surface.dangerAlert}`}>
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className={typography.metaStrong}>
@@ -327,21 +327,21 @@ export default async function InspectionDetailPage({ params }: Props) {
             label: "Conformes",
             value: conformes,
             color: "text-emerald-600",
-            bg: "bg-emerald-50 border-emerald-200",
+            bg: surface.successAlert,
             bar: "border-l-green-600",
           },
           {
             label: "Não Conformes",
             value: naoConformes,
             color: "text-destructive",
-            bg: "border-destructive/30 bg-destructive/5",
+            bg: surface.dangerAlert,
             bar: "border-l-destructive",
           },
           {
             label: "N/A",
             value: naAplicavel,
             color: "text-muted-foreground",
-            bg: "bg-muted/40 border-border",
+            bg: surface.mutedTile,
             bar: "border-l-muted-foreground",
           },
           {
@@ -353,7 +353,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 : pct >= 50
                   ? "text-amber-600"
                   : "text-destructive",
-            bg: "bg-card border-border",
+            bg: surface.neutralTile,
             bar:
               pct >= 80
                 ? "border-l-green-600"
@@ -368,7 +368,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               "border border-l-4 p-3 text-center " + s.bg + " " + s.bar
             }
           >
-            <p className={`${typography.operationalValue} font-mono ${s.color}`}>
+            <p className={`${typography.operationalCodeValue} ${s.color}`}>
               {s.value}
             </p>
             <p className={`${typography.sectionLabel} text-muted-foreground`}>
@@ -380,8 +380,8 @@ export default async function InspectionDetailPage({ params }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Dados do Andaime */}
-        <div className="bg-card border border-border shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+        <div className={surface.panel}>
+          <div className={`flex items-center gap-2 ${surface.panelHeaderMuted}`}>
             <Construction className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className={`${typography.panelTitle} text-foreground`}>
               Dados do Andaime
@@ -393,7 +393,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 icon={Construction}
                 label="Tag / Código"
                 value={
-                  <span className="font-mono font-bold">{scaffold.code}</span>
+                  <span className={typography.code}>{scaffold.code}</span>
                 }
               />
               <TechRow
@@ -430,15 +430,15 @@ export default async function InspectionDetailPage({ params }: Props) {
               icon={Construction}
               label="Código"
               value={
-                <span className="font-mono">{inspection.scaffold_code}</span>
+                <span className={typography.code}>{inspection.scaffold_code}</span>
               }
             />
           )}
         </div>
 
         {/* Dados da Inspeção */}
-        <div className="bg-card border border-border shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+        <div className={surface.panel}>
+          <div className={`flex items-center gap-2 ${surface.panelHeaderMuted}`}>
             <ClipboardCheck className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className={`${typography.panelTitle} text-foreground`}>
               Dados da Inspeção
@@ -478,7 +478,7 @@ export default async function InspectionDetailPage({ params }: Props) {
             }
           />
           {inspection.notes && (
-            <div className="px-4 py-3 border-t border-border bg-muted/20">
+            <div className={surface.actionFooter}>
               <p className={`${typography.sectionLabel} mb-1 text-muted-foreground`}>
                 Observações
               </p>
@@ -490,8 +490,8 @@ export default async function InspectionDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
           <p className={`${typography.panelTitle} text-foreground`}>
             Assinaturas Obrigatorias
           </p>
@@ -501,10 +501,10 @@ export default async function InspectionDetailPage({ params }: Props) {
             icon={CheckCircle2}
             title="Nenhuma assinatura obrigatória registrada"
             description="As assinaturas coletadas nesta inspeção aparecerão aqui."
-            className="border-0 border-b border-dashed py-8"
+            className={surface.panelEmptyStatePadded}
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {inspection.signatures.map((signature) => (
               <div
                 key={signature.id}
@@ -533,15 +533,15 @@ export default async function InspectionDetailPage({ params }: Props) {
         )}
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className={surface.panel}>
+        <div className={surface.panelHeaderSubtle}>
           <p className={`${typography.panelTitle} text-foreground`}>
             Checklist de Conformidade
           </p>
         </div>
         {Object.entries(grouped).map(([category, items]) => (
           <div key={category}>
-            <div className="px-4 py-2 bg-primary/5 border-b border-border">
+            <div className={surface.panelHeaderAccent}>
               <p className={`${typography.sectionLabel} text-muted-foreground`}>
                 {category}
               </p>
@@ -552,7 +552,7 @@ export default async function InspectionDetailPage({ params }: Props) {
                 <div
                   key={item.id}
                   className={
-                    "flex items-start gap-3 px-4 py-3 border-b border-border/50 " +
+                    `flex items-start gap-3 px-4 py-3 ${surface.rowDividerSoft} ` +
                     ITEM_ROW[st]
                   }
                 >
@@ -605,8 +605,8 @@ export default async function InspectionDetailPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b-2 border-border bg-muted/30">
+      <div className={surface.panel}>
+        <div className={`flex items-center justify-between ${surface.panelHeaderSubtle}`}>
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className={`${typography.panelTitle} text-foreground`}>
@@ -622,11 +622,11 @@ export default async function InspectionDetailPage({ params }: Props) {
             icon={AlertTriangle}
             title="Nenhuma não conformidade gerada"
             description="Quando a inspeção gerar tratativas, elas serão exibidas neste painel."
-            className="border-0 border-b border-dashed"
+            className={surface.panelEmptyState}
           />
         ) : (
-          <div className="divide-y divide-border">
-            <div className="hidden grid-cols-4 gap-3 px-4 py-2 bg-muted/40 sm:grid">
+          <div className={surface.listDivider}>
+            <div className={`hidden grid-cols-4 gap-3 sm:grid ${surface.panelHeaderCompact}`}>
               {["Código", "Status", "Classificação", "Prazo"].map((h) => (
                 <p
                   key={h}
@@ -640,7 +640,7 @@ export default async function InspectionDetailPage({ params }: Props) {
               <Link
                 key={nc.id}
                 href={"/nao-conformidades/" + nc.id}
-                className="grid gap-2 px-4 py-3 hover:bg-muted/30 transition-colors sm:grid-cols-4 sm:items-center"
+                className={`grid gap-2 px-4 py-3 sm:grid-cols-4 sm:items-center ${surface.rowInteractive}`}
               >
                 <p className={`${typography.code} text-foreground`}>
                   <span className={`mr-2 ${typography.sectionLabel} text-muted-foreground sm:hidden`}>
@@ -670,7 +670,7 @@ export default async function InspectionDetailPage({ params }: Props) {
       </div>
 
       {scaffold && (
-        <div className="bg-muted/40 border border-border flex items-center gap-4 px-5 py-4">
+        <div className={`flex items-center gap-4 px-5 py-4 ${surface.mutedInsetLight}`}>
           <QrCode className="w-9 h-9 text-muted-foreground/40 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className={`${typography.bodyStrong} text-foreground`}>

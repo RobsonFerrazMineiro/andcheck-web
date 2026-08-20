@@ -25,7 +25,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { surface, typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { getExpirationFilterLabel } from "@/lib/filter-labels";
 import { useOfflineSnapshotCache } from "@/lib/offline/use-offline-snapshot-cache";
 import {
@@ -39,7 +39,7 @@ const OperationalMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full w-full items-center justify-center bg-muted/30">
+      <div className={`flex h-full w-full items-center justify-center ${surface.mutedFillStrong}`}>
         <p className={`${typography.emptyState} animate-pulse text-muted-foreground`}>
           Carregando mapa...
         </p>
@@ -64,7 +64,7 @@ export function MapaClient({ scaffolds, showCompanyName = true }: Props) {
 
   if (pins.length === 0) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20">
+      <div className={`flex h-full w-full flex-col items-center justify-center gap-3 ${surface.mutedFill}`}>
         <p className={`${typography.bodyStrong} text-muted-foreground`}>
           Nenhum andaime georreferênciado
         </p>
@@ -215,14 +215,14 @@ export function MapaOperacionalClient({
   const visibleScaffolds = filteredScaffolds.slice(0, 8);
 
   return (
-    <div className="min-w-0 space-y-5 overflow-hidden">
+    <div className={`min-w-0 overflow-hidden ${surface.pageStack}`}>
       <OfflineDataNotice
         active={isOfflineFallback}
         label="mapa operacional"
         lastCachedAt={lastCachedAt}
       />
 
-      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className={`min-w-0 ${surface.panel}`}>
         <div
           className={`flex min-w-0 flex-col justify-between gap-2 sm:flex-row sm:items-center ${surface.panelHeader}`}
         >
@@ -258,7 +258,7 @@ export function MapaOperacionalClient({
         description="Filtre o mapa por empresa, vencimento e status."
         summary={`${filteredScaffolds.length}/${cachedScaffolds.length} · ${filterLabel(activeStatus)}${activeCompanyId !== "all" ? ` · ${companies.find((company) => company.id === activeCompanyId)?.name ?? "Empresa"}` : ""}`}
       >
-      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card p-0">
+      <div className={`min-w-0 p-0 ${surface.panel}`}>
         <div
           className={`flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${surface.panelHeader}`}
         >
@@ -274,7 +274,7 @@ export function MapaOperacionalClient({
                 value={activeCompanyId}
                 onValueChange={setActiveCompanyId}
               >
-                <SelectTrigger className={`h-8 w-full min-w-0 rounded-md sm:w-52 ${typography.bodyMuted}`}>
+                <SelectTrigger className={`w-full min-w-0 sm:w-52 ${control.selectSm}`}>
                   <SelectValue placeholder="Todas as empresas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -288,7 +288,7 @@ export function MapaOperacionalClient({
               </Select>
             )}
             <Select value={dueFilter} onValueChange={setDueFilter}>
-              <SelectTrigger className={`h-8 w-full min-w-0 rounded-md sm:w-52 ${typography.bodyMuted}`}>
+              <SelectTrigger className={`w-full min-w-0 sm:w-52 ${control.selectSm}`}>
                 <SelectValue placeholder="Vencimento" />
               </SelectTrigger>
               <SelectContent>
@@ -342,8 +342,8 @@ export function MapaOperacionalClient({
                 className={
                   "min-w-0 gap-2 " +
                   (active
-                    ? "border-accent bg-accent/10 text-foreground"
-                    : "border-border text-muted-foreground hover:bg-muted/60")
+                    ? control.legendButtonActive
+                    : control.legendButtonInactive)
                 }
                 aria-pressed={active}
               >
@@ -359,7 +359,7 @@ export function MapaOperacionalClient({
       </div>
       </MobileFilterPanel>
 
-      <div className="min-w-0 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+      <div className={`min-w-0 ${surface.panel}`}>
         <div
           className={`flex min-w-0 items-center justify-between gap-3 ${surface.panelHeader}`}
         >
@@ -376,19 +376,19 @@ export function MapaOperacionalClient({
             {filteredScaffolds.length} de {cachedScaffolds.length} registros
           </span>
         </div>
-        <div className="divide-y divide-border">
+        <div className={surface.listDivider}>
           {filteredScaffolds.length === 0 ? (
             <EmptyState
               icon={MapPin}
               title="Nenhum andaime encontrado"
               description="Ajuste os filtros para visualizar andaimes no mapa operacional."
-              className="border-0 border-b border-dashed"
+              className={surface.panelEmptyState}
             />
           ) : (
             visibleScaffolds.map((scaffold) => (
               <div
                 key={scaffold.id}
-                className="flex min-w-0 items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/30 sm:px-4"
+                className={`flex min-w-0 items-center gap-3 px-3 py-3 sm:px-4 ${surface.rowInteractive}`}
               >
                 <div
                   className={
@@ -470,8 +470,8 @@ export function MapaOperacionalClient({
           aria-labelledby="map-scaffold-list-title"
           className="fixed inset-0 z-50 flex items-end bg-black/40 p-0 sm:items-center sm:justify-center sm:p-4"
         >
-          <div className="max-h-[85vh] w-full overflow-hidden border border-border bg-card shadow-lg sm:max-w-3xl">
-            <div className="flex items-center justify-between gap-3 border-b-2 border-border bg-muted/40 px-4 py-3">
+          <div className={`max-h-[85vh] w-full overflow-hidden sm:max-w-3xl ${surface.dialog}`}>
+            <div className={`flex items-center justify-between gap-3 ${surface.panelHeaderMuted}`}>
               <div>
                 <p
                   id="map-scaffold-list-title"
@@ -493,7 +493,7 @@ export function MapaOperacionalClient({
                 Fechar
               </Button>
             </div>
-            <div className="max-h-[calc(85vh-4.5rem)] divide-y divide-border overflow-y-auto">
+            <div className={`max-h-[calc(85vh-4.5rem)] overflow-y-auto ${surface.listDivider}`}>
               {filteredScaffolds.map((scaffold) => (
                 <div
                   key={scaffold.id}

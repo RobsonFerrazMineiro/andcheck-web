@@ -12,7 +12,7 @@ import { useDialogFocus } from "@/hooks/use-dialog-focus";
 import { useExclusiveMenu } from "@/hooks/use-exclusive-menu";
 import { updateActiveContext } from "@/lib/actions/context-actions";
 import type { ContextSwitcherData } from "@/lib/context-switcher";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { Building2, ChevronDown, Loader2, MapPin, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -90,7 +90,7 @@ export function DesktopContextSwitcher({
             onValueChange={(companyId) => changeContext({ companyId })}
             disabled={isPending}
           >
-            <SelectTrigger className="h-9 w-48 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
+            <SelectTrigger className={`w-48 ${control.contextSelect}`}>
               <Building2 className="size-3.5 text-muted-foreground" />
               <div className="min-w-0 flex-1 text-left">
                 <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
@@ -123,7 +123,7 @@ export function DesktopContextSwitcher({
           onValueChange={(workspaceId) => changeContext({ workspaceId })}
           disabled={isPending}
         >
-          <SelectTrigger className="h-9 w-64 border-0 bg-transparent px-2 shadow-none hover:bg-muted/60 focus-visible:ring-1">
+          <SelectTrigger className={`w-64 ${control.contextSelect}`}>
             <MapPin className="size-3.5 text-muted-foreground" />
             <div className="min-w-0 flex-1 text-left">
               <p className={`${typography.sectionLabel} text-muted-foreground/60`}>
@@ -277,7 +277,7 @@ export function MobileContextSwitcher({
           role="dialog"
           aria-modal="false"
           aria-label="Selecionar contexto ativo"
-          className="fixed inset-x-0 top-14 z-50 border-b border-border bg-background p-4 shadow-lg"
+          className={`fixed inset-x-0 top-14 z-50 p-4 ${surface.floatingPanel}`}
         >
           <div className="mx-auto grid max-w-md gap-4">
             {context.canSwitchCompany && (

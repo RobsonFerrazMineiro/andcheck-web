@@ -39,7 +39,7 @@ import {
   setUserActive,
   updateUser,
 } from "@/lib/actions/user-actions";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 
 export type UserRow = {
   id: string;
@@ -105,7 +105,7 @@ function RoleBadge({ role }: { role?: { code: string; name: string } }) {
   return (
     <span
       className={
-        `inline-flex items-center gap-1 rounded-md border px-2 py-0.5 ${typography.badge} ` +
+        `${surface.badgeChip} ${typography.badge} ` +
         (ROLE_BADGE[role.code] ??
           "bg-muted text-muted-foreground border-border")
       }
@@ -242,7 +242,7 @@ export function UsuariosClient({
   }
 
   return (
-    <div className="min-w-0 space-y-5">
+    <div className={`min-w-0 ${surface.pageStack}`}>
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Excluir usuário"
@@ -299,7 +299,7 @@ export function UsuariosClient({
           if (statusTarget) handleStatus(statusTarget.id, !statusTarget.is_active);
         }}
       />
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -378,12 +378,9 @@ export function UsuariosClient({
           return (
             <div
               key={card.label}
-              className={
-                "andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 " +
-                card.border
-              }
+              className={`min-w-0 ${surface.kpiCard} ${card.border}`}
             >
-              <div className="mb-3 flex items-start justify-between gap-3">
+              <div className={surface.kpiCardHeader}>
                 <p
                   className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
                 >
@@ -424,7 +421,7 @@ export function UsuariosClient({
           {editingUser && (
             <input type="hidden" name="user_id" value={editingUser.id} />
           )}
-          <div className="flex items-center gap-2 border-b border-border pb-2">
+          <div className={`flex items-center gap-2 ${surface.sectionDivider}`}>
             <Plus className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className={typography.panelTitle}>
               {editingUser ? "Edição de Usuário" : "Cadastro de Usuário"}
@@ -477,7 +474,7 @@ export function UsuariosClient({
                 defaultValue={editingUser?.roles[0]?.id}
                 onValueChange={setSelectedRoleId}
               >
-                <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+                <SelectTrigger className={control.selectSm}>
                   <SelectValue placeholder="Selecionar perfil" />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,7 +487,7 @@ export function UsuariosClient({
               </Select>
             </div>
             {selectedFormRole?.code === "HSE_GERENCIADORA" && (
-              <div className={`border border-amber-200 bg-amber-50 px-3 py-2 ${typography.bodyStrong} text-amber-800 md:col-span-3`}>
+              <div className={`px-3 py-2 ${typography.bodyStrong} ${surface.warningAlertMuted} md:col-span-3`}>
                 Este perfil possui acesso operacional amplo aos dados do
                 workspace autorizado. Use apenas para empresas gerenciadoras
                 de HSE, como TUV Rheinland ou Arcadis.
@@ -510,7 +507,7 @@ export function UsuariosClient({
                   editingUser?.is_active === false ? "inactive" : "active"
                 }
               >
-                <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+                <SelectTrigger className={control.selectSm}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -521,7 +518,7 @@ export function UsuariosClient({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-border pt-3">
+          <div className={`flex justify-end gap-2 ${surface.topDivider}`}>
             <Button
               type="button"
               variant="outline"
@@ -563,13 +560,13 @@ export function UsuariosClient({
               placeholder="Buscar por nome, e-mail, matrícula ou empresa..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
+              className={control.inputSmWithIcon}
             />
           </div>
           </FilterField>
           <FilterField label="Status / perfil" className="sm:w-56">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className={`h-8 w-full rounded-md sm:w-56 ${typography.sectionDescription}`}>
+            <SelectTrigger className={`w-full sm:w-56 ${control.selectSm}`}>
               <SelectValue placeholder="Filtro" />
             </SelectTrigger>
             <SelectContent>
@@ -587,7 +584,7 @@ export function UsuariosClient({
         </FilterShell>
       </MobileFilterPanel>
 
-      <div className="min-w-0 overflow-hidden rounded-lg bg-card border border-border shadow-sm">
+      <div className={`min-w-0 ${surface.panel}`}>
         <div className="hidden lg:grid grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] gap-4 px-4 py-2.5 bg-sidebar border-b border-sidebar-border">
           {[
             "",
@@ -601,7 +598,7 @@ export function UsuariosClient({
           ].map((header) => (
             <p
               key={header}
-              className={`${typography.sectionLabel} text-primary-foreground/60`}
+              className={`${typography.sectionLabel} ${surface.tableHeaderCellMuted}`}
             >
               {header}
             </p>
@@ -631,7 +628,7 @@ export function UsuariosClient({
             />
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {filtered.map((user, index) => {
               const primaryRole = user.roles[0];
               const isCurrentUser = user.id === currentUserId;
@@ -647,7 +644,7 @@ export function UsuariosClient({
                   key={user.id}
                   className={
                     "grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 lg:grid-cols-[40px_minmax(160px,1.5fr)_minmax(100px,1fr)_80px_minmax(140px,1.2fr)_minmax(120px,1fr)_90px_112px] lg:gap-4 " +
-                    (index % 2 === 1 ? "bg-muted/20" : "bg-card")
+                    (index % 2 === 1 ? surface.rowStripedOdd : surface.rowStripedEven)
                   }
                 >
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
@@ -668,11 +665,11 @@ export function UsuariosClient({
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1.5 lg:hidden">
                       <RoleBadge role={primaryRole} />
-                      <span className={`rounded-md border border-border px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground`}>
+                      <span className={`px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground ${surface.outlinedChip}`}>
                         {user.company ?? "Sem empresa"}
                       </span>
                       {user.department && (
-                        <span className={`rounded-md border border-border px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground`}>
+                        <span className={`px-2 py-0.5 ${typography.bodyMuted} text-muted-foreground ${surface.outlinedChip}`}>
                           {user.department}
                         </span>
                       )}
@@ -754,7 +751,7 @@ export function UsuariosClient({
           </div>
         )}
 
-        <div className="px-4 py-2 bg-muted/30 border-t border-border">
+        <div className={surface.panelFooter}>
           <p className={`${typography.metaStrong} text-muted-foreground/40`}>
             {filtered.length} registro(s) · Módulo de usuários · AndCheck
           </p>
@@ -789,7 +786,7 @@ function Field({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={label.includes("*")}
-        className={`h-8 rounded-md ${typography.sectionDescription}`}
+        className={control.inputSm}
       />
     </div>
   );
@@ -853,7 +850,7 @@ function CompanySelect({
         disabled={!canSelectAnyCompany}
         defaultValue={selectedCompanyId}
       >
-        <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+        <SelectTrigger className={control.selectSm}>
           <SelectValue placeholder="Selecionar empresa" />
         </SelectTrigger>
         <SelectContent>

@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function EmptyState({
@@ -20,7 +20,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-lg border border-dashed border-border bg-card px-6 py-12 text-center shadow-sm",
+        `${surface.dashedBox} rounded-lg bg-card px-6 py-12 text-center shadow-sm`,
         className,
       )}
     >

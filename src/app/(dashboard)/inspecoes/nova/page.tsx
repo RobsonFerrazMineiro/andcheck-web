@@ -9,7 +9,7 @@ import {
   getInspectionSignerOptions,
 } from "@/lib/actions/signature-policy-actions";
 import { canCurrentUser } from "@/lib/authz";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
@@ -115,7 +115,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
 
   if (blockedNonConformity && selectedScaffoldId) {
     return (
-      <div className="mx-auto max-w-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950">
+      <div className={`mx-auto max-w-2xl p-6 ${surface.warningAlert}`}>
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
           <div>
@@ -131,7 +131,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
                 asChild
                 variant="outline"
                 size="sm"
-                className={`border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100 ${typography.action}`}
+                className={`${surface.warningAlert} hover:bg-amber-100 ${typography.action}`}
               >
                 <Link href={`/nao-conformidades/${blockedNonConformity.id}`}>
                 Ver Não Conformidade
@@ -141,7 +141,7 @@ export default async function NovaInspecaoPage({ searchParams }: Props) {
                 asChild
                 variant="outline"
                 size="sm"
-                className={`border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100 ${typography.action}`}
+                className={`${surface.warningAlert} hover:bg-amber-100 ${typography.action}`}
               >
                 <Link href={`/andaimes/${selectedScaffoldId}`}>
                 Voltar ao andaime

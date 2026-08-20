@@ -117,7 +117,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -310,17 +310,17 @@ export default async function DashboardPage() {
                 icon={Construction}
                 title="Nenhum andaime cadastrado"
                 description="Os andaimes ativos aparecerão aqui conforme forem cadastrados."
-                className="border-0 border-b border-dashed"
+                className={surface.panelEmptyState}
               />
             ) : (
-              <div className="divide-y divide-border">
+              <div className={surface.listDivider}>
                 {scaffolds.slice(0, 10).map((s) => (
                   <Link
                     key={s.id}
                     href={"/andaimes/" + s.id}
-                    className="grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
+                    className={`grid grid-cols-[130px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 ${surface.rowInteractive}`}
                   >
-                    <p className={`${typography.code} uppercase text-foreground`}>
+                    <p className={`${typography.badgeLg} text-foreground`}>
                       {s.code}
                     </p>
                     <div className="min-w-0">
@@ -356,10 +356,10 @@ export default async function DashboardPage() {
                 icon={FileText}
                 title="Nenhuma movimentação operacional"
                 description="As últimas alterações de andaimes, inspeções, NCs e documentos aparecerão aqui."
-                className="border-0 border-b border-dashed"
+                className={surface.panelEmptyState}
               />
             ) : (
-              <div className="divide-y divide-border">
+              <div className={surface.listDivider}>
                 {operationalMovements.map((movement) => (
                   <div
                     key={movement.id}
@@ -394,14 +394,14 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border">
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-1.5 ${surface.topDivider}`}>
         <span className={`${typography.sectionLabel} text-muted-foreground`}>
           Conformidade:
         </span>
         {NORMS.map((n) => (
           <span
             key={n}
-            className={`${typography.codeMuted} rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 text-muted-foreground`}
+            className={`${typography.codeMuted} px-2 py-0.5 text-muted-foreground ${surface.mutedInset}`}
           >
             {n}
           </span>
@@ -490,7 +490,7 @@ function ExecutiveKpiCard({
   return (
     <div
       className={
-        "andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm " + t.border
+        `p-3 ${surface.liftCard} ${t.border}`
       }
     >
       <div className="mb-2 flex items-start justify-between gap-3">
@@ -531,7 +531,7 @@ function RankingPanel({
   return (
     <PanelBlock title={title} subtitle={subtitle} icon={icon}>
       {description && (
-        <div className="border-b border-border px-4 py-2">
+        <div className={surface.panelHeaderCompact}>
           <p className={`${typography.metaStrong} text-muted-foreground`}>
             {description}
           </p>
@@ -542,10 +542,10 @@ function RankingPanel({
           icon={BarChart3}
           title="Sem dados históricos"
           description="Os rankings serão exibidos conforme houver registros suficientes no período."
-          className="border-0 border-b border-dashed"
+          className={surface.panelEmptyState}
         />
       ) : (
-        <div className="max-h-46.5 overflow-y-auto divide-y divide-border">
+        <div className={`max-h-46.5 overflow-y-auto ${surface.listDivider}`}>
           {items.map((item, index) => (
             <div
               key={item.id ?? item.name}
@@ -630,9 +630,7 @@ function KpiCard({
   return (
     <div
       className={
-        "bg-card " +
-        t.borderLeft +
-        " andcheck-lift border border-border rounded-lg p-3 shadow-sm"
+        surface.liftCard + " " + t.borderLeft + " p-3"
       }
     >
       <div className="mb-1.5 flex items-start justify-between">
@@ -679,7 +677,7 @@ function PanelBlock({
   children,
 }: PanelBlockProps) {
   return (
-    <div className="bg-card border border-border rounded-lg shadow-sm h-full flex flex-col overflow-hidden">
+    <div className={`flex h-full flex-col ${surface.panel}`}>
       <div
         className={`flex items-center justify-between ${surface.panelHeader}`}
       >

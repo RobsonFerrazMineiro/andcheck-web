@@ -31,7 +31,7 @@ import { NonConformityBadge } from "@/components/shared/non-conformity-badge";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { getArchivedScaffoldByTag } from "@/lib/actions/scaffold-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { getDocumentTypeLabel } from "@/lib/document-types";
 import { humanizeCode } from "@/lib/human-readable";
 import { getInspectionResultLabel } from "@/lib/inspection-results";
@@ -508,16 +508,16 @@ export default async function AcervoDetalhePage({ params }: Props) {
         </div>
       </div>
 
-      <div className="border-l-4 border-l-sidebar-primary bg-sidebar px-5 py-4 shadow-sm">
+      <div className={`px-5 py-4 ${surface.operationalHero}`}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <p className={`${typography.pageEyebrow} mb-1 text-primary-foreground/40`}>
               ACERVO HISTÓRICO DO ANDAIME
             </p>
-            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
+            <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>
               {scaffold.code}
             </h1>
-            <p className={`mt-0.5 ${typography.sectionDescription} text-primary-foreground/60`}>
+            <p className={`mt-0.5 ${typography.sectionDescription} ${surface.onDarkMutedText}`}>
               {scaffold.location}
             </p>
           </div>
@@ -667,12 +667,12 @@ export default async function AcervoDetalhePage({ params }: Props) {
         {scaffold.inspections.length === 0 ? (
           <EmptyLine icon={ClipboardCheck} text="Nenhuma inspeção registrada." />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {scaffold.inspections.map((inspection) => (
               <Link
                 key={inspection.id}
                 href={`/inspecoes/${inspection.id}`}
-                className="grid gap-2 px-4 py-3 transition-colors hover:bg-muted/30 md:grid-cols-4 md:items-center"
+                className={`grid gap-2 px-4 py-3 md:grid-cols-4 md:items-center ${surface.rowInteractive}`}
               >
                 <p className={`${typography.bodyStrong} text-foreground`}>
                   {inspection.inspector_name}
@@ -700,12 +700,12 @@ export default async function AcervoDetalhePage({ params }: Props) {
         {scaffold.nonConformities.length === 0 ? (
           <EmptyLine icon={AlertTriangle} text="Nenhuma não conformidade vinculada." />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {scaffold.nonConformities.map((nc) => (
               <Link
                 key={nc.id}
                 href={`/nao-conformidades/${nc.id}`}
-                className="grid gap-2 px-4 py-3 transition-colors hover:bg-muted/30 md:grid-cols-5 md:items-center"
+                className={`grid gap-2 px-4 py-3 md:grid-cols-5 md:items-center ${surface.rowInteractive}`}
               >
                 <p className={`${typography.code} text-foreground`}>
                   {nc.code}
@@ -734,7 +734,7 @@ export default async function AcervoDetalhePage({ params }: Props) {
         {scaffold.documents.length === 0 ? (
           <EmptyLine icon={FileText} text="Nenhum documento técnico vinculado." />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {scaffold.documents.map((document) => (
               <div
                 key={document.id}
@@ -784,8 +784,8 @@ function ArchiveCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden border border-border bg-card shadow-sm">
-      <div className="flex items-center justify-between border-b-2 border-border bg-muted/40 px-4 py-2.5">
+    <section className={surface.panel}>
+      <div className={`flex items-center justify-between ${surface.panelHeaderMuted}`}>
         <div className="flex items-center gap-2">
           <Icon className="size-3.5 text-muted-foreground/60" />
           <h2 className={`${typography.panelTitle} text-foreground`}>
@@ -798,7 +798,7 @@ function ArchiveCard({
           </span>
         )}
       </div>
-      <div className="divide-y divide-border">{children}</div>
+      <div className={surface.listDivider}>{children}</div>
     </section>
   );
 }
@@ -839,7 +839,7 @@ function EmptyLine({
       icon={Icon}
       title={text.replace(/\.$/, "")}
       description="Os registros deste bloco aparecerão aqui conforme o histórico operacional for consolidado."
-      className="border-0 border-b border-dashed py-8"
+      className={surface.panelEmptyStatePadded}
     />
   );
 }
@@ -866,7 +866,7 @@ function LifecycleStrip({
   ];
 
   return (
-    <section className="border border-border bg-card px-4 py-4 shadow-sm">
+    <section className={`px-4 py-4 ${surface.card}`}>
       <div className="grid gap-4 md:grid-cols-4">
         {items.map((item, index) => (
           <div key={item.label} className="relative flex gap-3 md:block">

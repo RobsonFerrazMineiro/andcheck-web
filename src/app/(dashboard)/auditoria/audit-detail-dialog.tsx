@@ -6,7 +6,7 @@ import { useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import type { AuditRow } from "./auditoria-client";
 
@@ -111,7 +111,7 @@ function JsonBlock({ title, value }: { title: string; value: unknown }) {
       <p className={`${typography.sectionLabel} mb-2 text-muted-foreground`}>
         {title}
       </p>
-      <pre className={`max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-muted/40 p-3 ${typography.codeMuted}`}>
+      <pre className={`max-h-72 overflow-auto whitespace-pre-wrap break-words p-3 ${typography.codeMuted} ${surface.mutedInsetLight}`}>
         {formatJson(value)}
       </pre>
     </div>
@@ -140,7 +140,7 @@ export function AuditDetailDialog({
       aria-labelledby="audit-detail-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
     >
-      <div className="max-h-[90vh] w-full max-w-5xl overflow-auto rounded-lg border border-border bg-card shadow-lg">
+      <div className={`max-h-[90vh] w-full max-w-5xl overflow-auto ${surface.dialog}`}>
         <div className="flex flex-col gap-3 border-b border-sidebar-border bg-sidebar px-4 py-4 text-sidebar-foreground sm:flex-row sm:items-start sm:justify-between sm:px-5">
           <div className="min-w-0">
             <p className={`${typography.pageEyebrow} text-primary-foreground/50`}>
@@ -158,13 +158,13 @@ export function AuditDetailDialog({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className={`border-primary-foreground/20 bg-transparent text-primary-foreground/70 hover:bg-white/10 hover:text-primary-foreground ${typography.action}`}
+            className={`border-primary-foreground/20 bg-transparent ${surface.darkHeaderButton} ${typography.action}`}
           >
             Fechar
           </Button>
         </div>
 
-        <div className="border-b border-border p-4 sm:p-5">
+        <div className={surface.sectionBlock}>
           <p className={`mb-3 text-muted-foreground ${typography.action}`}>
             Resumo
           </p>
@@ -195,11 +195,11 @@ export function AuditDetailDialog({
           </div>
         </div>
 
-        <div className="border-b border-border p-4 sm:p-5">
+        <div className={surface.sectionBlock}>
           <p className={`mb-3 text-muted-foreground ${typography.action}`}>
             Alterações
           </p>
-          <div className="divide-y divide-border border border-border md:hidden">
+          <div className={`md:hidden ${surface.flatTableFrame} ${surface.listDivider}`}>
             {comparisonRows(row).map((item) => (
               <div key={item.field} className="grid gap-3 p-3">
                 <div>
@@ -231,8 +231,8 @@ export function AuditDetailDialog({
               </div>
             ))}
           </div>
-          <div className="hidden overflow-x-auto border border-border md:block">
-            <div className="min-w-[680px] grid grid-cols-[190px_1fr_1fr] bg-muted/50 border-b border-border">
+          <div className={`hidden md:block ${surface.flatTableFrame}`}>
+            <div className={`min-w-[680px] grid grid-cols-[190px_1fr_1fr] ${surface.panelHeaderCompact}`}>
               {["Campo", "Antes", "Depois"].map((header) => (
                 <p
                   key={header}
@@ -242,7 +242,7 @@ export function AuditDetailDialog({
                 </p>
               ))}
             </div>
-            <div className="min-w-[680px] divide-y divide-border">
+            <div className={`min-w-[680px] ${surface.listDivider}`}>
               {comparisonRows(row).map((item) => (
                 <div key={item.field} className="grid grid-cols-[190px_1fr_1fr]">
                   <p className={`px-3 py-2 ${typography.bodyStrong} text-foreground`}>

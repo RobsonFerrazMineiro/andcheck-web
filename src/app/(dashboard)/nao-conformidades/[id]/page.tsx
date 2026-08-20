@@ -37,7 +37,7 @@ import { NonConformityHistoryButton } from "./non-conformity-history-button";
 import { LazyNonConformityEvidencePreview } from "./lazy-non-conformity-panels";
 import { AuditEntityType, getEntityAuditTimeline } from "@/lib/audit";
 import { sanitizeForLog } from "@/lib/safe-log";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import {
   humanizeCode,
   humanizeChecklistCategory,
@@ -298,7 +298,7 @@ function DetailRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border last:border-0">
+    <div className={`flex items-center gap-3 ${surface.detailRow}`}>
       <Icon className="w-3.5 h-3.5 text-muted-foreground/40 shrink-0" />
       <p className={`${typography.sectionLabel} w-36 shrink-0 text-muted-foreground`}>
         {label}
@@ -320,8 +320,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-card border border-border shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+    <section className={surface.panel}>
+      <div className={`flex items-center gap-2 ${surface.panelHeaderMuted}`}>
         <Icon className="w-3.5 h-3.5 text-muted-foreground/60" />
         <p className={`${typography.panelTitle} text-foreground`}>
           {title}
@@ -431,7 +431,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
               Não Conformidades
             </Link>
             <span className="mx-1.5">/</span>
-            <span className="text-foreground font-semibold font-mono">
+            <span className={`${typography.code} text-foreground`}>
               {nc.code}
             </span>
           </div>
@@ -457,7 +457,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="bg-sidebar border-l-4 border-l-sidebar-primary shadow-sm overflow-hidden">
+      <div className={`overflow-hidden ${surface.operationalHero}`}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 py-4">
           <div>
             <div
@@ -466,7 +466,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
               <AlertTriangle className="size-4" />
               AndCheck ⬢ Não Conformidades
             </div>
-            <h1 className={`${typography.pageTitle} font-mono text-primary-foreground`}>
+            <h1 className={`${typography.pageCodeTitle} text-primary-foreground`}>
               {nc.code}
             </h1>
             <p className={`mt-1 max-w-2xl ${typography.sectionDescription} text-primary-foreground/70`}>
@@ -484,7 +484,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
       </div>
 
       {nc.status === "CLOSED" && nc.scaffold.status === "pendente_liberacao" && (
-        <div className="flex items-center gap-2 border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900">
+        <div className={`flex items-center gap-2 px-4 py-3 ${surface.warningAlert}`}>
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <p className={typography.bodyStrong}>
             {canStartInspection
@@ -502,7 +502,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             value={
               <Link
                 href={"/andaimes/" + nc.scaffold.id}
-                className="font-mono font-bold hover:text-sidebar-primary"
+                className={`${typography.code} hover:text-sidebar-primary`}
               >
                 {nc.scaffold.code}
               </Link>
@@ -514,7 +514,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
             value={
               <Link
                 href={"/inspecoes/" + nc.originInspection.id}
-                className="font-mono font-bold hover:text-sidebar-primary"
+                className={`${typography.code} hover:text-sidebar-primary`}
               >
                 {nc.originInspection.scaffold_code} ·{" "}
                 {format(nc.originInspection.date, "dd/MM/yyyy")}
@@ -559,10 +559,10 @@ export default async function NonConformityDetailPage({ params }: Props) {
             icon={ClipboardCheck}
             title="Nenhum item de checklist vinculado"
             description="Itens que originarem esta não conformidade aparecerão aqui."
-            className="border-0 border-b border-dashed py-8"
+            className={surface.panelEmptyStatePadded}
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {nc.checklistItems.map((item) => (
               <div key={item.id} className="px-4 py-3">
                 <div className="flex flex-wrap items-start gap-3">
@@ -619,7 +619,7 @@ export default async function NonConformityDetailPage({ params }: Props) {
 
       {nc.evidences.length > 0 && (
         <Section title="Evidências Gerais Legadas" icon={Paperclip}>
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {nc.evidences.map((evidence) => (
               <div
                 key={evidence.id}

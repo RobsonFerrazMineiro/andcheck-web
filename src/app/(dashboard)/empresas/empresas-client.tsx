@@ -198,7 +198,7 @@ export function EmpresasClient({
           if (statusTarget) toggleStatus(statusTarget);
         }}
       />
-      <div className="flex flex-col gap-3 pb-4 border-b-2 border-border sm:flex-row sm:items-end sm:justify-between">
+      <div className={surface.pageHeaderResponsiveCompact}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -415,9 +415,9 @@ export function EmpresasClient({
         </FilterShell>
       </MobileFilterPanel>
 
-      <div className="max-w-full overflow-hidden rounded-lg border border-border bg-card">
+      <div className={`max-w-full ${surface.panel}`}>
         <div
-          className={`hidden grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] gap-2 border-b lg:grid ${surface.tableHeader}`}
+          className={`hidden grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] gap-2 lg:grid ${surface.tableHeader}`}
         >
           <span>Nome</span>
           <span>Tipo</span>
@@ -432,13 +432,13 @@ export function EmpresasClient({
             icon={Building2}
             title="Nenhuma empresa encontrada"
             description="Ajuste os filtros ou cadastre uma empresa para vincular operações e workspaces."
-            className="border-0 border-b border-dashed"
+            className={surface.panelEmptyState}
           />
         ) : (
           filtered.map((company, index) => (
             <div
               key={company.id}
-              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] lg:gap-2 lg:px-3 ${index % 2 ? "bg-muted/20" : "bg-card"}`}
+              className={`flex items-center gap-3 px-4 py-3 lg:grid lg:grid-cols-[minmax(130px,1.35fr)_minmax(104px,0.8fr)_minmax(120px,1fr)_52px_60px_74px_108px] lg:gap-2 lg:px-3 ${index % 2 ? surface.rowStripedOdd : surface.rowStripedEven}`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex min-w-0 items-center gap-2">
@@ -532,7 +532,7 @@ export function EmpresasClient({
             </div>
           ))
         )}
-        <div className={`border-t bg-muted/30 px-4 py-2 text-muted-foreground/50 ${typography.metaStrong}`}>
+        <div className={`${surface.tableFooter} ${typography.metaStrong}`}>
           {filtered.length} registro(s) · Módulo administrativo
         </div>
       </div>
@@ -557,9 +557,9 @@ function Kpi({
 }) {
   return (
     <div
-      className={`andcheck-lift bg-card border border-border rounded-lg p-3 shadow-sm sm:p-4 ${borderClass}`}
+      className={`p-3 sm:p-4 ${surface.liftCard} ${borderClass}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className={surface.kpiCardHeader}>
         <p
           className={`${typography.sectionLabel} leading-tight text-muted-foreground`}
         >
@@ -724,7 +724,7 @@ function LogoUploadField({
     <div className="space-y-1.5">
       <Label htmlFor="logoFile">Logo</Label>
       <input type="hidden" name="logoUrl" value={logoUrl} />
-      <div className="flex items-center gap-3 border bg-muted/20 p-3">
+      <div className={`flex items-center gap-3 p-3 ${surface.subtleBox}`}>
         {previewUrl ? (
           // Preview local/privado da logo selecionada.
           // eslint-disable-next-line @next/next/no-img-element

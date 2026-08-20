@@ -36,7 +36,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createInspection } from "@/lib/actions/inspection-actions";
 import type { ChecklistValue as FormValue } from "@/lib/checklist-template";
 import checklistTemplate from "@/lib/checklist-template";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import {
   calculateInspectionResult,
   calculateScaffoldStatus,
@@ -60,7 +60,7 @@ const ChecklistSection = dynamic(
   () => import("@/components/inspection/checklist-section"),
   {
     loading: () => (
-      <div className="bg-card border border-border shadow-sm p-5">
+      <div className={`p-5 ${surface.card}`}>
         <p className={`${typography.panelTitle} text-muted-foreground`}>
           Carregando checklist...
         </p>
@@ -939,7 +939,7 @@ export function NovaInspecaoForm({
         </div>
       </div>
 
-      <div className="pb-4 border-b-2 border-border">
+      <div className={surface.pageHeader}>
         <div
           className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
         >
@@ -964,8 +964,8 @@ export function NovaInspecaoForm({
         lastCachedAt={lastAuxiliaryCachedAt}
       />
 
-      <div className="bg-card border border-border shadow-sm p-5 space-y-4">
-        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
+      <div className={`space-y-4 p-5 ${surface.card}`}>
+        <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Informações Gerais
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -977,14 +977,14 @@ export function NovaInspecaoForm({
               value={selectedScaffoldId}
               onValueChange={handleScaffoldChange}
             >
-              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+              <SelectTrigger className={control.selectSm}>
                 <SelectValue placeholder="Selecionar andaime..." />
               </SelectTrigger>
               <SelectContent
                 className="-ml-1.5 !max-h-[min(17rem,50vh)] !w-[calc(100vw-2.25rem)] !min-w-0 max-w-[27rem] overflow-hidden sm:ml-0 sm:!w-[var(--radix-select-trigger-width)] sm:max-w-none sm:!max-h-80"
                 viewportClassName="max-h-[min(15rem,44vh)] !min-w-0 overflow-y-auto sm:max-h-72"
               >
-                <div className="sticky top-0 z-10 border-b border-border bg-popover p-2">
+                <div className={surface.panelHeaderSticky}>
                   <Input
                     value={scaffoldSearch}
                     onChange={(event) => setScaffoldSearch(event.target.value)}
@@ -1014,7 +1014,7 @@ export function NovaInspecaoForm({
               placeholder="Nome completo"
               value={inspectorName}
               readOnly
-              className={`h-8 rounded-md bg-muted/40 ${typography.sectionDescription}`}
+              className={`${control.inputSm} ${surface.readonlyInset}`}
             />
             <p className={`${typography.bodyMuted} text-muted-foreground`}>
               Preenchido pela sessao ativa.
@@ -1023,7 +1023,7 @@ export function NovaInspecaoForm({
         </div>
         {selectedScaffold && (
           <>
-            <div className="space-y-3 border border-border bg-muted/20 p-3 lg:hidden">
+            <div className={`space-y-3 p-3 lg:hidden ${surface.subtleBox}`}>
               <div className="grid grid-cols-[1fr_auto] items-start gap-3 sm:grid-cols-[1fr_auto_auto]">
                 <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
                 <ReadonlyInfo
@@ -1086,8 +1086,8 @@ export function NovaInspecaoForm({
                 />
               </div>
             </div>
-            <div className="hidden space-y-3 border border-border bg-muted/20 p-3 lg:block">
-              <div className="grid grid-cols-3 gap-x-8 gap-y-3 border-b border-border pb-3">
+            <div className={`hidden space-y-3 p-3 lg:block ${surface.subtleBox}`}>
+              <div className={`grid grid-cols-3 gap-x-8 gap-y-3 ${surface.sectionDivider}`}>
                 <ReadonlyInfo label="TAG" value={selectedScaffold.code} />
                 <ReadonlyInfo
                   label="Status"
@@ -1155,7 +1155,7 @@ export function NovaInspecaoForm({
             Validade da liberação
           </Label>
           <Select value={validityDays} onValueChange={setValidityDays}>
-            <SelectTrigger className={`h-8 w-40 rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={`w-40 ${control.selectSm}`}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -1183,7 +1183,7 @@ export function NovaInspecaoForm({
       ))}
 
       {criticalIssues.length > 0 && (
-        <div className="space-y-2 border border-destructive/30 bg-destructive/5 p-4">
+        <div className={`space-y-2 p-4 ${surface.dangerAlert}`}>
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0 text-destructive" />
             <p className={`${typography.metaStrong} text-destructive`}>
@@ -1208,12 +1208,12 @@ export function NovaInspecaoForm({
       {isComplete && (
         <div
           className={
-            "border p-4 flex items-center gap-4 " +
+            "flex items-center gap-4 p-4 " +
             (autoResult === "aprovado"
-              ? "bg-emerald-50 border-emerald-200"
+              ? surface.successAlert
               : autoResult === "reprovado"
-                ? "border-destructive/30 bg-destructive/5"
-                : "bg-amber-50 border-amber-200")
+                ? surface.dangerAlert
+                : surface.warningAlertMuted)
           }
         >
           {autoResult === "aprovado" && (
@@ -1247,8 +1247,8 @@ export function NovaInspecaoForm({
         </div>
       )}
 
-      <div className="bg-card border border-border shadow-sm p-5 space-y-3">
-        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
+      <div className={`space-y-3 p-5 ${surface.card}`}>
+        <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Registro Fotográfico
         </h3>
 
@@ -1373,8 +1373,8 @@ export function NovaInspecaoForm({
       </div>
 
       {/* Assinatura Digital */}
-      <div className="bg-card border border-border shadow-sm p-5 space-y-3">
-        <h3 className={`${typography.sectionLabel} border-b border-border pb-2 text-muted-foreground`}>
+      <div className={`space-y-3 p-5 ${surface.card}`}>
+        <h3 className={`${typography.sectionLabel} ${surface.sectionDivider} text-muted-foreground`}>
           Observações Gerais
         </h3>
         <Textarea
@@ -1385,8 +1385,8 @@ export function NovaInspecaoForm({
         />
       </div>
 
-      <div className="bg-card border border-border shadow-sm px-5 pt-3 pb-3 space-y-4">
-        <div className="flex items-center justify-between border-b border-border pb-2">
+      <div className={`space-y-4 px-5 pb-3 pt-3 ${surface.card}`}>
+        <div className={`flex items-center justify-between ${surface.sectionDivider}`}>
           <h3 className={`${typography.sectionLabel} text-muted-foreground`}>
             Assinaturas obrigatórias
           </h3>
@@ -1407,7 +1407,7 @@ export function NovaInspecaoForm({
               return (
                 <div
                   key={requirement.id}
-                  className="flex items-center justify-between gap-3 border border-border bg-muted/20 px-3 py-2"
+                  className={`flex items-center justify-between gap-3 px-3 py-2 ${surface.subtleBox}`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {collected ? (
@@ -1474,7 +1474,7 @@ export function NovaInspecaoForm({
                 setSignerPosition("");
               }}
             >
-              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+              <SelectTrigger className={control.selectSm}>
                 <SelectValue placeholder="Selecionar perfil..." />
               </SelectTrigger>
               <SelectContent>
@@ -1506,7 +1506,7 @@ export function NovaInspecaoForm({
                 (isSupervisorRequirement && !canSwitchOperationalSignerCompany)
               }
             >
-              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+              <SelectTrigger className={control.selectSm}>
                 <SelectValue placeholder="Selecionar empresa..." />
               </SelectTrigger>
               <SelectContent>
@@ -1535,7 +1535,7 @@ export function NovaInspecaoForm({
               }}
               disabled={!effectiveSignerCompanyId || filteredSignerOptions.length === 0}
             >
-              <SelectTrigger className={`h-8 rounded-md ${typography.sectionDescription}`}>
+              <SelectTrigger className={control.selectSm}>
                 <SelectValue placeholder="Selecionar assinante..." />
               </SelectTrigger>
               <SelectContent>
@@ -1555,7 +1555,7 @@ export function NovaInspecaoForm({
               value={signerPosition || defaultSignerPosition}
               readOnly
               placeholder="Cargo"
-              className={`h-8 rounded-md bg-muted/40 ${typography.sectionDescription}`}
+              className={`${control.inputSm} ${surface.readonlyInset}`}
             />
           </div>
         </div>
@@ -1576,7 +1576,7 @@ export function NovaInspecaoForm({
             <RotateCcw className="size-3" />
             Limpar
           </Button>
-          <div className="relative border border-dashed border-border bg-muted/20">
+          <div className={`relative ${surface.dashedBox}`}>
           <canvas
             ref={canvasRef}
             width={800}
@@ -1648,7 +1648,7 @@ export function NovaInspecaoForm({
         </Button>
           </>
         ) : (
-          <div className="border border-dashed border-border bg-muted/20 p-4">
+          <div className={`p-4 ${surface.dashedBox}`}>
             <p className={`${typography.sectionDescription} text-muted-foreground`}>
               Selecione um andaime com política ativa para coletar assinaturas.
             </p>
@@ -1656,7 +1656,7 @@ export function NovaInspecaoForm({
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 justify-end pt-2 border-t border-border">
+      <div className={`flex flex-col justify-end gap-3 sm:flex-row ${surface.actionFooterPlain}`}>
         <Button
           asChild
           type="button"

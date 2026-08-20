@@ -42,7 +42,7 @@ import {
   type ManagementReportNonConformityTrend,
   type ManagementReportOption,
 } from "@/lib/management-reports";
-import { surface, typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { ReportExportActions } from "./report-export-actions";
 
 type Props = {
@@ -172,7 +172,7 @@ export default async function RelatoriosPage({ searchParams }: Props) {
   return (
     <div className="space-y-4">
       <OnlineOnlyNotice moduleName="Relatórios Gerenciais" />
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className={`${surface.pageHeaderResponsive} lg:flex-row lg:items-start lg:justify-between`}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -404,7 +404,7 @@ function FilterSelect({
         data-slot="select-trigger"
         name={name}
         defaultValue={value}
-        className={`h-8 w-full rounded-md border border-input bg-transparent px-2.5 ${typography.sectionDescription} text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50`}
+        className={control.nativeSelectSm}
       >
         {includeAll && <option value="all">Todos</option>}
         {options.map(([optionValue, optionLabel]) => (
@@ -448,7 +448,7 @@ function KpiPanel({
   items: Array<[string, number | string, ElementType]>;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
@@ -488,7 +488,7 @@ function InspectionPerformanceChart({
   const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
@@ -504,7 +504,7 @@ function InspectionPerformanceChart({
             gap={1.4}
           />
           <div className="absolute text-center">
-            <p className={`${typography.operationalValue} font-mono leading-none text-foreground`}>
+            <p className={`${typography.operationalCodeValue} leading-none text-foreground`}>
               {approvalRate}%
             </p>
             <p className={`mt-1 max-w-24 leading-tight ${typography.metaStrong} text-muted-foreground`}>
@@ -561,7 +561,7 @@ function NonConformityTrendChart({
   };
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
@@ -585,7 +585,7 @@ function NonConformityTrendChart({
               </span>
             ))}
           </div>
-          <div className="relative h-28 min-w-0 border-b border-l border-border bg-muted/30">
+          <div className={`relative h-28 min-w-0 border-b border-l border-border ${surface.mutedFillStrong}`}>
             <div className="absolute inset-0 flex items-end justify-between gap-1 px-2">
               {rows.map((item) => (
                 <div
@@ -664,20 +664,20 @@ function RankingPanel({
   const visibleRows = rows.slice(0, 5);
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <Icon className={surface.panelHeaderIcon} />
           <p className={surface.panelHeaderTitle}>{title}</p>
         </div>
       </div>
-      <div className="divide-y divide-border">
+      <div className={surface.listDivider}>
         {rows.length === 0 ? (
           <EmptyState
             icon={Icon}
             title="Sem dados no período"
             description="Os rankings serão exibidos conforme houver registros suficientes nos filtros aplicados."
-            className="border-0 border-b border-dashed py-8"
+            className={surface.panelEmptyStatePadded}
           />
         ) : (
           visibleRows.map((row, index) => (
@@ -688,7 +688,7 @@ function RankingPanel({
       {rows.length > 5 && (
         <Link
           href={href}
-          className={`andcheck-motion block border-t border-border px-4 py-3 ${typography.action} text-primary hover:bg-muted/40`}
+          className={`andcheck-motion block ${typography.action} text-primary ${surface.linkFooterInteractive}`}
         >
           Ver ranking completo →
         </Link>
@@ -751,7 +751,7 @@ function TopNonConformitiesPanel({
   const visibleRows = rows.slice(0, 5);
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <AlertTriangle className={surface.panelHeaderIcon} />
@@ -766,18 +766,18 @@ function TopNonConformitiesPanel({
           icon={AlertTriangle}
           title="Nenhuma não conformidade registrada"
           description="As não conformidades mais recorrentes aparecerão aqui conforme os filtros aplicados."
-          className="border-0 border-b border-dashed py-8"
+          className={surface.panelEmptyStatePadded}
         />
       ) : (
-        <div className="divide-y divide-border">
-          <div className={`grid grid-cols-[minmax(0,1fr)_82px] gap-3 bg-muted/40 px-4 py-2 ${typography.panelTitle} text-muted-foreground sm:grid-cols-[minmax(0,1fr)_110px]`}>
+        <div className={surface.listDivider}>
+          <div className={`grid grid-cols-[minmax(0,1fr)_82px] gap-3 ${typography.panelTitle} text-muted-foreground sm:grid-cols-[minmax(0,1fr)_110px] ${surface.panelHeaderCompact}`}>
             <span>Não Conformidade</span>
             <span className="text-right">Ocorrências</span>
           </div>
           {visibleRows.map((item, index) => (
             <div
               key={item.title}
-              className="grid grid-cols-[minmax(0,1fr)_82px] items-center gap-3 px-4 py-2.5 hover:bg-primary/5 sm:grid-cols-[minmax(0,1fr)_110px]"
+              className={`grid grid-cols-[minmax(0,1fr)_82px] items-center gap-3 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_110px] ${surface.rowPrimaryInteractive}`}
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className={`${typography.codeMuted} text-muted-foreground`}>
@@ -886,7 +886,7 @@ function MiniDonut({
 
 function InsightsPanel({ items }: { items: TrendItem[] }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+    <section className={surface.panel}>
       <div className={surface.panelHeader}>
         <div className="flex items-center gap-2">
           <Lightbulb className={surface.panelHeaderIcon} />

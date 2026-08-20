@@ -1,7 +1,7 @@
 import { Filter } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function FilterShell({
@@ -20,7 +20,7 @@ export function FilterShell({
   return (
     <div
       className={cn(
-        "andcheck-filter-shell rounded-lg border border-border bg-card p-4 shadow-sm",
+        `andcheck-filter-shell p-4 ${surface.card}`,
         className,
       )}
     >

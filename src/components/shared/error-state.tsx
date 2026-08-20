@@ -1,7 +1,7 @@
 import { AlertTriangle, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function ErrorState({
@@ -20,7 +20,7 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "rounded-lg border border-destructive/30 bg-destructive/5 px-6 py-10 text-center text-destructive shadow-sm",
+        `rounded-lg px-6 py-10 text-center shadow-sm ${surface.dangerAlert}`,
         className,
       )}
     >
@@ -28,7 +28,7 @@ export function ErrorState({
         <AlertTriangle className="size-5" aria-hidden="true" />
       </div>
       <p className={typography.emptyState}>{title}</p>
-      <p className={`mx-auto mt-1 max-w-md text-red-800/75 ${typography.bodyMuted}`}>
+      <p className={`mx-auto mt-1 max-w-md text-destructive/75 ${typography.bodyMuted}`}>
         {description}
       </p>
       {onRetry ? (

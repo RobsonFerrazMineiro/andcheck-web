@@ -5,7 +5,7 @@ import { PageSkeleton } from "@/components/shared/page-skeleton";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { humanizeCode } from "@/lib/human-readable";
 import { localDb } from "@/lib/offline/local-db";
 import type { SyncQueueItem } from "@/lib/offline/types";
@@ -216,8 +216,8 @@ export function SyncClient() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-4 border-b-2 border-border pb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className={surface.pageStack}>
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <p
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -254,7 +254,7 @@ export function SyncClient() {
       </div>
 
       {conflictItems.length > 0 && (
-        <div className="border border-border bg-muted/50 p-4 text-foreground">
+        <div className={`p-4 text-foreground ${surface.mutedInsetStrong}`}>
           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 size-4 shrink-0" />
@@ -326,7 +326,7 @@ export function SyncClient() {
           </div>
 
           {items.length === 0 ? (
-            <div className="flex min-h-48 flex-col items-center justify-center border bg-muted/20 p-6 text-center">
+            <div className={`flex min-h-48 flex-col items-center justify-center border p-6 text-center ${surface.mutedFill}`}>
               <CheckCircle2 className="mb-3 size-8 text-emerald-600" />
               <p className={typography.bodyStrong}>Nenhum item pendente</p>
               <p className={`mt-1 max-w-md ${typography.sectionDescription} text-muted-foreground`}>
@@ -339,7 +339,7 @@ export function SyncClient() {
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-lg border border-border bg-card p-3 shadow-sm"
+                    className={`p-3 ${surface.card}`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -355,13 +355,13 @@ export function SyncClient() {
                     <div className={`mt-3 grid grid-cols-2 gap-x-3 gap-y-2 ${typography.bodyMuted} text-muted-foreground`}>
                       <p className="min-w-0">
                         Criado em:{" "}
-                        <span className="font-mono text-foreground">
+                        <span className={`${typography.codeMuted} text-foreground`}>
                           {formatDate(item.createdAt)}
                         </span>
                       </p>
                       <p className="min-w-0">
                         Tentativas:{" "}
-                        <span className="font-mono text-foreground">
+                        <span className={`${typography.codeMuted} text-foreground`}>
                           {item.attempts}
                         </span>
                       </p>
@@ -372,11 +372,11 @@ export function SyncClient() {
                       )}
                     </div>
                     {(item.status === "failed" || item.status === "conflict") && (
-                      <details className="mt-3 rounded-md border border-border bg-muted/30 p-2">
+                      <details className={`mt-3 p-2 ${surface.mutedInset}`}>
                         <summary className={`cursor-pointer ${typography.panelTitle} text-muted-foreground`}>
                           Ver dados locais
                         </summary>
-                        <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-foreground">
+                        <pre className={`mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words text-foreground ${typography.logCode}`}>
                           {formatPayloadPreview(item.payload)}
                         </pre>
                       </details>
@@ -413,7 +413,7 @@ export function SyncClient() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
+              <div className={`hidden md:block ${surface.tableFrame}`}>
                 <table className={`w-full min-w-[760px] text-left ${typography.sectionDescription}`}>
                 <thead className={`bg-sidebar ${typography.sectionLabel} text-sidebar-foreground/65`}>
                   <tr>
@@ -429,7 +429,7 @@ export function SyncClient() {
                 </thead>
                 <tbody>
                   {items.map((item) => (
-                    <tr key={item.id} className="border-t border-border hover:bg-muted/30">
+                    <tr key={item.id} className={`${surface.tableRowDivider} ${surface.rowInteractive}`}>
                       <td className={`px-4 py-3 ${typography.codeMuted}`}>
                         {formatDate(item.createdAt)}
                       </td>
@@ -456,11 +456,11 @@ export function SyncClient() {
                           <p>{friendlySyncError(item.lastError)}</p>
                           {(item.status === "failed" ||
                             item.status === "conflict") && (
-                            <details className="rounded-md border border-border bg-muted/30 p-2">
+                            <details className={`p-2 ${surface.mutedInset}`}>
                               <summary className={`cursor-pointer ${typography.panelTitle} text-muted-foreground`}>
                                 Ver dados locais
                               </summary>
-                              <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px] leading-4 text-foreground">
+                              <pre className={`mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words text-foreground ${typography.logCode}`}>
                                 {formatPayloadPreview(item.payload)}
                               </pre>
                             </details>
@@ -547,9 +547,9 @@ function SyncMetric({
 
   return (
     <div
-      className={`andcheck-lift min-w-0 rounded-lg border border-border bg-card p-3 shadow-sm sm:p-4 ${toneClass.border}`}
+      className={`min-w-0 ${surface.kpiCard} ${toneClass.border}`}
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className={surface.kpiCardHeader}>
         <p
           className={`${typography.sectionLabel} min-w-0 break-words leading-tight text-muted-foreground`}
         >

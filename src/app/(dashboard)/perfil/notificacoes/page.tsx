@@ -10,7 +10,7 @@ import {
   getEmailChannelStatus,
   getNotificationPreferences,
 } from "@/lib/actions/notification-actions";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import { Bell } from "lucide-react";
 
 export default async function PerfilNotificacoesPage() {
@@ -21,7 +21,7 @@ export default async function PerfilNotificacoesPage() {
 
   return (
     <div className="space-y-5">
-      <div className="border-b-2 border-border pb-4">
+      <div className={surface.pageHeader}>
         <p
           className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
         >

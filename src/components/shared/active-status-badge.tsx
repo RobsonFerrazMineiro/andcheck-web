@@ -1,6 +1,6 @@
 import { CheckCircle2, XCircle } from "lucide-react";
 
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 type ActiveStatusBadgeProps = {
   active: boolean;
@@ -21,7 +21,7 @@ export function ActiveStatusBadge({
     <span
       className={`inline-flex w-fit shrink-0 items-center gap-1 rounded-md border ${
         active
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          ? surface.successAlert
           : "border-border bg-muted text-muted-foreground"
       } ${compact ? `${typography.badge} px-1.5 py-0.5` : `${typography.badgeLg} px-2.5 py-1`}`}
     >

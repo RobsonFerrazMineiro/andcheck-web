@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/shared/empty-state";
 import { MobileFilterPanel } from "@/components/shared/mobile-filter-panel";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import type { ExecutiveDashboardData } from "@/lib/executive-dashboard";
 import { humanizeCode } from "@/lib/human-readable";
 import {
@@ -126,7 +126,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+      <header className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -145,7 +145,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           <Badge variant="secondary">{data.range.label}</Badge>
           <Button
             size="sm"
-            className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+            className={`${control.buttonSm} gap-1.5 px-3`}
             onClick={() => exportExcel(data)}
           >
             <FileSpreadsheet className="size-3.5" />
@@ -154,7 +154,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           <Button
             variant="ghost"
             size="sm"
-            className={`h-8 gap-1.5 rounded-md border border-border/70 px-3 ${typography.action}`}
+            className={control.outlineButtonSm}
             onClick={() => exportPdf(data)}
           >
             <Download className="size-3.5" />
@@ -168,7 +168,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
         description="Todos os indicadores, rankings, mapa e exportações usam a mesma seleção."
         summary={`${data.range.label} · ${filters.companyId === "all" ? "Todas empresas" : data.filterOptions.companies.find((item) => item.id === filters.companyId)?.name ?? "Empresa"} · ${filters.status === "all" ? "Todos status" : data.filterOptions.statuses.find((item) => item.value === filters.status)?.label ?? humanizeCode(filters.status)}`}
       >
-      <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <div className={`p-4 ${surface.card}`}>
         <div className="mb-3 flex items-center gap-2">
           <Filter className="size-4 text-muted-foreground" />
           <p className={`${typography.sectionLabel} text-muted-foreground`}>
@@ -239,7 +239,7 @@ export function ExecutiveDashboardClient({ data }: Props) {
           </div>
           <div className="mt-4 flex justify-end">
             <Button
-              className={`h-8 gap-1.5 rounded-md px-3 ${typography.action}`}
+              className={`${control.buttonSm} gap-1.5 px-3`}
               onClick={applyFilters}
               disabled={isPending}
             >
@@ -469,7 +469,7 @@ function ProductivityPanel({ data }: Props) {
 
 function Metric({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
   return (
-    <div className="rounded-md border bg-muted/30 p-3">
+    <div className={`p-3 ${surface.mutedInset}`}>
       <p className={`${typography.bodyStrong} text-muted-foreground`}>{label}</p>
       <p className={`mt-1 ${typography.kpiValue}`}>
         {formatNumber(value)}

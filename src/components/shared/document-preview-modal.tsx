@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 import {
   downloadDocumentFile,
   getDocumentFileName,
@@ -72,8 +72,8 @@ export function DocumentPreviewModal({
       aria-labelledby="document-preview-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      <div className="w-full max-w-5xl rounded-lg border border-border bg-card shadow-lg">
-        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
+      <div className={`w-full max-w-5xl ${surface.dialog}`}>
+        <div className={`flex items-center justify-between ${surface.panelHeaderWide}`}>
           <div className="flex min-w-0 items-center gap-2">
             <FileText className="h-4 w-4 shrink-0 text-muted-foreground/70" />
             <p
@@ -110,13 +110,13 @@ export function DocumentPreviewModal({
             <iframe
               src={safeOpenUrl}
               title={modalTitle}
-              className="h-[70vh] w-full border border-border"
+              className={`h-[70vh] w-full ${surface.documentFrame}`}
             />
           )}
 
           {!isImage && !isPdf && (
-            <div className="flex items-start gap-3 border border-dashed border-border bg-muted/20 p-4">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-border bg-background">
+            <div className={`flex items-start gap-3 p-4 ${surface.dashedBox}`}>
+              <span className={`flex h-14 w-14 shrink-0 items-center justify-center ${surface.fileIconBox}`}>
                 <FileText className="h-7 w-7 text-muted-foreground" />
               </span>
               <div className="min-w-0">

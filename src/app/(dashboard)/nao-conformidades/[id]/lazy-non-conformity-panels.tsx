@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 
+import { surface } from "@/lib/design-system";
 import type { NonConformityEvidencePreviewProps } from "./non-conformity-evidence-preview";
 
 export const LazyNonConformityEvidencePreview = dynamic(
@@ -13,7 +14,7 @@ export const LazyNonConformityEvidencePreview = dynamic(
     ),
   {
     loading: () => (
-      <div className="h-16 w-16 border border-dashed border-border bg-muted/20" />
+      <div className={`h-16 w-16 ${surface.dashedBox}`} />
     ),
     ssr: false,
   },

@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { getExpirationFilterLabel } from "@/lib/filter-labels";
 import {
   getInspectionResultLabel,
@@ -100,8 +100,8 @@ export function InspecoesClient({
       : getExpirationFilterLabel(expirationFilter);
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-4 border-b-2 border-border">
+    <div className={surface.pageStack}>
+      <div className={surface.pageHeaderResponsive}>
         <div>
           <div
             className={`mb-1 flex items-center gap-2 ${typography.pageEyebrow} text-muted-foreground`}
@@ -150,13 +150,13 @@ export function InspecoesClient({
               placeholder="Buscar por andaime (TAG) ou inspetor..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`h-8 rounded-md border-border pl-9 ${typography.sectionDescription}`}
+              className={control.inputSmWithIcon}
             />
           </div>
           </FilterField>
           <FilterField label="Resultado">
           <Select value={resultFilter} onValueChange={setResultFilter}>
-            <SelectTrigger className={`h-8 w-full rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={`w-full ${control.selectSm}`}>
               <SelectValue placeholder="Resultado" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +171,7 @@ export function InspecoesClient({
           </FilterField>
           <FilterField label="Vencimento">
           <Select value={expirationFilter} onValueChange={setExpirationFilter}>
-            <SelectTrigger className={`h-8 w-full rounded-md ${typography.sectionDescription}`}>
+            <SelectTrigger className={`w-full ${control.selectSm}`}>
               <SelectValue placeholder="Vencimento" />
             </SelectTrigger>
             <SelectContent>
@@ -220,9 +220,9 @@ export function InspecoesClient({
                 <Link
                   key={insp.id}
                   href={"/inspecoes/" + insp.id}
-                  className={`group andcheck-lift andcheck-icon-nudge flex min-h-40 flex-col rounded-lg border border-border bg-card p-3 shadow-sm ring-1 hover:bg-primary/5 ${tone.border}`}
+                  className={`group andcheck-icon-nudge flex min-h-40 flex-col p-3 ring-1 ${surface.rowPrimaryInteractive} ${surface.liftCard} ${tone.border}`}
                 >
-                  <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className={surface.kpiCardHeader}>
                     <div className="min-w-0">
                       <p className={`${typography.code} text-foreground`}>
                         {insp.scaffold_code}
@@ -266,7 +266,7 @@ export function InspecoesClient({
                     </>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                  <div className={`mt-3 flex items-center justify-between ${surface.topDivider}`}>
                     <span
                       className={`${typography.action} text-muted-foreground`}
                     >

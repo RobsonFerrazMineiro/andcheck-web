@@ -45,7 +45,7 @@ import {
   getDocumentTypeLabel,
 } from "@/lib/document-types";
 import { SEMANTIC_TONE_CLASSES } from "@/lib/semantic-tones";
-import { typography } from "@/lib/design-system";
+import { control, surface, typography } from "@/lib/design-system";
 import { uploadFile } from "@/lib/upload-file";
 
 function isStorageNotConfiguredError(error: unknown) {
@@ -207,9 +207,9 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
       aria-labelledby="add-document-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      <div className="w-full max-w-lg rounded-lg border border-border bg-card shadow-lg">
+      <div className={`w-full max-w-lg ${surface.dialog}`}>
         {/* Header do modal */}
-        <div className="flex items-center justify-between px-5 py-3 border-b-2 border-border bg-muted/40">
+        <div className={`flex items-center justify-between ${surface.panelHeaderWide}`}>
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p
@@ -244,7 +244,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               id="document-type"
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className={`h-8 w-full rounded-md border border-input bg-transparent px-2.5 text-foreground outline-none transition-[background-color,border-color,box-shadow,color] hover:border-muted-foreground/45 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 ${typography.sectionDescription}`}
+              className={control.nativeSelectSm}
             >
               {DOCUMENT_TYPE_OPTIONS.map((d) => (
                 <option key={d.value} value={d.value}>
@@ -286,7 +286,7 @@ function AddDocumentModal({ scaffoldId, onClose, onAdded }: ModalProps) {
               role="button"
               tabIndex={0}
               aria-controls="document-file"
-              className="border border-dashed border-border bg-muted/20 px-4 py-4 cursor-pointer hover:bg-muted/40 transition-colors text-center"
+              className={`cursor-pointer px-4 py-4 text-center ${surface.dashedActionBox}`}
               onClick={() => fileRef.current?.click()}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
@@ -459,9 +459,9 @@ export function ScaffoldDocumentSection({
   return (
     <>
       {/* ── Seção ── */}
-      <div className="bg-card border border-border shadow-sm overflow-hidden">
+      <div className={surface.panel}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b-2 border-border">
+        <div className={`flex items-center justify-between ${surface.panelHeaderMuted}`}>
           <div className="flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-muted-foreground/60" />
             <p className={`${typography.panelTitle} text-foreground`}>
@@ -490,12 +490,12 @@ export function ScaffoldDocumentSection({
             icon={FileText}
             title="Nenhum documento anexado"
             description='Clique em "Adicionar" para anexar o primeiro documento técnico.'
-            className="border-0 border-b border-dashed py-8"
+            className={surface.panelEmptyStatePadded}
           />
         ) : (
-          <div className="divide-y divide-border">
+          <div className={surface.listDivider}>
             {/* Cabeçalho da tabela */}
-            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto] gap-4 px-4 py-2 bg-muted/30">
+            <div className={`hidden grid-cols-[1fr_auto_auto_auto] gap-4 sm:grid ${surface.panelHeaderCompact}`}>
               {["Documento", "Data / Validade", "Status", "Ações"].map((h) => (
                 <p
                   key={h}
@@ -511,7 +511,7 @@ export function ScaffoldDocumentSection({
               return (
                 <div
                   key={doc.id}
-                  className="grid sm:grid-cols-[1fr_auto_auto_auto] gap-3 sm:gap-4 items-center px-4 py-3 hover:bg-muted/20 transition-colors"
+                  className={`grid items-center gap-3 px-4 py-3 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-4 ${surface.rowInteractive}`}
                 >
                   {/* Info */}
                   <div className="min-w-0">

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Download, Printer, QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { typography } from "@/lib/design-system";
+import { surface, typography } from "@/lib/design-system";
 
 export interface ScaffoldQRCardProps {
   scaffoldCode: string;
@@ -53,8 +53,8 @@ export function ScaffoldQRCard({
   };
 
   return (
-    <div className="overflow-hidden border border-border bg-card shadow-sm">
-      <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
+    <div className={surface.panel}>
+      <div className={`flex items-center gap-2 ${surface.panelHeaderMuted}`}>
         <QrCode className="h-3.5 w-3.5 text-muted-foreground/60" />
         <p className={`${typography.panelTitle} text-foreground`}>
           {title}
@@ -80,7 +80,7 @@ export function ScaffoldQRCard({
             <p className={`${typography.panelTitle} text-muted-foreground`}>
               URL publica de escaneamento
             </p>
-            <div className="rounded-sm border border-border bg-muted/50 px-3 py-2">
+            <div className={`rounded-sm px-3 py-2 ${surface.mutedInsetStrong}`}>
               <p className={`break-all ${typography.codeMuted} text-foreground/70`}>
                 {url}
               </p>
